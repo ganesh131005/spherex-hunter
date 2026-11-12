@@ -33,3 +33,4 @@
   - Displays live LOD status badge in top-left viewport HUD (`#vpLOD`).
   - Added double-buffered anti-popping cross-fade with 150ms alpha transition (`ctx.globalAlpha`) in `drawFrame()`.
   - Connected debounced LOD updates into mouse wheel zoom, Walk Nav WASD keys, FOV dropdown, and zoom reset.
+- [x] Fixed shading mode transition bug: switching from Diff mode back to Gray, Invert, or Thermal now automatically resets `diffMode = false`, synchronizes workspace tabs to `Layout (Blink)`, and immediately resumes continuous two-frame looping playback (`startFlipbook()`).
