@@ -26,6 +26,7 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Authentic NASA FITS & CDS Aladin Integration]** Replaced synthetic procedural patterns with 100% authentic NASA 2MASS and DSS2 FITS telescope data reduced via Astropy `ZScaleInterval` and `AsinhStretch`. Embedded the official CDS Strasbourg Aladin Lite v3 interactive observatory engine alongside the Astropy FITS flipbook comparator.
 - **[Spec-Kit Execution]** Initialized full Spec-Kit engineering workflow under `.specify/` and `specs/001-spherex-sky-viewer/` (`constitution.md`, `spec.md`, `plan.md`, `research.md`, `contracts/`, `tasks.md`, `checklists/requirements.md`).
 - **[NASA Benchmarks Complete]** All 5 NASA benchmark targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis) verified with Astropy sexagesimal coordinate parsing, multi-epoch cutouts, difference imaging dipoles ($I_2 - I_1$), and 102-band infrared spectroscopy.
 - **[Universal Embeddability]** Added URL deep-linking (`?ra=...&dec=...&fov=...`) and user-selectable Field of View (1.0' to 15.0').
