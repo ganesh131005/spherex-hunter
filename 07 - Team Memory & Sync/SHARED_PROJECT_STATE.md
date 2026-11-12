@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Multi-Tile Spatial Near-Image Streamer & Sky Mosaic Grid]** Resolved the zoomed-out "isolated postage stamp" issue by implementing a dynamic spatial celestial tile matrix:
+  - When zooming out (`camera.zoom < 0.95`, reaching 0.4x), the canvas automatically generates and streams adjacent near-image celestial chunks in a $3 \times 3$ or $5 \times 5$ spatial grid around the target.
+  - Queries adjacent celestial coordinates ($\text{RA} \pm \Delta\text{RA}, \text{Dec} \pm \Delta\text{Dec}$) asynchronously from NASA IRSA (`fetchNeighborTile(dx, dy)`).
+  - Renders continuous Poisson photon noise floor and stellar distributions matching the central target, eliminating any empty black void when viewing wide celestial fields.
+  - Displays dynamic HUD badge `#vpMosaicBadge`: `Mosaic: 3×3 Near Tiles` or `Mosaic: 5×5 Near Tiles`.
 - **[Multi-Tier Gaming Level of Detail (LOD) Engine]** Integrated a dynamic 3-tier gaming LOD streaming engine into both the FastAPI backend and HTML5 Canvas frontend based on apparent FOV ($\text{camera.fov} / \text{camera.zoom}$):
   - **LOD 2 (Wide Overview / Fast Scan):** $\text{eff\_fov} > 5.5'$, serves lightweight $200 \times 200$ tiles reducing bandwidth and GPU load by 75% for butter-smooth 60 FPS galactic transit.
   - **LOD 1 (Standard Science):** $1.8' \le \text{eff\_fov} \le 5.5'$, serves standard $400 \times 400$ Astropy ZScaled FITS cutouts.
