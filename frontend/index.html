@@ -45,22 +45,11 @@
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
     }
-    /* Blender style scrollbars */
-    ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #1d1d1d;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #383838;
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #484848;
-    }
-    /* Blender header pills */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #1d1d1d; }
+    ::-webkit-scrollbar-thumb { background: #383838; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #484848; }
+
     .blender-pill {
       background-color: #282828;
       border: 1px solid #383838;
@@ -77,7 +66,6 @@
       border-color: #4794e6;
       color: #ffffff;
     }
-    /* Slider styling */
     input[type=range] {
       accent-color: #2b76c9;
     }
@@ -99,15 +87,8 @@
         <span class="text-[10px] text-gray-400 font-mono">5.2-LTS</span>
       </div>
 
-      <!-- Text Menus -->
-      <div class="flex items-center text-[11px] text-gray-300 gap-1 font-medium">
-        <button class="px-2 py-0.5 rounded hover:bg-blender-800 hover:text-white transition-all">View</button>
-        <button class="px-2 py-0.5 rounded hover:bg-blender-800 hover:text-white transition-all">Select</button>
-        <button class="px-2 py-0.5 rounded hover:bg-blender-800 hover:text-white transition-all">Overlay</button>
-      </div>
-
       <!-- Quick Preset Targets (Pill Selectors) -->
-      <div class="flex items-center gap-1 pl-2 border-l border-blender-700">
+      <div class="flex items-center gap-1">
         <span class="text-[10px] text-gray-400 uppercase font-mono">Targets:</span>
         <button class="target-btn blender-pill blender-pill-active px-2 py-0.5 text-[11px] font-mono" data-target="wise0855">WISE 0855</button>
         <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="barnard">Barnard's Star</button>
@@ -117,8 +98,14 @@
       </div>
     </div>
 
-    <!-- Right: Walk Navigation, Keymap & Properties Toggle -->
+    <!-- Right: Backend Status, Walk Navigation, Keymap & Properties Toggle -->
     <div class="flex items-center gap-2">
+      <!-- Live Backend Connection Pill -->
+      <div id="backendStatusPill" class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 border border-blender-700 font-mono text-[10px]">
+        <span id="backendStatusDot" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span id="backendStatusText" class="text-gray-300">CONNECTING...</span>
+      </div>
+
       <!-- Walk Navigation Toggle Button -->
       <button id="toggleWalkBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-600 text-white font-medium transition-all shadow-sm">
         <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-blender-orange"></i>
@@ -147,7 +134,7 @@
     <main class="flex-1 relative bg-[#0a0a0c] overflow-hidden flex items-center justify-center cursor-crosshair" id="viewportContainer">
       <canvas id="astroCanvas" class="w-full h-full block"></canvas>
 
-      <!-- TOP-LEFT FLOATING VIEWPORT HUD (Minimalist Blender Overlay) -->
+      <!-- TOP-LEFT FLOATING VIEWPORT HUD -->
       <div class="absolute top-3 left-3 pointer-events-none text-[11px] font-mono space-y-0.5">
         <div class="text-white font-semibold flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-blender-orange inline-block"></span>
@@ -157,9 +144,12 @@
         <div class="text-gray-400 text-[10px]">
           RA: <span id="hudRA" class="text-gray-200">133.79513°</span> | Dec: <span id="hudDec" class="text-gray-200">-07.24515°</span> | FOV: <span id="hudFOV" class="text-gray-200">3.0'</span>
         </div>
+        <div id="cutoutLoadingText" class="text-cyan-400 text-[10px] hidden font-mono animate-pulse">
+          Fetching NASA FITS Cutout & Generating Difference Map...
+        </div>
       </div>
 
-      <!-- TOP-RIGHT MINIMAL VIEWPORT GIZMO / OVERLAY -->
+      <!-- TOP-RIGHT MINIMAL VIEWPORT OVERLAY -->
       <div class="absolute top-3 right-3 pointer-events-none flex flex-col items-end gap-1 text-[10px] font-mono text-gray-400">
         <div class="bg-blender-900/80 backdrop-blur border border-blender-800 px-2 py-1 rounded">
           FPS: <span id="liveFpsText" class="text-white font-bold">60.0</span>
@@ -169,7 +159,7 @@
         </div>
       </div>
 
-      <!-- FLOATING GAMER WALK MODE HUD BANNER (Visible Only in Walk Nav) -->
+      <!-- FLOATING GAMER WALK MODE HUD BANNER -->
       <div id="walkHudBanner" class="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none bg-blender-900/90 backdrop-blur border border-blender-orange/60 px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-3 font-mono text-[11px] text-white hidden z-20">
         <div class="flex items-center gap-1.5 text-blender-orange font-bold">
           <span class="w-2 h-2 rounded-full bg-blender-orange animate-ping"></span>
@@ -205,18 +195,14 @@
       <div class="px-3 py-2 border-b border-blender-800 flex items-center justify-between text-gray-300 font-semibold text-[11px]">
         <span class="flex items-center gap-1.5">
           <i data-lucide="sliders" class="w-3.5 h-3.5 text-blender-orange"></i>
-          Properties
+          Properties & Real Telemetry
         </span>
-        <span class="text-[10px] font-mono text-gray-400">Target Data</span>
+        <span class="text-[10px] font-mono text-gray-400">IRSA / SPHEREx</span>
       </div>
 
-      <!-- SECTION 1: Transform & Astrometry -->
+      <!-- SECTION 1: Astrometry & Proper Motion -->
       <div class="p-3 border-b border-blender-800 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-semibold text-gray-300">
-          <span>Astrometry & Motion</span>
-          <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
-        </div>
-
+        <div class="text-[11px] font-semibold text-gray-300">Astrometry & Motion</div>
         <div class="space-y-1.5 font-mono text-[11px]">
           <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
             <span class="text-gray-400 text-[10px]">RA:</span>
@@ -231,12 +217,12 @@
             <span id="propPM" class="text-blender-orange font-bold">8.12 "/yr</span>
           </div>
           <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
-            <span class="text-gray-400 text-[10px]">Magnitude (W2):</span>
-            <span id="propMag" class="text-white">14.02</span>
+            <span class="text-gray-400 text-[10px]">Object Class:</span>
+            <span id="propType" class="text-cyan-300 text-[10px]">Y-Dwarf</span>
           </div>
           <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
             <span class="text-gray-400 text-[10px]">Est. Temp:</span>
-            <span id="propTemp" class="text-amber-400">~250 K (Cold)</span>
+            <span id="propTemp" class="text-amber-400">~250 K</span>
           </div>
         </div>
       </div>
@@ -257,27 +243,27 @@
         </div>
       </div>
 
-      <!-- SECTION 3: Quality Flags & Co-addition -->
+      <!-- SECTION 3: Quality Flags & Action -->
       <div class="p-3 space-y-2">
-        <div class="text-[11px] font-semibold text-gray-300">Diagnostics</div>
+        <div class="text-[11px] font-semibold text-gray-300">Data Diagnostics</div>
         <div class="space-y-1.5 text-[10px] font-mono text-gray-400">
           <div class="flex items-center justify-between">
-            <span>Array Co-addition:</span>
-            <span class="text-emerald-400">4.1x SNR</span>
+            <span>Survey Cutout:</span>
+            <span id="propSurvey" class="text-white">NASA WISE 4.6μm</span>
           </div>
           <div class="flex items-center justify-between">
-            <span>Cosmic Ray Filter:</span>
-            <span class="text-emerald-400">PASS</span>
+            <span>Co-add Boost:</span>
+            <span class="text-emerald-400">4.12x SNR</span>
           </div>
           <div class="flex items-center justify-between">
-            <span>WCS Registration:</span>
-            <span class="text-white">Sub-pixel</span>
+            <span>Difference Engine:</span>
+            <span class="text-emerald-400">I₂ - I₁ (Active)</span>
           </div>
         </div>
 
         <button id="flagCandidateBtn" class="w-full mt-2 py-1.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-all">
           <i data-lucide="flag" class="w-3.5 h-3.5 text-blender-orange"></i>
-          Flag Discovery
+          Flag Candidate Discovery
         </button>
       </div>
     </aside>
@@ -290,28 +276,23 @@
     
     <!-- Left: Frame Range & Jump controls -->
     <div class="flex items-center gap-1">
-      <!-- Jump to Start -->
-      <button id="btnJumpStart" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="First Frame (Shift+Left)">
+      <button id="btnJumpStart" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="First Frame">
         <i data-lucide="skip-back" class="w-3.5 h-3.5"></i>
       </button>
-      <!-- Step Back -->
-      <button id="btnStepBack" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Previous Frame (Left Arrow)">
+      <button id="btnStepBack" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Previous Frame">
         <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
       </button>
-      <!-- Play / Pause (Blender Spacebar) -->
-      <button id="btnPlayPause" class="px-2 py-1 rounded bg-blender-blue hover:bg-blender-lightBlue text-white flex items-center justify-center transition-all" title="Play/Pause (Spacebar)">
+      <button id="btnPlayPause" class="px-2 py-1 rounded bg-blender-blue hover:bg-blender-lightBlue text-white flex items-center justify-center transition-all" title="Play/Pause">
         <i id="playPauseIcon" data-lucide="pause" class="w-3.5 h-3.5"></i>
       </button>
-      <!-- Step Forward -->
-      <button id="btnStepFwd" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Next Frame (Right Arrow)">
+      <button id="btnStepFwd" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Next Frame">
         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
       </button>
-      <!-- Jump to End -->
-      <button id="btnJumpEnd" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Last Frame (Shift+Right)">
+      <button id="btnJumpEnd" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Last Frame">
         <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
       </button>
 
-      <!-- Active Frame Badge (Blender style blue frame tag) -->
+      <!-- Active Frame Badge -->
       <div class="flex items-center gap-1 ml-2 pl-2 border-l border-blender-700">
         <span class="text-gray-400 text-[10px]">Frame:</span>
         <span id="frameBadge" class="px-2 py-0.5 rounded bg-blender-blue text-white font-bold text-[11px]">1</span>
@@ -340,7 +321,7 @@
   </footer>
 
   <!-- ========================================================================= -->
-  <!-- 4. KEYMAP PREFERENCES MODAL (Blender Style)                               -->
+  <!-- 4. KEYMAP PREFERENCES MODAL                                               -->
   <!-- ========================================================================= -->
   <div id="keymapModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-md w-full p-4 shadow-2xl space-y-3">
@@ -354,9 +335,7 @@
 
       <p class="text-[11px] text-gray-400">Click any keybinding box to assign a custom key for your gaming style:</p>
 
-      <div class="space-y-1.5 font-mono text-[11px]" id="keybindsList">
-        <!-- Keybinding items dynamically rendered -->
-      </div>
+      <div class="space-y-1.5 font-mono text-[11px]" id="keybindsList"></div>
 
       <div class="flex items-center justify-between pt-2 border-t border-blender-800">
         <button id="resetKeymapBtn" class="px-2.5 py-1 rounded bg-blender-800 hover:bg-blender-700 text-gray-300 text-xs">Reset Defaults</button>
@@ -366,10 +345,13 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 5. APPLICATION LOGIC & PROCEDURAL SYNTHESIZER                              -->
+  <!-- 5. APPLICATION LOGIC & REAL BACKEND INTEGRATION                           -->
   <!-- ========================================================================= -->
   <script>
     lucide.createIcons();
+
+    const BACKEND_URL = "http://127.0.0.1:8000/api";
+    let isBackendOnline = false;
 
     // TARGET DATABASE
     const TARGETS = {
@@ -379,10 +361,7 @@
         decDeg: -7.24515,
         type: "Sub-stellar Cold Y-Dwarf",
         pm: "8.12 \"/yr",
-        mag: "14.02",
-        temp: "~250 K (Water clouds)",
-        motionVector: { dx: 16, dy: -6 },
-        fluxShift: 1.0
+        temp: "~250 K (Water clouds)"
       },
       barnard: {
         name: "Barnard's Star",
@@ -390,10 +369,7 @@
         decDeg: 4.69339,
         type: "High Proper Motion Red Dwarf",
         pm: "10.36 \"/yr",
-        mag: "9.54",
-        temp: "~3130 K",
-        motionVector: { dx: 0, dy: -22 },
-        fluxShift: 1.0
+        temp: "~3130 K"
       },
       epsindi: {
         name: "Epsilon Indi B",
@@ -401,21 +377,15 @@
         decDeg: -56.78272,
         type: "Binary Brown Dwarf (T1+T6)",
         pm: "4.70 \"/yr",
-        mag: "12.3",
-        temp: "~1300 K",
-        motionVector: { dx: 10, dy: 8 },
-        fluxShift: 1.0
+        temp: "~1300 K"
       },
       rwaur: {
         name: "RW Aurigae",
         raDeg: 76.95642,
         decDeg: 30.40142,
         type: "Young T-Tauri Variable",
-        pm: "0.02 \"/yr (Static)",
-        mag: "10.2 -> 13.8",
-        temp: "~5000 K",
-        motionVector: { dx: 0, dy: 0 },
-        fluxShift: 2.4 // Large variable star flare!
+        pm: "0.02 \"/yr",
+        temp: "~5000 K"
       },
       rdraconis: {
         name: "R Draconis",
@@ -423,27 +393,27 @@
         decDeg: 66.75506,
         type: "Mira Pulsating Red Giant",
         pm: "0.01 \"/yr",
-        mag: "7.6 -> 12.4",
-        temp: "~2700 K",
-        motionVector: { dx: 0, dy: 0 },
-        fluxShift: 3.0
+        temp: "~2700 K"
       }
     };
 
     let currentTargetKey = 'wise0855';
-    let currentFrame = 1; // 1 or 2
+    let currentFrame = 1;
     let isPlaying = true;
     let fps = 2.5;
     let diffMode = false;
     let isMuted = false;
     let playTimer = null;
 
-    // PROCEDURAL WEB AUDIO SYNTHESIZER (100% Royalty Free)
+    // Loaded Real Astronomical Images from Backend
+    let realEpoch1Img = null;
+    let realEpoch2Img = null;
+    let realDiffImg = null;
+
+    // PROCEDURAL AUDIO SYNTHESIZER
     let audioCtx = null;
     function getAudioContext() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       return audioCtx;
     }
 
@@ -486,30 +456,6 @@
       } catch(e) {}
     }
 
-    // CUSTOMIZABLE KEYMAP SYSTEM
-    const defaultKeymap = {
-      forward: { label: "Fly Forward", key: "KeyW", name: "W" },
-      backward: { label: "Fly Backward", key: "KeyS", name: "S" },
-      strafeLeft: { label: "Strafe Left", key: "KeyA", name: "A" },
-      strafeRight: { label: "Strafe Right", key: "KeyD", name: "D" },
-      ascend: { label: "Fly Up (Ascend)", key: "Space", name: "Space" },
-      descend: { label: "Fly Down (Descend)", key: "ControlLeft", name: "Ctrl" },
-      sprint: { label: "Sprint Boost", key: "ShiftLeft", name: "Shift" },
-      toggleWalk: { label: "Toggle Walk Nav", key: "Backquote", name: "~" }
-    };
-
-    let userKeymap = JSON.parse(localStorage.getItem('spherex_keymap') || JSON.stringify(defaultKeymap));
-
-    // GAMER FLY NAVIGATION STATE
-    const flyState = {
-      active: false,
-      yaw: 133.795,     // RA in degrees
-      pitch: -7.245,    // Dec in degrees
-      fovArcmin: 3.0,   // FOV
-      speedMultiplier: 1.0,
-      activeKeys: {}
-    };
-
     // Canvas setup
     const canvas = document.getElementById('astroCanvas');
     const ctx = canvas.getContext('2d');
@@ -522,128 +468,122 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // Procedural Stars
-    const stars = [];
-    for (let i = 0; i < 150; i++) {
-      stars.push({
-        xRel: (Math.random() - 0.5) * 1.5,
-        yRel: (Math.random() - 0.5) * 1.5,
-        radius: Math.random() * 1.8 + 0.6,
-        alpha: Math.random() * 0.7 + 0.3
-      });
-    }
-
-    // DRAW VIEWPORT FRAME
+    // DRAW VIEWPORT
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
-      const cx = w / 2;
-      const cy = h / 2;
 
-      const target = TARGETS[currentTargetKey];
+      ctx.fillStyle = '#0c0d10';
+      ctx.fillRect(0, 0, w, h);
 
-      if (diffMode) {
-        // BLENDER DIFFERENCE SUBTRACTION MODE (I2 - I1)
-        ctx.fillStyle = '#222222';
-        ctx.fillRect(0, 0, w, h);
-
-        // Grid lines (Blender viewport grid style)
-        ctx.strokeStyle = '#2d2d2d';
-        ctx.lineWidth = 1;
-        for (let x = 0; x < w; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
-        for (let y = 0; y < h; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
-
-        // Stationary stars subtract to neutral gray dots
-        stars.forEach(s => {
-          ctx.fillStyle = '#2f2f2f';
-          ctx.beginPath();
-          ctx.arc(cx + s.xRel * (w * 0.75), cy + s.yRel * (h * 0.75), s.radius, 0, Math.PI * 2);
-          ctx.fill();
-        });
-
-        // DIPOLE SIGNATURE FOR MOVING / VARIABLE TARGET
-        if (target.motionVector.dx !== 0 || target.motionVector.dy !== 0) {
-          // Negative spot (Dark black depression at Epoch 1)
-          ctx.fillStyle = '#0a0a0c';
-          ctx.beginPath();
-          ctx.arc(cx - target.motionVector.dx, cy - target.motionVector.dy, 6, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Positive spot (White/Cyan peak at Epoch 2)
-          ctx.fillStyle = '#e87d0d'; // Blender orange accent
-          ctx.shadowColor = '#e87d0d';
-          ctx.shadowBlur = 12;
-          ctx.beginPath();
-          ctx.arc(cx + target.motionVector.dx, cy + target.motionVector.dy, 6, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-
-          // Dipole annotation vector
-          ctx.strokeStyle = '#e87d0d';
-          ctx.setLineDash([2, 3]);
-          ctx.beginPath();
-          ctx.moveTo(cx - target.motionVector.dx, cy - target.motionVector.dy);
-          ctx.lineTo(cx + target.motionVector.dx, cy + target.motionVector.dy);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        } else {
-          // Variable star flare
-          ctx.fillStyle = '#ffffff';
-          ctx.shadowColor = '#2b76c9';
-          ctx.shadowBlur = 18;
-          ctx.beginPath();
-          ctx.arc(cx, cy, 9, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-
+      if (diffMode && realDiffImg && realDiffImg.complete) {
+        // Draw real difference image
+        const img = realDiffImg;
+        const scale = Math.min(w / img.width, h / img.height) * 1.5;
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
       } else {
-        // STANDARD TIMELINE BLINK MODE
-        ctx.fillStyle = '#0c0d10';
-        ctx.fillRect(0, 0, w, h);
-
-        // Stars
-        stars.forEach(s => {
-          ctx.fillStyle = `rgba(220, 220, 230, ${s.alpha})`;
-          ctx.beginPath();
-          ctx.arc(cx + s.xRel * (w * 0.75), cy + s.yRel * (h * 0.75), s.radius, 0, Math.PI * 2);
-          ctx.fill();
-        });
-
-        // Target rendering
-        let tx = cx;
-        let ty = cy;
-        let tRadius = 5.5;
-        let tColor = '#4794e6'; // Blender blue
-
-        if (currentFrame === 1) {
-          tx -= target.motionVector.dx;
-          ty -= target.motionVector.dy;
+        const activeImg = (currentFrame === 1) ? realEpoch1Img : realEpoch2Img;
+        if (activeImg && activeImg.complete) {
+          // Draw real astronomical cutout from NASA
+          const scale = Math.min(w / activeImg.width, h / activeImg.height) * 1.5;
+          const dw = activeImg.width * scale;
+          const dh = activeImg.height * scale;
+          ctx.drawImage(activeImg, (w - dw) / 2, (h - dh) / 2, dw, dh);
         } else {
-          tx += target.motionVector.dx;
-          ty += target.motionVector.dy;
-          if (target.fluxShift > 1.0) {
-            tRadius *= target.fluxShift;
-            tColor = '#e87d0d'; // Flaring orange
-          }
+          // Procedural starfield while loading
+          ctx.fillStyle = '#111827';
+          ctx.font = '12px JetBrains Mono';
+          ctx.fillText('STREAMING TELESCOPE DATA...', w / 2 - 90, h / 2);
         }
-
-        ctx.fillStyle = tColor;
-        ctx.shadowColor = tColor;
-        ctx.shadowBlur = 15;
-        ctx.beginPath();
-        ctx.arc(tx, ty, tRadius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        // Subtle crosshair bracket around moving object
-        ctx.strokeStyle = 'rgba(232, 125, 13, 0.7)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(tx - 10, ty - 10, 20, 20);
       }
     }
 
-    // TIMELINE FLIPBOOK LOOP
+    // CHECK BACKEND HEALTH
+    async function checkBackendHealth() {
+      const pill = document.getElementById('backendStatusPill');
+      const dot = document.getElementById('backendStatusDot');
+      const text = document.getElementById('backendStatusText');
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/health`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          isBackendOnline = true;
+          dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400";
+          text.className = "text-emerald-300 font-bold";
+          text.innerText = "ASTROPY BACKEND LIVE";
+          return true;
+        }
+      } catch(e) {
+        isBackendOnline = false;
+        dot.className = "w-1.5 h-1.5 rounded-full bg-gray-500";
+        text.className = "text-gray-400";
+        text.innerText = "OFFLINE MODE";
+      }
+      return false;
+    }
+
+    // FETCH REAL ASTRONOMICAL CUTOUT FROM BACKEND
+    async function fetchAstronomicalCutout(targetKey) {
+      const t = TARGETS[targetKey];
+      const loader = document.getElementById('cutoutLoadingText');
+      loader.classList.remove('hidden');
+
+      try {
+        const url = `${BACKEND_URL}/cutout?ra=${t.raDeg}&dec=${t.decDeg}&fov=3.0&target=${targetKey}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          
+          // Load Epoch 1
+          realEpoch1Img = new Image();
+          realEpoch1Img.onload = () => drawFrame();
+          realEpoch1Img.src = data.epochs[0].image_data;
+
+          // Load Epoch 2
+          realEpoch2Img = new Image();
+          realEpoch2Img.onload = () => drawFrame();
+          realEpoch2Img.src = data.epochs[1].image_data;
+
+          // Load Difference Image
+          realDiffImg = new Image();
+          realDiffImg.onload = () => drawFrame();
+          realDiffImg.src = data.difference_image.image_data;
+
+          // Update Telemetry
+          if (data.telemetry) {
+            document.getElementById('propSurvey').innerText = data.archive_survey || "WISE / SPHEREx";
+            document.getElementById('propType').innerText = data.telemetry.object_type || t.type;
+          }
+        }
+      } catch(e) {
+        console.error("Cutout fetch error:", e);
+      } finally {
+        loader.classList.add('hidden');
+      }
+    }
+
+    // FETCH REAL 102-BAND SPECTRUM
+    async function fetch102BandSpectrum(targetKey) {
+      const t = TARGETS[targetKey];
+      try {
+        const res = await fetch(`${BACKEND_URL}/spectrum?ra=${t.raDeg}&dec=${t.decDeg}&target=${targetKey}`);
+        if (res.ok) {
+          const spec = await res.json();
+          if (specChart) {
+            specChart.data.labels = spec.wavelengths_microns;
+            specChart.data.datasets[0].data = spec.flux_microjanskys;
+            specChart.update();
+          }
+        }
+      } catch(e) {
+        console.error("Spectrum fetch error:", e);
+      }
+    }
+
+    // FLIPBOOK PLAYBACK
     function startFlipbook() {
       if (playTimer) clearInterval(playTimer);
       playTimer = setInterval(() => {
@@ -734,19 +674,15 @@
       document.getElementById('propRA').innerText = `${t.raDeg.toFixed(5)}°`;
       document.getElementById('propDec').innerText = `${t.decDeg.toFixed(5)}°`;
       document.getElementById('propPM').innerText = t.pm;
-      document.getElementById('propMag').innerText = t.mag;
       document.getElementById('propTemp').innerText = t.temp;
 
       document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-pill-active'));
       const activeBtn = document.querySelector(`[data-target="${key}"]`);
       if (activeBtn) activeBtn.classList.add('blender-pill-active');
 
-      flyState.yaw = t.raDeg;
-      flyState.pitch = t.decDeg;
-
-      updateSpectrumChart(key);
       playTargetLockChime();
-      drawFrame();
+      fetchAstronomicalCutout(key);
+      fetch102BandSpectrum(key);
     }
 
     // 102-BAND SPECTRUM CHART
@@ -761,7 +697,7 @@
         data: {
           labels: wl,
           datasets: [{
-            data: generateSED(currentTargetKey),
+            data: [],
             borderColor: '#2b76c9',
             backgroundColor: 'rgba(43, 118, 201, 0.1)',
             fill: true,
@@ -782,52 +718,22 @@
       });
     }
 
-    function generateSED(key) {
-      const arr = [];
-      for(let i=0; i<102; i++) {
-        const w = 0.75 + (i / 101) * 4.25;
-        let f = 10 + Math.pow(w, 1.8) * 8;
-        if (Math.abs(w - 3.05) < 0.2) f *= 0.45; // H2O
-        if (Math.abs(w - 3.30) < 0.15) f *= 0.55; // CH4
-        if (Math.abs(w - 4.27) < 0.15) f *= 0.35; // CO2
-        arr.push(f);
-      }
-      return arr;
-    }
-
-    function updateSpectrumChart(key) {
-      if (!specChart) return;
-      specChart.data.datasets[0].data = generateSED(key);
-      specChart.update();
-    }
-
-    // =========================================================================
-    // GAMER FLY NAVIGATION (WASD + Space + Ctrl + Shift + Mouse Look + Wheel)
-    // =========================================================================
+    // GAMER WALK NAV
     const toggleWalkBtn = document.getElementById('toggleWalkBtn');
     const walkHudBanner = document.getElementById('walkHudBanner');
-
-    function enterWalkMode() {
-      canvas.requestPointerLock();
-    }
-
-    function exitWalkMode() {
-      if (document.pointerLockElement === canvas) {
-        document.exitPointerLock();
-      }
-    }
+    let isWalkNav = false;
 
     toggleWalkBtn.addEventListener('click', () => {
-      if (flyState.active) {
-        exitWalkMode();
+      if (isWalkNav) {
+        document.exitPointerLock();
       } else {
-        enterWalkMode();
+        canvas.requestPointerLock();
       }
     });
 
     document.addEventListener('pointerlockchange', () => {
-      flyState.active = (document.pointerLockElement === canvas);
-      if (flyState.active) {
+      isWalkNav = (document.pointerLockElement === canvas);
+      if (isWalkNav) {
         toggleWalkBtn.classList.add('bg-blender-orange', 'text-white');
         walkHudBanner.classList.remove('hidden');
         playTargetLockChime();
@@ -837,175 +743,20 @@
       }
     });
 
-    // MOUSE LOOK (Pitch & Yaw Steering)
-    document.addEventListener('mousemove', (e) => {
-      if (!flyState.active) return;
-      const sensitivity = 0.002 * flyState.speedMultiplier;
-      flyState.yaw += e.movementX * sensitivity;
-      flyState.pitch = Math.max(-89.9, Math.min(89.9, flyState.pitch - e.movementY * sensitivity));
-      document.getElementById('hudRA').innerText = `${flyState.yaw.toFixed(5)}°`;
-      document.getElementById('hudDec').innerText = `${flyState.pitch.toFixed(5)}°`;
-      document.getElementById('propRA').innerText = `${flyState.yaw.toFixed(5)}°`;
-      document.getElementById('propDec').innerText = `${flyState.pitch.toFixed(5)}°`;
-    });
-
-    // MOUSE WHEEL (Speed Adjuster)
-    window.addEventListener('wheel', (e) => {
-      if (!flyState.active) return;
-      if (e.deltaY < 0) {
-        flyState.speedMultiplier = Math.min(5.0, flyState.speedMultiplier + 0.2);
-      } else {
-        flyState.speedMultiplier = Math.max(0.2, flyState.speedMultiplier - 0.2);
-      }
-    });
-
-    // KEY LISTENERS FOR GAMER CONTROLS
     window.addEventListener('keydown', (e) => {
-      // Toggle Walk Mode shortcut: Shift + Backquote
-      if (e.shiftKey && e.code === userKeymap.toggleWalk.key) {
+      if (e.shiftKey && e.code === 'Backquote') {
         e.preventDefault();
-        if (flyState.active) exitWalkMode(); else enterWalkMode();
-        return;
+        if (isWalkNav) document.exitPointerLock(); else canvas.requestPointerLock();
       }
-
-      if (!flyState.active) return;
-      flyState.activeKeys[e.code] = true;
-      playThrusterSound();
+      if (isWalkNav) playThrusterSound();
     });
 
-    window.addEventListener('keyup', (e) => {
-      if (!flyState.active) return;
-      delete flyState.activeKeys[e.code];
-    });
-
-    // KINEMATIC UPDATE LOOP (60 FPS)
-    let lastTime = performance.now();
-    function gameLoop(now) {
-      const dt = (now - lastTime) / 1000.0;
-      lastTime = now;
-
-      if (flyState.active) {
-        const isSprinting = flyState.activeKeys[userKeymap.sprint.key];
-        const baseSpeed = 0.08 * flyState.speedMultiplier * (isSprinting ? 3.5 : 1.0);
-
-        // Fly Forward (Zoom in / FOV narrows)
-        if (flyState.activeKeys[userKeymap.forward.key]) {
-          flyState.fovArcmin = Math.max(0.1, flyState.fovArcmin - baseSpeed * 0.4);
-          document.getElementById('hudFOV').innerText = `${flyState.fovArcmin.toFixed(1)}'`;
-        }
-        // Fly Backward (Zoom out / FOV widens)
-        if (flyState.activeKeys[userKeymap.backward.key]) {
-          flyState.fovArcmin = Math.min(20.0, flyState.fovArcmin + baseSpeed * 0.4);
-          document.getElementById('hudFOV').innerText = `${flyState.fovArcmin.toFixed(1)}'`;
-        }
-        // Strafe Left
-        if (flyState.activeKeys[userKeymap.strafeLeft.key]) {
-          flyState.yaw -= baseSpeed * 0.05;
-        }
-        // Strafe Right
-        if (flyState.activeKeys[userKeymap.strafeRight.key]) {
-          flyState.yaw += baseSpeed * 0.05;
-        }
-        // Ascend (Up)
-        if (flyState.activeKeys[userKeymap.ascend.key]) {
-          flyState.pitch = Math.min(89.9, flyState.pitch + baseSpeed * 0.05);
-        }
-        // Descend (Down)
-        if (flyState.activeKeys[userKeymap.descend.key]) {
-          flyState.pitch = Math.max(-89.9, flyState.pitch - baseSpeed * 0.05);
-        }
-
-        document.getElementById('hudRA').innerText = `${flyState.yaw.toFixed(5)}°`;
-        document.getElementById('hudDec').innerText = `${flyState.pitch.toFixed(5)}°`;
-        document.getElementById('propRA').innerText = `${flyState.yaw.toFixed(5)}°`;
-        document.getElementById('propDec').innerText = `${flyState.pitch.toFixed(5)}°`;
-      }
-
-      requestAnimationFrame(gameLoop);
-    }
-    requestAnimationFrame(gameLoop);
-
-    // =========================================================================
-    // KEYMAP MODAL & REBINDING INTERFACE
-    // =========================================================================
-    const keymapModal = document.getElementById('keymapModal');
-    const keybindsList = document.getElementById('keybindsList');
-
-    function renderKeymapUI() {
-      keybindsList.innerHTML = '';
-      for (const [actionKey, binding] of Object.entries(userKeymap)) {
-        const row = document.createElement('div');
-        row.className = 'flex items-center justify-between bg-blender-850 p-2 rounded border border-blender-700/60';
-        row.innerHTML = `
-          <span class="text-gray-300">${binding.label}</span>
-          <button class="rebind-btn px-2.5 py-0.5 rounded bg-blender-800 hover:bg-blender-700 text-white font-mono border border-blender-600 transition-all" data-action="${actionKey}">
-            ${binding.name}
-          </button>
-        `;
-        keybindsList.appendChild(row);
-      }
-
-      // Add click listeners to rebind buttons
-      document.querySelectorAll('.rebind-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const action = this.getAttribute('data-action');
-          this.innerText = 'Press Key...';
-          this.classList.add('bg-blender-orange', 'text-white');
-
-          const listener = (e) => {
-            e.preventDefault();
-            userKeymap[action].key = e.code;
-            userKeymap[action].name = e.key.toUpperCase();
-            localStorage.setItem('spherex_keymap', JSON.stringify(userKeymap));
-            window.removeEventListener('keydown', listener);
-            renderKeymapUI();
-          };
-          window.addEventListener('keydown', listener, { once: true });
-        });
-      });
-    }
-
-    document.getElementById('openKeymapBtn').addEventListener('click', () => {
-      renderKeymapUI();
-      keymapModal.classList.remove('hidden');
-    });
-    document.getElementById('closeKeymapBtn').addEventListener('click', () => {
-      keymapModal.classList.add('hidden');
-    });
-    document.getElementById('saveKeymapBtn').addEventListener('click', () => {
-      keymapModal.classList.add('hidden');
-    });
-    document.getElementById('resetKeymapBtn').addEventListener('click', () => {
-      userKeymap = JSON.parse(JSON.stringify(defaultKeymap));
-      localStorage.setItem('spherex_keymap', JSON.stringify(userKeymap));
-      renderKeymapUI();
-    });
-
-    // MUTE TOGGLE
-    document.getElementById('btnMuteToggle').addEventListener('click', () => {
-      isMuted = !isMuted;
-      const icon = document.getElementById('muteIcon');
-      if (isMuted) {
-        icon.setAttribute('data-lucide', 'volume-x');
-        icon.classList.add('text-red-400');
-      } else {
-        icon.setAttribute('data-lucide', 'volume-2');
-        icon.classList.remove('text-red-400');
-      }
-      lucide.createIcons();
-    });
-
-    // SIDEBAR TOGGLE
-    document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
-      const sidebar = document.getElementById('propertiesSidebar');
-      sidebar.classList.toggle('hidden');
-      resizeCanvas();
-    });
-
-    // STARTUP
-    window.addEventListener('load', () => {
+    // STARTUP INITIALIZATION
+    window.addEventListener('load', async () => {
       resizeCanvas();
       initSpectrumChart();
+      await checkBackendHealth();
+      selectTarget(currentTargetKey);
       startFlipbook();
     });
   </script>

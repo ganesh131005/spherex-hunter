@@ -9,8 +9,8 @@
 | Track | Owner | Branch | Current Focus | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **System Lead** | `jokerodu` | `main` | Architecture, coordination & merge reviews | 🟢 Active |
-| **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Setting up FastAPI & Astropy cutout service | 🟡 In Progress |
-| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Interactive prototype in `/frontend/index.html` live | 🟢 Ready |
+| **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Real FITS cutout & 102-band API running on port 8000 | 🟢 Live |
+| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Blender GUI connected to live backend API | 🟢 Connected |
 | **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟡 In Progress |
 | **UX, Story & Video** | `astrodu` | `astrodu/ui-story-pitch` | Citizen science modal, slide deck & video script | 🟡 In Progress |
 
