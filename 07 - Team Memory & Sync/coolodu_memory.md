@@ -24,3 +24,6 @@
 - [x] Removed all artificial vector rings, cartoon lines, and "Dipole Vector" text overlays from canvas.
 - [x] Streamlined the interface to an authentic, minimalist Blender 5 layout: top workspace tabs (Layout, Difference, Spectrum, CDS Aladin), 40px left tool shelf, centered FITS image auto-scaled to 90% of viewport, bottom timeline playback scrubber, and right properties inspector.
 - [x] Normalized difference image calculation ($I_2 - I_1$) across surveys using ZScale and photometric scaling to produce clear optical dipoles centered at 128 mid-gray.
+
+- [x] Integrated Blender orbital pulse loading overlay (`#loadingOverlay`) to display real-time query feedback during live NASA IRSA fetches.
+- [x] Built seamless image memory preloading via `Promise.all` so images transition without screen blanking or flicker.
