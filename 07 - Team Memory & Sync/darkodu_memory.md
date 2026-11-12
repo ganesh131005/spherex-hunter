@@ -17,3 +17,7 @@
 
 - [x] Integrated live NASA IRSA Caltech FinderChart API into `cutout_engine.py` for real-time querying and downloading of authentic 2MASS and DSS2 FITS files for ANY arbitrary celestial coordinates.
 - [x] Implemented dynamic disk caching (`backend/cache/dynamic_fits/`) ensuring instant sub-200ms retrieval on repeated visits to the same coordinates.
+- [x] Added Multi-Tier Game LOD parameter (`lod: int = Query(...)`) to `/api/cutout`:
+  - Dynamically resamples FITS matrices to $600 \times 600$ (LOD 0: Hero Deep), $400 \times 400$ (LOD 1: Standard Science), or $200 \times 200$ (LOD 2: Wide Overview).
+  - Integrates Alard-Lupton & Bramich scientific difference imaging with median sky background subtraction, PSF matching ($\sigma=1.15$), photometric flux ratio scaling $S$, and photon noise floor $Z$-score mapping.
+  - Returns `lod_tier` and `lod_label` in JSON payload.

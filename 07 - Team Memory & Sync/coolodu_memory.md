@@ -27,3 +27,9 @@
 
 - [x] Integrated Blender orbital pulse loading overlay (`#loadingOverlay`) to display real-time query feedback during live NASA IRSA fetches.
 - [x] Built seamless image memory preloading via `Promise.all` so images transition without screen blanking or flicker.
+- [x] Integrated Multi-Tier Gaming Level of Detail (LOD) Engine into frontend:
+  - Dynamically calculates apparent FOV ($\text{camera.fov} / \text{camera.zoom}$).
+  - Automatically switches between LOD 2 (Wide Overview), LOD 1 (Standard Science), and LOD 0 (Hero Deep).
+  - Displays live LOD status badge in top-left viewport HUD (`#vpLOD`).
+  - Added double-buffered anti-popping cross-fade with 150ms alpha transition (`ctx.globalAlpha`) in `drawFrame()`.
+  - Connected debounced LOD updates into mouse wheel zoom, Walk Nav WASD keys, FOV dropdown, and zoom reset.
