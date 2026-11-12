@@ -273,10 +273,11 @@ def generate_clean_space_field(h=400, w=400, target_meta=None) -> tuple[np.ndarr
     
     return ep1_clean, ep2_clean, diff_scaled, vector_info
 
-def load_real_fits_cutout(target_key: str, meta: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str]:
+def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str]:
     """
     Loads authentic NASA telescope FITS files (2MASS and DSS2 Red) from disk,
     applies Astropy ZScaleInterval & AsinhStretch reduction, and computes real difference images.
+    Supports Multi-Tier Game LOD: LOD0 (600x600 deep), LOD1 (400x400 standard), LOD2 (200x200 overview).
     """
     import os
     from astropy.io import fits
@@ -293,11 +294,14 @@ def load_real_fits_cutout(target_key: str, meta: dict) -> tuple[np.ndarray, np.n
         with fits.open(p_dss2) as h2:
             d2 = np.nan_to_num(h2[0].data.astype(float))
 
-        # Resample to 400x400 display matrix
-        if d1.shape != (400, 400):
-            d1 = zoom(d1, (400.0 / d1.shape[0], 400.0 / d1.shape[1]), order=1)
-        if d2.shape != (400, 400):
-            d2 = zoom(d2, (400.0 / d2.shape[0], 400.0 / d2.shape[1]), order=1)
+        # Dynamic Game LOD Target Dimension
+        dim = 200 if lod == 2 else (600 if lod == 0 else 400)
+
+        # Resample to LOD display matrix
+        if d1.shape != (dim, dim):
+            d1 = zoom(d1, (float(dim) / d1.shape[0], float(dim) / d1.shape[1]), order=1)
+        if d2.shape != (dim, dim):
+            d2 = zoom(d2, (float(dim) / d2.shape[0], float(dim) / d2.shape[1]), order=1)
 
         # Astropy ZScale & AsinhStretch for authentic photographic contrast
         z1 = ZScaleInterval(contrast=0.25)
@@ -322,23 +326,26 @@ def load_real_fits_cutout(target_key: str, meta: dict) -> tuple[np.ndarray, np.n
         elif shift_arcsec == 0 and "barnard" in str(target_key): shift_arcsec = 5.18
         elif shift_arcsec == 0 and "epsindi" in str(target_key): shift_arcsec = 2.35
 
+        scale_factor = dim / 400.0
         vector_info = {
-            "epoch1_pos": {"x": 200, "y": 200},
-            "epoch2_pos": {"x": 200 + int(shift_arcsec / 0.45), "y": 200},
+            "epoch1_pos": {"x": int(dim / 2), "y": int(dim / 2)},
+            "epoch2_pos": {"x": int(dim / 2 + (shift_arcsec / 0.45) * scale_factor), "y": int(dim / 2)},
             "shift_arcsec": shift_arcsec,
             "is_variable": meta.get("variability", 1.0) > 1.5,
             "is_real_fits": True
         }
-        lbl1 = "NASA 2MASS Infrared FITS (J-Band 1.25 μm, Epoch 2000)"
-        lbl2 = "NASA DSS2 / SPHEREx FITS (Red Band 0.65 μm / NIR Co-add)"
+        lod_tag = "LOD 0 (Hero Deep)" if lod == 0 else ("LOD 2 (Wide Overview)" if lod == 2 else "LOD 1 (Standard Science)")
+        lbl1 = f"NASA 2MASS Infrared FITS [{lod_tag}] (J-Band 1.25 μm)"
+        lbl2 = f"NASA DSS2 / SPHEREx FITS [{lod_tag}] (Red Band / NIR Co-add)"
         return ep1_clean, ep2_clean, diff_scaled, vector_info, lbl1, lbl2
     return None
 
-def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str] | None:
+def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: int = 1) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str] | None:
     """
     Dynamically queries NASA IRSA FinderChart API in real time for any arbitrary celestial coordinates.
     Downloads authentic multi-epoch 2MASS (1998-2001) and DSS2 (1980-1995) FITS files,
     applies Astropy ZScaleInterval & AsinhStretch reduction, and computes real difference images.
+    Supports Multi-Tier Game LOD: LOD0 (600x600 deep), LOD1 (400x400 standard), LOD2 (200x200 overview).
     """
     import os, io, ssl, urllib.request, xml.etree.ElementTree as ET
     from astropy.io import fits
@@ -394,11 +401,14 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0) -> tupl
     if d1 is None or d2 is None:
         return None
 
-    # Resample to 400x400 standard matrix
-    if d1.shape != (400, 400):
-        d1 = zoom(d1, (400.0 / d1.shape[0], 400.0 / d1.shape[1]), order=1)
-    if d2.shape != (400, 400):
-        d2 = zoom(d2, (400.0 / d2.shape[0], 400.0 / d2.shape[1]), order=1)
+    # Dynamic Game LOD Target Dimension
+    dim = 200 if lod == 2 else (600 if lod == 0 else 400)
+
+    # Resample to LOD display matrix
+    if d1.shape != (dim, dim):
+        d1 = zoom(d1, (float(dim) / d1.shape[0], float(dim) / d1.shape[1]), order=1)
+    if d2.shape != (dim, dim):
+        d2 = zoom(d2, (float(dim) / d2.shape[0], float(dim) / d2.shape[1]), order=1)
 
     # Astropy ZScale & AsinhStretch for authentic photographic contrast
     z1 = ZScaleInterval(contrast=0.25)
@@ -417,18 +427,19 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0) -> tupl
     diff_scaled = compute_scientific_difference(d1, d2)
 
     vector_info = {
-        "epoch1_pos": {"x": 200, "y": 200},
-        "epoch2_pos": {"x": 200, "y": 200},
+        "epoch1_pos": {"x": int(dim / 2), "y": int(dim / 2)},
+        "epoch2_pos": {"x": int(dim / 2), "y": int(dim / 2)},
         "shift_arcsec": 0.0,
         "is_variable": False,
         "is_real_fits": True
     }
-    lbl1 = "Live NASA 2MASS Infrared FITS (J-Band 1.25 μm, Epoch 2000)"
-    lbl2 = "Live NASA DSS2 Optical FITS (Red Band 0.65 μm / SPHEREx Baseline)"
+    lod_tag = "LOD 0 (Hero Deep)" if lod == 0 else ("LOD 2 (Wide Overview)" if lod == 2 else "LOD 1 (Standard Science)")
+    lbl1 = f"Live NASA 2MASS Infrared FITS [{lod_tag}] (J-Band 1.25 μm)"
+    lbl2 = f"Live NASA DSS2 Optical FITS [{lod_tag}] (Red Band / SPHEREx Baseline)"
     return ep1_clean, ep2_clean, diff_scaled, vector_info, lbl1, lbl2
 
-def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key: str = None) -> dict:
-    """Fetches real astronomical FITS data from NASA archives or live SkyView."""
+def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key: str = None, lod: int = 1) -> dict:
+    """Fetches real astronomical FITS data from NASA archives or live SkyView with Game LOD tiering."""
     is_benchmark = target_key in BENCHMARKS
     if is_benchmark:
         meta = BENCHMARKS[target_key]
@@ -447,14 +458,15 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         }
     
     # 1. Check for authentic cached NASA FITS cutouts
-    fits_result = load_real_fits_cutout(target_key, meta) if target_key else None
+    fits_result = load_real_fits_cutout(target_key, meta, lod=lod) if target_key else None
     
     # 2. If no target_key (custom coordinates typed by user), query NASA IRSA in real time!
     if fits_result is None:
-        fits_result = fetch_live_irsa_fits(ra, dec, fov_arcmin)
+        fits_result = fetch_live_irsa_fits(ra, dec, fov_arcmin, lod=lod)
         if fits_result is not None:
             survey_title = "Live NASA IRSA Caltech Real-Time FITS"
     
+    dim = 200 if lod == 2 else (600 if lod == 0 else 400)
     if fits_result is not None:
         ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2 = fits_result
         if target_key:
@@ -463,7 +475,7 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             survey_title = "Live NASA IRSA Caltech Real-Time FITS"
     else:
         # Fallback to coordinate-seeded astronomical field if internet offline
-        ep1_arr, ep2_arr, diff_arr, vector_info = generate_clean_space_field(400, 400, meta)
+        ep1_arr, ep2_arr, diff_arr, vector_info = generate_clean_space_field(dim, dim, meta)
         lbl1 = "SPHEREx Pass 1 (May 2025)"
         lbl2 = "SPHEREx Pass 2 (Nov 2025)"
         survey_title = meta.get("survey", "WISE 4.6 / SPHEREx")
@@ -475,6 +487,8 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     return {
         "status": "success",
         "target": meta["name"],
+        "lod_tier": lod,
+        "lod_label": "LOD 0 (Hero Deep)" if lod == 0 else ("LOD 2 (Wide Overview)" if lod == 2 else "LOD 1 (Standard Science)"),
         "coordinates": {
             "ra_deg": ra,
             "dec_deg": dec,

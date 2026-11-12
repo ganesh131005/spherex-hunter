@@ -122,7 +122,8 @@ def get_cutout(
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal ('08h55m10.831s')"),
     dec: str = Query(..., description="Declination in decimal deg or sexagesimal ('-7d14m42.53s')"),
     fov: float = Query(3.0, description="Field of View in arcminutes"),
-    target: Optional[str] = Query(None, description="Benchmark target key (wise0855, barnard, etc.)")
+    target: Optional[str] = Query(None, description="Benchmark target key (wise0855, barnard, etc.)"),
+    lod: int = Query(1, description="Game Level of Detail tier: 0 (Hero Deep), 1 (Standard Science), 2 (Wide Overview)")
 ):
     """
     Fetches real astronomical data for the given coordinates, generates Epoch 1 & Epoch 2
@@ -130,7 +131,7 @@ def get_cutout(
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
-        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
+        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target, lod=lod)
         return data
     except HTTPException:
         raise

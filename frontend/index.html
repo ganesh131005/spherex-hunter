@@ -240,11 +240,12 @@
           <span class="text-gray-400">|</span>
           <span id="vpTargetName" class="text-white">WISE 0855-0714</span>
         </div>
-        <div class="text-[9px] text-gray-400">
-          RA: <span id="vpRA" class="text-gray-200">133.79513°</span>
-          Dec: <span id="vpDec" class="text-gray-200">-7.24515°</span>
-          FOV: <span id="vpFOV" class="text-gray-200">3.00'</span>
-          Zoom: <span id="vpZoom" class="text-gray-200">1.0x</span>
+        <div class="text-[9px] text-gray-400 flex items-center gap-2">
+          <span>RA: <span id="vpRA" class="text-gray-200">133.79513°</span></span>
+          <span>Dec: <span id="vpDec" class="text-gray-200">-7.24515°</span></span>
+          <span>FOV: <span id="vpFOV" class="text-gray-200">3.00'</span></span>
+          <span>Zoom: <span id="vpZoom" class="text-gray-200">1.0x</span></span>
+          <span class="pl-1 border-l border-blender-700">LOD: <span id="vpLOD" class="text-cyan-300 font-bold">LOD 1 (Std)</span></span>
         </div>
       </div>
 
@@ -610,6 +611,16 @@
     let realDiffImg = null;
     let activeCutoutData = null;
 
+    // MULTI-TIERED GAME LOD ENGINE & DOUBLE-BUFFERED CROSS-FADE
+    let currentLOD = 1; // 0: Hero Deep (600x600), 1: Standard Science (400x400), 2: Wide Overview (200x200)
+    let isLODStreaming = false;
+    let lodDebounceTimer = null;
+    let prevEpoch1Img = null;
+    let prevEpoch2Img = null;
+    let prevDiffImg = null;
+    let crossFadeAlpha = 1.0;
+    let crossFadeAnimId = null;
+
     // CAMERA VIEWPORT KINEMATICS (Interactive Walk Nav & Slewing)
     const camera = {
       ra: 133.79513,    // degrees
@@ -693,8 +704,18 @@
     }
 
     // =========================================================================
-    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Clean, Scaled, Zero Cartoon Gimmicks)
+    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Multi-Tier Game LOD Cross-Fade)
     // =========================================================================
+    function drawImageFit(img, w, h) {
+      if (!img || !img.complete) return;
+      const dw = img.width || 400;
+      const dh = img.height || 400;
+      const fitScale = Math.min((w * 0.90) / dw, (h * 0.90) / dh);
+      const rw = dw * fitScale;
+      const rh = dh * fitScale;
+      ctx.drawImage(img, -rw / 2, -rh / 2, rw, rh);
+    }
+
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
@@ -709,32 +730,28 @@
       ctx.scale(camera.zoom, camera.zoom);
       ctx.imageSmoothingEnabled = false; // Sharp detector pixels!
 
-      if (diffMode && realDiffImg && realDiffImg.complete) {
+      if (diffMode) {
         // Difference Image Mode (Authentic numerical subtraction I2 - I1)
-        const img = realDiffImg;
-        const dw = img.width || 400;
-        const dh = img.height || 400;
-
-        // Auto-scale to fill 90% of viewport
-        const fitScale = Math.min((w * 0.90) / dw, (h * 0.90) / dh);
-        const rw = dw * fitScale;
-        const rh = dh * fitScale;
-
-        ctx.drawImage(img, -rw / 2, -rh / 2, rw, rh);
-
+        if (prevDiffImg && crossFadeAlpha < 1.0) {
+          ctx.globalAlpha = Math.max(0, 1.0 - crossFadeAlpha);
+          drawImageFit(prevDiffImg, w, h);
+        }
+        if (realDiffImg && realDiffImg.complete) {
+          ctx.globalAlpha = crossFadeAlpha;
+          drawImageFit(realDiffImg, w, h);
+        }
       } else {
         // Flipbook Blink Mode (Epoch 1 <-> Epoch 2)
+        const activePrev = (currentFrame === 1) ? prevEpoch1Img : prevEpoch2Img;
         const activeImg = (currentFrame === 1) ? realEpoch1Img : realEpoch2Img;
+
+        if (activePrev && crossFadeAlpha < 1.0) {
+          ctx.globalAlpha = Math.max(0, 1.0 - crossFadeAlpha);
+          drawImageFit(activePrev, w, h);
+        }
         if (activeImg && activeImg.complete) {
-          const dw = activeImg.width || 400;
-          const dh = activeImg.height || 400;
-
-          // Auto-scale to fill 90% of viewport
-          const fitScale = Math.min((w * 0.90) / dw, (h * 0.90) / dh);
-          const rw = dw * fitScale;
-          const rh = dh * fitScale;
-
-          ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
+          ctx.globalAlpha = crossFadeAlpha;
+          drawImageFit(activeImg, w, h);
         }
       }
 
@@ -764,6 +781,8 @@
       const inputDec = document.getElementById('inputDec');
       if (document.activeElement !== inputRA) inputRA.value = coords.ra.toFixed(5);
       if (document.activeElement !== inputDec) inputDec.value = coords.dec.toFixed(5);
+
+      checkAndTriggerLODUpdate();
     }
 
     // =========================================================================
@@ -808,17 +827,118 @@
     }
 
     // =========================================================================
+    // GAME LEVEL OF DETAIL (LOD) CONTROLLER & ANTI-POPPING CROSS-FADE
+    // =========================================================================
+    function getTargetLODFromZoom() {
+      const effFov = camera.fov / camera.zoom;
+      if (effFov > 5.5) return 2; // LOD 2: Wide Overview (200x200 lightweight tile)
+      if (effFov < 1.8) return 0; // LOD 0: Hero Deep (600x600 unbinned sub-pixel matrix)
+      return 1;                   // LOD 1: Standard Science (400x400 standard tile)
+    }
+
+    function updateLODBadge(lod) {
+      const el = document.getElementById('vpLOD');
+      if (!el) return;
+      if (lod === 0) {
+        el.innerText = "LOD 0 (Hero 600px)";
+        el.className = "text-purple-300 font-bold";
+      } else if (lod === 2) {
+        el.innerText = "LOD 2 (Wide 200px)";
+        el.className = "text-amber-300 font-bold";
+      } else {
+        el.innerText = "LOD 1 (Std 400px)";
+        el.className = "text-cyan-300 font-bold";
+      }
+    }
+
+    function startLODCrossFade() {
+      if (crossFadeAnimId) cancelAnimationFrame(crossFadeAnimId);
+      crossFadeAlpha = 0.0;
+      const startTime = performance.now();
+      const duration = 150; // 150ms smooth alpha cross-dissolve (prevents pop-in)
+
+      function stepFade(now) {
+        const elapsed = now - startTime;
+        crossFadeAlpha = Math.min(1.0, elapsed / duration);
+        drawFrame();
+        if (crossFadeAlpha < 1.0) {
+          crossFadeAnimId = requestAnimationFrame(stepFade);
+        } else {
+          prevEpoch1Img = null;
+          prevEpoch2Img = null;
+          prevDiffImg = null;
+        }
+      }
+      crossFadeAnimId = requestAnimationFrame(stepFade);
+    }
+
+    async function streamLODTile(targetLODTier) {
+      if (isLODStreaming) return;
+      isLODStreaming = true;
+      const reqLOD = targetLODTier;
+
+      try {
+        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${camera.fov}&lod=${reqLOD}`;
+        if (currentTargetKey) url += `&target=${currentTargetKey}`;
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        // Preload before swapping (Zero screen tear / flicker)
+        const [newImg1, newImg2, newImgDiff] = await Promise.all([
+          preloadImage(data.epochs[0].image_data),
+          preloadImage(data.epochs[1].image_data),
+          preloadImage(data.difference_image.image_data)
+        ]);
+
+        if (newImg1 && newImg2) {
+          // Double buffer previous images for smooth cross-fade
+          prevEpoch1Img = realEpoch1Img;
+          prevEpoch2Img = realEpoch2Img;
+          prevDiffImg = realDiffImg;
+
+          realEpoch1Img = newImg1;
+          realEpoch2Img = newImg2;
+          realDiffImg = newImgDiff;
+          currentLOD = reqLOD;
+
+          updateLODBadge(currentLOD);
+          startLODCrossFade();
+        }
+      } catch (err) {
+        console.warn("LOD streaming background notice:", err);
+      } finally {
+        isLODStreaming = false;
+      }
+    }
+
+    function checkAndTriggerLODUpdate() {
+      const newLOD = getTargetLODFromZoom();
+      updateLODBadge(newLOD);
+      if (newLOD !== currentLOD) {
+        if (lodDebounceTimer) clearTimeout(lodDebounceTimer);
+        lodDebounceTimer = setTimeout(() => {
+          streamLODTile(newLOD);
+        }, 220); // 220ms debounce for rapid zoom wheel / WASD flight
+      }
+    }
+
+    // =========================================================================
     // LOAD REAL NASA FITS SKY CUTOUT FROM BACKEND (Seamless Real-Time Loader)
     // =========================================================================
     async function loadSkyCutout(ra, dec, targetKey = null, targetName = null, fov = 3.0) {
       const isCustom = !targetKey;
+      currentLOD = getTargetLODFromZoom();
+      updateLODBadge(currentLOD);
+
       showLoading(
         isCustom ? `Fetching Sky Tile (RA ${ra}, Dec ${dec})` : `Loading ${targetName || 'Target'} FITS`,
         isCustom ? "Querying live NASA IRSA multi-epoch FITS servers (2MASS & DSS2)..." : "Calibrating Astropy ZScale multi-epoch FITS images..."
       );
 
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${fov}`;
+        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${fov}&lod=${currentLOD}`;
         if (targetKey) url += `&target=${targetKey}`;
         
         const res = await fetch(url);
