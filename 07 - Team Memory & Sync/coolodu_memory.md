@@ -38,3 +38,9 @@
   - Segmented workspace pill bar with Lucide icons (`Blink`, `Difference`, `Spectra`, `Aladin Sky`).
   - Target benchmark bar with `whitespace-nowrap` single-line buttons preventing awkward vertical wrapping on any screen width.
   - Symmetrical celestial coordinates capsule (`RA`, `Dec`, `FOV`) with high-contrast `Fetch` pill and pulsing `NASA IRSA` status badge.
+- [x] Implemented Multi-Tile Spatial Near-Image Streamer & Sky Mosaic Grid for Zoom Out:
+  - Dynamically detects when viewport is zoomed out (`camera.zoom < 0.95`, reaching 0.4x).
+  - Renders adjacent celestial chunks in a $3 \times 3$ or $5 \times 5$ spatial matrix around the center tile.
+  - Asynchronously queries adjacent near coordinates from NASA IRSA (`fetchNeighborTile(dx, dy)`).
+  - Renders continuous Poisson-noise and stellar PSF distribution so there is zero empty black void when zoomed out.
+  - Displays dynamic HUD status badge `#vpMosaicBadge`: `Mosaic: 3×3 Near Tiles` or `Mosaic: 5×5 Near Tiles`.
