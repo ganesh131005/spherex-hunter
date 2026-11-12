@@ -15,3 +15,4 @@
 - [x] Added 5 NASA benchmark target quick-preset buttons.
 - [x] Added 102-band infrared Spectral Energy Distribution (SED) chart with Chart.js.
 - [x] Added Citizen Science "Flag Discovery" modal and URL deep-link generator.
+- [x] Created Figma Design file & imported runnable Code Layer: [Figma Draft](https://www.figma.com/design/BQEMGXkZdySOeq9JIi3HK1) (Node `2:3`).
