@@ -26,6 +26,9 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Spec-Kit Execution]** Initialized full Spec-Kit engineering workflow under `.specify/` and `specs/001-spherex-sky-viewer/` (`constitution.md`, `spec.md`, `plan.md`, `research.md`, `contracts/`, `tasks.md`, `checklists/requirements.md`).
+- **[NASA Benchmarks Complete]** All 5 NASA benchmark targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis) verified with Astropy sexagesimal coordinate parsing, multi-epoch cutouts, difference imaging dipoles ($I_2 - I_1$), and 102-band infrared spectroscopy.
+- **[Universal Embeddability]** Added URL deep-linking (`?ra=...&dec=...&fov=...`) and user-selectable Field of View (1.0' to 15.0').
 - **[System Setup]** Obsidian Vault initialized with 5-member team structure, memory logs, and automated scripts.
 - **[DevOps]** Branching rules activated: Only `jokerodu` merges into `main`.
 - **[Astro-Backend]** FastAPI backend serving clean noise-suppressed cutouts and 102-band infrared spectra for any sky coordinate.
