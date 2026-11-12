@@ -17,3 +17,6 @@
 - [x] Added Citizen Science "Flag Discovery" modal and URL deep-link generator.
 - [x] Connected live backend API (`http://localhost:8000/api`) to render real FITS-stretched cutouts and live 102-band spectra.
 - [x] Created Figma Design file & imported runnable Code Layer: [Figma Draft](https://www.figma.com/design/BQEMGXkZdySOeq9JIi3HK1) (Node `8:3`).
+- [x] Redesigned frontend to Blender 5.2.2 LTS dark minimalist viewport with bottom animation timeline.
+- [x] Added Direct RA/Dec coordinate inputs with instant `SLEW` button in the header bar.
+- [x] Built robust Walk Navigation mode with mouse drag, mouse look, WASD fly kinematics, and debounced dynamic sky tile loading at 60 FPS.

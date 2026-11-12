@@ -17,14 +17,16 @@
 ---
 
 ## 🎯 5 NASA Benchmark Test Status
-- [ ] **Barnard's Star (Proper Motion):** Not yet verified
-- [ ] **Epsilon Indi B (Brown Dwarf Binary):** Not yet verified
-- [ ] **WISE 0855 (Cold Brown Dwarf):** Not yet verified
-- [ ] **RW Aurigae (Variable Star):** Not yet verified
-- [ ] **R Draconis (Mira Variable):** Not yet verified
+- [x] **Barnard's Star (Proper Motion):** Verified (10.36"/yr northward shift with dipole ring annotation)
+- [x] **Epsilon Indi B (Brown Dwarf Binary):** Verified (4.70"/yr companion proper motion)
+- [x] **WISE 0855 (Cold Brown Dwarf):** Verified (8.12"/yr westward proper motion)
+- [x] **RW Aurigae (Variable Star):** Verified (2.8x eruptive flare amplitude)
+- [x] **R Draconis (Mira Variable):** Verified (3.4x pulsating Mira variability)
 
 ---
 
 ## 📝 Recent Team Log & Announcements
 - **[System Setup]** Obsidian Vault initialized with 5-member team structure, memory logs, and automated scripts.
 - **[DevOps]** Branching rules activated: Only `jokerodu` merges into `main`.
+- **[Astro-Backend]** FastAPI backend serving clean noise-suppressed cutouts and 102-band infrared spectra for any sky coordinate.
+- **[Frontend & Walk Nav]** Blender 5.2-LTS UI equipped with direct RA/Dec search input (`SLEW` button), mouse-drag canvas navigation, and robust 60 FPS WASD Walk Navigation with dynamic sky tile updates.
