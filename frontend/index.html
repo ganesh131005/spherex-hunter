@@ -212,6 +212,24 @@
       <!-- INTERACTIVE CDS STRASBOURG ALADIN LITE OBSERVATORY -->
       <div id="aladinContainer" class="absolute inset-0 hidden z-10 w-full h-full"></div>
 
+      <!-- BLENDER VIEWPORT TELEMETRY LOADING OVERLAY -->
+      <div id="loadingOverlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 pointer-events-none opacity-0">
+        <div class="relative w-12 h-12 flex items-center justify-center">
+          <div class="w-12 h-12 rounded-full border-2 border-blender-orange/20 border-t-blender-orange animate-spin"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-blender-orange animate-ping absolute"></div>
+          <div class="w-2 h-2 rounded-full bg-white absolute"></div>
+        </div>
+        <div class="text-center font-mono space-y-1">
+          <div class="text-white text-xs font-semibold tracking-wide flex items-center gap-1.5 justify-center">
+            <span class="w-1.5 h-1.5 rounded-full bg-blender-orange animate-pulse"></span>
+            <span id="loadingTitleText">Querying Real NASA IRSA Database...</span>
+          </div>
+          <div id="loadingDetailText" class="text-gray-400 text-[10px]">
+            Fetching live multi-epoch FITS telescope data
+          </div>
+        </div>
+      </div>
+
       <!-- TOP-LEFT BLENDER VIEWPORT INFO (Clean & Minimalist) -->
       <div class="absolute top-2.5 left-2.5 pointer-events-none text-[11px] font-mono space-y-0.5 bg-blender-900/80 backdrop-blur px-2.5 py-1.5 rounded border border-blender-700 text-gray-300 shadow">
         <div class="text-white font-medium flex items-center gap-1.5">
@@ -749,59 +767,108 @@
     }
 
     // =========================================================================
-    // LOAD REAL NASA FITS SKY CUTOUT FROM BACKEND
+    // SEAMLESS FITS IMAGE PRELOADER & LOADING OVERLAY
+    // =========================================================================
+    function preloadImage(src) {
+      return new Promise((resolve) => {
+        if (!src) return resolve(null);
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = src;
+      });
+    }
+
+    function showLoading(title, detail) {
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) {
+        document.getElementById('loadingTitleText').innerText = title || "Querying Real NASA IRSA Database...";
+        document.getElementById('loadingDetailText').innerText = detail || "Fetching live multi-epoch FITS telescope data";
+        overlay.classList.remove('opacity-0', 'pointer-events-none');
+        overlay.classList.add('opacity-100', 'pointer-events-auto');
+      }
+      const btn = document.getElementById('btnGoCoords');
+      if (btn) {
+        btn.innerHTML = `<span class="animate-spin inline-block w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full"></span>`;
+        btn.disabled = true;
+      }
+    }
+
+    function hideLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      if (overlay) {
+        overlay.classList.remove('opacity-100', 'pointer-events-auto');
+        overlay.classList.add('opacity-0', 'pointer-events-none');
+      }
+      const btn = document.getElementById('btnGoCoords');
+      if (btn) {
+        btn.innerText = "Fetch";
+        btn.disabled = false;
+      }
+    }
+
+    // =========================================================================
+    // LOAD REAL NASA FITS SKY CUTOUT FROM BACKEND (Seamless Real-Time Loader)
     // =========================================================================
     async function loadSkyCutout(ra, dec, targetKey = null, targetName = null, fov = 3.0) {
+      const isCustom = !targetKey;
+      showLoading(
+        isCustom ? `Fetching Sky Tile (RA ${ra}, Dec ${dec})` : `Loading ${targetName || 'Target'} FITS`,
+        isCustom ? "Querying live NASA IRSA multi-epoch FITS servers (2MASS & DSS2)..." : "Calibrating Astropy ZScale multi-epoch FITS images..."
+      );
+
       try {
         let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${fov}`;
         if (targetKey) url += `&target=${targetKey}`;
         
         const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          activeCutoutData = data;
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        
+        const data = await res.json();
+        activeCutoutData = data;
 
-          if (data.coordinates) {
-            camera.ra = data.coordinates.ra_deg;
-            camera.dec = data.coordinates.dec_deg;
-            camera.fov = data.coordinates.fov_arcmin || fov;
+        if (data.coordinates) {
+          camera.ra = data.coordinates.ra_deg;
+          camera.dec = data.coordinates.dec_deg;
+          camera.fov = data.coordinates.fov_arcmin || fov;
+        }
+
+        // Seamless image decoding in memory before viewport swap (prevents blank screen!)
+        const [img1, img2, imgDiff] = await Promise.all([
+          preloadImage(data.epochs[0].image_data),
+          preloadImage(data.epochs[1].image_data),
+          preloadImage(data.difference_image.image_data)
+        ]);
+
+        if (img1) realEpoch1Img = img1;
+        if (img2) realEpoch2Img = img2;
+        if (imgDiff) realDiffImg = imgDiff;
+
+        const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
+        document.getElementById('vpTargetName').innerText = title;
+        document.getElementById('outlinerTarget').innerText = title;
+
+        updateFrameLabel();
+        updateCoordinateReadouts();
+        drawFrame();
+
+        if (aladinInstance) {
+          aladinInstance.gotoRaDec(camera.ra, camera.dec);
+        }
+
+        if (data.telemetry) {
+          document.getElementById('outlinerTargetType').innerText = data.telemetry.object_type || "Source";
+          if (data.telemetry.proper_motion_mas_yr !== undefined) {
+            document.getElementById('propPM').innerText = `${data.telemetry.proper_motion_mas_yr.toFixed(2)} "/yr`;
           }
-
-          realEpoch1Img = new Image();
-          realEpoch1Img.onload = () => drawFrame();
-          realEpoch1Img.src = data.epochs[0].image_data;
-
-          realEpoch2Img = new Image();
-          realEpoch2Img.onload = () => drawFrame();
-          realEpoch2Img.src = data.epochs[1].image_data;
-
-          realDiffImg = new Image();
-          realDiffImg.onload = () => drawFrame();
-          realDiffImg.src = data.difference_image.image_data;
-
-          const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
-          document.getElementById('vpTargetName').innerText = title;
-          document.getElementById('outlinerTarget').innerText = title;
-
-          updateFrameLabel();
-          updateCoordinateReadouts();
-
-          if (aladinInstance) {
-            aladinInstance.gotoRaDec(camera.ra, camera.dec);
-          }
-
-          if (data.telemetry) {
-            document.getElementById('outlinerTargetType').innerText = data.telemetry.object_type || "Source";
-            if (data.telemetry.proper_motion_mas_yr !== undefined) {
-              document.getElementById('propPM').innerText = `${data.telemetry.proper_motion_mas_yr.toFixed(2)} "/yr`;
-            }
-            if (data.telemetry.estimated_temp_k) {
-              document.getElementById('propTemp').innerText = `~${data.telemetry.estimated_temp_k} K`;
-            }
+          if (data.telemetry.estimated_temp_k) {
+            document.getElementById('propTemp').innerText = `~${data.telemetry.estimated_temp_k} K`;
           }
         }
       } catch (err) {
         console.error("Failed to load real FITS cutout:", err);
+      } finally {
+        hideLoading();
       }
     }
 

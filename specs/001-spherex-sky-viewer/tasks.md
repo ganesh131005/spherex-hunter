@@ -44,3 +44,12 @@
 - [x] **Task 5.1:** Verify API response for arbitrary coordinate queries via `curl.exe`.
 - [x] **Task 5.2:** Verify live browser devtools execution at `http://127.0.0.1:8000/app/index.html` with zero console errors.
 - [x] **Task 5.3:** Validate flipbook animation, difference mode dipole appearance, and spectrum chart rendering for all 5 NASA benchmark targets.
+
+---
+
+## Phase 6: Real-Time Dynamic Astronomical Data Ingestion & Seamless Loading
+- [x] **Task 6.1:** Implement live NASA IRSA FinderChart real-time FITS query client in `cutout_engine.py` for arbitrary user coordinates, fetching live 2MASS J-Band (Epoch 1) and DSS2 Red (Epoch 2).
+- [x] **Task 6.2:** Implement dynamic disk caching in `backend/cache/dynamic_fits/` to store fetched cutouts for seamless instant retrieval on repeated visits.
+- [x] **Task 6.3:** Build a sleek, minimalist Blender loading overlay (orbital pulse spinner with status message `Fetching live NASA FITS data...`) in `frontend/index.html`.
+- [x] **Task 6.4:** Optimize frontend state management so that during fetch delays, the previous frame remains visible behind the loading spinner, and smoothly swaps when new FITS frames arrive.
+- [x] **Task 6.5:** Verify live dynamic coordinate queries (e.g. typing arbitrary celestial coordinates) load real FITS images with zero gimmicks.
