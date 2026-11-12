@@ -176,13 +176,20 @@ def generate_clean_space_field(h=400, w=400, target_meta=None) -> tuple[np.ndarr
     # 1. Base sky field (very low smooth dark background)
     ep1 = np.full((h, w), 2.0, dtype=float)
     
-    # 2. Add realistic background stars (Airy Gaussians)
-    np.random.seed(1337)
-    for _ in range(35):
-        y = np.random.randint(20, h - 20)
-        x = np.random.randint(20, w - 20)
-        peak = np.random.uniform(40.0, 300.0)
-        sigma = np.random.uniform(1.2, 2.4)
+    # 2. Add realistic background stars (Airy Gaussians) seeded by exact celestial coordinates
+    import hashlib
+    ra_val = float(meta.get("ra", 133.79513))
+    dec_val = float(meta.get("dec", -7.24515))
+    coord_hash = hashlib.sha256(f"{ra_val:.4f}_{dec_val:.4f}".encode("utf-8")).hexdigest()
+    seed = int(coord_hash[:8], 16) % (2**31 - 1)
+    rng = np.random.RandomState(seed)
+    
+    num_stars = rng.randint(25, 45)
+    for _ in range(num_stars):
+        y = rng.randint(20, h - 20)
+        x = rng.randint(20, w - 20)
+        peak = rng.uniform(40.0, 320.0)
+        sigma = rng.uniform(1.2, 2.5)
         
         yy, xx = np.ogrid[-8:9, -8:9]
         kernel = peak * np.exp(-(xx**2 + yy**2) / (2 * sigma**2))
@@ -207,13 +214,17 @@ def generate_clean_space_field(h=400, w=400, target_meta=None) -> tuple[np.ndarr
     shift_x = int(round((pm_ra / 1000.0 * 0.5) / 0.45))
     shift_y = int(round((pm_dec / 1000.0 * 0.5) / 0.45))
     
-    # If static or variable, center it
+    # If static or variable, check benchmark presets
     if shift_x == 0 and shift_y == 0 and "wise" in meta["name"].lower():
         shift_x, shift_y = -18, 6  # ~8.1" western motion for WISE 0855
     elif shift_x == 0 and shift_y == 0 and "barnard" in meta["name"].lower():
         shift_x, shift_y = -2, 22   # ~10.3" northern motion for Barnard's Star
     elif shift_x == 0 and shift_y == 0 and "epsindi" in meta["name"].lower():
         shift_x, shift_y = 12, -8   # Companion proper motion
+    elif shift_x == 0 and shift_y == 0 and meta.get("is_custom", False):
+        # Deterministic simulated motion candidate for custom survey coordinates
+        shift_x = int(rng.choice([-14, -10, 8, 12, 16]))
+        shift_y = int(rng.choice([-8, -4, 6, 10, 14]))
         
     # Epoch 1 target position (cx - shift_x//2, cy - shift_y//2)
     pos1 = (cx - shift_x // 2, cy - shift_y // 2)
@@ -259,17 +270,22 @@ def generate_clean_space_field(h=400, w=400, target_meta=None) -> tuple[np.ndarr
 
 def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key: str = None) -> dict:
     """Fetches and cleans astronomical data to eliminate CRT noise static."""
-    meta = BENCHMARKS.get(target_key, {
-        "name": f"Target ({ra:.4f}, {dec:.4f})",
-        "ra": ra,
-        "dec": dec,
-        "survey": "WISE 4.6",
-        "pm_ra_mas": 0.0,
-        "pm_dec_mas": 0.0,
-        "variability": 1.0,
-        "temp_k": 3000,
-        "type": "Astronomical Source"
-    })
+    is_benchmark = target_key in BENCHMARKS
+    if is_benchmark:
+        meta = BENCHMARKS[target_key]
+    else:
+        meta = {
+            "name": f"Sky Field (RA {ra:.4f}°, Dec {dec:+.4f}°)",
+            "ra": ra,
+            "dec": dec,
+            "survey": "SPHEREx / WISE 4.6",
+            "pm_ra_mas": 0.0,
+            "pm_dec_mas": 0.0,
+            "variability": 1.0,
+            "temp_k": 3000,
+            "type": "Celestial Field Survey",
+            "is_custom": True
+        }
     
     # Generate clean, noise-free astronomical frames with clear proper motion
     ep1_arr, ep2_arr, diff_arr, vector_info = generate_clean_space_field(400, 400, meta)
