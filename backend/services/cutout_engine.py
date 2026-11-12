@@ -457,14 +457,19 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             "is_custom": True
         }
     
-    # 1. Check for authentic cached NASA FITS cutouts
-    fits_result = load_real_fits_cutout(target_key, meta, lod=lod) if target_key else None
+    # 1. Check for authentic cached NASA FITS cutouts (for standard <= 4.0' FOV)
+    fits_result = None
+    if target_key and fov_arcmin <= 4.0:
+        fits_result = load_real_fits_cutout(target_key, meta, lod=lod)
     
-    # 2. If no target_key (custom coordinates typed by user), query NASA IRSA in real time!
+    # 2. If wide FOV requested (> 4.0' / zoomed out overview) or custom coords, query NASA IRSA for surrounding field!
     if fits_result is None:
         fits_result = fetch_live_irsa_fits(ra, dec, fov_arcmin, lod=lod)
         if fits_result is not None:
-            survey_title = "Live NASA IRSA Caltech Real-Time FITS"
+            survey_title = f"Live NASA IRSA Caltech Wide-Field FITS ({fov_arcmin:.1f}' Surrounding Field)"
+        elif target_key:
+            # Fallback to local benchmark cutout if IRSA times out
+            fits_result = load_real_fits_cutout(target_key, meta, lod=lod)
     
     dim = 200 if lod == 2 else (600 if lod == 0 else 400)
     if fits_result is not None:
