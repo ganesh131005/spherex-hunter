@@ -89,75 +89,90 @@
   <!-- ========================================================================= -->
   <!-- 1. TOP BLENDER WORKSPACE HEADER                                           -->
   <!-- ========================================================================= -->
-  <header class="h-8 bg-blender-900 border-b border-blender-700 px-2 flex items-center justify-between z-30 shrink-0 text-[11px]">
+  <header class="h-10 bg-blender-900 border-b border-blender-700 px-3 flex items-center justify-between z-30 shrink-0 text-[11px] gap-2 shadow-sm">
     
     <!-- Left: Blender Branding & Workspace Tabs -->
-    <div class="flex items-center gap-1.5">
+    <div class="flex items-center gap-2 shrink-0">
       <!-- App Icon / Brand -->
-      <div class="flex items-center gap-1 pr-2 border-r border-blender-700">
-        <div class="w-4 h-4 rounded bg-blender-orange flex items-center justify-center font-bold text-white text-[10px] shadow-sm">
+      <div class="flex items-center gap-1.5 pr-2.5 border-r border-blender-700/80">
+        <div class="w-5 h-5 rounded bg-gradient-to-br from-amber-500 to-blender-orange flex items-center justify-center font-bold text-white text-[11px] shadow-sm">
           S
         </div>
-        <span class="font-semibold text-gray-200">SPHEREx Hunter</span>
-        <span class="text-[9px] text-gray-400 font-mono">5.2 LTS</span>
+        <div class="flex items-baseline gap-1">
+          <span class="font-bold text-white tracking-wide text-xs">SPHEREx</span>
+          <span class="text-blender-orange font-medium text-[11px]">Hunter</span>
+        </div>
       </div>
 
       <!-- Blender Workspace Mode Tabs -->
-      <div class="flex items-center gap-0.5">
-        <button id="wsBlink" class="blender-btn blender-btn-active px-2.5 py-0.5 rounded text-[11px] font-medium" title="Multi-Epoch Flipbook Blink Comparator">
-          Layout (Blink)
+      <div class="flex items-center bg-blender-950/80 p-0.5 rounded-md border border-blender-700/80 gap-0.5 shadow-inner">
+        <button id="wsBlink" class="blender-btn blender-btn-active px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Multi-Epoch Flipbook Blink Comparator">
+          <i data-lucide="split" class="w-3 h-3 text-cyan-300"></i>
+          <span>Blink</span>
         </button>
-        <button id="wsDiff" class="blender-btn px-2.5 py-0.5 rounded text-[11px] font-medium" title="Numerical Image Subtraction (I₂ - I₁)">
-          Difference (I₂ - I₁)
+        <button id="wsDiff" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Numerical Image Subtraction (I₂ - I₁)">
+          <i data-lucide="layers" class="w-3 h-3 text-amber-400"></i>
+          <span>Difference</span>
         </button>
-        <button id="wsSpec" class="blender-btn px-2.5 py-0.5 rounded text-[11px] font-medium" title="102-Band SPHEREx Spectroscopy">
-          Spectrum (102 Bands)
+        <button id="wsSpec" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="102-Band SPHEREx Spectroscopy">
+          <i data-lucide="activity" class="w-3 h-3 text-emerald-400"></i>
+          <span>Spectra</span>
         </button>
-        <button id="wsAladin" class="blender-btn px-2.5 py-0.5 rounded text-[11px] font-medium" title="Interactive CDS Strasbourg Aladin Lite">
-          CDS Aladin
+        <button id="wsAladin" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Interactive CDS Strasbourg Aladin Lite">
+          <i data-lucide="globe" class="w-3 h-3 text-blue-400"></i>
+          <span>Aladin Sky</span>
         </button>
       </div>
     </div>
 
     <!-- Center: Preset Astronomical Benchmarks -->
-    <div class="flex items-center gap-1">
-      <span class="text-[10px] text-gray-400 uppercase font-mono mr-1">Targets:</span>
-      <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono" data-target="wise0855">WISE 0855</button>
-      <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono" data-target="barnard">Barnard's Star</button>
-      <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono" data-target="epsindi">Eps Indi B</button>
-      <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono" data-target="rwaur">RW Aurigae</button>
-      <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono" data-target="rdraconis">R Draconis</button>
+    <div class="flex items-center gap-1 bg-blender-950/80 p-0.5 px-2 rounded-md border border-blender-700/80 shadow-inner overflow-x-auto shrink min-w-0">
+      <span class="text-[9px] text-gray-400 uppercase font-mono flex items-center gap-1 select-none pr-1.5 border-r border-blender-700/60 shrink-0">
+        <i data-lucide="crosshair" class="w-3 h-3 text-blender-orange"></i>
+        <span>Targets</span>
+      </span>
+      <div class="flex items-center gap-0.5 shrink-0">
+        <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="wise0855">WISE 0855</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="barnard">Barnard's Star</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="epsindi">Eps Indi B</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rwaur">RW Aurigae</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rdraconis">R Draconis</button>
+      </div>
     </div>
 
     <!-- Right: Coordinates & Live Telemetry Pill -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 shrink-0">
       <!-- Direct Coordinate Inputs -->
-      <div class="flex items-center gap-1 bg-blender-850 px-1 py-0.5 rounded border border-blender-700 font-mono text-[10px]">
-        <span class="text-gray-400">RA:</span>
-        <input id="inputRA" type="text" value="133.79513" class="w-20 bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange" placeholder="deg or 08h55m">
-        <span class="text-gray-400 ml-1">Dec:</span>
-        <input id="inputDec" type="text" value="-7.24515" class="w-20 bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange" placeholder="deg or -7d14m">
-        <span class="text-gray-400 ml-1">FOV:</span>
-        <select id="selectFOV" class="bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange cursor-pointer">
-          <option value="1.0">1.0'</option>
-          <option value="3.0" selected>3.0'</option>
+      <div class="flex items-center gap-1.5 bg-blender-950/80 px-2 py-0.5 rounded-md border border-blender-700/80 font-mono text-[10px] shadow-inner">
+        <span class="text-gray-400 font-semibold">RA:</span>
+        <input id="inputRA" type="text" value="133.79513" class="w-20 bg-blender-900 text-cyan-300 font-bold px-1.5 py-0.5 rounded border border-blender-700 text-[10px] text-center focus:outline-none focus:border-blender-orange" placeholder="deg or h:m:s">
+        
+        <span class="text-gray-400 font-semibold ml-1">Dec:</span>
+        <input id="inputDec" type="text" value="-7.24515" class="w-20 bg-blender-900 text-cyan-300 font-bold px-1.5 py-0.5 rounded border border-blender-700 text-[10px] text-center focus:outline-none focus:border-blender-orange" placeholder="deg or d:m:s">
+        
+        <span class="text-gray-400 font-semibold ml-1">FOV:</span>
+        <select id="selectFOV" class="bg-blender-900 text-gray-200 px-1.5 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange cursor-pointer">
+          <option value="1.0">1.0' (Deep)</option>
+          <option value="3.0" selected>3.0' (Std)</option>
           <option value="5.0">5.0'</option>
           <option value="10.0">10.0'</option>
-          <option value="15.0">15.0'</option>
+          <option value="15.0">15.0' (Wide)</option>
         </select>
-        <button id="btnGoCoords" class="px-2 py-0.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-mono font-bold shadow-sm transition-all" title="Query FITS images">
-          Fetch
+
+        <button id="btnGoCoords" class="px-2.5 py-0.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-mono font-bold shadow-sm transition-all flex items-center gap-1" title="Query FITS images">
+          <i data-lucide="search" class="w-3 h-3"></i>
+          <span>Fetch</span>
         </button>
       </div>
 
       <!-- Real FITS Live Status Pill -->
-      <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 border border-blender-700 font-mono text-[10px]">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="text-emerald-300 font-bold">REAL FITS</span>
+      <div class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-950/40 border border-emerald-700/50 font-mono text-[10px] shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-emerald-300 font-semibold tracking-wide">NASA IRSA</span>
       </div>
 
       <!-- Toggle Properties Sidebar -->
-      <button id="toggleSidebarBtn" class="p-1 rounded blender-btn text-gray-300" title="Toggle Properties Panel (N)">
+      <button id="toggleSidebarBtn" class="w-7 h-7 flex items-center justify-center rounded-md blender-btn text-gray-300 hover:text-white" title="Toggle Properties Panel (N)">
         <i data-lucide="panel-right-close" class="w-3.5 h-3.5"></i>
       </button>
     </div>
