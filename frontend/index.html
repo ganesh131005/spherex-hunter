@@ -1094,10 +1094,12 @@
     wsBlink.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsBlink.classList.add('blender-btn-active');
+      setCanvasFilter('filter-grayscale');
+      shadeGray.classList.add('blender-btn-active');
       diffMode = false;
       updateFrameLabel();
       drawFrame();
-      if (!isPlaying) startFlipbook();
+      startFlipbook();
     });
 
     wsDiff.addEventListener('click', () => {
@@ -1143,26 +1145,41 @@
       setCanvasFilter('filter-grayscale');
       shadeGray.classList.add('blender-btn-active');
       diffMode = false;
+      resetWorkspaceButtons();
+      wsBlink.classList.add('blender-btn-active');
       updateFrameLabel();
       drawFrame();
+      startFlipbook();
     });
 
     shadeInv.addEventListener('click', () => {
       setCanvasFilter('filter-inverted');
       shadeInv.classList.add('blender-btn-active');
+      diffMode = false;
+      resetWorkspaceButtons();
+      wsBlink.classList.add('blender-btn-active');
+      updateFrameLabel();
       drawFrame();
+      startFlipbook();
     });
 
     shadeTherm.addEventListener('click', () => {
       setCanvasFilter('filter-thermal');
       shadeTherm.classList.add('blender-btn-active');
+      diffMode = false;
+      resetWorkspaceButtons();
+      wsBlink.classList.add('blender-btn-active');
+      updateFrameLabel();
       drawFrame();
+      startFlipbook();
     });
 
     shadeDiff.addEventListener('click', () => {
       setCanvasFilter('filter-grayscale');
       shadeDiff.classList.add('blender-btn-active');
       diffMode = true;
+      resetWorkspaceButtons();
+      wsDiff.classList.add('blender-btn-active');
       stopFlipbook();
       updateFrameLabel();
       drawFrame();
