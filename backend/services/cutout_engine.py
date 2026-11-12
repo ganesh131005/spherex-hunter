@@ -110,53 +110,20 @@ def clean_astronomical_image(data: np.ndarray, smooth_sigma: float = 1.0, noise_
 
 def render_color_canvas(arr: np.ndarray, mode: str = "infrared") -> str:
     """
-    Converts 2D astronomical array into a warm, beautiful NASA infrared color composite:
-    - Background: Velvety deep space midnight `#06080e` (no static)
-    - Stars: Luminous warm white / cyan celestial disks
-    - Moving brown dwarfs: Vibrant amber / golden infrared glow
+    Converts 2D astronomical array into an authentic scientific image:
+    - Pure, unadulterated telescope pixel counts (grayscale or inverted grayscale)
+    - Exactly like SAOImage DS9, NASA IRSA Viewer, and Astropy visualization
+    - Zero cartoon overlays, zero synthetic thresholds
     """
     h, w = arr.shape
-    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    arr_clipped = np.clip(arr, 0, 255).astype(np.uint8)
     
     if mode == "difference":
-        # Neutral dark slate background (#1a1d24)
-        rgb[:, :, 0] = 26
-        rgb[:, :, 1] = 29
-        rgb[:, :, 2] = 36
-        
-        norm = arr.astype(float) - 128.0
-        
-        # Positive transient signal (Blender Orange #e87d0d)
-        pos = norm > 12.0
-        intensity_pos = np.clip(norm[pos] / 80.0, 0.0, 1.0)
-        rgb[pos, 0] = np.clip(26 + intensity_pos * (232 - 26), 0, 255).astype(np.uint8)
-        rgb[pos, 1] = np.clip(29 + intensity_pos * (125 - 29), 0, 255).astype(np.uint8)
-        rgb[pos, 2] = np.clip(36 - intensity_pos * 23, 0, 255).astype(np.uint8)
-        
-        # Negative transient signal (Deep black depression #030406)
-        neg = norm < -12.0
-        intensity_neg = np.clip(abs(norm[neg]) / 80.0, 0.0, 1.0)
-        rgb[neg, 0] = np.clip(26 - intensity_neg * 23, 0, 255).astype(np.uint8)
-        rgb[neg, 1] = np.clip(29 - intensity_neg * 25, 0, 255).astype(np.uint8)
-        rgb[neg, 2] = np.clip(36 - intensity_neg * 30, 0, 255).astype(np.uint8)
-
+        # Difference map: midpoint is 128 (neutral mid-gray). Positive flux is bright, negative flux is dark.
+        rgb = np.stack([arr_clipped, arr_clipped, arr_clipped], axis=-1)
     else:
-        # Deep space dark background (#06080e)
-        rgb[:, :, 0] = 6
-        rgb[:, :, 1] = 8
-        rgb[:, :, 2] = 14
-        
-        # Non-zero star pixels
-        val = arr.astype(float) / 255.0
-        # Warm NASA near-infrared palette: Cyan to Warm Gold/White cores
-        r = np.clip(6 + val * 249 + np.power(val, 2.5) * 50, 0, 255)
-        g = np.clip(8 + val * 235 + np.power(val, 2.0) * 20, 0, 255)
-        b = np.clip(14 + val * 250 - val * 30, 0, 255)
-        
-        mask = arr > 3
-        rgb[mask, 0] = r[mask].astype(np.uint8)
-        rgb[mask, 1] = g[mask].astype(np.uint8)
-        rgb[mask, 2] = b[mask].astype(np.uint8)
+        # Standard astronomical view: Authentic telescope starlight
+        rgb = np.stack([arr_clipped, arr_clipped, arr_clipped], axis=-1)
 
     img = Image.fromarray(rgb)
     buffer = io.BytesIO()
@@ -307,10 +274,9 @@ def load_real_fits_cutout(target_key: str, meta: dict) -> tuple[np.ndarray, np.n
         norm2 = np.clip((d2 - vmin2) / (vmax2 - vmin2), 0.0, 1.0)
         ep2_clean = (AsinhStretch(a=0.1)(norm2) * 255.0).astype(np.uint8)
 
-        # Real difference map: I2 - I1
-        diff = d2 - d1
-        diff_rms = np.std(diff) + 1e-5
-        diff_scaled = np.clip(128.0 + (diff / diff_rms) * 45.0, 0, 255).astype(np.uint8)
+        # Real difference map: I2 - I1 using normalized photometrically scaled fluxes
+        diff = norm2 - norm1
+        diff_scaled = np.clip(128.0 + diff * 125.0, 0, 255).astype(np.uint8)
 
         pm_ra = meta.get("pm_ra_mas", 0.0)
         pm_dec = meta.get("pm_dec_mas", 0.0)

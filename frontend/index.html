@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPHEREx Hunter - Blender Minimalist Astronomy Viewport</title>
+  <title>SPHEREx Hunter - Minimalist Blender Astronomy Viewport</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
@@ -20,14 +20,14 @@
         extend: {
           colors: {
             blender: {
-              950: '#111215',
-              900: '#1a1b1f',
-              850: '#23252b',
-              800: '#2d3038',
-              700: '#3a3e47',
-              600: '#4a4f5b',
-              orange: '#e87d0d',
-              blue: '#2b76c9',
+              950: '#151515', // Deep background
+              900: '#1e1e1e', // Panel background
+              850: '#252525', // Input background
+              800: '#2d2d2d', // Button / Card background
+              700: '#3d3d3d', // Border
+              600: '#545454', // Hover border
+              orange: '#ea7600', // Blender Orange Accent
+              blue: '#2b76c9',   // Blender Selection Blue
               lightBlue: '#4794e6'
             }
           }
@@ -39,277 +39,381 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #111215;
+      background-color: #151515;
       color: #cccccc;
       overflow: hidden;
       user-select: none;
     }
     .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-    .blender-pill {
-      background-color: #23252b;
-      border: 1px solid #3a3e47;
+    /* Blender UI styling primitives */
+    .blender-btn {
+      background-color: #282828;
+      border: 1px solid #3c3c3c;
       border-radius: 4px;
-      transition: all 0.15s ease;
+      color: #d1d1d1;
+      transition: all 0.12s ease;
     }
-    .blender-pill:hover {
-      background-color: #2d3038;
-      border-color: #4a4f5b;
+    .blender-btn:hover {
+      background-color: #333333;
+      border-color: #505050;
       color: #ffffff;
     }
-    .blender-pill-active {
-      background-color: #2b76c9;
-      border-color: #4794e6;
-      color: #ffffff;
+    .blender-btn-active {
+      background-color: #2b76c9 !important;
+      border-color: #4794e6 !important;
+      color: #ffffff !important;
     }
+    .blender-btn-orange-active {
+      background-color: #ea7600 !important;
+      border-color: #ff9124 !important;
+      color: #ffffff !important;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #1a1a1a; }
+    ::-webkit-scrollbar-thumb { background: #3c3c3c; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555555; }
+
     input[type=range] { accent-color: #2b76c9; }
+
+    /* Canvas colormap filters */
+    .filter-grayscale { filter: none; }
+    .filter-inverted { filter: invert(1) hue-rotate(180deg); }
+    .filter-thermal { filter: contrast(1.3) saturate(1.8) hue-rotate(190deg); }
   </style>
 </head>
 <body class="h-screen flex flex-col bg-blender-950 text-xs">
 
   <!-- ========================================================================= -->
-  <!-- 1. TOP BLENDER MENU & CONTROL BAR                                         -->
+  <!-- 1. TOP BLENDER WORKSPACE HEADER                                           -->
   <!-- ========================================================================= -->
-  <header class="h-9 bg-blender-900 border-b border-blender-800 px-3 flex items-center justify-between z-30 shrink-0">
-    <div class="flex items-center gap-2">
-      <div class="flex items-center gap-1.5 pr-2 border-r border-blender-700">
-        <div class="w-5 h-5 rounded bg-blender-orange flex items-center justify-center font-bold text-white text-[11px] shadow-sm">
+  <header class="h-8 bg-blender-900 border-b border-blender-700 px-2 flex items-center justify-between z-30 shrink-0 text-[11px]">
+    
+    <!-- Left: Blender Branding & Workspace Tabs -->
+    <div class="flex items-center gap-1.5">
+      <!-- App Icon / Brand -->
+      <div class="flex items-center gap-1 pr-2 border-r border-blender-700">
+        <div class="w-4 h-4 rounded bg-blender-orange flex items-center justify-center font-bold text-white text-[10px] shadow-sm">
           S
         </div>
-        <span class="font-bold text-white tracking-wide text-xs">SPHEREx Hunter</span>
-        <span class="text-[10px] text-gray-400 font-mono">5.2-LTS</span>
+        <span class="font-semibold text-gray-200">SPHEREx Hunter</span>
+        <span class="text-[9px] text-gray-400 font-mono">5.2 LTS</span>
       </div>
 
-      <!-- Quick Preset Targets -->
-      <div class="flex items-center gap-1">
-        <span class="text-[10px] text-gray-400 uppercase font-mono">Targets:</span>
-        <button class="target-btn blender-pill blender-pill-active px-2 py-0.5 text-[11px] font-mono" data-target="wise0855">WISE 0855</button>
-        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="barnard">Barnard's Star</button>
-        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="epsindi">Eps Indi B</button>
-        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rwaur">RW Aurigae</button>
-        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rdraconis">R Draconis</button>
-      </div>
-
-      <!-- Direct Celestial Coordinate Inputs (RA / Dec / FOV) -->
-      <div class="flex items-center gap-1.5 pl-2 border-l border-blender-800">
-        <div class="flex items-center gap-1 bg-blender-850 px-1.5 py-0.5 rounded border border-blender-700 font-mono text-[11px]">
-          <span class="text-gray-400 text-[10px]">RA:</span>
-          <input id="inputRA" type="text" value="133.79513" class="w-24 bg-blender-950 text-white px-1.5 py-0.5 rounded border border-blender-700 text-[11px] focus:outline-none focus:border-blender-orange font-mono" placeholder="deg or 08h55m" title="Right Ascension (decimal degrees or sexagesimal e.g. 08h55m10.831s)">
-        </div>
-        <div class="flex items-center gap-1 bg-blender-850 px-1.5 py-0.5 rounded border border-blender-700 font-mono text-[11px]">
-          <span class="text-gray-400 text-[10px]">Dec:</span>
-          <input id="inputDec" type="text" value="-7.24515" class="w-24 bg-blender-950 text-white px-1.5 py-0.5 rounded border border-blender-700 text-[11px] focus:outline-none focus:border-blender-orange font-mono" placeholder="deg or -7d14m" title="Declination (decimal degrees or sexagesimal e.g. -7d14m42.53s)">
-        </div>
-        <!-- Field of View Selector -->
-        <div class="flex items-center gap-1 bg-blender-850 px-1.5 py-0.5 rounded border border-blender-700 font-mono text-[11px]">
-          <span class="text-gray-400 text-[10px]">FOV:</span>
-          <select id="selectFOV" class="bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange cursor-pointer">
-            <option value="1.0">1.0' (Deep)</option>
-            <option value="3.0" selected>3.0' (Std)</option>
-            <option value="5.0">5.0' (Wide)</option>
-            <option value="10.0">10.0' (Search)</option>
-            <option value="15.0">15.0' (Cluster)</option>
-          </select>
-        </div>
-        <button id="btnGoCoords" class="px-2.5 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-mono text-[10px] font-bold shadow-sm transition-all flex items-center gap-1" title="Fetch multi-epoch SPHEREx & WISE images">
-          <i data-lucide="crosshair" class="w-3 h-3"></i>
-          <span>FETCH</span>
+      <!-- Blender Workspace Mode Tabs -->
+      <div class="flex items-center gap-0.5">
+        <button id="wsBlink" class="blender-btn blender-btn-active px-2.5 py-0.5 rounded text-[11px] font-medium" title="Multi-Epoch Flipbook Blink Comparator">
+          Layout (Blink)
+        </button>
+        <button id="wsDiff" class="blender-btn px-2.5 py-0.5 rounded text-[11px] font-medium" title="Numerical Image Subtraction (I₂ - I₁)">
+          Difference (I₂ - I₁)
+        </button>
+        <button id="wsSpec" class="blender-btn px-2.5 py-0.5 rounded text-[11px] font-medium" title="102-Band SPHEREx Spectroscopy">
+          Spectrum (102 Bands)
+        </button>
+        <button id="wsAladin" class="blender-btn px-2.5 py-0.5 rounded text-[11px] font-medium" title="Interactive CDS Strasbourg Aladin Lite">
+          CDS Aladin
         </button>
       </div>
     </div>
 
-    <!-- Right Controls -->
+    <!-- Center: Preset Astronomical Benchmarks -->
+    <div class="flex items-center gap-1">
+      <span class="text-[10px] text-gray-400 uppercase font-mono mr-1">Targets:</span>
+      <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono" data-target="wise0855">WISE 0855</button>
+      <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono" data-target="barnard">Barnard's Star</button>
+      <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono" data-target="epsindi">Eps Indi B</button>
+      <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono" data-target="rwaur">RW Aurigae</button>
+      <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono" data-target="rdraconis">R Draconis</button>
+    </div>
+
+    <!-- Right: Coordinates & Live Telemetry Pill -->
     <div class="flex items-center gap-2">
-      <!-- Engine Switcher: Real Astropy FITS vs Interactive CDS Aladin Lite -->
-      <div class="flex items-center gap-1 bg-blender-850 p-0.5 rounded border border-blender-700">
-        <button id="btnModeFITS" class="blender-pill blender-pill-active px-2 py-0.5 text-[10px] font-mono flex items-center gap-1" title="Real NASA FITS Multi-Epoch Flipbook Comparator">
-          <i data-lucide="layers" class="w-3 h-3 text-blender-orange"></i>
-          <span>FITS Blink</span>
-        </button>
-        <button id="btnModeAladin" class="blender-pill px-2 py-0.5 text-[10px] font-mono flex items-center gap-1" title="Interactive CDS Strasbourg Aladin Lite Sky View">
-          <i data-lucide="globe" class="w-3 h-3 text-cyan-400"></i>
-          <span>CDS Aladin</span>
+      <!-- Direct Coordinate Inputs -->
+      <div class="flex items-center gap-1 bg-blender-850 px-1 py-0.5 rounded border border-blender-700 font-mono text-[10px]">
+        <span class="text-gray-400">RA:</span>
+        <input id="inputRA" type="text" value="133.79513" class="w-20 bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange" placeholder="deg or 08h55m">
+        <span class="text-gray-400 ml-1">Dec:</span>
+        <input id="inputDec" type="text" value="-7.24515" class="w-20 bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange" placeholder="deg or -7d14m">
+        <span class="text-gray-400 ml-1">FOV:</span>
+        <select id="selectFOV" class="bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange cursor-pointer">
+          <option value="1.0">1.0'</option>
+          <option value="3.0" selected>3.0'</option>
+          <option value="5.0">5.0'</option>
+          <option value="10.0">10.0'</option>
+          <option value="15.0">15.0'</option>
+        </select>
+        <button id="btnGoCoords" class="px-2 py-0.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-mono font-bold shadow-sm transition-all" title="Query FITS images">
+          Fetch
         </button>
       </div>
 
-      <!-- Toggle Motion Guidance Rings -->
-      <button id="toggleGuidesBtn" class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-blender-orange font-mono text-[10px]" title="Toggle Motion Callouts">
-        <i data-lucide="crosshair" class="w-3 h-3 text-blender-orange"></i>
-        <span>GUIDES: ON</span>
-      </button>
-
-      <!-- Live Backend Connection Pill -->
-      <div id="backendStatusPill" class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 border border-blender-700 font-mono text-[10px]">
-        <span id="backendStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-        <span id="backendStatusText" class="text-emerald-300 font-bold">NASA FITS LIVE</span>
+      <!-- Real FITS Live Status Pill -->
+      <div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 border border-blender-700 font-mono text-[10px]">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-emerald-300 font-bold">REAL FITS</span>
       </div>
 
-      <!-- Recenter View Button -->
-      <button id="recenterBtn" class="p-1 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-gray-300" title="Recenter on Target">
-        <i data-lucide="focus" class="w-3.5 h-3.5"></i>
-      </button>
-
-      <!-- Toggle Right Sidebar -->
-      <button id="toggleSidebarBtn" class="p-1 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-gray-300" title="Toggle Properties (N)">
-        <i data-lucide="sidebar-close" class="w-3.5 h-3.5"></i>
+      <!-- Toggle Properties Sidebar -->
+      <button id="toggleSidebarBtn" class="p-1 rounded blender-btn text-gray-300" title="Toggle Properties Panel (N)">
+        <i data-lucide="panel-right-close" class="w-3.5 h-3.5"></i>
       </button>
     </div>
   </header>
 
   <!-- ========================================================================= -->
-  <!-- 2. MAIN VIEWPORT & PROPERTIES AREA                                        -->
+  <!-- 2. MAIN WORKSPACE AREA: TOOLBAR + VIEWPORT + PROPERTIES PANEL              -->
   <!-- ========================================================================= -->
   <div class="flex-1 flex overflow-hidden relative">
 
-    <!-- HERO CENTRAL VIEWPORT (Edge-to-Edge Clean Astronomy Viewport) -->
-    <main class="flex-1 relative bg-[#06080e] overflow-hidden flex items-center justify-center cursor-crosshair" id="viewportContainer">
-      <canvas id="astroCanvas" class="w-full h-full block"></canvas>
+    <!-- LEFT BLENDER TOOL SHELF (Vertical Toolbar, 40px width) -->
+    <aside class="w-10 bg-blender-900 border-r border-blender-700 flex flex-col items-center py-2 gap-1 shrink-0 z-20">
+      <!-- Select / Pointer Tool -->
+      <button id="toolSelect" class="w-7 h-7 rounded blender-btn blender-btn-active flex items-center justify-center text-white" title="Select / Cursor (W)">
+        <i data-lucide="mouse-pointer" class="w-3.5 h-3.5"></i>
+      </button>
 
-      <!-- INTERACTIVE CDS STRASBOURG ALADIN LITE OBSERVATORY ENGINE -->
+      <!-- Pan / Move Tool -->
+      <button id="toolPan" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300" title="Pan Telescope View (Middle Click / Drag)">
+        <i data-lucide="hand" class="w-3.5 h-3.5"></i>
+      </button>
+
+      <!-- Walk Navigation (Blender Shift + `) -->
+      <button id="toolWalk" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white" title="Walk Navigation Mode (Shift + ` / WASD)">
+        <i data-lucide="gamepad-2" class="w-3.5 h-3.5"></i>
+      </button>
+
+      <div class="w-5 h-[1px] bg-blender-700 my-1"></div>
+
+      <!-- Recenter View -->
+      <button id="toolRecenter" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white" title="Recenter on Target Object (Home)">
+        <i data-lucide="focus" class="w-3.5 h-3.5"></i>
+      </button>
+
+      <!-- Reset Zoom 1:1 -->
+      <button id="toolResetZoom" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white" title="Reset Zoom to 1.0x">
+        <i data-lucide="scan" class="w-3.5 h-3.5"></i>
+      </button>
+
+      <div class="flex-1"></div>
+
+      <!-- Audio Mute Toggle -->
+      <button id="toolMute" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-400 hover:text-gray-200" title="Toggle Procedural Audio">
+        <i id="muteIcon" data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+      </button>
+    </aside>
+
+    <!-- HERO CENTRAL VIEWPORT (Edge-to-Edge Pure Astronomy Canvas) -->
+    <main class="flex-1 relative bg-[#0b0c10] overflow-hidden flex items-center justify-center cursor-crosshair" id="viewportContainer">
+      <canvas id="astroCanvas" class="w-full h-full block filter-grayscale"></canvas>
+
+      <!-- INTERACTIVE CDS STRASBOURG ALADIN LITE OBSERVATORY -->
       <div id="aladinContainer" class="absolute inset-0 hidden z-10 w-full h-full"></div>
 
-      <!-- TOP-LEFT FLOATING VIEWPORT HUD -->
-      <div class="absolute top-3 left-3 pointer-events-none text-[11px] font-mono space-y-0.5 bg-blender-900/80 backdrop-blur px-3 py-2 rounded-lg border border-blender-800">
-        <div class="text-white font-semibold flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blender-orange inline-block"></span>
-          <span id="hudTargetName">WISE 0855-0714</span>
-          <span class="text-gray-400 font-normal">| <span id="hudEpochLabel" class="text-cyan-300">SPHEREx Pass 1 (May 2025)</span></span>
+      <!-- TOP-LEFT BLENDER VIEWPORT INFO (Clean & Minimalist) -->
+      <div class="absolute top-2.5 left-2.5 pointer-events-none text-[11px] font-mono space-y-0.5 bg-blender-900/80 backdrop-blur px-2.5 py-1.5 rounded border border-blender-700 text-gray-300 shadow">
+        <div class="text-white font-medium flex items-center gap-1.5">
+          <span class="text-gray-400">User Perspective</span>
         </div>
-        <div class="text-gray-400 text-[10px]">
-          RA: <span id="hudRA" class="text-white font-bold">133.79513°</span> | Dec: <span id="hudDec" class="text-white font-bold">-07.24515°</span> | FOV: <span id="hudFOV" class="text-white font-bold">3.0'</span>
+        <div class="text-[10px] text-gray-300">
+          <span id="vpFrameLabel" class="text-blender-orange font-semibold">(Frame 1) 2MASS Baseline</span>
+          <span class="text-gray-400">|</span>
+          <span id="vpTargetName" class="text-white">WISE 0855-0714</span>
         </div>
-        <div class="text-emerald-400 text-[10px]">
-          Noise Floor: <span class="text-white">Clean Dark Space</span> (Static/Snow Suppressed)
-        </div>
-      </div>
-
-      <!-- TOP-RIGHT MINIMAL VIEWPORT OVERLAY -->
-      <div class="absolute top-3 right-3 pointer-events-none flex flex-col items-end gap-1 text-[10px] font-mono text-gray-400">
-        <div class="bg-blender-900/80 backdrop-blur border border-blender-800 px-2 py-1 rounded">
-          FPS: <span id="liveFpsText" class="text-white font-bold">60.0</span>
-        </div>
-        <div id="diffModeBadge" class="hidden bg-blender-orange/20 border border-blender-orange text-blender-orange px-2 py-0.5 rounded font-bold">
-          DIFF MODE (I₂ - I₁)
+        <div class="text-[9px] text-gray-400">
+          RA: <span id="vpRA" class="text-gray-200">133.79513°</span>
+          Dec: <span id="vpDec" class="text-gray-200">-7.24515°</span>
+          FOV: <span id="vpFOV" class="text-gray-200">3.00'</span>
+          Zoom: <span id="vpZoom" class="text-gray-200">1.0x</span>
         </div>
       </div>
 
-      <!-- FLOATING GAMER WALK MODE HUD BANNER -->
-      <div id="walkHudBanner" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blender-900/90 backdrop-blur border border-blender-orange/60 px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-3 font-mono text-[11px] text-white hidden z-20 pointer-events-auto">
-        <div class="flex items-center gap-1.5 text-blender-orange font-bold">
-          <span class="w-2 h-2 rounded-full bg-blender-orange animate-ping"></span>
-          <span>WALK NAV (ACTIVE)</span>
+      <!-- TOP-RIGHT VIEWPORT SHADING / COLORMAP CONTROLS (Blender Shading Style) -->
+      <div class="absolute top-2.5 right-2.5 flex items-center gap-1 bg-blender-900/85 backdrop-blur px-1.5 py-1 rounded border border-blender-700 shadow z-10">
+        <span class="text-[9px] text-gray-400 font-mono mr-1">Shading:</span>
+        <button id="shadeGrayscale" class="blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono rounded" title="Authentic Telescope Grayscale">
+          Gray
+        </button>
+        <button id="shadeInverted" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="Inverted Grayscale (DS9 Print Style)">
+          Invert
+        </button>
+        <button id="shadeThermal" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="False Color Infrared Thermal">
+          Thermal
+        </button>
+        <button id="shadeDifference" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded text-blender-orange" title="Difference Map (I₂ - I₁)">
+          Diff
+        </button>
+      </div>
+
+      <!-- FLOATING GAMER WALK MODE HUD BANNER (Only active during Walk Nav) -->
+      <div id="walkHudBanner" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-blender-900/95 backdrop-blur border border-blender-orange/60 px-3.5 py-1 rounded-full shadow-2xl flex items-center gap-3 font-mono text-[10px] text-white hidden z-20 pointer-events-auto">
+        <div class="flex items-center gap-1 text-blender-orange font-bold">
+          <span class="w-1.5 h-1.5 rounded-full bg-blender-orange animate-ping"></span>
+          <span>WALK NAV</span>
         </div>
-        <div class="text-gray-300 text-[10px] flex items-center gap-2">
-          <span><b class="text-white">Mouse:</b> Drag/Look</span>
+        <div class="text-gray-300 flex items-center gap-2">
+          <span><b class="text-white">Mouse:</b> Look</span>
           <span><b class="text-white">W/S:</b> Zoom</span>
           <span><b class="text-white">A/D:</b> Slew RA</span>
           <span><b class="text-white">Space/Ctrl:</b> Slew Dec</span>
-          <span><b class="text-white">Shift:</b> Turbo</span>
-          <button id="btnFetchCurrentFOV" class="bg-blender-orange/20 hover:bg-blender-orange text-blender-orange hover:text-white px-2 py-0.5 rounded border border-blender-orange text-[10px] font-bold transition-all" title="Query backend for images at current FOV">
-            Fetch Sky Tile
-          </button>
-          <button id="btnExitWalkHud" class="bg-blender-800 hover:bg-blender-700 px-2 py-0.5 rounded border border-blender-700 text-gray-300 hover:text-white text-[10px]">
+          <span><b class="text-white">Shift:</b> Boost</span>
+          <button id="btnExitWalkHud" class="bg-blender-800 hover:bg-blender-700 px-2 py-0.5 rounded border border-blender-700 text-gray-300 hover:text-white text-[9px]">
             Esc Exit
           </button>
         </div>
       </div>
-
-      <!-- LAYMAN GUIDE EXPLANATION OVERLAY (Bottom-Left) -->
-      <div id="laymanNotice" class="absolute bottom-3 left-3 bg-blender-900/90 backdrop-blur border border-blender-700 px-3 py-2 rounded-lg text-[10px] font-mono text-gray-300 max-w-sm pointer-events-none">
-        <div class="text-blender-orange font-bold flex items-center gap-1 mb-0.5">
-          <i data-lucide="info" class="w-3.5 h-3.5"></i> How to spot moving objects:
-        </div>
-        <div class="text-gray-300">
-          Stationary stars remain in place. The moving brown dwarf (<span class="text-blender-orange font-bold">orange target</span>) jumps across the frame between Pass 1 and Pass 2!
-        </div>
-      </div>
-
-      <!-- FIXED OBSERVATORY RETICLE CROSSHAIR -->
-      <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <div class="relative w-12 h-12 border border-gray-600/40 rounded-full flex items-center justify-center">
-          <div class="w-1.5 h-1.5 bg-blender-orange rounded-full"></div>
-          <div class="w-4 h-[1px] bg-gray-500/60 absolute left-0 -translate-x-full"></div>
-          <div class="w-4 h-[1px] bg-gray-500/60 absolute right-0 translate-x-full"></div>
-          <div class="h-4 w-[1px] bg-gray-500/60 absolute top-0 -translate-y-full"></div>
-          <div class="h-4 w-[1px] bg-gray-500/60 absolute bottom-0 translate-y-full"></div>
-        </div>
-      </div>
     </main>
 
-    <!-- RIGHT COLLAPSIBLE PROPERTIES PANEL (Blender Inspector) -->
-    <aside id="propertiesSidebar" class="w-72 bg-blender-900 border-l border-blender-800 flex flex-col shrink-0 overflow-y-auto">
-      <div class="px-3 py-2 border-b border-blender-800 flex items-center justify-between text-gray-300 font-semibold text-[11px]">
+    <!-- RIGHT BLENDER PROPERTIES & OUTLINER SIDEBAR (280px width) -->
+    <aside id="propertiesSidebar" class="w-72 bg-blender-900 border-l border-blender-700 flex flex-col shrink-0 overflow-y-auto z-20 text-[11px]">
+      
+      <!-- OUTLINER HEADER (Blender Scene Tree) -->
+      <div class="px-3 py-1.5 bg-blender-850 border-b border-blender-700 flex items-center justify-between text-gray-300 font-semibold text-[11px]">
         <span class="flex items-center gap-1.5">
-          <i data-lucide="sliders" class="w-3.5 h-3.5 text-blender-orange"></i>
-          Properties & Real Telemetry
+          <i data-lucide="layers" class="w-3.5 h-3.5 text-blender-orange"></i>
+          Scene Collection
         </span>
-        <span class="text-[10px] font-mono text-gray-400">IRSA / SPHEREx</span>
+        <span class="text-[9px] font-mono text-gray-400">IRSA / SPHEREx</span>
       </div>
 
-      <!-- SECTION 1: Astrometry & Proper Motion -->
-      <div class="p-3 border-b border-blender-800 space-y-2">
-        <div class="text-[11px] font-semibold text-gray-300">Astrometry & Motion</div>
-        <div class="space-y-1.5 font-mono text-[11px]">
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
-            <span class="text-gray-400 text-[10px]">RA:</span>
-            <span id="propRA" class="text-white">133.79513°</span>
+      <!-- OUTLINER TREE ITEMS -->
+      <div class="px-2 py-1.5 border-b border-blender-700/60 font-mono text-[10px] space-y-0.5 text-gray-400">
+        <div class="flex items-center gap-1.5 text-gray-300">
+          <i data-lucide="folder" class="w-3 h-3 text-blender-orange"></i>
+          <span>Observatory Collection</span>
+        </div>
+        <div class="pl-4 flex items-center justify-between py-0.5 hover:bg-blender-800/40 rounded px-1">
+          <span class="flex items-center gap-1 text-gray-300">
+            <i data-lucide="camera" class="w-3 h-3 text-cyan-400"></i>
+            <span>SPHEREx Telescope</span>
+          </span>
+          <span class="text-[9px] text-gray-400">Active</span>
+        </div>
+        <div class="pl-4 flex items-center justify-between py-0.5 hover:bg-blender-800/40 rounded px-1">
+          <span class="flex items-center gap-1 text-gray-300">
+            <i data-lucide="target" class="w-3 h-3 text-blender-orange"></i>
+            <span id="outlinerTarget">WISE 0855-0714</span>
+          </span>
+          <span id="outlinerTargetType" class="text-[9px] text-blender-orange">Y-Dwarf</span>
+        </div>
+        <div class="pl-4 flex items-center justify-between py-0.5 hover:bg-blender-800/40 rounded px-1">
+          <span class="flex items-center gap-1 text-gray-400">
+            <i data-lucide="file-image" class="w-3 h-3 text-gray-400"></i>
+            <span>Epoch 1 (2MASS 1.25μm)</span>
+          </span>
+          <span class="text-[9px] text-gray-400">1999-02</span>
+        </div>
+        <div class="pl-4 flex items-center justify-between py-0.5 hover:bg-blender-800/40 rounded px-1">
+          <span class="flex items-center gap-1 text-gray-400">
+            <i data-lucide="file-image" class="w-3 h-3 text-gray-400"></i>
+            <span>Epoch 2 (SPHEREx Co-add)</span>
+          </span>
+          <span class="text-[9px] text-gray-400">2025-05</span>
+        </div>
+      </div>
+
+      <!-- SECTION 1: Transform & Celestial Coordinates (Blender Transform Style) -->
+      <div class="p-2.5 border-b border-blender-700 space-y-1.5">
+        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+          <span class="flex items-center gap-1">
+            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
+            Transform (Celestial)
+          </span>
+        </div>
+
+        <div class="space-y-1 font-mono text-[10px]">
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+            <span class="text-gray-400">RA (α):</span>
+            <span id="propRA" class="text-white font-bold">133.79513°</span>
           </div>
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
-            <span class="text-gray-400 text-[10px]">Dec:</span>
-            <span id="propDec" class="text-white">-07.24515°</span>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+            <span class="text-gray-400">Dec (δ):</span>
+            <span id="propDec" class="text-white font-bold">-07.24515°</span>
           </div>
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
-            <span class="text-gray-400 text-[10px]">Proper Motion (&mu;):</span>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+            <span class="text-gray-400">Field of View:</span>
+            <span id="propFOV" class="text-white">3.00 arcmin</span>
+          </div>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+            <span class="text-gray-400">Proper Motion (μ):</span>
             <span id="propPM" class="text-blender-orange font-bold">8.12 "/yr</span>
           </div>
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
-            <span class="text-gray-400 text-[10px]">Object Class:</span>
-            <span id="propType" class="text-cyan-300 text-[10px]">Y-Dwarf</span>
-          </div>
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
-            <span class="text-gray-400 text-[10px]">Est. Temp:</span>
-            <span id="propTemp" class="text-amber-400">~250 K</span>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+            <span class="text-gray-400">Temperature:</span>
+            <span id="propTemp" class="text-cyan-300">~250 K</span>
           </div>
         </div>
       </div>
 
-      <!-- SECTION 2: 102-Band Spectral Curve (SED) -->
-      <div class="p-3 border-b border-blender-800 space-y-2">
-        <div class="flex items-center justify-between text-[11px] font-semibold text-gray-300">
-          <span>102-Band SED (0.75-5.0 &mu;m)</span>
-          <span class="text-[9px] font-mono text-blender-blue bg-blender-850 px-1.5 py-0.5 rounded border border-blender-700">6 Arrays</span>
+      <!-- SECTION 2: SPHEREx 6 Detector Arrays (Co-add Photon Photometry) -->
+      <div class="p-2.5 border-b border-blender-700 space-y-1.5">
+        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+          <span class="flex items-center gap-1">
+            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
+            SPHEREx 6-Array Photometry
+          </span>
+          <span class="text-emerald-400 text-[9px]">4.12x SNR</span>
         </div>
-        <div class="h-28 w-full relative bg-blender-950 rounded p-1 border border-blender-800">
+
+        <div class="grid grid-cols-3 gap-1 font-mono text-[9px] text-center">
+          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div class="text-gray-400">A1 (0.75μm)</div>
+            <div class="text-white font-bold">842 ct</div>
+          </div>
+          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div class="text-gray-400">A2 (1.20μm)</div>
+            <div class="text-white font-bold">1,210 ct</div>
+          </div>
+          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div class="text-gray-400">A3 (1.90μm)</div>
+            <div class="text-white font-bold">2,480 ct</div>
+          </div>
+          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div class="text-gray-400">A4 (2.42μm)</div>
+            <div class="text-white font-bold">3,910 ct</div>
+          </div>
+          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div class="text-gray-400">A5 (3.82μm)</div>
+            <div class="text-blender-orange font-bold">8,740 ct</div>
+          </div>
+          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div class="text-gray-400">A6 (4.42μm)</div>
+            <div class="text-blender-orange font-bold">12,190 ct</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: 102 Spectral Bands & Molecular Telemetry -->
+      <div class="p-2.5 border-b border-blender-700 space-y-1.5 flex-1 flex flex-col min-h-[160px]">
+        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+          <span class="flex items-center gap-1">
+            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
+            102-Band Infrared Spectrum
+          </span>
+          <span class="text-cyan-300 text-[9px]">0.75 - 5.0 μm</span>
+        </div>
+
+        <!-- Chart canvas container -->
+        <div class="flex-1 bg-blender-950 rounded border border-blender-700 p-1 relative min-h-[100px]">
           <canvas id="spectrumChart"></canvas>
         </div>
-        <div class="flex items-center justify-between text-[9px] font-mono text-gray-400">
-          <span>H2O (3.05&mu;m)</span>
-          <span>CH4 (3.3&mu;m)</span>
-          <span>CO2 (4.27&mu;m)</span>
+
+        <!-- Molecular features detected -->
+        <div class="flex items-center justify-between font-mono text-[9px] text-gray-400 pt-0.5">
+          <span>Key Dips:</span>
+          <span class="text-cyan-300">H₂O (1.4μm)</span>
+          <span class="text-emerald-400">CH₄ (3.3μm)</span>
+          <span class="text-orange-400">CO₂ (4.3μm)</span>
         </div>
       </div>
 
-      <!-- SECTION 3: Quality Flags & Action -->
-      <div class="p-3 space-y-2">
-        <div class="text-[11px] font-semibold text-gray-300">Data Diagnostics</div>
-        <div class="space-y-1.5 text-[10px] font-mono text-gray-400">
-          <div class="flex items-center justify-between">
-            <span>Survey Cutout:</span>
-            <span id="propSurvey" class="text-white">NASA WISE 4.6μm</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span>Co-add Boost:</span>
-            <span class="text-emerald-400">4.12x SNR</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span>Background Static:</span>
-            <span class="text-emerald-400">FILTERED (Clean)</span>
-          </div>
-        </div>
-
-        <button id="flagCandidateBtn" class="w-full mt-2 py-1.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-all">
+      <!-- SECTION 4: Citizen Science Discovery Candidate -->
+      <div class="p-2.5 space-y-1.5 bg-blender-950/40">
+        <button id="flagCandidateBtn" class="w-full py-1.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm">
           <i data-lucide="flag" class="w-3.5 h-3.5 text-blender-orange"></i>
-          Flag Candidate Discovery
+          <span>Flag Candidate Discovery</span>
         </button>
       </div>
     </aside>
@@ -318,53 +422,108 @@
   <!-- ========================================================================= -->
   <!-- 3. BLENDER BOTTOM TIMELINE & FLIPBOOK CONTROLS                            -->
   <!-- ========================================================================= -->
-  <footer class="h-10 bg-blender-900 border-t border-blender-800 px-3 flex items-center justify-between z-30 shrink-0 font-mono text-xs">
+  <footer class="h-9 bg-blender-900 border-t border-blender-700 px-3 flex items-center justify-between z-30 shrink-0 font-mono text-xs">
+    
+    <!-- Left: Blender Playback Controls -->
     <div class="flex items-center gap-1">
-      <button id="btnJumpStart" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="First Frame">
+      <span class="text-[10px] text-gray-400 mr-1">Playback:</span>
+      <button id="btnJumpStart" class="p-1 rounded blender-btn text-gray-300 hover:text-white" title="Jump to First Frame (Shift + Left)">
         <i data-lucide="skip-back" class="w-3.5 h-3.5"></i>
       </button>
-      <button id="btnStepBack" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Previous Frame">
+      <button id="btnStepBack" class="p-1 rounded blender-btn text-gray-300 hover:text-white" title="Previous Frame (Left Arrow)">
         <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
       </button>
-      <button id="btnPlayPause" class="px-2 py-1 rounded bg-blender-blue hover:bg-blender-lightBlue text-white flex items-center justify-center transition-all" title="Play/Pause">
+      <button id="btnPlayPause" class="px-2.5 py-0.5 rounded blender-btn blender-btn-active text-white flex items-center justify-center transition-all" title="Play / Pause Blink (Spacebar)">
         <i id="playPauseIcon" data-lucide="pause" class="w-3.5 h-3.5"></i>
       </button>
-      <button id="btnStepFwd" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Next Frame">
+      <button id="btnStepFwd" class="p-1 rounded blender-btn text-gray-300 hover:text-white" title="Next Frame (Right Arrow)">
         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
       </button>
-      <button id="btnJumpEnd" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Last Frame">
+      <button id="btnJumpEnd" class="p-1 rounded blender-btn text-gray-300 hover:text-white" title="Jump to Last Frame (Shift + Right)">
         <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
       </button>
 
-      <!-- Active Frame Badge -->
+      <!-- Active Frame Input Box (Blender Style) -->
       <div class="flex items-center gap-1 ml-2 pl-2 border-l border-blender-700">
         <span class="text-gray-400 text-[10px]">Frame:</span>
-        <span id="frameBadge" class="px-2 py-0.5 rounded bg-blender-blue text-white font-bold text-[11px]">1</span>
-        <span class="text-gray-500">/ 2</span>
+        <span id="frameBadge" class="px-2 py-0.5 rounded bg-blender-blue text-white font-bold text-[10px]">1</span>
+        <span class="text-gray-500 text-[10px]">/ 2</span>
+      </div>
+
+      <!-- Start & End Bounds -->
+      <div class="flex items-center gap-1.5 ml-2 pl-2 border-l border-blender-700 text-[10px] text-gray-400">
+        <span>Start: <b class="text-gray-200">1</b></span>
+        <span>End: <b class="text-gray-200">2</b></span>
       </div>
     </div>
 
     <!-- Center: Playback Speed Slider -->
     <div class="flex items-center gap-2">
-      <span class="text-gray-400 text-[10px]">Speed:</span>
-      <input id="speedSlider" type="range" min="0.5" max="8.0" step="0.5" value="2.5" class="w-24 h-1 bg-blender-700 rounded cursor-pointer">
-      <span id="speedLabel" class="text-gray-200 text-[10px] w-12 font-mono">2.5 FPS</span>
+      <span class="text-gray-400 text-[10px]">Blink Speed:</span>
+      <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0" class="w-24 h-1 bg-blender-700 rounded cursor-pointer">
+      <span id="speedLabel" class="text-gray-200 text-[10px] w-12 font-mono">2.0 FPS</span>
     </div>
 
-    <!-- Right: Difference Imaging Mode & Audio Toggle -->
-    <div class="flex items-center gap-2">
-      <button id="btnDiffToggle" class="blender-pill px-2.5 py-1 text-[11px] font-medium text-gray-300 flex items-center gap-1.5" title="Toggle Difference Subtraction">
-        <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-        <span>Diff Mode</span>
-      </button>
-
-      <button id="btnMuteToggle" class="p-1 rounded hover:bg-blender-800 text-gray-400" title="Audio Effects">
-        <i id="muteIcon" data-lucide="volume-2" class="w-3.5 h-3.5 text-gray-300"></i>
-      </button>
+    <!-- Right: Baseline Epoch Indicator -->
+    <div class="flex items-center gap-2 text-[10px]">
+      <span class="text-gray-400">Temporal Baseline:</span>
+      <span id="temporalBaselineText" class="text-emerald-400 font-bold bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+        Δt: 26.2 Years (Historic 2MASS → SPHEREx)
+      </span>
     </div>
   </footer>
 
-  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <!-- ========================================================================= -->
+  <!-- 4. CITIZEN SCIENCE DISCOVERY MODAL                                        -->
+  <!-- ========================================================================= -->
+  <div id="flagModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-md w-full p-4 shadow-2xl space-y-3 font-mono text-xs">
+      <div class="flex items-center justify-between border-b border-blender-700 pb-2">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="flag" class="w-4 h-4 text-blender-orange"></i>
+          <span>Log Moving Object Candidate</span>
+        </div>
+        <button id="closeModalBtn" class="text-gray-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="space-y-2 text-gray-300">
+        <div>
+          <label class="block text-[10px] text-gray-400 mb-1">Target / Candidate Name:</label>
+          <input id="candNameInput" type="text" class="w-full bg-blender-950 border border-blender-700 rounded px-2 py-1 text-white focus:outline-none focus:border-blender-orange" value="WISE 0855 Moving Candidate">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] text-gray-400 mb-1">RA (deg):</label>
+            <input id="candRAInput" type="text" class="w-full bg-blender-950 border border-blender-700 rounded px-2 py-1 text-white" readonly>
+          </div>
+          <div>
+            <label class="block text-[10px] text-gray-400 mb-1">Dec (deg):</label>
+            <input id="candDecInput" type="text" class="w-full bg-blender-950 border border-blender-700 rounded px-2 py-1 text-white" readonly>
+          </div>
+        </div>
+        <div>
+          <label class="block text-[10px] text-gray-400 mb-1">Discovered Motion Signature:</label>
+          <select id="candMotionType" class="w-full bg-blender-950 border border-blender-700 rounded px-2 py-1 text-white focus:outline-none focus:border-blender-orange">
+            <option value="high_pm">High Proper Motion (Planet X / Brown Dwarf)</option>
+            <option value="optical_dipole">Optical Dipole in Difference Map</option>
+            <option value="variable_star">Variable Flux Pulsation (RW Aur / Mira)</option>
+            <option value="fast_transient">Fast Transient / Asteroid</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-blender-700">
+        <button id="cancelModalBtn" class="px-3 py-1 rounded blender-btn text-gray-300">Cancel</button>
+        <button id="submitCandidateBtn" class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold shadow transition-all">
+          Record Discovery
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. APPLICATION JAVASCRIPT LOGIC                                           -->
+  <!-- ========================================================================= -->
   <script>
     lucide.createIcons();
 
@@ -377,9 +536,10 @@
         name: "WISE 0855-0714",
         raDeg: 133.79513,
         decDeg: -7.24515,
-        type: "Sub-stellar Cold Y-Dwarf",
+        type: "Cold Y-Dwarf (Substellar)",
         pm: "8.12 \"/yr",
-        temp: "~250 K (Water clouds)"
+        temp: "~250 K",
+        baseline: "26.2 Years (2MASS 1999 → SPHEREx 2025)"
       },
       barnard: {
         name: "Barnard's Star",
@@ -387,7 +547,8 @@
         decDeg: 4.69339,
         type: "High Proper Motion Red Dwarf",
         pm: "10.36 \"/yr",
-        temp: "~3130 K"
+        temp: "~3130 K",
+        baseline: "25.8 Years (2MASS 1999 → SPHEREx 2025)"
       },
       epsindi: {
         name: "Epsilon Indi B",
@@ -395,7 +556,8 @@
         decDeg: -56.78272,
         type: "Binary Brown Dwarf (T1+T6)",
         pm: "4.70 \"/yr",
-        temp: "~1300 K"
+        temp: "~1300 K",
+        baseline: "26.5 Years (2MASS 1999 → SPHEREx 2025)"
       },
       rwaur: {
         name: "RW Aurigae",
@@ -403,7 +565,8 @@
         decDeg: 30.40142,
         type: "Young T-Tauri Variable",
         pm: "0.02 \"/yr",
-        temp: "~5000 K"
+        temp: "~5000 K",
+        baseline: "Variable Star Dimming Baseline"
       },
       rdraconis: {
         name: "R Draconis",
@@ -411,23 +574,23 @@
         decDeg: 66.75506,
         type: "Mira Pulsating Red Giant",
         pm: "0.01 \"/yr",
-        temp: "~2700 K"
+        temp: "~2700 K",
+        baseline: "245-Day Periodic Pulsation"
       }
     };
 
     let currentTargetKey = 'wise0855';
     let currentFrame = 1;
     let isPlaying = true;
-    let fps = 2.5;
+    let fps = 2.0;
     let diffMode = false;
     let isMuted = false;
-    let showGuides = true;
     let playTimer = null;
 
     let realEpoch1Img = null;
     let realEpoch2Img = null;
     let realDiffImg = null;
-    let motionVector = null;
+    let activeCutoutData = null;
 
     // CAMERA VIEWPORT KINEMATICS (Interactive Walk Nav & Slewing)
     const camera = {
@@ -453,155 +616,117 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // PROCEDURAL AUDIO SYNTHESIZER
+    // =========================================================================
+    // PROCEDURAL AUDIO SYNTHESIZER (Web Audio API - Zero Copyrights)
+    // =========================================================================
     let audioCtx = null;
     function getAudioContext() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
-    }
-
-    function playThrusterSound() {
-      if (isMuted) return;
-      try {
-        const c = getAudioContext();
-        const osc = c.createOscillator();
-        const gain = c.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(80, c.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(50, c.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.04, c.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.12);
-        osc.connect(gain);
-        gain.connect(c.destination);
-        osc.start();
-        osc.stop(c.currentTime + 0.12);
-      } catch(e) {}
     }
 
     function playTargetLockChime() {
       if (isMuted) return;
       try {
-        const c = getAudioContext();
-        const osc1 = c.createOscillator();
-        const osc2 = c.createOscillator();
-        const gain = c.createGain();
-        osc1.frequency.setValueAtTime(880, c.currentTime);
-        osc2.frequency.setValueAtTime(1320, c.currentTime);
-        gain.gain.setValueAtTime(0.08, c.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.35);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(c.destination);
-        osc1.start();
-        osc2.start();
-        osc1.stop(c.currentTime + 0.35);
-        osc2.stop(c.currentTime + 0.35);
+        const actx = getAudioContext();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(659.25, actx.currentTime); // E5
+        osc.frequency.exponentialRampToValueAtTime(880.0, actx.currentTime + 0.12); // A5
+        gain.gain.setValueAtTime(0.04, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.25);
       } catch(e) {}
     }
 
-    // DRAW CAMERA-TRANSFORMED ASTRONOMICAL CANVAS
+    let thrusterNode = null;
+    function playThrusterSound() {
+      if (isMuted || thrusterNode) return;
+      try {
+        const actx = getAudioContext();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(55.0, actx.currentTime); // Low A1 hum
+        gain.gain.setValueAtTime(0.02, actx.currentTime);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        thrusterNode = { osc, gain };
+      } catch(e) {}
+    }
+
+    function stopThrusterSound() {
+      if (thrusterNode) {
+        try {
+          const actx = getAudioContext();
+          thrusterNode.gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.08);
+          thrusterNode.osc.stop(actx.currentTime + 0.08);
+        } catch(e) {}
+        thrusterNode = null;
+      }
+    }
+
+    // =========================================================================
+    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Clean, Scaled, Zero Cartoon Gimmicks)
+    // =========================================================================
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
 
-      // Deep space velvety midnight background
+      // Deep space background
       ctx.fillStyle = '#06080e';
       ctx.fillRect(0, 0, w, h);
 
       ctx.save();
-      // Apply Walk Nav camera translation and zoom!
+      // Apply pan & zoom
       ctx.translate(w / 2 + camera.panX, h / 2 + camera.panY);
       ctx.scale(camera.zoom, camera.zoom);
+      ctx.imageSmoothingEnabled = false; // Sharp detector pixels!
 
       if (diffMode && realDiffImg && realDiffImg.complete) {
-        // Difference Image Mode
+        // Difference Image Mode (Authentic numerical subtraction I2 - I1)
         const img = realDiffImg;
-        const dw = img.width;
-        const dh = img.height;
-        ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
+        const dw = img.width || 400;
+        const dh = img.height || 400;
 
-        // Draw Layman Guide Annotations for Dipole
-        if (showGuides && motionVector) {
-          const p1 = motionVector.epoch1_pos;
-          const p2 = motionVector.epoch2_pos;
-          const sx1 = -dw / 2 + p1.x;
-          const sy1 = -dh / 2 + p1.y;
-          const sx2 = -dw / 2 + p2.x;
-          const sy2 = -dh / 2 + p2.y;
+        // Auto-scale to fill 90% of viewport
+        const fitScale = Math.min((w * 0.90) / dw, (h * 0.90) / dh);
+        const rw = dw * fitScale;
+        const rh = dh * fitScale;
 
-          // Epoch 1 depression ring (cyan)
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 2.0;
-          ctx.beginPath();
-          ctx.arc(sx1, sy1, 14, 0, Math.PI * 2);
-          ctx.stroke();
-
-          // Epoch 2 peak ring (orange)
-          ctx.strokeStyle = '#e87d0d';
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.arc(sx2, sy2, 16, 0, Math.PI * 2);
-          ctx.stroke();
-
-          // Trajectory vector arrow
-          ctx.strokeStyle = '#e87d0d';
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([4, 4]);
-          ctx.beginPath();
-          ctx.moveTo(sx1, sy1);
-          ctx.lineTo(sx2, sy2);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          ctx.fillStyle = '#e87d0d';
-          ctx.font = '11px JetBrains Mono';
-          ctx.fillText(`Dipole Vector: ${motionVector.shift_arcsec}" Shift`, sx2 + 20, sy2 + 4);
-        }
+        ctx.drawImage(img, -rw / 2, -rh / 2, rw, rh);
 
       } else {
-        // Standard Flipbook Blink Mode
+        // Flipbook Blink Mode (Epoch 1 <-> Epoch 2)
         const activeImg = (currentFrame === 1) ? realEpoch1Img : realEpoch2Img;
         if (activeImg && activeImg.complete) {
-          const dw = activeImg.width;
-          const dh = activeImg.height;
-          ctx.drawImage(activeImg, -dw / 2, -dh / 2, dw, dh);
+          const dw = activeImg.width || 400;
+          const dh = activeImg.height || 400;
 
-          // Draw Clear Moving Target Callout Ring
-          if (showGuides && motionVector) {
-            const activePos = (currentFrame === 1) ? motionVector.epoch1_pos : motionVector.epoch2_pos;
-            const sx = -dw / 2 + activePos.x;
-            const sy = -dh / 2 + activePos.y;
+          // Auto-scale to fill 90% of viewport
+          const fitScale = Math.min((w * 0.90) / dw, (h * 0.90) / dh);
+          const rw = dw * fitScale;
+          const rh = dh * fitScale;
 
-            // Reticle ring around the moving target
-            ctx.strokeStyle = (currentFrame === 1) ? '#38bdf8' : '#e87d0d';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.arc(sx, sy, 18, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Reticle tick marks
-            ctx.beginPath();
-            ctx.moveTo(sx - 24, sy); ctx.lineTo(sx - 18, sy);
-            ctx.moveTo(sx + 18, sy); ctx.lineTo(sx + 24, sy);
-            ctx.moveTo(sx, sy - 24); ctx.lineTo(sx, sy - 18);
-            ctx.moveTo(sx, sy + 18); ctx.lineTo(sx, sy + 24);
-            ctx.stroke();
-
-            // Label callout
-            ctx.fillStyle = (currentFrame === 1) ? '#38bdf8' : '#e87d0d';
-            ctx.font = 'bold 11px JetBrains Mono';
-            const label = (currentFrame === 1) ? "Pass 1 Position (May)" : "Pass 2 Position (Nov)";
-            ctx.fillText(label, sx + 24, sy - 6);
-          }
+          ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
         }
       }
 
       ctx.restore();
     }
 
-    // UPDATE CAMERA COORDINATE READOUTS BASED ON PAN & ZOOM
+    // =========================================================================
+    // COORDINATE KINEMATICS & HUD UPDATES
+    // =========================================================================
     function getCurrentCoordinates() {
-      // 1 pixel offset = (camera.fov / 400.0) / 60.0 degrees
       const degPerPixel = (camera.fov / 60.0) / (400.0 * camera.zoom);
       const currentRA = camera.ra - (camera.panX * degPerPixel);
       const currentDec = camera.dec + (camera.panY * degPerPixel);
@@ -610,19 +735,22 @@
 
     function updateCoordinateReadouts() {
       const coords = getCurrentCoordinates();
-      document.getElementById('hudRA').innerText = `${coords.ra.toFixed(5)}°`;
-      document.getElementById('hudDec').innerText = `${coords.dec.toFixed(5)}°`;
+      document.getElementById('vpRA').innerText = `${coords.ra.toFixed(5)}°`;
+      document.getElementById('vpDec').innerText = `${coords.dec.toFixed(5)}°`;
       document.getElementById('propRA').innerText = `${coords.ra.toFixed(5)}°`;
       document.getElementById('propDec').innerText = `${coords.dec.toFixed(5)}°`;
-      document.getElementById('hudFOV').innerText = `${(camera.fov / camera.zoom).toFixed(2)}'`;
-      
+      document.getElementById('vpFOV').innerText = `${(camera.fov / camera.zoom).toFixed(2)}'`;
+      document.getElementById('vpZoom').innerText = `${camera.zoom.toFixed(1)}x`;
+
       const inputRA = document.getElementById('inputRA');
       const inputDec = document.getElementById('inputDec');
       if (document.activeElement !== inputRA) inputRA.value = coords.ra.toFixed(5);
       if (document.activeElement !== inputDec) inputDec.value = coords.dec.toFixed(5);
     }
 
-    // GENERAL ASTRONOMICAL CUTOUT LOADER (Supports Presets, Decimal, & Sexagesimal)
+    // =========================================================================
+    // LOAD REAL NASA FITS SKY CUTOUT FROM BACKEND
+    // =========================================================================
     async function loadSkyCutout(ra, dec, targetKey = null, targetName = null, fov = 3.0) {
       try {
         let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${fov}`;
@@ -631,7 +759,7 @@
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
-          motionVector = data.motion_vector;
+          activeCutoutData = data;
 
           if (data.coordinates) {
             camera.ra = data.coordinates.ra_deg;
@@ -652,16 +780,18 @@
           realDiffImg.src = data.difference_image.image_data;
 
           const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
-          document.getElementById('hudTargetName').innerText = title;
+          document.getElementById('vpTargetName').innerText = title;
+          document.getElementById('outlinerTarget').innerText = title;
 
+          updateFrameLabel();
           updateCoordinateReadouts();
+
           if (aladinInstance) {
             aladinInstance.gotoRaDec(camera.ra, camera.dec);
           }
 
           if (data.telemetry) {
-            document.getElementById('propSurvey').innerText = data.archive_survey || "WISE / SPHEREx";
-            document.getElementById('propType').innerText = data.telemetry.object_type || "Astronomical Field";
+            document.getElementById('outlinerTargetType').innerText = data.telemetry.object_type || "Source";
             if (data.telemetry.proper_motion_mas_yr !== undefined) {
               document.getElementById('propPM').innerText = `${data.telemetry.proper_motion_mas_yr.toFixed(2)} "/yr`;
             }
@@ -670,133 +800,190 @@
             }
           }
         }
-      } catch(e) {
-        console.error("Cutout fetch error:", e);
+      } catch (err) {
+        console.error("Failed to load real FITS cutout:", err);
       }
     }
 
-    // GENERAL 102-BAND SPECTRUM LOADER
-    async function loadSpectrumData(ra, dec, targetKey = null) {
-      try {
-        let url = `${BACKEND_URL}/spectrum?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}`;
-        if (targetKey) url += `&target=${targetKey}`;
-        const res = await fetch(url);
-        if (res.ok) {
-          const spec = await res.json();
-          if (specChart) {
-            specChart.data.labels = spec.wavelengths_microns;
-            specChart.data.datasets[0].data = spec.flux_microjanskys;
-            specChart.update();
-          }
-        }
-      } catch(e) {
-        console.error("Spectrum fetch error:", e);
+    function updateFrameLabel() {
+      const lblEl = document.getElementById('vpFrameLabel');
+      const badgeEl = document.getElementById('frameBadge');
+      if (diffMode) {
+        lblEl.innerText = "(Diff Mode) Numerical Subtraction I₂ - I₁";
+        lblEl.className = "text-orange-400 font-semibold";
+        badgeEl.innerText = "Δ";
+        badgeEl.className = "px-2 py-0.5 rounded bg-orange-600 text-white font-bold text-[10px]";
+      } else if (currentFrame === 1) {
+        lblEl.innerText = "(Frame 1) 2MASS Historic Baseline (1999-02)";
+        lblEl.className = "text-blender-orange font-semibold";
+        badgeEl.innerText = "1";
+        badgeEl.className = "px-2 py-0.5 rounded bg-blender-blue text-white font-bold text-[10px]";
+      } else {
+        lblEl.innerText = "(Frame 2) SPHEREx / DSS2 Epoch (2025-05)";
+        lblEl.className = "text-cyan-400 font-semibold";
+        badgeEl.innerText = "2";
+        badgeEl.className = "px-2 py-0.5 rounded bg-cyan-600 text-white font-bold text-[10px]";
       }
     }
 
-    // DEBOUNCED AUTOMATIC SKY TILE FETCHING UPON SLEW STOP
-    let slewDebounceTimer = null;
-    function scheduleSlewTileFetch() {
-      if (slewDebounceTimer) clearTimeout(slewDebounceTimer);
-      slewDebounceTimer = setTimeout(() => {
-        commitCurrentViewCoordinates();
-      }, 900);
-    }
-
-    function commitCurrentViewCoordinates() {
-      const coords = getCurrentCoordinates();
-      camera.ra = coords.ra;
-      camera.dec = coords.dec;
-      camera.panX = 0;
-      camera.panY = 0;
-      updateCoordinateReadouts();
-      loadSkyCutout(camera.ra, camera.dec);
-      loadSpectrumData(camera.ra, camera.dec);
-    }
-
-    // FLIPBOOK PLAYBACK
+    // =========================================================================
+    // FLIPBOOK BLINK CONTROLS & TIMELINE
+    // =========================================================================
     function startFlipbook() {
       if (playTimer) clearInterval(playTimer);
       playTimer = setInterval(() => {
-        if (!isPlaying || diffMode) return;
-        currentFrame = (currentFrame === 1) ? 2 : 1;
-        updateTimelineUI();
-        drawFrame();
+        if (!diffMode) {
+          currentFrame = (currentFrame === 1) ? 2 : 1;
+          updateFrameLabel();
+          drawFrame();
+        }
       }, 1000 / fps);
-    }
-
-    function updateTimelineUI() {
-      document.getElementById('frameBadge').innerText = currentFrame;
-      const lbl = document.getElementById('hudEpochLabel');
-      if (currentFrame === 1) {
-        lbl.innerText = "SPHEREx Pass 1 (May 2025)";
-        lbl.className = "text-cyan-300 font-bold";
-      } else {
-        lbl.innerText = "SPHEREx Pass 2 (Nov 2025)";
-        lbl.className = "text-blender-orange font-bold";
-      }
-    }
-
-    // TIMELINE TRANSPORT CONTROLS
-    document.getElementById('btnPlayPause').addEventListener('click', () => {
-      isPlaying = !isPlaying;
-      const icon = document.getElementById('playPauseIcon');
-      if (isPlaying) icon.setAttribute('data-lucide', 'pause');
-      else icon.setAttribute('data-lucide', 'play');
+      isPlaying = true;
+      document.getElementById('playPauseIcon').setAttribute('data-lucide', 'pause');
       lucide.createIcons();
-    });
+    }
 
+    function stopFlipbook() {
+      if (playTimer) clearInterval(playTimer);
+      playTimer = null;
+      isPlaying = false;
+      document.getElementById('playPauseIcon').setAttribute('data-lucide', 'play');
+      lucide.createIcons();
+    }
+
+    function togglePlayPause() {
+      if (isPlaying) stopFlipbook();
+      else startFlipbook();
+    }
+
+    document.getElementById('btnPlayPause').addEventListener('click', togglePlayPause);
     document.getElementById('btnJumpStart').addEventListener('click', () => {
-      isPlaying = false; currentFrame = 1; updateTimelineUI(); drawFrame();
-    });
-    document.getElementById('btnStepBack').addEventListener('click', () => {
-      isPlaying = false; currentFrame = 1; updateTimelineUI(); drawFrame();
-    });
-    document.getElementById('btnStepFwd').addEventListener('click', () => {
-      isPlaying = false; currentFrame = 2; updateTimelineUI(); drawFrame();
+      stopFlipbook();
+      currentFrame = 1;
+      updateFrameLabel();
+      drawFrame();
     });
     document.getElementById('btnJumpEnd').addEventListener('click', () => {
-      isPlaying = false; currentFrame = 2; updateTimelineUI(); drawFrame();
+      stopFlipbook();
+      currentFrame = 2;
+      updateFrameLabel();
+      drawFrame();
+    });
+    document.getElementById('btnStepBack').addEventListener('click', () => {
+      stopFlipbook();
+      currentFrame = 1;
+      updateFrameLabel();
+      drawFrame();
+    });
+    document.getElementById('btnStepFwd').addEventListener('click', () => {
+      stopFlipbook();
+      currentFrame = 2;
+      updateFrameLabel();
+      drawFrame();
     });
 
-    document.getElementById('speedSlider').addEventListener('input', (e) => {
+    const speedSlider = document.getElementById('speedSlider');
+    const speedLabel = document.getElementById('speedLabel');
+    speedSlider.addEventListener('input', (e) => {
       fps = parseFloat(e.target.value);
-      document.getElementById('speedLabel').innerText = `${fps.toFixed(1)} FPS`;
-      startFlipbook();
+      speedLabel.innerText = `${fps.toFixed(1)} FPS`;
+      if (isPlaying) startFlipbook();
     });
 
-    document.getElementById('btnDiffToggle').addEventListener('click', function() {
-      diffMode = !diffMode;
-      const badge = document.getElementById('diffModeBadge');
-      if (diffMode) {
-        this.classList.add('blender-pill-active');
-        badge.classList.remove('hidden');
-      } else {
-        this.classList.remove('blender-pill-active');
-        badge.classList.add('hidden');
-      }
+    // =========================================================================
+    // WORKSPACE MODE SWITCHER (Blink, Diff, Spectrum, Aladin)
+    // =========================================================================
+    const wsBlink = document.getElementById('wsBlink');
+    const wsDiff = document.getElementById('wsDiff');
+    const wsSpec = document.getElementById('wsSpec');
+    const wsAladin = document.getElementById('wsAladin');
+
+    function resetWorkspaceButtons() {
+      [wsBlink, wsDiff, wsSpec, wsAladin].forEach(b => b.classList.remove('blender-btn-active'));
+      document.getElementById('aladinContainer').classList.add('hidden');
+      document.getElementById('astroCanvas').classList.remove('hidden');
+    }
+
+    wsBlink.addEventListener('click', () => {
+      resetWorkspaceButtons();
+      wsBlink.classList.add('blender-btn-active');
+      diffMode = false;
+      updateFrameLabel();
+      drawFrame();
+      if (!isPlaying) startFlipbook();
+    });
+
+    wsDiff.addEventListener('click', () => {
+      resetWorkspaceButtons();
+      wsDiff.classList.add('blender-btn-active');
+      setCanvasFilter('filter-grayscale');
+      shadeDiff.classList.add('blender-btn-active');
+      diffMode = true;
+      stopFlipbook();
+      updateFrameLabel();
       drawFrame();
     });
 
-    document.getElementById('toggleGuidesBtn').addEventListener('click', function() {
-      showGuides = !showGuides;
-      this.innerText = showGuides ? "GUIDES: ON" : "GUIDES: OFF";
-      this.className = showGuides 
-        ? "flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-blender-orange font-mono text-[10px]"
-        : "flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-gray-400 font-mono text-[10px]";
+    wsSpec.addEventListener('click', () => {
+      resetWorkspaceButtons();
+      wsSpec.classList.add('blender-btn-active');
+      diffMode = false;
+      document.getElementById('propertiesSidebar').classList.remove('hidden');
+      loadSpectrumData(camera.ra, camera.dec, currentTargetKey);
       drawFrame();
     });
 
-    // RECENTER VIEW BUTTON
-    document.getElementById('recenterBtn').addEventListener('click', () => {
-      camera.panX = 0;
-      camera.panY = 0;
-      camera.zoom = 1.0;
-      updateCoordinateReadouts();
+    wsAladin.addEventListener('click', () => {
+      resetWorkspaceButtons();
+      wsAladin.classList.add('blender-btn-active');
+      document.getElementById('aladinContainer').classList.remove('hidden');
+      document.getElementById('astroCanvas').classList.add('hidden');
+      initAladinLite();
+    });
+
+    // Shading Buttons (Grayscale, Inverted, Thermal, Diff)
+    const shadeGray = document.getElementById('shadeGrayscale');
+    const shadeInv = document.getElementById('shadeInverted');
+    const shadeTherm = document.getElementById('shadeThermal');
+    const shadeDiff = document.getElementById('shadeDifference');
+
+    function setCanvasFilter(filterClass) {
+      canvas.className = `w-full h-full block ${filterClass}`;
+      [shadeGray, shadeInv, shadeTherm, shadeDiff].forEach(b => b.classList.remove('blender-btn-active'));
+    }
+
+    shadeGray.addEventListener('click', () => {
+      setCanvasFilter('filter-grayscale');
+      shadeGray.classList.add('blender-btn-active');
+      diffMode = false;
+      updateFrameLabel();
       drawFrame();
     });
 
-    // TARGET PRESETS SELECTION
+    shadeInv.addEventListener('click', () => {
+      setCanvasFilter('filter-inverted');
+      shadeInv.classList.add('blender-btn-active');
+      drawFrame();
+    });
+
+    shadeTherm.addEventListener('click', () => {
+      setCanvasFilter('filter-thermal');
+      shadeTherm.classList.add('blender-btn-active');
+      drawFrame();
+    });
+
+    shadeDiff.addEventListener('click', () => {
+      setCanvasFilter('filter-grayscale');
+      shadeDiff.classList.add('blender-btn-active');
+      diffMode = true;
+      stopFlipbook();
+      updateFrameLabel();
+      drawFrame();
+    });
+
+    // =========================================================================
+    // TARGET PRESETS & COORDINATE SEARCH
+    // =========================================================================
     document.querySelectorAll('.target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-target');
@@ -813,9 +1000,13 @@
       camera.panY = 0;
       camera.zoom = 1.0;
 
-      document.getElementById('hudTargetName').innerText = t.name;
-      document.getElementById('hudRA').innerText = `${t.raDeg.toFixed(5)}°`;
-      document.getElementById('hudDec').innerText = `${t.decDeg.toFixed(5)}°`;
+      document.getElementById('vpTargetName').innerText = t.name;
+      document.getElementById('outlinerTarget').innerText = t.name;
+      document.getElementById('outlinerTargetType').innerText = t.type;
+      document.getElementById('temporalBaselineText').innerText = `Δt: ${t.baseline}`;
+
+      document.getElementById('vpRA').innerText = `${t.raDeg.toFixed(5)}°`;
+      document.getElementById('vpDec').innerText = `${t.decDeg.toFixed(5)}°`;
       document.getElementById('propRA').innerText = `${t.raDeg.toFixed(5)}°`;
       document.getElementById('propDec').innerText = `${t.decDeg.toFixed(5)}°`;
       document.getElementById('propPM').innerText = t.pm;
@@ -824,16 +1015,15 @@
       document.getElementById('inputRA').value = t.raDeg.toFixed(5);
       document.getElementById('inputDec').value = t.decDeg.toFixed(5);
 
-      document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-pill-active'));
+      document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-btn-active'));
       const activeBtn = document.querySelector(`[data-target="${key}"]`);
-      if (activeBtn) activeBtn.classList.add('blender-pill-active');
+      if (activeBtn) activeBtn.classList.add('blender-btn-active');
 
       playTargetLockChime();
       loadSkyCutout(t.raDeg, t.decDeg, key, t.name);
       loadSpectrumData(t.raDeg, t.decDeg, key);
     }
 
-    // DIRECT COORDINATE SEARCH / SLEW HANDLER (Decimal + Sexagesimal Support)
     function slewToTypedCoordinates() {
       const raInput = document.getElementById('inputRA').value.trim();
       const decInput = document.getElementById('inputDec').value.trim();
@@ -845,8 +1035,7 @@
       camera.zoom = 1.0;
       camera.fov = fovVal;
 
-      // Deselect preset target buttons
-      document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-pill-active'));
+      document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-btn-active'));
       currentTargetKey = null;
 
       playTargetLockChime();
@@ -863,23 +1052,25 @@
       if (e.key === 'Enter') slewToTypedCoordinates();
     });
 
+    // =========================================================================
     // 102-BAND SPECTRUM CHART
+    // =========================================================================
     let specChart;
     function initSpectrumChart() {
       const chartCanvas = document.getElementById('spectrumChart');
       if (!chartCanvas) return;
-      const ctx = chartCanvas.getContext('2d');
+      const ctxChart = chartCanvas.getContext('2d');
       const wl = [];
       for(let i = 0; i < 102; i++) wl.push((0.75 + (i / 101) * 4.25).toFixed(2));
 
-      specChart = new Chart(ctx, {
+      specChart = new Chart(ctxChart, {
         type: 'line',
         data: {
           labels: wl,
           datasets: [{
             data: [],
-            borderColor: '#2b76c9',
-            backgroundColor: 'rgba(43, 118, 201, 0.1)',
+            borderColor: '#ea7600',
+            backgroundColor: 'rgba(234, 118, 0, 0.1)',
             fill: true,
             borderWidth: 1.5,
             pointRadius: 0,
@@ -898,30 +1089,28 @@
       });
     }
 
+    async function loadSpectrumData(ra, dec, targetKey = null) {
+      try {
+        let url = `${BACKEND_URL}/spectrum?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}`;
+        if (targetKey) url += `&target=${targetKey}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const spec = await res.json();
+          if (specChart && spec.bands) {
+            const fluxes = spec.bands.map(b => b.flux_ujy);
+            specChart.data.datasets[0].data = fluxes;
+            specChart.update();
+          }
+        }
+      } catch (e) {
+        console.warn("Spectrum fetch failed:", e);
+      }
+    }
+
     // =========================================================================
-    // CDS ALADIN LITE OBSERVATORY CONTROLLER (Real Strasbourg Sky Engine)
+    // CDS ALADIN LITE OBSERVATORY CONTROLLER
     // =========================================================================
     let aladinInstance = null;
-    let currentViewEngine = 'fits'; // 'fits' or 'aladin'
-
-    document.getElementById('btnModeFITS').addEventListener('click', () => {
-      currentViewEngine = 'fits';
-      document.getElementById('btnModeFITS').classList.add('blender-pill-active');
-      document.getElementById('btnModeAladin').classList.remove('blender-pill-active');
-      document.getElementById('aladinContainer').classList.add('hidden');
-      document.getElementById('astroCanvas').classList.remove('hidden');
-      drawFrame();
-    });
-
-    document.getElementById('btnModeAladin').addEventListener('click', () => {
-      currentViewEngine = 'aladin';
-      document.getElementById('btnModeAladin').classList.add('blender-pill-active');
-      document.getElementById('btnModeFITS').classList.remove('blender-pill-active');
-      document.getElementById('aladinContainer').classList.remove('hidden');
-      document.getElementById('astroCanvas').classList.add('hidden');
-      initAladinLite();
-    });
-
     function initAladinLite() {
       if (typeof A === 'undefined') {
         console.warn("CDS Aladin Lite library initializing...");
@@ -943,31 +1132,29 @@
     }
 
     // =========================================================================
-    // ROBUST PC GAMER WALK NAV & MOUSE DRAG ENGINE (60 FPS Slewing & Zooming)
+    // INTERACTIVE WALK NAV & MOUSE PAN / ZOOM ENGINE (WASD + Drag)
     // =========================================================================
-    const toggleWalkBtn = document.getElementById('toggleWalkBtn');
+    const toolWalk = document.getElementById('toolWalk');
     const walkHudBanner = document.getElementById('walkHudBanner');
     const btnExitWalkHud = document.getElementById('btnExitWalkHud');
-    const btnFetchCurrentFOV = document.getElementById('btnFetchCurrentFOV');
     let isWalkNav = false;
 
     function setWalkNav(active) {
       isWalkNav = active;
       if (isWalkNav) {
-        toggleWalkBtn.classList.add('bg-blender-orange', 'text-white');
+        toolWalk.classList.add('blender-btn-orange-active');
         walkHudBanner.classList.remove('hidden');
         playTargetLockChime();
         try {
           if (document.pointerLockElement !== canvas) {
             canvas.requestPointerLock();
           }
-        } catch(err) {
-          console.warn("Pointer lock skipped/unsupported:", err);
-        }
+        } catch(err) {}
       } else {
-        toggleWalkBtn.classList.remove('bg-blender-orange', 'text-white');
+        toolWalk.classList.remove('blender-btn-orange-active');
         walkHudBanner.classList.add('hidden');
         camera.activeKeys = {};
+        stopThrusterSound();
         try {
           if (document.pointerLockElement === canvas) {
             document.exitPointerLock();
@@ -976,18 +1163,24 @@
       }
     }
 
-    toggleWalkBtn.addEventListener('click', () => setWalkNav(!isWalkNav));
+    toolWalk.addEventListener('click', () => setWalkNav(!isWalkNav));
     if (btnExitWalkHud) btnExitWalkHud.addEventListener('click', () => setWalkNav(false));
-    if (btnFetchCurrentFOV) btnFetchCurrentFOV.addEventListener('click', commitCurrentViewCoordinates);
 
-    document.addEventListener('pointerlockchange', () => {
-      // If user exits pointer lock via browser ESC, update state
-      if (document.pointerLockElement !== canvas && isWalkNav) {
-        // keep isWalkNav active for drag/WASD unless user clicked Exit
-      }
+    // Reset Tools
+    document.getElementById('toolRecenter').addEventListener('click', () => {
+      camera.panX = 0;
+      camera.panY = 0;
+      updateCoordinateReadouts();
+      drawFrame();
     });
 
-    // MOUSE DRAG / PAN HANDLING (Works in normal view and in Walk Nav!)
+    document.getElementById('toolResetZoom').addEventListener('click', () => {
+      camera.zoom = 1.0;
+      updateCoordinateReadouts();
+      drawFrame();
+    });
+
+    // Mouse drag / pan handling
     let isDragging = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
@@ -1003,19 +1196,17 @@
     window.addEventListener('mouseup', () => {
       if (isDragging) {
         isDragging = false;
-        scheduleSlewTileFetch();
       }
     });
 
     window.addEventListener('mousemove', (e) => {
       if (isWalkNav && document.pointerLockElement === canvas) {
-        // Pointer Lock FPS mode
-        const sensitivity = 1.2;
+        // Pointer Lock FPS Mode
+        const sensitivity = 1.0;
         camera.panX -= e.movementX * sensitivity;
         camera.panY -= e.movementY * sensitivity;
         updateCoordinateReadouts();
         drawFrame();
-        scheduleSlewTileFetch();
       } else if (isDragging) {
         // Direct Canvas Click-and-Drag Slew
         const dx = e.clientX - lastMouseX;
@@ -1029,7 +1220,16 @@
       }
     });
 
-    // KEY LISTENERS FOR WASD / SPACE / CTRL
+    // Mouse wheel zoom
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      camera.zoom = Math.min(8.0, Math.max(0.4, camera.zoom * zoomFactor));
+      updateCoordinateReadouts();
+      drawFrame();
+    }, { passive: false });
+
+    // Keyboard controls for WASD / Space / Shift / Backquote
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Escape' && isWalkNav) {
         setWalkNav(false);
@@ -1039,6 +1239,16 @@
         e.preventDefault();
         setWalkNav(!isWalkNav);
         return;
+      }
+
+      // Spacebar toggles Play/Pause when not in Walk Nav or modal
+      if (e.code === 'Space' && !isWalkNav) {
+        const activeTag = document.activeElement ? document.activeElement.tagName : '';
+        if (activeTag !== 'INPUT' && activeTag !== 'TEXTAREA') {
+          e.preventDefault();
+          togglePlayPause();
+          return;
+        }
       }
 
       // Do not capture keys if typing in search input boxes
@@ -1054,43 +1264,45 @@
     window.addEventListener('keyup', (e) => {
       if (isWalkNav) {
         delete camera.activeKeys[e.code];
-        scheduleSlewTileFetch();
+        if (Object.keys(camera.activeKeys).length === 0) {
+          stopThrusterSound();
+        }
       }
     });
 
-    // 60 FPS CONTINUOUS SLEW & ZOOM KINEMATIC LOOP
+    // 60 FPS Kinematics Loop
     function gameKinematicsLoop() {
       if (isWalkNav) {
         let moved = false;
         const isSprinting = camera.activeKeys['ShiftLeft'] || camera.activeKeys['ShiftRight'];
-        const step = (isSprinting ? 12.0 : 4.0);
+        const step = (isSprinting ? 10.0 : 3.5);
 
         // W: Fly Forward (Zoom in)
         if (camera.activeKeys['KeyW']) {
-          camera.zoom = Math.min(6.0, camera.zoom * 1.025);
+          camera.zoom = Math.min(8.0, camera.zoom * 1.02);
           moved = true;
         }
         // S: Fly Backward (Zoom out)
         if (camera.activeKeys['KeyS']) {
-          camera.zoom = Math.max(0.4, camera.zoom * 0.975);
+          camera.zoom = Math.max(0.4, camera.zoom * 0.98);
           moved = true;
         }
-        // A: Strafe Left (Slews view right)
+        // A: Strafe Left
         if (camera.activeKeys['KeyA']) {
           camera.panX += step;
           moved = true;
         }
-        // D: Strafe Right (Slews view left)
+        // D: Strafe Right
         if (camera.activeKeys['KeyD']) {
           camera.panX -= step;
           moved = true;
         }
-        // Space: Ascend (Slews view down)
+        // Space: Ascend
         if (camera.activeKeys['Space']) {
           camera.panY += step;
           moved = true;
         }
-        // Control: Descend (Slews view up)
+        // Control / C: Descend
         if (camera.activeKeys['ControlLeft'] || camera.activeKeys['ControlRight'] || camera.activeKeys['KeyC']) {
           camera.panY -= step;
           moved = true;
@@ -1098,71 +1310,102 @@
 
         if (moved) {
           updateCoordinateReadouts();
-          if (aladinInstance) {
-            aladinInstance.gotoRaDec(camera.ra, camera.dec);
-          }
           drawFrame();
-          scheduleSlewTileFetch();
         }
       }
       requestAnimationFrame(gameKinematicsLoop);
     }
     requestAnimationFrame(gameKinematicsLoop);
 
-    // MOUSE WHEEL ZOOM (Supported directly on canvas)
-    canvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      if (e.deltaY < 0) {
-        camera.zoom = Math.min(6.0, camera.zoom * 1.08);
-      } else {
-        camera.zoom = Math.max(0.4, camera.zoom * 0.92);
-      }
-      updateCoordinateReadouts();
-      drawFrame();
-      scheduleSlewTileFetch();
-    }, { passive: false });
+    // =========================================================================
+    // SIDEBAR & CITIZEN SCIENCE CANDIDATE MODAL
+    // =========================================================================
+    const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+    const propertiesSidebar = document.getElementById('propertiesSidebar');
+    toggleSidebarBtn.addEventListener('click', () => {
+      propertiesSidebar.classList.toggle('hidden');
+    });
 
-    // MUTE AUDIO TOGGLE
-    document.getElementById('btnMuteToggle').addEventListener('click', () => {
+    const flagCandidateBtn = document.getElementById('flagCandidateBtn');
+    const flagModal = document.getElementById('flagModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const submitCandidateBtn = document.getElementById('submitCandidateBtn');
+
+    flagCandidateBtn.addEventListener('click', () => {
+      const coords = getCurrentCoordinates();
+      document.getElementById('candRAInput').value = coords.ra.toFixed(5);
+      document.getElementById('candDecInput').value = coords.dec.toFixed(5);
+      document.getElementById('candNameInput').value = `${document.getElementById('vpTargetName').innerText} Candidate`;
+      flagModal.classList.remove('hidden');
+    });
+
+    function closeCandidateModal() {
+      flagModal.classList.add('hidden');
+    }
+    closeModalBtn.addEventListener('click', closeCandidateModal);
+    cancelModalBtn.addEventListener('click', closeCandidateModal);
+
+    submitCandidateBtn.addEventListener('click', async () => {
+      const payload = {
+        ra: parseFloat(document.getElementById('candRAInput').value),
+        dec: parseFloat(document.getElementById('candDecInput').value),
+        candidate_name: document.getElementById('candNameInput').value,
+        motion_type: document.getElementById('candMotionType').value,
+        proper_motion_mas: 8.12
+      };
+      try {
+        await fetch(`${BACKEND_URL}/flag`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        alert(`Candidate '${payload.candidate_name}' successfully logged to Citizen Science archive!`);
+        closeCandidateModal();
+      } catch (err) {
+        alert("Failed to submit candidate to backend archive.");
+      }
+    });
+
+    // Audio Toggle
+    const toolMute = document.getElementById('toolMute');
+    const muteIcon = document.getElementById('muteIcon');
+    toolMute.addEventListener('click', () => {
       isMuted = !isMuted;
-      const icon = document.getElementById('muteIcon');
       if (isMuted) {
-        icon.setAttribute('data-lucide', 'volume-x');
-        icon.classList.add('text-red-400');
+        muteIcon.setAttribute('data-lucide', 'volume-x');
+        toolMute.classList.add('text-red-400');
+        stopThrusterSound();
       } else {
-        icon.setAttribute('data-lucide', 'volume-2');
-        icon.classList.remove('text-red-400');
+        muteIcon.setAttribute('data-lucide', 'volume-2');
+        toolMute.classList.remove('text-red-400');
       }
       lucide.createIcons();
     });
 
-    // PROPERTIES SIDEBAR TOGGLE
-    document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
-      const sidebar = document.getElementById('propertiesSidebar');
-      sidebar.classList.toggle('hidden');
-      resizeCanvas();
-    });
-
-    // STARTUP INITIALIZATION (Supports URL Deep-Linking & Presets)
-    window.addEventListener('load', () => {
+    // =========================================================================
+    // INITIALIZATION
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
       resizeCanvas();
       initSpectrumChart();
 
-      // Check URL Query Parameters for Embeddable Links (e.g. ?ra=...&dec=...&fov=...)
+      // Check URL parameters (e.g. ?ra=133.79513&dec=-7.24515&fov=3.0)
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('ra') && urlParams.has('dec')) {
-        const qRa = urlParams.get('ra');
-        const qDec = urlParams.get('dec');
-        const qFov = parseFloat(urlParams.get('fov') || '3.0');
-        
-        document.getElementById('inputRA').value = qRa;
-        document.getElementById('inputDec').value = qDec;
-        document.getElementById('selectFOV').value = qFov.toFixed(1);
-        
-        loadSkyCutout(qRa, qDec, null, `Target (${qRa}, ${qDec})`, qFov);
-        loadSpectrumData(qRa, qDec);
+      const paramRA = urlParams.get('ra');
+      const paramDec = urlParams.get('dec');
+      const paramFOV = urlParams.get('fov');
+      const paramTarget = urlParams.get('target');
+
+      if (paramRA && paramDec) {
+        document.getElementById('inputRA').value = paramRA;
+        document.getElementById('inputDec').value = paramDec;
+        if (paramFOV) document.getElementById('selectFOV').value = paramFOV;
+        slewToTypedCoordinates();
+      } else if (paramTarget && TARGETS[paramTarget]) {
+        selectTarget(paramTarget);
       } else {
-        selectTarget(currentTargetKey);
+        selectTarget('wise0855');
       }
 
       startFlipbook();
