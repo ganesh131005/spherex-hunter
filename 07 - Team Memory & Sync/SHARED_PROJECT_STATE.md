@@ -10,7 +10,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **System Lead** | `jokerodu` | `main` | Architecture, coordination & merge reviews | 🟢 Active |
 | **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Setting up FastAPI & Astropy cutout service | 🟡 In Progress |
-| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Scaffolding Vite React & Canvas blink player | 🟡 In Progress |
+| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Interactive prototype in `/frontend/index.html` live | 🟢 Ready |
 | **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟡 In Progress |
 | **UX, Story & Video** | `astrodu` | `astrodu/ui-story-pitch` | Citizen science modal, slide deck & video script | 🟡 In Progress |
 
