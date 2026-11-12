@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SPHEREx Hunter - Time-Domain Infrared Sky Browser</title>
+  <title>SPHEREx Hunter - Blender Minimalist Astronomy Viewport</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
@@ -16,20 +16,17 @@
       theme: {
         extend: {
           colors: {
-            space: {
-              950: '#030712',
-              900: '#0b0f19',
-              850: '#111827',
-              800: '#1f2937',
-              700: '#374151',
-            },
-            cyan: {
-              400: '#22d3ee',
-              500: '#06b6d4',
-            },
-            amber: {
-              400: '#fbbf24',
-              500: '#f59e0b',
+            blender: {
+              950: '#141414',
+              900: '#1d1d1d',
+              850: '#232323',
+              800: '#2d2d2d',
+              700: '#383838',
+              600: '#484848',
+              500: '#5c5c5c',
+              orange: '#e87d0d',
+              blue: '#2b76c9',
+              lightBlue: '#4794e6'
             }
           }
         }
@@ -37,575 +34,589 @@
     }
   </script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     body {
-      font-family: 'Inter', sans-serif;
-      background-color: #030712;
-      color: #f3f4f6;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #141414;
+      color: #cccccc;
+      overflow: hidden;
+      user-select: none;
     }
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
     }
-    .star-bg {
-      background-image: radial-gradient(1px 1px at 20px 30px, #ffffff33, rgba(0,0,0,0)),
-                        radial-gradient(1px 1px at 40px 70px, #ffffff22, rgba(0,0,0,0)),
-                        radial-gradient(1px 1px at 90px 40px, #ffffff44, rgba(0,0,0,0));
-      background-repeat: repeat;
-      background-size: 200px 200px;
+    /* Blender style scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
     }
-    /* Custom Range Slider */
+    ::-webkit-scrollbar-track {
+      background: #1d1d1d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #383838;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #484848;
+    }
+    /* Blender header pills */
+    .blender-pill {
+      background-color: #282828;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+    .blender-pill:hover {
+      background-color: #333333;
+      border-color: #484848;
+      color: #ffffff;
+    }
+    .blender-pill-active {
+      background-color: #2b76c9;
+      border-color: #4794e6;
+      color: #ffffff;
+    }
+    /* Slider styling */
     input[type=range] {
-      accent-color: #06b6d4;
-    }
-    .glow-cyan {
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.35);
-    }
-    .hud-border {
-      border: 1px solid rgba(6, 182, 212, 0.25);
+      accent-color: #2b76c9;
     }
   </style>
 </head>
-<body class="star-bg h-screen flex flex-col overflow-hidden select-none">
+<body class="h-screen flex flex-col bg-blender-950 text-xs">
 
-  <!-- TOP HUD NAVIGATION BAR -->
-  <header class="bg-space-900/90 backdrop-blur-md border-b border-cyan-500/20 px-4 py-2.5 flex items-center justify-between z-30">
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-400/40 flex items-center justify-center glow-cyan">
-          <i data-lucide="telescope" class="w-5 h-5 text-cyan-400"></i>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base font-bold tracking-wider text-white uppercase flex items-center gap-1.5">
-              SPHEREx <span class="text-cyan-400 font-mono">HUNTER</span>
-            </h1>
-            <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">v0.9-PROTO</span>
-          </div>
-          <p class="text-[11px] text-gray-400 flex items-center gap-1">
-            NASA Space Apps 2026 &bull; Team RIP (Coimbatore)
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- TARGET SEARCH & COORDINATES -->
-    <div class="flex items-center gap-2 flex-1 max-w-xl mx-4">
-      <div class="relative w-full">
-        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-        <input 
-          id="coordInput"
-          type="text" 
-          value="08h 55m 10.83s, -07d 14m 42.5s"
-          placeholder="Enter RA & Dec (Sexagesimal or Decimal Degrees)..." 
-          class="w-full bg-space-950 border border-gray-700 focus:border-cyan-400 rounded-lg pl-9 pr-24 py-1.5 text-xs font-mono text-cyan-200 outline-none transition-all"
-        />
-        <button id="searchBtn" class="absolute right-1 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-semibold tracking-wide transition-all">
-          RESOLVE
-        </button>
-      </div>
-
-      <!-- FOV Selector -->
-      <div class="flex items-center gap-1 bg-space-950 border border-gray-700 rounded-lg px-2 py-1 text-xs font-mono">
-        <span class="text-gray-400 text-[10px]">FOV:</span>
-        <select id="fovSelect" class="bg-transparent text-cyan-300 outline-none cursor-pointer">
-          <option value="60">1' (Zoom)</option>
-          <option value="180" selected>3' (Standard)</option>
-          <option value="600">10' (Wide)</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- ACTION BUTTONS -->
+  <!-- ========================================================================= -->
+  <!-- 1. TOP BLENDER MENU & CONTROL BAR                                         -->
+  <!-- ========================================================================= -->
+  <header class="h-9 bg-blender-900 border-b border-blender-800 px-3 flex items-center justify-between z-30 shrink-0">
+    <!-- Left: Blender-style menus & Title -->
     <div class="flex items-center gap-2">
-      <button id="flagBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-medium transition-all">
-        <i data-lucide="flag" class="w-3.5 h-3.5"></i>
-        Flag Discovery
+      <div class="flex items-center gap-1.5 pr-2 border-r border-blender-700">
+        <div class="w-5 h-5 rounded bg-blender-orange flex items-center justify-center font-bold text-white text-[11px] shadow-sm">
+          S
+        </div>
+        <span class="font-bold text-white tracking-wide text-xs">SPHEREx Hunter</span>
+        <span class="text-[10px] text-gray-400 font-mono">5.2-LTS</span>
+      </div>
+
+      <!-- Text Menus -->
+      <div class="flex items-center text-[11px] text-gray-300 gap-1 font-medium">
+        <button class="px-2 py-0.5 rounded hover:bg-blender-800 hover:text-white transition-all">View</button>
+        <button class="px-2 py-0.5 rounded hover:bg-blender-800 hover:text-white transition-all">Select</button>
+        <button class="px-2 py-0.5 rounded hover:bg-blender-800 hover:text-white transition-all">Overlay</button>
+      </div>
+
+      <!-- Quick Preset Targets (Pill Selectors) -->
+      <div class="flex items-center gap-1 pl-2 border-l border-blender-700">
+        <span class="text-[10px] text-gray-400 uppercase font-mono">Targets:</span>
+        <button class="target-btn blender-pill blender-pill-active px-2 py-0.5 text-[11px] font-mono" data-target="wise0855">WISE 0855</button>
+        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="barnard">Barnard's Star</button>
+        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="epsindi">Eps Indi B</button>
+        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rwaur">RW Aurigae</button>
+        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rdraconis">R Draconis</button>
+      </div>
+    </div>
+
+    <!-- Right: Walk Navigation, Keymap & Properties Toggle -->
+    <div class="flex items-center gap-2">
+      <!-- Walk Navigation Toggle Button -->
+      <button id="toggleWalkBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-600 text-white font-medium transition-all shadow-sm">
+        <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-blender-orange"></i>
+        <span>Walk Nav</span>
+        <span class="text-[10px] text-gray-400 font-mono bg-blender-900 px-1 rounded border border-blender-700">Shift+`</span>
       </button>
 
-      <button id="shareBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-space-800 hover:bg-space-700 border border-gray-700 text-gray-200 text-xs font-medium transition-all">
-        <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
-        Share Link
+      <!-- Keymap Preferences -->
+      <button id="openKeymapBtn" class="p-1 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-gray-300" title="Keymap Preferences">
+        <i data-lucide="keyboard" class="w-3.5 h-3.5"></i>
       </button>
 
-      <button id="artifactGuideBtn" class="p-1.5 rounded-lg bg-space-800 hover:bg-space-700 border border-gray-700 text-gray-300 transition-all" title="Artifact Guide">
-        <i data-lucide="help-circle" class="w-4 h-4"></i>
+      <!-- Toggle Right Sidebar -->
+      <button id="toggleSidebarBtn" class="p-1 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-gray-300" title="Toggle Properties (N)">
+        <i data-lucide="sidebar-close" class="w-3.5 h-3.5"></i>
       </button>
     </div>
   </header>
 
-  <!-- BENCHMARK PRESETS SUB-HEADER -->
-  <div class="bg-space-950/90 border-b border-gray-800/80 px-4 py-1.5 flex items-center justify-between text-xs">
-    <div class="flex items-center gap-2 overflow-x-auto py-0.5">
-      <span class="text-gray-400 font-mono text-[10px] uppercase tracking-wider flex items-center gap-1">
-        <i data-lucide="bookmark" class="w-3 h-3 text-cyan-400"></i> NASA Targets:
-      </span>
-      <button class="target-preset-btn px-2.5 py-0.5 rounded bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-800/60 text-cyan-300 font-mono text-[11px] transition-all" data-target="wise0855">
-        WISE 0855 (Cold Y-Dwarf)
-      </button>
-      <button class="target-preset-btn px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 border border-gray-800 text-gray-300 font-mono text-[11px] transition-all" data-target="barnard">
-        Barnard's Star (Fast Motion)
-      </button>
-      <button class="target-preset-btn px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 border border-gray-800 text-gray-300 font-mono text-[11px] transition-all" data-target="epsindi">
-        Epsilon Indi B (Binary)
-      </button>
-      <button class="target-preset-btn px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 border border-gray-800 text-gray-300 font-mono text-[11px] transition-all" data-target="rwaur">
-        RW Aurigae (Variable)
-      </button>
-      <button class="target-preset-btn px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 border border-gray-800 text-gray-300 font-mono text-[11px] transition-all" data-target="rdraconis">
-        R Draconis (Mira Pulsar)
-      </button>
-    </div>
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN VIEWPORT & PROPERTIES AREA                                        -->
+  <!-- ========================================================================= -->
+  <div class="flex-1 flex overflow-hidden relative">
 
-    <div class="flex items-center gap-3 text-gray-400 text-[11px] font-mono">
-      <span id="targetTypeBadge" class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">
-        Y-Dwarf (Substellar)
-      </span>
-      <span id="motionSpeedBadge" class="text-amber-400 flex items-center gap-1">
-        <i data-lucide="zap" class="w-3 h-3"></i> &mu; = 8.1"/yr
-      </span>
-    </div>
-  </div>
+    <!-- HERO CENTRAL VIEWPORT (Edge-to-Edge Blender 3D/2D Viewport) -->
+    <main class="flex-1 relative bg-[#0a0a0c] overflow-hidden flex items-center justify-center cursor-crosshair" id="viewportContainer">
+      <canvas id="astroCanvas" class="w-full h-full block"></canvas>
 
-  <!-- MAIN WORKSPACE LAYOUT (2 PANELS) -->
-  <main class="flex-1 flex overflow-hidden">
-
-    <!-- LEFT: BLINK COMPARATOR & VIEWPORT -->
-    <section class="flex-1 flex flex-col bg-black relative">
-
-      <!-- HUD OVERLAY INFO -->
-      <div class="absolute top-3 left-3 z-10 bg-space-950/80 backdrop-blur-md border border-cyan-500/30 rounded-lg p-2.5 text-[11px] font-mono text-gray-300 pointer-events-none">
-        <div class="flex items-center gap-2 mb-1">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          <span id="epochBadge" class="font-bold text-cyan-300">EPOCH 1: PASS 1 (MAY 2025)</span>
+      <!-- TOP-LEFT FLOATING VIEWPORT HUD (Minimalist Blender Overlay) -->
+      <div class="absolute top-3 left-3 pointer-events-none text-[11px] font-mono space-y-0.5">
+        <div class="text-white font-semibold flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-blender-orange inline-block"></span>
+          <span id="hudTargetName">WISE 0855-0714</span>
+          <span class="text-gray-400 font-normal">| <span id="hudEpochLabel">SPHEREx Pass 1 (May 2025)</span></span>
         </div>
-        <div class="text-gray-400 text-[10px] space-y-0.5">
-          <div>COORDINATES: <span id="hudCoords" class="text-white">133.79513°, -07.24515°</span></div>
-          <div>BANDPASS: <span class="text-cyan-400">SPHEREx 102 NIR (0.75-5.0 &mu;m)</span></div>
-          <div>CO-ADD STATUS: <span id="hudCoadd" class="text-emerald-400">6 DETECTORS COMBINED (4x SNR)</span></div>
+        <div class="text-gray-400 text-[10px]">
+          RA: <span id="hudRA" class="text-gray-200">133.79513°</span> | Dec: <span id="hudDec" class="text-gray-200">-07.24515°</span> | FOV: <span id="hudFOV" class="text-gray-200">3.0'</span>
         </div>
       </div>
 
-      <!-- VIEW MODE TOGGLES (Floating top right) -->
-      <div class="absolute top-3 right-3 z-10 flex items-center gap-1 bg-space-950/80 backdrop-blur-md border border-gray-700 rounded-lg p-1">
-        <button id="modeBlink" class="mode-btn px-2.5 py-1 rounded bg-cyan-600 text-white text-xs font-semibold">
-          Blink Mode
-        </button>
-        <button id="modeDiff" class="mode-btn px-2.5 py-1 rounded hover:bg-space-800 text-gray-300 text-xs font-medium">
-          Difference (I₂ - I₁)
-        </button>
-        <button id="modeSplit" class="mode-btn px-2.5 py-1 rounded hover:bg-space-800 text-gray-300 text-xs font-medium">
-          Split View
-        </button>
-      </div>
-
-      <!-- MAIN ASTRONOMICAL CANVAS -->
-      <div class="flex-1 flex items-center justify-center relative overflow-hidden bg-space-950 cursor-crosshair" id="canvasContainer">
-        <canvas id="astroCanvas" class="w-full h-full"></canvas>
-        
-        <!-- Center Target Reticle Crosshair -->
-        <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div class="relative w-16 h-16 border border-cyan-400/40 rounded-full flex items-center justify-center">
-            <div class="w-2 h-2 bg-cyan-400 rounded-full"></div>
-            <div class="absolute -top-3 text-[9px] font-mono text-cyan-400 tracking-wider">TARGET</div>
-          </div>
+      <!-- TOP-RIGHT MINIMAL VIEWPORT GIZMO / OVERLAY -->
+      <div class="absolute top-3 right-3 pointer-events-none flex flex-col items-end gap-1 text-[10px] font-mono text-gray-400">
+        <div class="bg-blender-900/80 backdrop-blur border border-blender-800 px-2 py-1 rounded">
+          FPS: <span id="liveFpsText" class="text-white font-bold">60.0</span>
+        </div>
+        <div id="diffModeBadge" class="hidden bg-blender-orange/20 border border-blender-orange text-blender-orange px-2 py-0.5 rounded font-bold">
+          DIFF MODE (I₂ - I₁)
         </div>
       </div>
 
-      <!-- BOTTOM BLINK PLAYER CONTROLS -->
-      <div class="bg-space-900 border-t border-gray-800 px-4 py-2.5 flex items-center justify-between z-20">
-        <div class="flex items-center gap-2">
-          <!-- Play / Pause -->
-          <button id="playPauseBtn" class="w-8 h-8 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-space-950 flex items-center justify-center transition-all">
-            <i id="playIcon" data-lucide="pause" class="w-4 h-4"></i>
-          </button>
-          
-          <!-- Prev / Next Step -->
-          <button id="prevEpochBtn" class="p-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-gray-300 border border-gray-700" title="Previous Epoch">
-            <i data-lucide="skip-back" class="w-3.5 h-3.5"></i>
-          </button>
-          <button id="nextEpochBtn" class="p-1.5 rounded-lg bg-space-800 hover:bg-space-700 text-gray-300 border border-gray-700" title="Next Epoch">
-            <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
-          </button>
-
-          <!-- Current Epoch Bar -->
-          <div class="flex items-center gap-1.5 ml-2 font-mono text-xs">
-            <span class="text-gray-400">Epoch:</span>
-            <span id="epochIndexText" class="px-2 py-0.5 rounded bg-space-950 text-cyan-300 border border-gray-800 font-bold">1 / 2</span>
-          </div>
+      <!-- FLOATING GAMER WALK MODE HUD BANNER (Visible Only in Walk Nav) -->
+      <div id="walkHudBanner" class="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none bg-blender-900/90 backdrop-blur border border-blender-orange/60 px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-3 font-mono text-[11px] text-white hidden z-20">
+        <div class="flex items-center gap-1.5 text-blender-orange font-bold">
+          <span class="w-2 h-2 rounded-full bg-blender-orange animate-ping"></span>
+          <span>WALK NAV</span>
         </div>
-
-        <!-- BLINK SPEED SLIDER -->
-        <div class="flex items-center gap-3">
-          <span class="text-xs text-gray-400 font-mono flex items-center gap-1">
-            <i data-lucide="gauge" class="w-3.5 h-3.5 text-cyan-400"></i> Speed:
-          </span>
-          <input id="speedSlider" type="range" min="0.5" max="8" step="0.5" value="2.5" class="w-32 h-1.5 bg-space-800 rounded-lg cursor-pointer">
-          <span id="speedValueText" class="text-xs font-mono text-cyan-300 w-12">2.5 FPS</span>
-        </div>
-
-        <!-- IMAGE PROCESSING CONTROLS -->
-        <div class="flex items-center gap-3">
-          <!-- Co-add Toggle -->
-          <label class="flex items-center gap-2 cursor-pointer text-xs font-mono text-gray-300">
-            <input id="coaddCheck" type="checkbox" checked class="rounded border-gray-700 text-cyan-500 focus:ring-0">
-            <span>Co-add 6 Arrays</span>
-          </label>
-
-          <!-- Stretch Algorithm -->
-          <div class="flex items-center gap-1 font-mono text-xs text-gray-400">
-            <span>Stretch:</span>
-            <select id="stretchSelect" class="bg-space-950 border border-gray-700 rounded px-1.5 py-0.5 text-gray-200 outline-none">
-              <option value="asinh">Asinh</option>
-              <option value="zscale" selected>ZScale</option>
-              <option value="linear">Linear</option>
-            </select>
-          </div>
+        <div class="text-gray-300 text-[10px] flex items-center gap-2">
+          <span><b class="text-white">Mouse:</b> Look</span>
+          <span><b class="text-white">W/S:</b> Fly Fwd/Back</span>
+          <span><b class="text-white">A/D:</b> Strafe</span>
+          <span><b class="text-white">Space/Ctrl:</b> Up/Down</span>
+          <span><b class="text-white">Shift:</b> Boost</span>
+          <span><b class="text-white">Wheel:</b> Speed</span>
+          <span class="bg-blender-800 px-1.5 py-0.5 rounded border border-blender-700 text-gray-400"><b class="text-white">Esc:</b> Exit</span>
         </div>
       </div>
-    </section>
 
-    <!-- RIGHT: 102-BAND SPECTRAL INSPECTOR & METADATA PANEL -->
-    <aside class="w-96 bg-space-900 border-l border-cyan-500/20 flex flex-col overflow-y-auto">
+      <!-- CENTER RETICLE CROSSHAIR -->
+      <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+        <div class="relative w-12 h-12 border border-gray-600/40 rounded-full flex items-center justify-center">
+          <div class="w-1.5 h-1.5 bg-blender-orange rounded-full"></div>
+          <div class="w-4 h-[1px] bg-gray-500/60 absolute left-0 -translate-x-full"></div>
+          <div class="w-4 h-[1px] bg-gray-500/60 absolute right-0 translate-x-full"></div>
+          <div class="h-4 w-[1px] bg-gray-500/60 absolute top-0 -translate-y-full"></div>
+          <div class="h-4 w-[1px] bg-gray-500/60 absolute bottom-0 translate-y-full"></div>
+        </div>
+      </div>
+    </main>
 
+    <!-- RIGHT COLLAPSIBLE PROPERTIES PANEL (Blender Inspector) -->
+    <aside id="propertiesSidebar" class="w-72 bg-blender-900 border-l border-blender-800 flex flex-col shrink-0 overflow-y-auto">
+      
       <!-- Panel Header -->
-      <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
-          <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i>
-          102-Band Spectral Engine
-        </h2>
-        <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800">
-          0.75 - 5.0 &mu;m
+      <div class="px-3 py-2 border-b border-blender-800 flex items-center justify-between text-gray-300 font-semibold text-[11px]">
+        <span class="flex items-center gap-1.5">
+          <i data-lucide="sliders" class="w-3.5 h-3.5 text-blender-orange"></i>
+          Properties
         </span>
+        <span class="text-[10px] font-mono text-gray-400">Target Data</span>
       </div>
 
-      <!-- SPECTRAL SED CHART -->
-      <div class="p-4 border-b border-gray-800 bg-space-950/50">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-[11px] font-mono text-gray-400">Spectral Energy Distribution</span>
-          <span class="text-[10px] font-mono text-emerald-400">Flux (&mu;Jy) vs &lambda;</span>
+      <!-- SECTION 1: Transform & Astrometry -->
+      <div class="p-3 border-b border-blender-800 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-semibold text-gray-300">
+          <span>Astrometry & Motion</span>
+          <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
         </div>
-        <div class="h-44 w-full relative">
+
+        <div class="space-y-1.5 font-mono text-[11px]">
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
+            <span class="text-gray-400 text-[10px]">RA:</span>
+            <span id="propRA" class="text-white">133.79513°</span>
+          </div>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
+            <span class="text-gray-400 text-[10px]">Dec:</span>
+            <span id="propDec" class="text-white">-07.24515°</span>
+          </div>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
+            <span class="text-gray-400 text-[10px]">Proper Motion (&mu;):</span>
+            <span id="propPM" class="text-blender-orange font-bold">8.12 "/yr</span>
+          </div>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
+            <span class="text-gray-400 text-[10px]">Magnitude (W2):</span>
+            <span id="propMag" class="text-white">14.02</span>
+          </div>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-1 rounded border border-blender-700/60">
+            <span class="text-gray-400 text-[10px]">Est. Temp:</span>
+            <span id="propTemp" class="text-amber-400">~250 K (Cold)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: 102-Band Spectral Curve (SED) -->
+      <div class="p-3 border-b border-blender-800 space-y-2">
+        <div class="flex items-center justify-between text-[11px] font-semibold text-gray-300">
+          <span>102-Band SED (0.75-5.0 &mu;m)</span>
+          <span class="text-[9px] font-mono text-blender-blue bg-blender-850 px-1.5 py-0.5 rounded border border-blender-700">6 Arrays</span>
+        </div>
+        <div class="h-28 w-full relative bg-blender-950 rounded p-1 border border-blender-800">
           <canvas id="spectrumChart"></canvas>
         </div>
-        <!-- Molecular Markers Badges -->
-        <div class="mt-2 flex flex-wrap gap-1 text-[10px] font-mono">
-          <span class="px-1.5 py-0.5 rounded bg-blue-950/70 text-blue-300 border border-blue-800">H2O Ice (3.05&mu;m)</span>
-          <span class="px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-800">CO2 Ice (4.27&mu;m)</span>
-          <span class="px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800">CH4 Methane (3.3&mu;m)</span>
+        <div class="flex items-center justify-between text-[9px] font-mono text-gray-400">
+          <span>H2O (3.05&mu;m)</span>
+          <span>CH4 (3.3&mu;m)</span>
+          <span>CO2 (4.27&mu;m)</span>
         </div>
       </div>
 
-      <!-- TARGET TELEMETRY & ASTROMETRY -->
-      <div class="p-4 border-b border-gray-800 space-y-3 text-xs">
-        <h3 class="font-bold text-gray-200 uppercase tracking-wide text-[11px] flex items-center gap-1.5">
-          <i data-lucide="compass" class="w-3.5 h-3.5 text-cyan-400"></i>
-          Target Astrometry & Flags
-        </h3>
-
-        <div class="grid grid-cols-2 gap-2 font-mono text-[11px]">
-          <div class="bg-space-950 p-2 rounded border border-gray-800">
-            <div class="text-gray-400 text-[10px]">PROPER MOTION (&mu;)</div>
-            <div id="metaPM" class="text-cyan-300 font-bold">8.12 "/yr</div>
+      <!-- SECTION 3: Quality Flags & Co-addition -->
+      <div class="p-3 space-y-2">
+        <div class="text-[11px] font-semibold text-gray-300">Diagnostics</div>
+        <div class="space-y-1.5 text-[10px] font-mono text-gray-400">
+          <div class="flex items-center justify-between">
+            <span>Array Co-addition:</span>
+            <span class="text-emerald-400">4.1x SNR</span>
           </div>
-          <div class="bg-space-950 p-2 rounded border border-gray-800">
-            <div class="text-gray-400 text-[10px]">PARALLAX (&pi;)</div>
-            <div id="metaPlx" class="text-cyan-300 font-bold">432.5 mas</div>
+          <div class="flex items-center justify-between">
+            <span>Cosmic Ray Filter:</span>
+            <span class="text-emerald-400">PASS</span>
           </div>
-          <div class="bg-space-950 p-2 rounded border border-gray-800">
-            <div class="text-gray-400 text-[10px]">APPARENT MAG (W2)</div>
-            <div id="metaMag" class="text-white font-bold">14.02 mag</div>
-          </div>
-          <div class="bg-space-950 p-2 rounded border border-gray-800">
-            <div class="text-gray-400 text-[10px]">EST. TEMPERATURE</div>
-            <div id="metaTemp" class="text-amber-400 font-bold">~250 K (Cold)</div>
+          <div class="flex items-center justify-between">
+            <span>WCS Registration:</span>
+            <span class="text-white">Sub-pixel</span>
           </div>
         </div>
 
-        <!-- Contamination & Quality Flags -->
-        <div class="bg-space-950 p-2.5 rounded border border-gray-800 space-y-1.5">
-          <div class="text-gray-400 text-[10px] font-mono uppercase">SPHEREx Quality Flags:</div>
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-gray-300">Cosmic Ray Flag:</span>
-            <span class="text-emerald-400 font-mono">CLEAN (0x00)</span>
-          </div>
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-gray-300">Zodiacal Light Level:</span>
-            <span class="text-gray-400 font-mono">NOMINAL</span>
-          </div>
-          <div class="flex items-center justify-between text-[11px]">
-            <span class="text-gray-300">Detector Saturation:</span>
-            <span class="text-emerald-400 font-mono">NONE</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- CITIZEN SCIENCE DISCOVERY FEED -->
-      <div class="p-4 flex-1 flex flex-col text-xs">
-        <h3 class="font-bold text-gray-200 uppercase tracking-wide text-[11px] mb-2 flex items-center justify-between">
-          <span class="flex items-center gap-1.5">
-            <i data-lucide="users" class="w-3.5 h-3.5 text-cyan-400"></i>
-            Community Discoveries
-          </span>
-          <span class="text-[10px] font-mono text-cyan-400">Live Feed</span>
-        </h3>
-
-        <div class="space-y-2 flex-1 overflow-y-auto pr-1">
-          <div class="bg-space-950 p-2 rounded border border-gray-800 text-[11px]">
-            <div class="flex items-center justify-between font-mono text-[10px] text-gray-400 mb-1">
-              <span class="text-cyan-300 font-bold">@darkodu</span>
-              <span>10m ago</span>
-            </div>
-            <p class="text-gray-300">Flagged fast dipole at RA 133.79°, Dec -7.24° matching WISE 0855 motion vector.</p>
-          </div>
-
-          <div class="bg-space-950 p-2 rounded border border-gray-800 text-[11px]">
-            <div class="flex items-center justify-between font-mono text-[10px] text-gray-400 mb-1">
-              <span class="text-cyan-300 font-bold">@iceodu</span>
-              <span>32m ago</span>
-            </div>
-            <p class="text-gray-300">Difference subtraction confirmed 2.1 magnitude flare on variable target RW Aurigae.</p>
-          </div>
-        </div>
+        <button id="flagCandidateBtn" class="w-full mt-2 py-1.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition-all">
+          <i data-lucide="flag" class="w-3.5 h-3.5 text-blender-orange"></i>
+          Flag Discovery
+        </button>
       </div>
     </aside>
-  </main>
+  </div>
 
-  <!-- MODAL: FLAG CANDIDATE (CITIZEN SCIENCE) -->
-  <div id="flagModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-space-900 border border-cyan-500/40 rounded-xl max-w-md w-full p-5 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
-        <div class="flex items-center gap-2">
-          <i data-lucide="flag" class="w-5 h-5 text-amber-400"></i>
-          <h3 class="font-bold text-white text-base">Flag Celestial Candidate</h3>
+  <!-- ========================================================================= -->
+  <!-- 3. BLENDER BOTTOM TIMELINE & FLIPBOOK CONTROLS                            -->
+  <!-- ========================================================================= -->
+  <footer class="h-10 bg-blender-900 border-t border-blender-800 px-3 flex items-center justify-between z-30 shrink-0 font-mono text-xs">
+    
+    <!-- Left: Frame Range & Jump controls -->
+    <div class="flex items-center gap-1">
+      <!-- Jump to Start -->
+      <button id="btnJumpStart" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="First Frame (Shift+Left)">
+        <i data-lucide="skip-back" class="w-3.5 h-3.5"></i>
+      </button>
+      <!-- Step Back -->
+      <button id="btnStepBack" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Previous Frame (Left Arrow)">
+        <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+      </button>
+      <!-- Play / Pause (Blender Spacebar) -->
+      <button id="btnPlayPause" class="px-2 py-1 rounded bg-blender-blue hover:bg-blender-lightBlue text-white flex items-center justify-center transition-all" title="Play/Pause (Spacebar)">
+        <i id="playPauseIcon" data-lucide="pause" class="w-3.5 h-3.5"></i>
+      </button>
+      <!-- Step Forward -->
+      <button id="btnStepFwd" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Next Frame (Right Arrow)">
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+      </button>
+      <!-- Jump to End -->
+      <button id="btnJumpEnd" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="Last Frame (Shift+Right)">
+        <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
+      </button>
+
+      <!-- Active Frame Badge (Blender style blue frame tag) -->
+      <div class="flex items-center gap-1 ml-2 pl-2 border-l border-blender-700">
+        <span class="text-gray-400 text-[10px]">Frame:</span>
+        <span id="frameBadge" class="px-2 py-0.5 rounded bg-blender-blue text-white font-bold text-[11px]">1</span>
+        <span class="text-gray-500">/ 2</span>
+      </div>
+    </div>
+
+    <!-- Center: Playback Speed Slider -->
+    <div class="flex items-center gap-2">
+      <span class="text-gray-400 text-[10px]">Speed:</span>
+      <input id="speedSlider" type="range" min="0.5" max="8.0" step="0.5" value="2.5" class="w-24 h-1 bg-blender-700 rounded cursor-pointer">
+      <span id="speedLabel" class="text-gray-200 text-[10px] w-12 font-mono">2.5 FPS</span>
+    </div>
+
+    <!-- Right: Difference Imaging Mode & Audio Toggle -->
+    <div class="flex items-center gap-2">
+      <button id="btnDiffToggle" class="blender-pill px-2.5 py-1 text-[11px] font-medium text-gray-300 flex items-center gap-1.5" title="Toggle Difference Subtraction">
+        <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+        <span>Diff Mode</span>
+      </button>
+
+      <button id="btnMuteToggle" class="p-1 rounded hover:bg-blender-800 text-gray-400" title="Audio Effects">
+        <i id="muteIcon" data-lucide="volume-2" class="w-3.5 h-3.5 text-gray-300"></i>
+      </button>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- 4. KEYMAP PREFERENCES MODAL (Blender Style)                               -->
+  <!-- ========================================================================= -->
+  <div id="keymapModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-md w-full p-4 shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-blender-800 pb-2">
+        <div class="flex items-center gap-2 font-bold text-white text-xs">
+          <i data-lucide="keyboard" class="w-4 h-4 text-blender-orange"></i>
+          <span>Preferences: Keymap & Navigation</span>
         </div>
-        <button id="closeFlagModal" class="text-gray-400 hover:text-white">&times;</button>
+        <button id="closeKeymapBtn" class="text-gray-400 hover:text-white">&times;</button>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block text-gray-400 font-mono text-[11px] mb-1">Target Coordinates</label>
-          <input id="flagCoords" type="text" readonly class="w-full bg-space-950 border border-gray-700 rounded p-2 font-mono text-cyan-300 text-xs">
-        </div>
+      <p class="text-[11px] text-gray-400">Click any keybinding box to assign a custom key for your gaming style:</p>
 
-        <div>
-          <label class="block text-gray-400 font-mono text-[11px] mb-1">Object Classification</label>
-          <select id="flagClass" class="w-full bg-space-950 border border-gray-700 rounded p-2 text-white text-xs outline-none">
-            <option value="brown_dwarf">Cold Brown Dwarf (Y/T Dwarf)</option>
-            <option value="planet_x">Candidate Trans-Neptunian Object (Planet X)</option>
-            <option value="asteroid">Fast Moving Asteroid / Comet</option>
-            <option value="variable_star">Variable / Eruptive Star</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-gray-400 font-mono text-[11px] mb-1">Observational Notes</label>
-          <textarea id="flagNotes" rows="3" placeholder="Describe the motion direction, dipole shape, or color in 102 bands..." class="w-full bg-space-950 border border-gray-700 rounded p-2 text-white text-xs outline-none"></textarea>
-        </div>
+      <div class="space-y-1.5 font-mono text-[11px]" id="keybindsList">
+        <!-- Keybinding items dynamically rendered -->
       </div>
 
-      <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-800">
-        <button id="cancelFlag" class="px-3 py-1.5 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-xs font-medium">Cancel</button>
-        <button id="submitFlag" class="px-4 py-1.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold">Submit Discovery</button>
+      <div class="flex items-center justify-between pt-2 border-t border-blender-800">
+        <button id="resetKeymapBtn" class="px-2.5 py-1 rounded bg-blender-800 hover:bg-blender-700 text-gray-300 text-xs">Reset Defaults</button>
+        <button id="saveKeymapBtn" class="px-3 py-1 rounded bg-blender-blue hover:bg-blender-lightBlue text-white text-xs font-semibold">Done</button>
       </div>
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="fixed bottom-12 right-6 bg-cyan-950 border border-cyan-400 text-cyan-200 px-4 py-2.5 rounded-lg shadow-xl text-xs font-mono transition-all transform translate-y-20 opacity-0 pointer-events-none z-50">
-    Notification text
-  </div>
-
-  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <!-- ========================================================================= -->
+  <!-- 5. APPLICATION LOGIC & PROCEDURAL SYNTHESIZER                              -->
+  <!-- ========================================================================= -->
   <script>
-    // Initialize Lucide Icons
     lucide.createIcons();
 
     // TARGET DATABASE
     const TARGETS = {
       wise0855: {
         name: "WISE 0855-0714",
-        coords: "08h 55m 10.83s, -07d 14m 42.5s",
         raDeg: 133.79513,
         decDeg: -7.24515,
-        type: "Y-Dwarf (Substellar)",
-        pm: "8.12 "/yr",
-        plx: "432.5 mas",
-        mag: "14.02 (W2)",
+        type: "Sub-stellar Cold Y-Dwarf",
+        pm: "8.12 \"/yr",
+        mag: "14.02",
         temp: "~250 K (Water clouds)",
-        motionVector: { dx: 18, dy: -6 },
+        motionVector: { dx: 16, dy: -6 },
         fluxShift: 1.0
       },
       barnard: {
         name: "Barnard's Star",
-        coords: "17h 57m 48.50s, +04d 41m 36.2s",
         raDeg: 269.45208,
         decDeg: 4.69339,
         type: "High Proper Motion Red Dwarf",
-        pm: "10.36 "/yr",
-        plx: "547.4 mas",
-        mag: "9.54 (V)",
+        pm: "10.36 \"/yr",
+        mag: "9.54",
         temp: "~3130 K",
-        motionVector: { dx: 0, dy: -24 },
+        motionVector: { dx: 0, dy: -22 },
         fluxShift: 1.0
       },
       epsindi: {
         name: "Epsilon Indi B",
-        coords: "22h 04m 10.51s, -56d 46m 57.8s",
         raDeg: 331.04379,
         decDeg: -56.78272,
         type: "Binary Brown Dwarf (T1+T6)",
-        pm: "4.70 "/yr",
-        plx: "274.8 mas",
-        mag: "12.3 (J)",
+        pm: "4.70 \"/yr",
+        mag: "12.3",
         temp: "~1300 K",
         motionVector: { dx: 10, dy: 8 },
         fluxShift: 1.0
       },
       rwaur: {
         name: "RW Aurigae",
-        coords: "05h 07m 49.54s, +30d 24m 05.1s",
         raDeg: 76.95642,
         decDeg: 30.40142,
         type: "Young T-Tauri Variable",
-        pm: "0.02 "/yr (Static)",
-        plx: "6.1 mas",
+        pm: "0.02 \"/yr (Static)",
         mag: "10.2 -> 13.8",
         temp: "~5000 K",
         motionVector: { dx: 0, dy: 0 },
-        fluxShift: 2.5 // Large brightness fluctuation!
+        fluxShift: 2.4 // Large variable star flare!
       },
       rdraconis: {
         name: "R Draconis",
-        coords: "16h 32m 40.23s, +66d 45m 18.2s",
         raDeg: 248.16763,
         decDeg: 66.75506,
         type: "Mira Pulsating Red Giant",
-        pm: "0.01 "/yr",
-        plx: "1.2 mas",
-        mag: "7.6 -> 12.4 (245d)",
+        pm: "0.01 \"/yr",
+        mag: "7.6 -> 12.4",
         temp: "~2700 K",
         motionVector: { dx: 0, dy: 0 },
-        fluxShift: 3.2
+        fluxShift: 3.0
       }
     };
 
     let currentTargetKey = 'wise0855';
-    let currentEpoch = 1; // 1 or 2
+    let currentFrame = 1; // 1 or 2
     let isPlaying = true;
     let fps = 2.5;
-    let viewMode = 'blink'; // 'blink', 'diff', 'split'
-    let timerInterval = null;
+    let diffMode = false;
+    let isMuted = false;
+    let playTimer = null;
 
-    // Canvas Elements
+    // PROCEDURAL WEB AUDIO SYNTHESIZER (100% Royalty Free)
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function playThrusterSound() {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(80, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } catch(e) {}
+    }
+
+    function playTargetLockChime() {
+      if (isMuted) return;
+      try {
+        const ctx = getAudioContext();
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc1.frequency.setValueAtTime(880, ctx.currentTime);
+        osc2.frequency.setValueAtTime(1320, ctx.currentTime);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+        osc1.start();
+        osc2.start();
+        osc1.stop(ctx.currentTime + 0.35);
+        osc2.stop(ctx.currentTime + 0.35);
+      } catch(e) {}
+    }
+
+    // CUSTOMIZABLE KEYMAP SYSTEM
+    const defaultKeymap = {
+      forward: { label: "Fly Forward", key: "KeyW", name: "W" },
+      backward: { label: "Fly Backward", key: "KeyS", name: "S" },
+      strafeLeft: { label: "Strafe Left", key: "KeyA", name: "A" },
+      strafeRight: { label: "Strafe Right", key: "KeyD", name: "D" },
+      ascend: { label: "Fly Up (Ascend)", key: "Space", name: "Space" },
+      descend: { label: "Fly Down (Descend)", key: "ControlLeft", name: "Ctrl" },
+      sprint: { label: "Sprint Boost", key: "ShiftLeft", name: "Shift" },
+      toggleWalk: { label: "Toggle Walk Nav", key: "Backquote", name: "~" }
+    };
+
+    let userKeymap = JSON.parse(localStorage.getItem('spherex_keymap') || JSON.stringify(defaultKeymap));
+
+    // GAMER FLY NAVIGATION STATE
+    const flyState = {
+      active: false,
+      yaw: 133.795,     // RA in degrees
+      pitch: -7.245,    // Dec in degrees
+      fovArcmin: 3.0,   // FOV
+      speedMultiplier: 1.0,
+      activeKeys: {}
+    };
+
+    // Canvas setup
     const canvas = document.getElementById('astroCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Resize canvas
     function resizeCanvas() {
-      const container = document.getElementById('canvasContainer');
+      const container = document.getElementById('viewportContainer');
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
       drawFrame();
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // Procedural Stars generator
-    const backgroundStars = [];
-    for(let i=0; i<120; i++) {
-      backgroundStars.push({
-        xRel: Math.random() - 0.5,
-        yRel: Math.random() - 0.5,
-        radius: Math.random() * 2 + 0.5,
-        brightness: Math.random() * 0.7 + 0.3
+    // Procedural Stars
+    const stars = [];
+    for (let i = 0; i < 150; i++) {
+      stars.push({
+        xRel: (Math.random() - 0.5) * 1.5,
+        yRel: (Math.random() - 0.5) * 1.5,
+        radius: Math.random() * 1.8 + 0.6,
+        alpha: Math.random() * 0.7 + 0.3
       });
     }
 
-    // DRAW THE FRAME
+    // DRAW VIEWPORT FRAME
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
       const cx = w / 2;
       const cy = h / 2;
 
-      ctx.fillStyle = '#030712';
-      ctx.fillRect(0, 0, w, h);
-
       const target = TARGETS[currentTargetKey];
 
-      if (viewMode === 'diff') {
-        // DIFFERENCE IMAGING MODE (I2 - I1)
-        // Background turns neutral slate gray
-        ctx.fillStyle = '#1e293b';
+      if (diffMode) {
+        // BLENDER DIFFERENCE SUBTRACTION MODE (I2 - I1)
+        ctx.fillStyle = '#222222';
         ctx.fillRect(0, 0, w, h);
 
-        // Grid lines
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 0.5;
-        for(let x=0; x<w; x+=60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-        for(let y=0; y<h; y+=60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+        // Grid lines (Blender viewport grid style)
+        ctx.strokeStyle = '#2d2d2d';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < w; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+        for (let y = 0; y < h; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
 
-        // Stationary stars subtract to zero (faint neutral circles)
-        backgroundStars.forEach(s => {
-          ctx.fillStyle = '#334155';
+        // Stationary stars subtract to neutral gray dots
+        stars.forEach(s => {
+          ctx.fillStyle = '#2f2f2f';
           ctx.beginPath();
-          ctx.arc(cx + s.xRel * (w*0.8), cy + s.yRel * (h*0.8), s.radius, 0, Math.PI*2);
+          ctx.arc(cx + s.xRel * (w * 0.75), cy + s.yRel * (h * 0.75), s.radius, 0, Math.PI * 2);
           ctx.fill();
         });
 
-        // Target DIPOLE or VARIABLE FLUX
+        // DIPOLE SIGNATURE FOR MOVING / VARIABLE TARGET
         if (target.motionVector.dx !== 0 || target.motionVector.dy !== 0) {
-          // MOVING OBJECT DIPOLE: Dark depression at Epoch 1, Bright peak at Epoch 2
-          // Negative spot (Dark)
-          ctx.fillStyle = '#020617';
+          // Negative spot (Dark black depression at Epoch 1)
+          ctx.fillStyle = '#0a0a0c';
           ctx.beginPath();
-          ctx.arc(cx - target.motionVector.dx, cy - target.motionVector.dy, 7, 0, Math.PI*2);
+          ctx.arc(cx - target.motionVector.dx, cy - target.motionVector.dy, 6, 0, Math.PI * 2);
           ctx.fill();
 
-          // Positive spot (White/Cyan Glow)
-          ctx.fillStyle = '#38bdf8';
-          ctx.shadowColor = '#38bdf8';
-          ctx.shadowBlur = 15;
+          // Positive spot (White/Cyan peak at Epoch 2)
+          ctx.fillStyle = '#e87d0d'; // Blender orange accent
+          ctx.shadowColor = '#e87d0d';
+          ctx.shadowBlur = 12;
           ctx.beginPath();
-          ctx.arc(cx + target.motionVector.dx, cy + target.motionVector.dy, 7, 0, Math.PI*2);
+          ctx.arc(cx + target.motionVector.dx, cy + target.motionVector.dy, 6, 0, Math.PI * 2);
           ctx.fill();
           ctx.shadowBlur = 0;
 
-          // Dipole connector annotation
-          ctx.strokeStyle = '#38bdf8';
-          ctx.setLineDash([3, 3]);
+          // Dipole annotation vector
+          ctx.strokeStyle = '#e87d0d';
+          ctx.setLineDash([2, 3]);
           ctx.beginPath();
           ctx.moveTo(cx - target.motionVector.dx, cy - target.motionVector.dy);
           ctx.lineTo(cx + target.motionVector.dx, cy + target.motionVector.dy);
           ctx.stroke();
           ctx.setLineDash([]);
         } else {
-          // VARIABLE STAR: Bright or dark excess
-          ctx.fillStyle = '#f8fafc';
-          ctx.shadowColor = '#38bdf8';
-          ctx.shadowBlur = 20;
+          // Variable star flare
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#2b76c9';
+          ctx.shadowBlur = 18;
           ctx.beginPath();
-          ctx.arc(cx, cy, 10, 0, Math.PI*2);
+          ctx.arc(cx, cy, 9, 0, Math.PI * 2);
           ctx.fill();
           ctx.shadowBlur = 0;
         }
 
       } else {
-        // BLINK MODE (Alternates Epoch 1 & Epoch 2)
-        // Background Stars (Stationary in both epochs)
-        backgroundStars.forEach(s => {
-          ctx.fillStyle = `rgba(255, 255, 255, ${s.brightness})`;
+        // STANDARD TIMELINE BLINK MODE
+        ctx.fillStyle = '#0c0d10';
+        ctx.fillRect(0, 0, w, h);
+
+        // Stars
+        stars.forEach(s => {
+          ctx.fillStyle = `rgba(220, 220, 230, ${s.alpha})`;
           ctx.beginPath();
-          ctx.arc(cx + s.xRel * (w*0.8), cy + s.yRel * (h*0.8), s.radius, 0, Math.PI*2);
+          ctx.arc(cx + s.xRel * (w * 0.75), cy + s.yRel * (h * 0.75), s.radius, 0, Math.PI * 2);
           ctx.fill();
         });
 
-        // The Moving / Variable Target
+        // Target rendering
         let tx = cx;
         let ty = cy;
-        let tRadius = 6;
-        let tColor = '#38bdf8';
+        let tRadius = 5.5;
+        let tColor = '#4794e6'; // Blender blue
 
-        if (currentEpoch === 1) {
+        if (currentFrame === 1) {
           tx -= target.motionVector.dx;
           ty -= target.motionVector.dy;
         } else {
@@ -613,55 +624,45 @@
           ty += target.motionVector.dy;
           if (target.fluxShift > 1.0) {
             tRadius *= target.fluxShift;
-            tColor = '#f59e0b';
+            tColor = '#e87d0d'; // Flaring orange
           }
         }
 
-        // Draw Target with infrared glow
         ctx.fillStyle = tColor;
         ctx.shadowColor = tColor;
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 15;
         ctx.beginPath();
-        ctx.arc(tx, ty, tRadius, 0, Math.PI*2);
+        ctx.arc(tx, ty, tRadius, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        // Bounding marker box around moving target
-        ctx.strokeStyle = '#22d3ee';
+        // Subtle crosshair bracket around moving object
+        ctx.strokeStyle = 'rgba(232, 125, 13, 0.7)';
         ctx.lineWidth = 1;
-        ctx.strokeRect(tx - 14, ty - 14, 28, 28);
+        ctx.strokeRect(tx - 10, ty - 10, 20, 20);
       }
     }
 
-    // BLINK LOOP
-    function startBlinkTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if (!isPlaying || viewMode === 'diff') return;
-        currentEpoch = (currentEpoch === 1) ? 2 : 1;
-        updateEpochUI();
+    // TIMELINE FLIPBOOK LOOP
+    function startFlipbook() {
+      if (playTimer) clearInterval(playTimer);
+      playTimer = setInterval(() => {
+        if (!isPlaying || diffMode) return;
+        currentFrame = (currentFrame === 1) ? 2 : 1;
+        updateTimelineUI();
         drawFrame();
       }, 1000 / fps);
     }
 
-    function updateEpochUI() {
-      const badge = document.getElementById('epochBadge');
-      const indexText = document.getElementById('epochIndexText');
-      if (currentEpoch === 1) {
-        badge.innerText = "EPOCH 1: PASS 1 (MAY 2025)";
-        badge.className = "font-bold text-cyan-300";
-        indexText.innerText = "1 / 2";
-      } else {
-        badge.innerText = "EPOCH 2: PASS 2 (NOV 2025)";
-        badge.className = "font-bold text-amber-300";
-        indexText.innerText = "2 / 2";
-      }
+    function updateTimelineUI() {
+      document.getElementById('frameBadge').innerText = currentFrame;
+      document.getElementById('hudEpochLabel').innerText = (currentFrame === 1) ? "SPHEREx Pass 1 (May 2025)" : "SPHEREx Pass 2 (Nov 2025)";
     }
 
-    // PLAY / PAUSE
-    document.getElementById('playPauseBtn').addEventListener('click', () => {
+    // PLAYBACK BUTTON CONTROLS
+    document.getElementById('btnPlayPause').addEventListener('click', () => {
       isPlaying = !isPlaying;
-      const icon = document.getElementById('playIcon');
+      const icon = document.getElementById('playPauseIcon');
       if (isPlaying) {
         icon.setAttribute('data-lucide', 'pause');
       } else {
@@ -670,51 +671,54 @@
       lucide.createIcons();
     });
 
-    // STEP CONTROLS
-    document.getElementById('prevEpochBtn').addEventListener('click', () => {
+    document.getElementById('btnJumpStart').addEventListener('click', () => {
       isPlaying = false;
-      currentEpoch = 1;
-      updateEpochUI();
+      currentFrame = 1;
+      updateTimelineUI();
       drawFrame();
     });
-    document.getElementById('nextEpochBtn').addEventListener('click', () => {
+    document.getElementById('btnStepBack').addEventListener('click', () => {
       isPlaying = false;
-      currentEpoch = 2;
-      updateEpochUI();
+      currentFrame = 1;
+      updateTimelineUI();
+      drawFrame();
+    });
+    document.getElementById('btnStepFwd').addEventListener('click', () => {
+      isPlaying = false;
+      currentFrame = 2;
+      updateTimelineUI();
+      drawFrame();
+    });
+    document.getElementById('btnJumpEnd').addEventListener('click', () => {
+      isPlaying = false;
+      currentFrame = 2;
+      updateTimelineUI();
       drawFrame();
     });
 
     // SPEED SLIDER
     document.getElementById('speedSlider').addEventListener('input', (e) => {
       fps = parseFloat(e.target.value);
-      document.getElementById('speedValueText').innerText = `${fps.toFixed(1)} FPS`;
-      startBlinkTimer();
+      document.getElementById('speedLabel').innerText = `${fps.toFixed(1)} FPS`;
+      startFlipbook();
     });
 
-    // VIEW MODE TOGGLES
-    document.getElementById('modeBlink').addEventListener('click', function() {
-      viewMode = 'blink';
-      setModeActive(this);
+    // DIFFERENCE MODE TOGGLE
+    document.getElementById('btnDiffToggle').addEventListener('click', function() {
+      diffMode = !diffMode;
+      const badge = document.getElementById('diffModeBadge');
+      if (diffMode) {
+        this.classList.add('blender-pill-active');
+        badge.classList.remove('hidden');
+      } else {
+        this.classList.remove('blender-pill-active');
+        badge.classList.add('hidden');
+      }
       drawFrame();
     });
-    document.getElementById('modeDiff').addEventListener('click', function() {
-      viewMode = 'diff';
-      setModeActive(this);
-      drawFrame();
-    });
-    document.getElementById('modeSplit').addEventListener('click', function() {
-      showToast("Split comparison view enabled");
-    });
 
-    function setModeActive(btn) {
-      document.querySelectorAll('.mode-btn').forEach(b => {
-        b.className = "mode-btn px-2.5 py-1 rounded hover:bg-space-800 text-gray-300 text-xs font-medium";
-      });
-      btn.className = "mode-btn px-2.5 py-1 rounded bg-cyan-600 text-white text-xs font-semibold";
-    }
-
-    // TARGET PRESETS SWITCHER
-    document.querySelectorAll('.target-preset-btn').forEach(btn => {
+    // TARGET PRESETS
+    document.querySelectorAll('.target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-target');
         selectTarget(key);
@@ -724,137 +728,285 @@
     function selectTarget(key) {
       currentTargetKey = key;
       const t = TARGETS[key];
-      document.getElementById('coordInput').value = t.coords;
-      document.getElementById('hudCoords').innerText = `${t.raDeg.toFixed(5)}°, ${t.decDeg.toFixed(5)}°`;
-      document.getElementById('targetTypeBadge').innerText = t.type;
-      document.getElementById('motionSpeedBadge').innerHTML = `<i data-lucide="zap" class="w-3 h-3"></i> &mu; = ${t.pm}`;
-      document.getElementById('metaPM').innerText = t.pm;
-      document.getElementById('metaPlx').innerText = t.plx;
-      document.getElementById('metaMag').innerText = t.mag;
-      document.getElementById('metaTemp').innerText = t.temp;
+      document.getElementById('hudTargetName').innerText = t.name;
+      document.getElementById('hudRA').innerText = `${t.raDeg.toFixed(5)}°`;
+      document.getElementById('hudDec').innerText = `${t.decDeg.toFixed(5)}°`;
+      document.getElementById('propRA').innerText = `${t.raDeg.toFixed(5)}°`;
+      document.getElementById('propDec').innerText = `${t.decDeg.toFixed(5)}°`;
+      document.getElementById('propPM').innerText = t.pm;
+      document.getElementById('propMag').innerText = t.mag;
+      document.getElementById('propTemp').innerText = t.temp;
 
-      // Update active button styling
-      document.querySelectorAll('.target-preset-btn').forEach(b => {
-        b.className = "target-preset-btn px-2.5 py-0.5 rounded bg-space-900 hover:bg-space-800 border border-gray-800 text-gray-300 font-mono text-[11px] transition-all";
-      });
+      document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-pill-active'));
       const activeBtn = document.querySelector(`[data-target="${key}"]`);
-      if (activeBtn) {
-        activeBtn.className = "target-preset-btn px-2.5 py-0.5 rounded bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-800/60 text-cyan-300 font-mono text-[11px] transition-all";
-      }
+      if (activeBtn) activeBtn.classList.add('blender-pill-active');
+
+      flyState.yaw = t.raDeg;
+      flyState.pitch = t.decDeg;
 
       updateSpectrumChart(key);
+      playTargetLockChime();
       drawFrame();
-      lucide.createIcons();
-      showToast(`Loaded ${t.name}`);
     }
 
-    // 102-BAND SPECTRUM CHART (CHART.JS)
+    // 102-BAND SPECTRUM CHART
     let specChart;
     function initSpectrumChart() {
       const ctx = document.getElementById('spectrumChart').getContext('2d');
-      const wavelengths = [];
-      for(let i=0; i<102; i++) {
-        wavelengths.push((0.75 + (i / 101) * 4.25).toFixed(2));
-      }
+      const wl = [];
+      for(let i = 0; i < 102; i++) wl.push((0.75 + (i / 101) * 4.25).toFixed(2));
 
       specChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: wavelengths,
+          labels: wl,
           datasets: [{
-            label: 'Infrared Flux (μJy)',
-            data: generateMockSED(currentTargetKey),
-            borderColor: '#06b6d4',
-            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+            data: generateSED(currentTargetKey),
+            borderColor: '#2b76c9',
+            backgroundColor: 'rgba(43, 118, 201, 0.1)',
             fill: true,
             borderWidth: 1.5,
             pointRadius: 0,
-            tension: 0.3
+            tension: 0.25
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            x: {
-              title: { display: true, text: 'Wavelength (μm)', color: '#9ca3af', font: { size: 9 } },
-              ticks: { color: '#6b7280', maxTicksLimit: 6, font: { size: 8 } },
-              grid: { color: 'rgba(255,255,255,0.05)' }
-            },
-            y: {
-              title: { display: true, text: 'Flux', color: '#9ca3af', font: { size: 9 } },
-              ticks: { color: '#6b7280', maxTicksLimit: 4, font: { size: 8 } },
-              grid: { color: 'rgba(255,255,255,0.05)' }
-            }
+            x: { display: false },
+            y: { display: false }
           },
-          plugins: {
-            legend: { display: false }
-          }
+          plugins: { legend: { display: false } }
         }
       });
     }
 
-    function generateMockSED(key) {
-      const data = [];
+    function generateSED(key) {
+      const arr = [];
       for(let i=0; i<102; i++) {
-        const wl = 0.75 + (i / 101) * 4.25;
-        let flux = 10 + Math.pow(wl, 1.8) * 8;
-        // Molecular absorption dips
-        if (Math.abs(wl - 3.05) < 0.2) flux *= 0.45; // H2O dip
-        if (Math.abs(wl - 4.27) < 0.15) flux *= 0.35; // CO2 dip
-        if (Math.abs(wl - 3.3) < 0.15) flux *= 0.55; // Methane dip
-        flux += (Math.random() - 0.5) * 4;
-        data.push(Math.max(2, flux));
+        const w = 0.75 + (i / 101) * 4.25;
+        let f = 10 + Math.pow(w, 1.8) * 8;
+        if (Math.abs(w - 3.05) < 0.2) f *= 0.45; // H2O
+        if (Math.abs(w - 3.30) < 0.15) f *= 0.55; // CH4
+        if (Math.abs(w - 4.27) < 0.15) f *= 0.35; // CO2
+        arr.push(f);
       }
-      return data;
+      return arr;
     }
 
     function updateSpectrumChart(key) {
       if (!specChart) return;
-      specChart.data.datasets[0].data = generateMockSED(key);
+      specChart.data.datasets[0].data = generateSED(key);
       specChart.update();
     }
 
-    // TOAST HELPER
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.innerText = msg;
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 2500);
+    // =========================================================================
+    // GAMER FLY NAVIGATION (WASD + Space + Ctrl + Shift + Mouse Look + Wheel)
+    // =========================================================================
+    const toggleWalkBtn = document.getElementById('toggleWalkBtn');
+    const walkHudBanner = document.getElementById('walkHudBanner');
+
+    function enterWalkMode() {
+      canvas.requestPointerLock();
     }
 
-    // FLAG MODAL
-    document.getElementById('flagBtn').addEventListener('click', () => {
-      document.getElementById('flagCoords').value = TARGETS[currentTargetKey].coords;
-      document.getElementById('flagModal').classList.remove('hidden');
-    });
-    document.getElementById('closeFlagModal').addEventListener('click', () => {
-      document.getElementById('flagModal').classList.add('hidden');
-    });
-    document.getElementById('cancelFlag').addEventListener('click', () => {
-      document.getElementById('flagModal').classList.add('hidden');
-    });
-    document.getElementById('submitFlag').addEventListener('click', () => {
-      document.getElementById('flagModal').classList.add('hidden');
-      showToast("Candidate logged to Team RIP discovery ledger!");
+    function exitWalkMode() {
+      if (document.pointerLockElement === canvas) {
+        document.exitPointerLock();
+      }
+    }
+
+    toggleWalkBtn.addEventListener('click', () => {
+      if (flyState.active) {
+        exitWalkMode();
+      } else {
+        enterWalkMode();
+      }
     });
 
-    // SHARE BUTTON
-    document.getElementById('shareBtn').addEventListener('click', () => {
-      const t = TARGETS[currentTargetKey];
-      const url = `${window.location.origin}${window.location.pathname}?ra=${t.raDeg}&dec=${t.decDeg}&target=${currentTargetKey}&mode=${viewMode}`;
-      navigator.clipboard.writeText(url).then(() => {
-        showToast("Deep link copied to clipboard!");
+    document.addEventListener('pointerlockchange', () => {
+      flyState.active = (document.pointerLockElement === canvas);
+      if (flyState.active) {
+        toggleWalkBtn.classList.add('bg-blender-orange', 'text-white');
+        walkHudBanner.classList.remove('hidden');
+        playTargetLockChime();
+      } else {
+        toggleWalkBtn.classList.remove('bg-blender-orange', 'text-white');
+        walkHudBanner.classList.add('hidden');
+      }
+    });
+
+    // MOUSE LOOK (Pitch & Yaw Steering)
+    document.addEventListener('mousemove', (e) => {
+      if (!flyState.active) return;
+      const sensitivity = 0.002 * flyState.speedMultiplier;
+      flyState.yaw += e.movementX * sensitivity;
+      flyState.pitch = Math.max(-89.9, Math.min(89.9, flyState.pitch - e.movementY * sensitivity));
+      document.getElementById('hudRA').innerText = `${flyState.yaw.toFixed(5)}°`;
+      document.getElementById('hudDec').innerText = `${flyState.pitch.toFixed(5)}°`;
+      document.getElementById('propRA').innerText = `${flyState.yaw.toFixed(5)}°`;
+      document.getElementById('propDec').innerText = `${flyState.pitch.toFixed(5)}°`;
+    });
+
+    // MOUSE WHEEL (Speed Adjuster)
+    window.addEventListener('wheel', (e) => {
+      if (!flyState.active) return;
+      if (e.deltaY < 0) {
+        flyState.speedMultiplier = Math.min(5.0, flyState.speedMultiplier + 0.2);
+      } else {
+        flyState.speedMultiplier = Math.max(0.2, flyState.speedMultiplier - 0.2);
+      }
+    });
+
+    // KEY LISTENERS FOR GAMER CONTROLS
+    window.addEventListener('keydown', (e) => {
+      // Toggle Walk Mode shortcut: Shift + Backquote
+      if (e.shiftKey && e.code === userKeymap.toggleWalk.key) {
+        e.preventDefault();
+        if (flyState.active) exitWalkMode(); else enterWalkMode();
+        return;
+      }
+
+      if (!flyState.active) return;
+      flyState.activeKeys[e.code] = true;
+      playThrusterSound();
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (!flyState.active) return;
+      delete flyState.activeKeys[e.code];
+    });
+
+    // KINEMATIC UPDATE LOOP (60 FPS)
+    let lastTime = performance.now();
+    function gameLoop(now) {
+      const dt = (now - lastTime) / 1000.0;
+      lastTime = now;
+
+      if (flyState.active) {
+        const isSprinting = flyState.activeKeys[userKeymap.sprint.key];
+        const baseSpeed = 0.08 * flyState.speedMultiplier * (isSprinting ? 3.5 : 1.0);
+
+        // Fly Forward (Zoom in / FOV narrows)
+        if (flyState.activeKeys[userKeymap.forward.key]) {
+          flyState.fovArcmin = Math.max(0.1, flyState.fovArcmin - baseSpeed * 0.4);
+          document.getElementById('hudFOV').innerText = `${flyState.fovArcmin.toFixed(1)}'`;
+        }
+        // Fly Backward (Zoom out / FOV widens)
+        if (flyState.activeKeys[userKeymap.backward.key]) {
+          flyState.fovArcmin = Math.min(20.0, flyState.fovArcmin + baseSpeed * 0.4);
+          document.getElementById('hudFOV').innerText = `${flyState.fovArcmin.toFixed(1)}'`;
+        }
+        // Strafe Left
+        if (flyState.activeKeys[userKeymap.strafeLeft.key]) {
+          flyState.yaw -= baseSpeed * 0.05;
+        }
+        // Strafe Right
+        if (flyState.activeKeys[userKeymap.strafeRight.key]) {
+          flyState.yaw += baseSpeed * 0.05;
+        }
+        // Ascend (Up)
+        if (flyState.activeKeys[userKeymap.ascend.key]) {
+          flyState.pitch = Math.min(89.9, flyState.pitch + baseSpeed * 0.05);
+        }
+        // Descend (Down)
+        if (flyState.activeKeys[userKeymap.descend.key]) {
+          flyState.pitch = Math.max(-89.9, flyState.pitch - baseSpeed * 0.05);
+        }
+
+        document.getElementById('hudRA').innerText = `${flyState.yaw.toFixed(5)}°`;
+        document.getElementById('hudDec').innerText = `${flyState.pitch.toFixed(5)}°`;
+        document.getElementById('propRA').innerText = `${flyState.yaw.toFixed(5)}°`;
+        document.getElementById('propDec').innerText = `${flyState.pitch.toFixed(5)}°`;
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+    requestAnimationFrame(gameLoop);
+
+    // =========================================================================
+    // KEYMAP MODAL & REBINDING INTERFACE
+    // =========================================================================
+    const keymapModal = document.getElementById('keymapModal');
+    const keybindsList = document.getElementById('keybindsList');
+
+    function renderKeymapUI() {
+      keybindsList.innerHTML = '';
+      for (const [actionKey, binding] of Object.entries(userKeymap)) {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between bg-blender-850 p-2 rounded border border-blender-700/60';
+        row.innerHTML = `
+          <span class="text-gray-300">${binding.label}</span>
+          <button class="rebind-btn px-2.5 py-0.5 rounded bg-blender-800 hover:bg-blender-700 text-white font-mono border border-blender-600 transition-all" data-action="${actionKey}">
+            ${binding.name}
+          </button>
+        `;
+        keybindsList.appendChild(row);
+      }
+
+      // Add click listeners to rebind buttons
+      document.querySelectorAll('.rebind-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const action = this.getAttribute('data-action');
+          this.innerText = 'Press Key...';
+          this.classList.add('bg-blender-orange', 'text-white');
+
+          const listener = (e) => {
+            e.preventDefault();
+            userKeymap[action].key = e.code;
+            userKeymap[action].name = e.key.toUpperCase();
+            localStorage.setItem('spherex_keymap', JSON.stringify(userKeymap));
+            window.removeEventListener('keydown', listener);
+            renderKeymapUI();
+          };
+          window.addEventListener('keydown', listener, { once: true });
+        });
       });
+    }
+
+    document.getElementById('openKeymapBtn').addEventListener('click', () => {
+      renderKeymapUI();
+      keymapModal.classList.remove('hidden');
+    });
+    document.getElementById('closeKeymapBtn').addEventListener('click', () => {
+      keymapModal.classList.add('hidden');
+    });
+    document.getElementById('saveKeymapBtn').addEventListener('click', () => {
+      keymapModal.classList.add('hidden');
+    });
+    document.getElementById('resetKeymapBtn').addEventListener('click', () => {
+      userKeymap = JSON.parse(JSON.stringify(defaultKeymap));
+      localStorage.setItem('spherex_keymap', JSON.stringify(userKeymap));
+      renderKeymapUI();
+    });
+
+    // MUTE TOGGLE
+    document.getElementById('btnMuteToggle').addEventListener('click', () => {
+      isMuted = !isMuted;
+      const icon = document.getElementById('muteIcon');
+      if (isMuted) {
+        icon.setAttribute('data-lucide', 'volume-x');
+        icon.classList.add('text-red-400');
+      } else {
+        icon.setAttribute('data-lucide', 'volume-2');
+        icon.classList.remove('text-red-400');
+      }
+      lucide.createIcons();
+    });
+
+    // SIDEBAR TOGGLE
+    document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
+      const sidebar = document.getElementById('propertiesSidebar');
+      sidebar.classList.toggle('hidden');
+      resizeCanvas();
     });
 
     // STARTUP
     window.addEventListener('load', () => {
       resizeCanvas();
       initSpectrumChart();
-      startBlinkTimer();
+      startFlipbook();
     });
   </script>
 </body>
