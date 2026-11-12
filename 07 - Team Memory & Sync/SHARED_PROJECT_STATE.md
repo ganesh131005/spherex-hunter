@@ -26,6 +26,7 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Blender 5 Minimalist Viewport & Zero-Gimmick Canvas]** Eliminated artificial vector rings, cartoon lines, and "Dipole Vector" text overlays. Built an authentic, minimalist Blender 5 dark-mode layout with top workspace tabs (Layout Blink, Difference, Spectrum, CDS Aladin), a 40px tool shelf, centered FITS image auto-scaled to 90% viewport, bottom animation timeline scrubber, and right properties inspector. Fixed cross-survey difference imaging scaling via normalized flux subtraction ($norm_2 - norm_1$), rendering realistic optical dipoles centered at 128 mid-gray.
 - **[Authentic NASA FITS & CDS Aladin Integration]** Replaced synthetic procedural patterns with 100% authentic NASA 2MASS and DSS2 FITS telescope data reduced via Astropy `ZScaleInterval` and `AsinhStretch`. Embedded the official CDS Strasbourg Aladin Lite v3 interactive observatory engine alongside the Astropy FITS flipbook comparator.
 - **[Spec-Kit Execution]** Initialized full Spec-Kit engineering workflow under `.specify/` and `specs/001-spherex-sky-viewer/` (`constitution.md`, `spec.md`, `plan.md`, `research.md`, `contracts/`, `tasks.md`, `checklists/requirements.md`).
 - **[NASA Benchmarks Complete]** All 5 NASA benchmark targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis) verified with Astropy sexagesimal coordinate parsing, multi-epoch cutouts, difference imaging dipoles ($I_2 - I_1$), and 102-band infrared spectroscopy.
