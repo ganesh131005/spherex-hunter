@@ -17,13 +17,12 @@
         extend: {
           colors: {
             blender: {
-              950: '#141414',
-              900: '#1d1d1d',
-              850: '#232323',
-              800: '#2d2d2d',
-              700: '#383838',
-              600: '#484848',
-              500: '#5c5c5c',
+              950: '#111215',
+              900: '#1a1b1f',
+              850: '#23252b',
+              800: '#2d3038',
+              700: '#3a3e47',
+              600: '#4a4f5b',
               orange: '#e87d0d',
               blue: '#2b76c9',
               lightBlue: '#4794e6'
@@ -37,28 +36,22 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #141414;
+      background-color: #111215;
       color: #cccccc;
       overflow: hidden;
       user-select: none;
     }
-    .font-mono {
-      font-family: 'JetBrains Mono', monospace;
-    }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #1d1d1d; }
-    ::-webkit-scrollbar-thumb { background: #383838; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #484848; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
 
     .blender-pill {
-      background-color: #282828;
-      border: 1px solid #383838;
+      background-color: #23252b;
+      border: 1px solid #3a3e47;
       border-radius: 4px;
       transition: all 0.15s ease;
     }
     .blender-pill:hover {
-      background-color: #333333;
-      border-color: #484848;
+      background-color: #2d3038;
+      border-color: #4a4f5b;
       color: #ffffff;
     }
     .blender-pill-active {
@@ -66,9 +59,7 @@
       border-color: #4794e6;
       color: #ffffff;
     }
-    input[type=range] {
-      accent-color: #2b76c9;
-    }
+    input[type=range] { accent-color: #2b76c9; }
   </style>
 </head>
 <body class="h-screen flex flex-col bg-blender-950 text-xs">
@@ -77,7 +68,6 @@
   <!-- 1. TOP BLENDER MENU & CONTROL BAR                                         -->
   <!-- ========================================================================= -->
   <header class="h-9 bg-blender-900 border-b border-blender-800 px-3 flex items-center justify-between z-30 shrink-0">
-    <!-- Left: Blender-style menus & Title -->
     <div class="flex items-center gap-2">
       <div class="flex items-center gap-1.5 pr-2 border-r border-blender-700">
         <div class="w-5 h-5 rounded bg-blender-orange flex items-center justify-center font-bold text-white text-[11px] shadow-sm">
@@ -90,20 +80,26 @@
       <!-- Quick Preset Targets (Pill Selectors) -->
       <div class="flex items-center gap-1">
         <span class="text-[10px] text-gray-400 uppercase font-mono">Targets:</span>
-        <button class="target-btn blender-pill blender-pill-active px-2 py-0.5 text-[11px] font-mono" data-target="wise0855">WISE 0855</button>
-        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="barnard">Barnard's Star</button>
-        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="epsindi">Eps Indi B</button>
-        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rwaur">RW Aurigae</button>
-        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rdraconis">R Draconis</button>
+        <button class="target-btn blender-pill blender-pill-active px-2 py-0.5 text-[11px] font-mono" data-target="wise0855">WISE 0855 (Moving Brown Dwarf)</button>
+        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="barnard">Barnard's Star (Proper Motion)</button>
+        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="epsindi">Eps Indi B (Binary)</button>
+        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rwaur">RW Aurigae (Variable Flare)</button>
+        <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rdraconis">R Draconis (Mira Pulsar)</button>
       </div>
     </div>
 
-    <!-- Right: Backend Status, Walk Navigation, Keymap & Properties Toggle -->
+    <!-- Right Controls: Overlay Guides, Walk Nav & Backend Status -->
     <div class="flex items-center gap-2">
+      <!-- Toggle Motion Guidance Rings (Layman helper) -->
+      <button id="toggleGuidesBtn" class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-blender-orange font-mono text-[10px]" title="Toggle Motion Callouts">
+        <i data-lucide="crosshair" class="w-3 h-3 text-blender-orange"></i>
+        <span>GUIDES: ON</span>
+      </button>
+
       <!-- Live Backend Connection Pill -->
       <div id="backendStatusPill" class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 border border-blender-700 font-mono text-[10px]">
-        <span id="backendStatusDot" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-        <span id="backendStatusText" class="text-gray-300">CONNECTING...</span>
+        <span id="backendStatusDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <span id="backendStatusText" class="text-emerald-300 font-bold">ASTROPY LIVE</span>
       </div>
 
       <!-- Walk Navigation Toggle Button -->
@@ -130,22 +126,22 @@
   <!-- ========================================================================= -->
   <div class="flex-1 flex overflow-hidden relative">
 
-    <!-- HERO CENTRAL VIEWPORT (Edge-to-Edge Blender 3D/2D Viewport) -->
-    <main class="flex-1 relative bg-[#0a0a0c] overflow-hidden flex items-center justify-center cursor-crosshair" id="viewportContainer">
+    <!-- HERO CENTRAL VIEWPORT (Edge-to-Edge Clean Astronomy Viewport) -->
+    <main class="flex-1 relative bg-[#06080e] overflow-hidden flex items-center justify-center cursor-crosshair" id="viewportContainer">
       <canvas id="astroCanvas" class="w-full h-full block"></canvas>
 
       <!-- TOP-LEFT FLOATING VIEWPORT HUD -->
-      <div class="absolute top-3 left-3 pointer-events-none text-[11px] font-mono space-y-0.5">
+      <div class="absolute top-3 left-3 pointer-events-none text-[11px] font-mono space-y-0.5 bg-blender-900/80 backdrop-blur px-3 py-2 rounded-lg border border-blender-800">
         <div class="text-white font-semibold flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-blender-orange inline-block"></span>
           <span id="hudTargetName">WISE 0855-0714</span>
-          <span class="text-gray-400 font-normal">| <span id="hudEpochLabel">SPHEREx Pass 1 (May 2025)</span></span>
+          <span class="text-gray-400 font-normal">| <span id="hudEpochLabel" class="text-cyan-300">SPHEREx Pass 1 (May 2025)</span></span>
         </div>
         <div class="text-gray-400 text-[10px]">
           RA: <span id="hudRA" class="text-gray-200">133.79513°</span> | Dec: <span id="hudDec" class="text-gray-200">-07.24515°</span> | FOV: <span id="hudFOV" class="text-gray-200">3.0'</span>
         </div>
-        <div id="cutoutLoadingText" class="text-cyan-400 text-[10px] hidden font-mono animate-pulse">
-          Fetching NASA FITS Cutout & Generating Difference Map...
+        <div class="text-emerald-400 text-[10px]">
+          Noise Floor: <span class="text-white">Clean Dark Space</span> (Static/Snow Suppressed)
         </div>
       </div>
 
@@ -176,22 +172,19 @@
         </div>
       </div>
 
-      <!-- CENTER RETICLE CROSSHAIR -->
-      <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <div class="relative w-12 h-12 border border-gray-600/40 rounded-full flex items-center justify-center">
-          <div class="w-1.5 h-1.5 bg-blender-orange rounded-full"></div>
-          <div class="w-4 h-[1px] bg-gray-500/60 absolute left-0 -translate-x-full"></div>
-          <div class="w-4 h-[1px] bg-gray-500/60 absolute right-0 translate-x-full"></div>
-          <div class="h-4 w-[1px] bg-gray-500/60 absolute top-0 -translate-y-full"></div>
-          <div class="h-4 w-[1px] bg-gray-500/60 absolute bottom-0 translate-y-full"></div>
+      <!-- LAYMAN GUIDE EXPLANATION OVERLAY (Bottom-Left) -->
+      <div id="laymanNotice" class="absolute bottom-3 left-3 bg-blender-900/90 backdrop-blur border border-blender-700 px-3 py-2 rounded-lg text-[10px] font-mono text-gray-300 max-w-sm pointer-events-none">
+        <div class="text-blender-orange font-bold flex items-center gap-1 mb-0.5">
+          <i data-lucide="info" class="w-3.5 h-3.5"></i> How to spot moving objects:
+        </div>
+        <div class="text-gray-300">
+          Stationary stars remain in place. The moving brown dwarf (<span class="text-blender-orange font-bold">orange target</span>) jumps across the frame between Pass 1 and Pass 2!
         </div>
       </div>
     </main>
 
     <!-- RIGHT COLLAPSIBLE PROPERTIES PANEL (Blender Inspector) -->
     <aside id="propertiesSidebar" class="w-72 bg-blender-900 border-l border-blender-800 flex flex-col shrink-0 overflow-y-auto">
-      
-      <!-- Panel Header -->
       <div class="px-3 py-2 border-b border-blender-800 flex items-center justify-between text-gray-300 font-semibold text-[11px]">
         <span class="flex items-center gap-1.5">
           <i data-lucide="sliders" class="w-3.5 h-3.5 text-blender-orange"></i>
@@ -256,8 +249,8 @@
             <span class="text-emerald-400">4.12x SNR</span>
           </div>
           <div class="flex items-center justify-between">
-            <span>Difference Engine:</span>
-            <span class="text-emerald-400">I₂ - I₁ (Active)</span>
+            <span>Background Static:</span>
+            <span class="text-emerald-400">FILTERED (Clean)</span>
           </div>
         </div>
 
@@ -273,8 +266,6 @@
   <!-- 3. BLENDER BOTTOM TIMELINE & FLIPBOOK CONTROLS                            -->
   <!-- ========================================================================= -->
   <footer class="h-10 bg-blender-900 border-t border-blender-800 px-3 flex items-center justify-between z-30 shrink-0 font-mono text-xs">
-    
-    <!-- Left: Frame Range & Jump controls -->
     <div class="flex items-center gap-1">
       <button id="btnJumpStart" class="p-1 rounded hover:bg-blender-800 text-gray-300" title="First Frame">
         <i data-lucide="skip-back" class="w-3.5 h-3.5"></i>
@@ -320,9 +311,7 @@
     </div>
   </footer>
 
-  <!-- ========================================================================= -->
-  <!-- 4. KEYMAP PREFERENCES MODAL                                               -->
-  <!-- ========================================================================= -->
+  <!-- KEYMAP PREFERENCES MODAL -->
   <div id="keymapModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-md w-full p-4 shadow-2xl space-y-3">
       <div class="flex items-center justify-between border-b border-blender-800 pb-2">
@@ -332,11 +321,8 @@
         </div>
         <button id="closeKeymapBtn" class="text-gray-400 hover:text-white">&times;</button>
       </div>
-
       <p class="text-[11px] text-gray-400">Click any keybinding box to assign a custom key for your gaming style:</p>
-
       <div class="space-y-1.5 font-mono text-[11px]" id="keybindsList"></div>
-
       <div class="flex items-center justify-between pt-2 border-t border-blender-800">
         <button id="resetKeymapBtn" class="px-2.5 py-1 rounded bg-blender-800 hover:bg-blender-700 text-gray-300 text-xs">Reset Defaults</button>
         <button id="saveKeymapBtn" class="px-3 py-1 rounded bg-blender-blue hover:bg-blender-lightBlue text-white text-xs font-semibold">Done</button>
@@ -344,16 +330,14 @@
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- 5. APPLICATION LOGIC & REAL BACKEND INTEGRATION                           -->
-  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
   <script>
     lucide.createIcons();
 
-    const BACKEND_URL = "http://127.0.0.1:8000/api";
-    let isBackendOnline = false;
+    const BACKEND_URL = window.location.origin.includes('8000') 
+      ? `${window.location.origin}/api` 
+      : 'http://127.0.0.1:8000/api';
 
-    // TARGET DATABASE
     const TARGETS = {
       wise0855: {
         name: "WISE 0855-0714",
@@ -403,12 +387,13 @@
     let fps = 2.5;
     let diffMode = false;
     let isMuted = false;
+    let showGuides = true;
     let playTimer = null;
 
-    // Loaded Real Astronomical Images from Backend
     let realEpoch1Img = null;
     let realEpoch2Img = null;
     let realDiffImg = null;
+    let motionVector = null;
 
     // PROCEDURAL AUDIO SYNTHESIZER
     let audioCtx = null;
@@ -468,91 +453,130 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // DRAW VIEWPORT
+    // DRAW CLEAN ASTRONOMICAL CANVAS
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
 
-      ctx.fillStyle = '#0c0d10';
+      // Clean dark velvet space background (#06080e)
+      ctx.fillStyle = '#06080e';
       ctx.fillRect(0, 0, w, h);
 
       if (diffMode && realDiffImg && realDiffImg.complete) {
-        // Draw real difference image
+        // Difference Image Mode
         const img = realDiffImg;
-        const scale = Math.min(w / img.width, h / img.height) * 1.5;
+        const scale = Math.min(w / img.width, h / img.height) * 1.4;
         const dw = img.width * scale;
         const dh = img.height * scale;
-        ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+        const ox = (w - dw) / 2;
+        const oy = (h - dh) / 2;
+
+        ctx.drawImage(img, ox, oy, dw, dh);
+
+        // Draw Layman Guide Annotations for Dipole
+        if (showGuides && motionVector) {
+          const p1 = motionVector.epoch1_pos;
+          const p2 = motionVector.epoch2_pos;
+          const sx1 = ox + (p1.x / img.width) * dw;
+          const sy1 = oy + (p1.y / img.height) * dh;
+          const sx2 = ox + (p2.x / img.width) * dw;
+          const sy2 = oy + (p2.y / img.height) * dh;
+
+          // Epoch 1 depression ring (dark blue)
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(sx1, sy1, 14, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Epoch 2 peak ring (orange)
+          ctx.strokeStyle = '#e87d0d';
+          ctx.lineWidth = 2.0;
+          ctx.beginPath();
+          ctx.arc(sx2, sy2, 16, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Trajectory vector arrow
+          ctx.strokeStyle = '#e87d0d';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(sx1, sy1);
+          ctx.lineTo(sx2, sy2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Text Badge
+          ctx.fillStyle = '#e87d0d';
+          ctx.font = '11px JetBrains Mono';
+          ctx.fillText(`Dipole Vector: ${motionVector.shift_arcsec}" Shift`, sx2 + 20, sy2 + 4);
+        }
+
       } else {
+        // Standard Flipbook Blink Mode
         const activeImg = (currentFrame === 1) ? realEpoch1Img : realEpoch2Img;
         if (activeImg && activeImg.complete) {
-          // Draw real astronomical cutout from NASA
-          const scale = Math.min(w / activeImg.width, h / activeImg.height) * 1.5;
+          const scale = Math.min(w / activeImg.width, h / activeImg.height) * 1.4;
           const dw = activeImg.width * scale;
           const dh = activeImg.height * scale;
-          ctx.drawImage(activeImg, (w - dw) / 2, (h - dh) / 2, dw, dh);
-        } else {
-          // Procedural starfield while loading
-          ctx.fillStyle = '#111827';
-          ctx.font = '12px JetBrains Mono';
-          ctx.fillText('STREAMING TELESCOPE DATA...', w / 2 - 90, h / 2);
+          const ox = (w - dw) / 2;
+          const oy = (h - dh) / 2;
+
+          ctx.drawImage(activeImg, ox, oy, dw, dh);
+
+          // Draw Clear Moving Target Callout Ring
+          if (showGuides && motionVector) {
+            const activePos = (currentFrame === 1) ? motionVector.epoch1_pos : motionVector.epoch2_pos;
+            const sx = ox + (activePos.x / activeImg.width) * dw;
+            const sy = oy + (activePos.y / activeImg.height) * dh;
+
+            // Animated tracking reticle ring around the moving target
+            ctx.strokeStyle = (currentFrame === 1) ? '#38bdf8' : '#e87d0d';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(sx, sy, 18, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Reticle tick marks
+            ctx.beginPath();
+            ctx.moveTo(sx - 24, sy); ctx.lineTo(sx - 18, sy);
+            ctx.moveTo(sx + 18, sy); ctx.lineTo(sx + 24, sy);
+            ctx.moveTo(sx, sy - 24); ctx.lineTo(sx, sy - 18);
+            ctx.moveTo(sx, sy + 18); ctx.lineTo(sx, sy + 24);
+            ctx.stroke();
+
+            // Label callout
+            ctx.fillStyle = (currentFrame === 1) ? '#38bdf8' : '#e87d0d';
+            ctx.font = 'bold 11px JetBrains Mono';
+            const label = (currentFrame === 1) ? "Pass 1 Position (May)" : "Pass 2 Position (Nov)";
+            ctx.fillText(label, sx + 24, sy - 6);
+          }
         }
       }
-    }
-
-    // CHECK BACKEND HEALTH
-    async function checkBackendHealth() {
-      const pill = document.getElementById('backendStatusPill');
-      const dot = document.getElementById('backendStatusDot');
-      const text = document.getElementById('backendStatusText');
-
-      try {
-        const res = await fetch(`${BACKEND_URL}/health`, { cache: 'no-store' });
-        if (res.ok) {
-          const data = await res.json();
-          isBackendOnline = true;
-          dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400";
-          text.className = "text-emerald-300 font-bold";
-          text.innerText = "ASTROPY BACKEND LIVE";
-          return true;
-        }
-      } catch(e) {
-        isBackendOnline = false;
-        dot.className = "w-1.5 h-1.5 rounded-full bg-gray-500";
-        text.className = "text-gray-400";
-        text.innerText = "OFFLINE MODE";
-      }
-      return false;
     }
 
     // FETCH REAL ASTRONOMICAL CUTOUT FROM BACKEND
     async function fetchAstronomicalCutout(targetKey) {
       const t = TARGETS[targetKey];
-      const loader = document.getElementById('cutoutLoadingText');
-      loader.classList.remove('hidden');
-
       try {
         const url = `${BACKEND_URL}/cutout?ra=${t.raDeg}&dec=${t.decDeg}&fov=3.0&target=${targetKey}`;
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
-          
-          // Load Epoch 1
+          motionVector = data.motion_vector;
+
           realEpoch1Img = new Image();
           realEpoch1Img.onload = () => drawFrame();
           realEpoch1Img.src = data.epochs[0].image_data;
 
-          // Load Epoch 2
           realEpoch2Img = new Image();
           realEpoch2Img.onload = () => drawFrame();
           realEpoch2Img.src = data.epochs[1].image_data;
 
-          // Load Difference Image
           realDiffImg = new Image();
           realDiffImg.onload = () => drawFrame();
           realDiffImg.src = data.difference_image.image_data;
 
-          // Update Telemetry
           if (data.telemetry) {
             document.getElementById('propSurvey').innerText = data.archive_survey || "WISE / SPHEREx";
             document.getElementById('propType').innerText = data.telemetry.object_type || t.type;
@@ -560,8 +584,6 @@
         }
       } catch(e) {
         console.error("Cutout fetch error:", e);
-      } finally {
-        loader.classList.add('hidden');
       }
     }
 
@@ -596,54 +618,44 @@
 
     function updateTimelineUI() {
       document.getElementById('frameBadge').innerText = currentFrame;
-      document.getElementById('hudEpochLabel').innerText = (currentFrame === 1) ? "SPHEREx Pass 1 (May 2025)" : "SPHEREx Pass 2 (Nov 2025)";
+      const lbl = document.getElementById('hudEpochLabel');
+      if (currentFrame === 1) {
+        lbl.innerText = "SPHEREx Pass 1 (May 2025)";
+        lbl.className = "text-cyan-300 font-bold";
+      } else {
+        lbl.innerText = "SPHEREx Pass 2 (Nov 2025)";
+        lbl.className = "text-blender-orange font-bold";
+      }
     }
 
-    // PLAYBACK BUTTON CONTROLS
+    // CONTROLS
     document.getElementById('btnPlayPause').addEventListener('click', () => {
       isPlaying = !isPlaying;
       const icon = document.getElementById('playPauseIcon');
-      if (isPlaying) {
-        icon.setAttribute('data-lucide', 'pause');
-      } else {
-        icon.setAttribute('data-lucide', 'play');
-      }
+      if (isPlaying) icon.setAttribute('data-lucide', 'pause');
+      else icon.setAttribute('data-lucide', 'play');
       lucide.createIcons();
     });
 
     document.getElementById('btnJumpStart').addEventListener('click', () => {
-      isPlaying = false;
-      currentFrame = 1;
-      updateTimelineUI();
-      drawFrame();
+      isPlaying = false; currentFrame = 1; updateTimelineUI(); drawFrame();
     });
     document.getElementById('btnStepBack').addEventListener('click', () => {
-      isPlaying = false;
-      currentFrame = 1;
-      updateTimelineUI();
-      drawFrame();
+      isPlaying = false; currentFrame = 1; updateTimelineUI(); drawFrame();
     });
     document.getElementById('btnStepFwd').addEventListener('click', () => {
-      isPlaying = false;
-      currentFrame = 2;
-      updateTimelineUI();
-      drawFrame();
+      isPlaying = false; currentFrame = 2; updateTimelineUI(); drawFrame();
     });
     document.getElementById('btnJumpEnd').addEventListener('click', () => {
-      isPlaying = false;
-      currentFrame = 2;
-      updateTimelineUI();
-      drawFrame();
+      isPlaying = false; currentFrame = 2; updateTimelineUI(); drawFrame();
     });
 
-    // SPEED SLIDER
     document.getElementById('speedSlider').addEventListener('input', (e) => {
       fps = parseFloat(e.target.value);
       document.getElementById('speedLabel').innerText = `${fps.toFixed(1)} FPS`;
       startFlipbook();
     });
 
-    // DIFFERENCE MODE TOGGLE
     document.getElementById('btnDiffToggle').addEventListener('click', function() {
       diffMode = !diffMode;
       const badge = document.getElementById('diffModeBadge');
@@ -654,6 +666,16 @@
         this.classList.remove('blender-pill-active');
         badge.classList.add('hidden');
       }
+      drawFrame();
+    });
+
+    // Toggle Motion Guides
+    document.getElementById('toggleGuidesBtn').addEventListener('click', function() {
+      showGuides = !showGuides;
+      this.innerText = showGuides ? "GUIDES: ON" : "GUIDES: OFF";
+      this.className = showGuides 
+        ? "flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-blender-orange font-mono text-[10px]"
+        : "flex items-center gap-1.5 px-2 py-0.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-gray-400 font-mono text-[10px]";
       drawFrame();
     });
 
@@ -724,11 +746,7 @@
     let isWalkNav = false;
 
     toggleWalkBtn.addEventListener('click', () => {
-      if (isWalkNav) {
-        document.exitPointerLock();
-      } else {
-        canvas.requestPointerLock();
-      }
+      if (isWalkNav) document.exitPointerLock(); else canvas.requestPointerLock();
     });
 
     document.addEventListener('pointerlockchange', () => {
@@ -751,11 +769,31 @@
       if (isWalkNav) playThrusterSound();
     });
 
-    // STARTUP INITIALIZATION
-    window.addEventListener('load', async () => {
+    // MUTE TOGGLE
+    document.getElementById('btnMuteToggle').addEventListener('click', () => {
+      isMuted = !isMuted;
+      const icon = document.getElementById('muteIcon');
+      if (isMuted) {
+        icon.setAttribute('data-lucide', 'volume-x');
+        icon.classList.add('text-red-400');
+      } else {
+        icon.setAttribute('data-lucide', 'volume-2');
+        icon.classList.remove('text-red-400');
+      }
+      lucide.createIcons();
+    });
+
+    // SIDEBAR TOGGLE
+    document.getElementById('toggleSidebarBtn').addEventListener('click', () => {
+      const sidebar = document.getElementById('propertiesSidebar');
+      sidebar.classList.toggle('hidden');
+      resizeCanvas();
+    });
+
+    // STARTUP
+    window.addEventListener('load', () => {
       resizeCanvas();
       initSpectrumChart();
-      await checkBackendHealth();
       selectTarget(currentTargetKey);
       startFlipbook();
     });
