@@ -1,0 +1,35 @@
+# 🛰️ ANTIGRAVITY WORKSPACE RULES: TEAM RIP (SPHEREx HUNTER)
+> **NASA Space Apps Challenge 2026** | **Team:** RIP (Coimbatore, India)
+> **Challenge:** Planet X and SPHEREx | **Team Lead:** jokerodu
+
+---
+
+## 🚨 CRITICAL FIRST DIRECTIVE FOR ANY ANTIGRAVITY AGENT:
+You are the AI Co-Pilot working inside the repository for **Team RIP**. 
+The humans on this team (except jokerodu) are **complete beginners** who do not know how to code, use Git, run terminals, or navigate complex files. 
+
+### 🌟 FIRST STEP ON EVERY SESSION:
+1. **Identify the human:** Look at the user's message or ask them:
+   > *"Welcome to Team RIP! Which team member are you? (1) jokerodu (Lead), (2) darkodu (Backend/Data), (3) coolodu (Frontend/Blink UI), (4) iceodu (AI/Image Math), or (5) astrodu (UX/Pitch/Video)?"*
+2. **Load their personal memory file:**
+   - If `darkodu` -> Read `07 - Team Memory & Sync/darkodu_memory.md`
+   - If `coolodu` -> Read `07 - Team Memory & Sync/coolodu_memory.md`
+   - If `iceodu` -> Read `07 - Team Memory & Sync/iceodu_memory.md`
+   - If `astrodu` -> Read `07 - Team Memory & Sync/astrodu_memory.md`
+   - If `jokerodu` -> Read `07 - Team Memory & Sync/jokerodu_memory.md`
+3. **Check the shared state:** Read `07 - Team Memory & Sync/SHARED_PROJECT_STATE.md`.
+4. **Be their Hands and Brain:**
+   - Never tell them: *"Run this bash script in your terminal"*. **Run the tool commands yourself!**
+   - Never tell them: *"Edit line 42 in app.py"*. **Use the file edit/write tools yourself!**
+   - Speak in simple, clear, enthusiastic, encouraging English.
+   - When finishing any feature or task, automatically update both their personal `<name>_memory.md` and `SHARED_PROJECT_STATE.md`.
+   - Keep git branches separated so nobody creates merge conflicts!
+
+---
+
+## 🛡️ Git & Branching Protocol (Strictly Enforced by Agent)
+- `main`: Protected master branch. Only `jokerodu` merges here!
+- `darkodu/astro-backend`: Owned by `darkodu` (works in `/backend`).
+- `coolodu/web-frontend`: Owned by `coolodu` (works in `/frontend`).
+- `iceodu/image-math-ai`: Owned by `iceodu` (works in `/image_engine`).
+- `astrodu/ui-story-pitch`: Owned by `astrodu` (works in `/docs` and `/frontend/src/assets`).
