@@ -95,10 +95,32 @@ def get_benchmark_targets():
         for k, v in BENCHMARKS.items()
     ]
 
+import astropy.units as u
+from astropy.coordinates import SkyCoord
+
+def parse_celestial_coords(ra_input: str, dec_input: str) -> tuple[float, float]:
+    """
+    Parses both decimal degrees ('133.79513', '-7.24515') and 
+    standard sexagesimal notation ('08h55m10.831s', '-7d14m42.53s') via Astropy.
+    """
+    try:
+        return float(ra_input), float(dec_input)
+    except ValueError:
+        pass
+        
+    try:
+        ra_clean = str(ra_input).strip()
+        dec_clean = str(dec_input).strip()
+        unit = (u.hourangle, u.deg) if 'h' in ra_clean.lower() else (u.deg, u.deg)
+        sc = SkyCoord(ra_clean, dec_clean, unit=unit)
+        return float(round(sc.ra.deg, 5)), float(round(sc.dec.deg, 5))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid celestial coordinates '{ra_input}', '{dec_input}': {e}")
+
 @app.get("/api/cutout")
 def get_cutout(
-    ra: float = Query(..., description="Right Ascension in decimal degrees"),
-    dec: float = Query(..., description="Declination in decimal degrees"),
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal ('08h55m10.831s')"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal ('-7d14m42.53s')"),
     fov: float = Query(3.0, description="Field of View in arcminutes"),
     target: Optional[str] = Query(None, description="Benchmark target key (wise0855, barnard, etc.)")
 ):
@@ -107,21 +129,27 @@ def get_cutout(
     with true proper motion or variable star flares, and returns the difference map.
     """
     try:
-        data = fetch_real_cutout(ra=ra, dec=dec, fov_arcmin=fov, target_key=target)
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
         return data
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/spectrum")
 def get_spectrum(
-    ra: float = Query(..., description="Right Ascension in decimal degrees"),
-    dec: float = Query(..., description="Declination in decimal degrees"),
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
     target: Optional[str] = Query(None, description="Benchmark target key")
 ):
     """Returns the 102 near-infrared spectral bands (0.75 - 5.0 μm) with molecular detections."""
     try:
-        spectrum = get_102_band_spectrum(ra=ra, dec=dec, target_key=target)
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        spectrum = get_102_band_spectrum(ra=ra_deg, dec=dec_deg, target_key=target)
         return spectrum
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

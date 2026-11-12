@@ -87,21 +87,30 @@
         <button class="target-btn blender-pill px-2 py-0.5 text-[11px] font-mono" data-target="rdraconis">R Draconis</button>
       </div>
 
-      <!-- Direct Celestial Coordinate Inputs (RA / Dec) -->
+      <!-- Direct Celestial Coordinate Inputs (RA / Dec / FOV) -->
       <div class="flex items-center gap-1.5 pl-2 border-l border-blender-800">
         <div class="flex items-center gap-1 bg-blender-850 px-1.5 py-0.5 rounded border border-blender-700 font-mono text-[11px]">
           <span class="text-gray-400 text-[10px]">RA:</span>
-          <input id="inputRA" type="number" step="0.00001" value="133.79513" class="w-20 bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[11px] focus:outline-none focus:border-blender-orange text-right font-mono" title="Right Ascension (degrees)">
-          <span class="text-gray-500 text-[10px]">°</span>
+          <input id="inputRA" type="text" value="133.79513" class="w-24 bg-blender-950 text-white px-1.5 py-0.5 rounded border border-blender-700 text-[11px] focus:outline-none focus:border-blender-orange font-mono" placeholder="deg or 08h55m" title="Right Ascension (decimal degrees or sexagesimal e.g. 08h55m10.831s)">
         </div>
         <div class="flex items-center gap-1 bg-blender-850 px-1.5 py-0.5 rounded border border-blender-700 font-mono text-[11px]">
           <span class="text-gray-400 text-[10px]">Dec:</span>
-          <input id="inputDec" type="number" step="0.00001" value="-7.24515" class="w-20 bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[11px] focus:outline-none focus:border-blender-orange text-right font-mono" title="Declination (degrees)">
-          <span class="text-gray-500 text-[10px]">°</span>
+          <input id="inputDec" type="text" value="-7.24515" class="w-24 bg-blender-950 text-white px-1.5 py-0.5 rounded border border-blender-700 text-[11px] focus:outline-none focus:border-blender-orange font-mono" placeholder="deg or -7d14m" title="Declination (decimal degrees or sexagesimal e.g. -7d14m42.53s)">
         </div>
-        <button id="btnGoCoords" class="px-2.5 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-mono text-[10px] font-bold shadow-sm transition-all flex items-center gap-1" title="Slew telescope to RA/Dec and fetch multi-epoch images">
+        <!-- Field of View Selector -->
+        <div class="flex items-center gap-1 bg-blender-850 px-1.5 py-0.5 rounded border border-blender-700 font-mono text-[11px]">
+          <span class="text-gray-400 text-[10px]">FOV:</span>
+          <select id="selectFOV" class="bg-blender-950 text-white px-1 py-0.5 rounded border border-blender-700 text-[10px] focus:outline-none focus:border-blender-orange cursor-pointer">
+            <option value="1.0">1.0' (Deep)</option>
+            <option value="3.0" selected>3.0' (Std)</option>
+            <option value="5.0">5.0' (Wide)</option>
+            <option value="10.0">10.0' (Search)</option>
+            <option value="15.0">15.0' (Cluster)</option>
+          </select>
+        </div>
+        <button id="btnGoCoords" class="px-2.5 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-mono text-[10px] font-bold shadow-sm transition-all flex items-center gap-1" title="Fetch multi-epoch SPHEREx & WISE images">
           <i data-lucide="crosshair" class="w-3 h-3"></i>
-          <span>SLEW</span>
+          <span>FETCH</span>
         </button>
       </div>
     </div>
@@ -602,16 +611,22 @@
       if (document.activeElement !== inputDec) inputDec.value = coords.dec.toFixed(5);
     }
 
-    // GENERAL ASTRONOMICAL CUTOUT LOADER (Supports Presets & Arbitrary RA/Dec)
-    async function loadSkyCutout(ra, dec, targetKey = null, targetName = null) {
+    // GENERAL ASTRONOMICAL CUTOUT LOADER (Supports Presets, Decimal, & Sexagesimal)
+    async function loadSkyCutout(ra, dec, targetKey = null, targetName = null, fov = 3.0) {
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${ra}&dec=${dec}&fov=3.0`;
+        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${fov}`;
         if (targetKey) url += `&target=${targetKey}`;
         
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           motionVector = data.motion_vector;
+
+          if (data.coordinates) {
+            camera.ra = data.coordinates.ra_deg;
+            camera.dec = data.coordinates.dec_deg;
+            camera.fov = data.coordinates.fov_arcmin || fov;
+          }
 
           realEpoch1Img = new Image();
           realEpoch1Img.onload = () => drawFrame();
@@ -625,8 +640,10 @@
           realDiffImg.onload = () => drawFrame();
           realDiffImg.src = data.difference_image.image_data;
 
-          const title = targetName || data.target || `Sky Field (${ra.toFixed(4)}°, ${dec.toFixed(4)}°)`;
+          const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
           document.getElementById('hudTargetName').innerText = title;
+
+          updateCoordinateReadouts();
 
           if (data.telemetry) {
             document.getElementById('propSurvey').innerText = data.archive_survey || "WISE / SPHEREx";
@@ -647,7 +664,7 @@
     // GENERAL 102-BAND SPECTRUM LOADER
     async function loadSpectrumData(ra, dec, targetKey = null) {
       try {
-        let url = `${BACKEND_URL}/spectrum?ra=${ra}&dec=${dec}`;
+        let url = `${BACKEND_URL}/spectrum?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}`;
         if (targetKey) url += `&target=${targetKey}`;
         const res = await fetch(url);
         if (res.ok) {
@@ -802,29 +819,29 @@
       loadSpectrumData(t.raDeg, t.decDeg, key);
     }
 
-    // DIRECT COORDINATE SEARCH / SLEW HANDLER
+    // DIRECT COORDINATE SEARCH / SLEW HANDLER (Decimal + Sexagesimal Support)
     function slewToTypedCoordinates() {
-      const raVal = parseFloat(document.getElementById('inputRA').value);
-      const decVal = parseFloat(document.getElementById('inputDec').value);
-      if (isNaN(raVal) || isNaN(decVal)) return;
+      const raInput = document.getElementById('inputRA').value.trim();
+      const decInput = document.getElementById('inputDec').value.trim();
+      const fovVal = parseFloat(document.getElementById('selectFOV').value) || 3.0;
+      if (!raInput || !decInput) return;
 
-      camera.ra = raVal;
-      camera.dec = decVal;
       camera.panX = 0;
       camera.panY = 0;
       camera.zoom = 1.0;
+      camera.fov = fovVal;
 
       // Deselect preset target buttons
       document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-pill-active'));
       currentTargetKey = null;
 
-      updateCoordinateReadouts();
       playTargetLockChime();
-      loadSkyCutout(raVal, decVal, null, `Sky Field (RA ${raVal.toFixed(4)}°, Dec ${decVal.toFixed(4)}°)`);
-      loadSpectrumData(raVal, decVal);
+      loadSkyCutout(raInput, decInput, null, `Target (${raInput}, ${decInput})`, fovVal);
+      loadSpectrumData(raInput, decInput);
     }
 
     document.getElementById('btnGoCoords').addEventListener('click', slewToTypedCoordinates);
+    document.getElementById('selectFOV').addEventListener('change', slewToTypedCoordinates);
     document.getElementById('inputRA').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') slewToTypedCoordinates();
     });
@@ -1065,11 +1082,28 @@
       resizeCanvas();
     });
 
-    // STARTUP INITIALIZATION
+    // STARTUP INITIALIZATION (Supports URL Deep-Linking & Presets)
     window.addEventListener('load', () => {
       resizeCanvas();
       initSpectrumChart();
-      selectTarget(currentTargetKey);
+
+      // Check URL Query Parameters for Embeddable Links (e.g. ?ra=...&dec=...&fov=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('ra') && urlParams.has('dec')) {
+        const qRa = urlParams.get('ra');
+        const qDec = urlParams.get('dec');
+        const qFov = parseFloat(urlParams.get('fov') || '3.0');
+        
+        document.getElementById('inputRA').value = qRa;
+        document.getElementById('inputDec').value = qDec;
+        document.getElementById('selectFOV').value = qFov.toFixed(1);
+        
+        loadSkyCutout(qRa, qDec, null, `Target (${qRa}, ${qDec})`, qFov);
+        loadSpectrumData(qRa, qDec);
+      } else {
+        selectTarget(currentTargetKey);
+      }
+
       startFlipbook();
     });
   </script>
