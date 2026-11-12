@@ -34,3 +34,7 @@
   - Added double-buffered anti-popping cross-fade with 150ms alpha transition (`ctx.globalAlpha`) in `drawFrame()`.
   - Connected debounced LOD updates into mouse wheel zoom, Walk Nav WASD keys, FOV dropdown, and zoom reset.
 - [x] Fixed shading mode transition bug: switching from Diff mode back to Gray, Invert, or Thermal now automatically resets `diffMode = false`, synchronizes workspace tabs to `Layout (Blink)`, and immediately resumes continuous two-frame looping playback (`startFlipbook()`).
+- [x] Completely redesigned top workspace header (40px height):
+  - Segmented workspace pill bar with Lucide icons (`Blink`, `Difference`, `Spectra`, `Aladin Sky`).
+  - Target benchmark bar with `whitespace-nowrap` single-line buttons preventing awkward vertical wrapping on any screen width.
+  - Symmetrical celestial coordinates capsule (`RA`, `Dec`, `FOV`) with high-contrast `Fetch` pill and pulsing `NASA IRSA` status badge.
