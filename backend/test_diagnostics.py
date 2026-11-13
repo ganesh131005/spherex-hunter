@@ -28,11 +28,13 @@ from backend.main import (
     get_benchmark_targets,
     get_cutout,
     get_spectrum,
+    get_gaia_catalog,
     parse_celestial_coords,
     flag_candidate,
     get_discoveries,
     DiscoveryCandidate
 )
+from backend.services.catalog_engine import query_gaia_dr3
 
 def print_banner(text):
     print("\n" + "=" * 65)
@@ -181,6 +183,33 @@ def test_fastapi_endpoints():
     assert len(discoveries) > 0
     print(f"  [PASS] flag_candidate()          -> Logged candidate by {test_cand.user_handle} (Total logged: {len(discoveries)})")
 
+    # 7. Gaia DR3 catalog query
+    gaia_res = get_gaia_catalog(ra="269.45208", dec="4.69339", radius=3.0, limit=10)
+    assert gaia_res["status"] == "success"
+    assert gaia_res["total_sources"] > 0
+    top_star = gaia_res["sources"][0]
+    assert "source_id" in top_star
+    assert "pmra_mas_yr" in top_star
+    assert "pmdec_mas_yr" in top_star
+    print(f"  [PASS] get_gaia_catalog()        -> Retrieved {gaia_res['total_sources']} Gaia DR3 sources (Top star G={top_star['g_mag']}, PM={top_star['total_pm_mas_yr']:.1f} mas/yr)")
+
+def test_gaia_catalog_direct():
+    print_banner("6. GAIA DR3 ASTROMETRIC ENGINE & PROPER MOTION VECTORS")
+    t0 = time.perf_counter()
+    res = query_gaia_dr3(ra=269.45208, dec=4.69339, radius_arcmin=3.0, limit=20)
+    elapsed_ms = (time.perf_counter() - t0) * 1000
+
+    assert res["status"] == "success"
+    assert len(res["sources"]) > 0
+    high_pm = [s for s in res["sources"] if s.get("is_high_proper_motion")]
+    print(f"  [PASS] Gaia DR3 Catalog queried in {elapsed_ms:5.2f} ms")
+    print(f"  [PASS] Total sources in 3.0' FOV: {res['total_sources']}, High Proper Motion: {len(high_pm)}")
+    if high_pm:
+        hero = high_pm[0]
+        print(f"  [PASS] Hero High PM Object: PM_RA={hero['pmra_mas_yr']:.1f} mas/yr, PM_DEC={hero['pmdec_mas_yr']:.1f} mas/yr (Total: {hero['total_pm_mas_yr']:.1f} mas/yr)")
+        if hero.get('distance_pc'):
+            print(f"  [PASS] Parallax Distance: {hero['distance_pc']:.2f} pc ({hero['distance_pc']*3.26:.2f} light years)")
+
 if __name__ == "__main__":
     print("\nStarting SPHEREx Hunter Astro-Data Backend Diagnostic Suite...")
     test_benchmark_targets()
@@ -188,4 +217,5 @@ if __name__ == "__main__":
     test_difference_imaging_math()
     test_102_band_spectroscopy()
     test_fastapi_endpoints()
-    print_banner("ALL DIAGNOSTIC TESTS PASSED! (5/5 SUITES 100% OPERATIONAL)")
+    test_gaia_catalog_direct()
+    print_banner("ALL DIAGNOSTIC TESTS PASSED! (6/6 SUITES 100% OPERATIONAL)")

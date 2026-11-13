@@ -3,11 +3,14 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Backend API live on `http://localhost:8000`. Serving real astronomical cutouts and 102-band spectra.
-- **Next Task:** Add multi-survey overlays (Gaia DR3 proper motion catalog query).
+- **Current Task:** Gaia DR3 Astrometric & Proper Motion Catalog Live on `/api/catalog/gaia`.
+- **Next Task:** Assist coolodu with frontend overlay vectors or add SIMBAD / NED catalog queries.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Implemented European Space Agency (ESA) Gaia DR3 catalog query engine in `backend/services/catalog_engine.py` using PyVO TAP.
+- [x] Added `GET /api/catalog/gaia` endpoint with proper motion vector math, position angles, parallax distances, and sub-10ms disk caching.
+- [x] Verified authentic Gaia DR3 source records for Barnard's Star (G=8.19, PM=10,393 mas/yr, distance 1.83 pc).
 - [x] Assigned role and received task prompts for Antigravity.
 - [x] Initialized `backend/step1_wise0855_irsa.py` for querying NASA IRSA TAP archive.
 - [x] Installed and configured `astropy`, `astroquery`, and `pyvo`.

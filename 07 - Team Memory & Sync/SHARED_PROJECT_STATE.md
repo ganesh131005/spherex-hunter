@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Gaia DR3 Astrometric & Proper Motion Catalog Live]** `darkodu` deployed `/api/catalog/gaia`:
+  - Connected live to European Space Agency (ESA) Gaia DR3 Virtual Observatory TAP archive (`gaiadr3.gaia_source`).
+  - Delivers high-precision astrometric positions, multi-band photometry ($G, BP, RP$), proper motion vectors ($\mu_\alpha, \mu_\delta$, total PM, position angle), and parallax distances.
+  - Sub-10ms disk caching (`backend/cache/catalog_gaia/`) with graceful offline benchmark fallback.
+  - 100% verified via 6-suite diagnostic suite (`backend/test_diagnostics.py`).
 - **[FastAPI Live Server Active on Port 8000]** Backend daemon running on `http://localhost:8000`:
   - Verified live endpoints: `/api/health`, `/api/targets`, `/api/cutout`, `/api/spectrum`, `/api/discoveries`, and interactive Swagger docs at `/docs`.
   - Static frontend mounted and accessible directly at `http://localhost:8000/app/`.

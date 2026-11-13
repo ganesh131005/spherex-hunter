@@ -22,6 +22,7 @@ from backend.services.cutout_engine import (
     get_102_band_spectrum,
     BENCHMARKS
 )
+from backend.services.catalog_engine import query_gaia_dr3
 
 app = FastAPI(
     title="SPHEREx Hunter Astronomical API",
@@ -66,6 +67,7 @@ def root():
             "/api/targets",
             "/api/cutout?ra=133.79513&dec=-7.24515&target=wise0855",
             "/api/spectrum?ra=133.79513&dec=-7.24515&target=wise0855",
+            "/api/catalog/gaia?ra=269.45208&dec=4.69339&radius=3.0",
             "/api/discoveries"
         ]
     }
@@ -149,6 +151,26 @@ def get_spectrum(
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         spectrum = get_102_band_spectrum(ra=ra_deg, dec=dec_deg, target_key=target)
         return spectrum
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/catalog/gaia")
+def get_gaia_catalog(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes (0.2 to 15.0)"),
+    limit: int = Query(100, description="Maximum number of sources to return (1 to 300)")
+):
+    """
+    Queries European Space Agency (ESA) Gaia DR3 catalog for astrometric sources,
+    magnitudes (G, BP, RP), proper motions (pmRA, pmDEC), parallax distances, and motion vectors.
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        catalog_data = query_gaia_dr3(ra=ra_deg, dec=dec_deg, radius_arcmin=radius, limit=limit)
+        return catalog_data
     except HTTPException:
         raise
     except Exception as e:
