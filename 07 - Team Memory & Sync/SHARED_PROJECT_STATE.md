@@ -26,7 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-- **[URGENT Task Forwarded to @coolodu: TASK-002]** Forwarded viewport crash fix, optical camera LOD streaming, and seamless near-tile multi-canvas optimization to `coolodu` to leverage their high laptop specifications and Paid Pro Gemini token allocation.
+- **[TASK-003 & TASK-002 Complete & Verified Live]** Near-Image Viewport Streaming and Multi-Tile Canvas fully resolved and verified in browser:
+  - **Backend Fix (@darkodu, TASK-003):** Fixed `ZeroDivisionError` in `load_real_fits_cutout` with dynamic symmetric padding. Offset near-tile queries around any coordinate now return valid (dim, dim) FITS cutouts and difference images without boundary slicing exceptions.
+  - **Frontend Streaming & Memory Stabilization (@coolodu, TASK-002):** Implemented concurrency queue (max 2 parallel fetches), frustum culling, neutral mid-gray (128) baseline in Difference mode, and 16-tile LRU texture caching.
+  - **Live Browser Verification:** Verified with Browser subagent at 0.4x zoom and during panning: 16 continuous tiles render seamlessly across the full canvas, completely eliminating black space with zero crashes.
 - **[Teammate Task Sharing & Forwarding System Live]** Deployed Git-based task delegation system:
   - **Resource Matrix (`TEAM_RESOURCE_MATRIX.md`):** Documents `coolodu` (Paid Pro + High Lap Specs), `iceodu` (Free Tier + High Lap Specs), `jokerodu`/`darkodu` (Nonpaid Pro Gemini), and `astrodu` (UX/Story).
   - **CLI Helper (`tools/task_forwarder.py`):** Provides `dispatch`, `check`, `claim`, `complete`, and `list` commands.
