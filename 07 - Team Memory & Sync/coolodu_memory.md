@@ -39,9 +39,10 @@
   - Topbar `[ Blink ]` and `[ Difference ]` exclusively control the underlying astronomical data pipeline.
   - Users can freely view either Blink flipbook or Difference subtraction in Grayscale, Inverted, or False-Color Thermal without state conflicts.
 - [x] Refined Multi-Tier LOD Camera Engine (Phase 7):
-  - Calibrated matrix resolutions: LOD 2 (Wide Overview 360p, 10.0' FOV), LOD 1 (Standard Science 720p HD, 3.0' FOV), LOD 0 (Hero Deep 1024p Full-Res, 1.5' FOV).
-  - Eliminated discrete square checkerboard grid seams: broad zoom-out views are served as single, continuous astronomical wide-field photographs from NASA IRSA.
-  - Implemented continuous world-space celestial camera zoom with bilinear filtering so zooming in and out feels like an authentic optical telescope lens.
+  - Calibrated matrix resolutions: LOD 2 (Wide Overview 360p, 8.0' FOV), LOD 1 (Standard Science 720p HD, 3.0' FOV), LOD 0 (Hero Deep 1024p Full-Res, 1.5' FOV).
+  - Eliminated discrete square checkerboard grid seams: broad zoom-out views are served as single, continuous astronomical wide-field photographs spanning the viewport without black border voids.
+  - Implemented continuous world-space celestial camera zoom with bilinear filtering and per-image FOV coordinate mapping: stars remain perfectly locked in world space without jitter, jumping, or popping.
+  - Verified live in browser with zero console errors: smooth continuous zoom from 0.4x to 2.2x, automatic LOD streaming, instant flipbook resume, and independent colormap shading.
 - [x] Completely redesigned top workspace header (40px height):
   - Segmented workspace pill bar with Lucide icons (`Blink`, `Difference`, `Spectra`, `Aladin Sky`).
   - Target benchmark bar with `whitespace-nowrap` single-line buttons preventing awkward vertical wrapping on any screen width.

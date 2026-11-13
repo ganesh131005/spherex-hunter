@@ -294,33 +294,52 @@ def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1) -> tuple[np
         with fits.open(p_dss2) as h2:
             d2 = np.nan_to_num(h2[0].data.astype(float))
 
-        # Dynamic Game LOD Target Dimension:
-        # LOD 2: 360x360 (~360p broad overview, lightning-fast 60 FPS transit)
-        # LOD 1: 720x720 (~720p/1080p standard science resolution)
-        # LOD 0: 1024x1024 (full unbinned sensor resolution)
-        dim = 360 if lod == 2 else (1024 if lod == 0 else 720)
+        # Determine FOV and Crop Box based on Multi-Tier Game LOD:
+        # Full FITS array is 300x300 at 1.6 arcsec/pix = 480 arcsec = 8.0 arcmin
+        cy, cx = d1.shape[0] // 2, d1.shape[1] // 2
+
+        if lod == 2:
+            # LOD 2: Full 8.0 arcminute Wide Overview, resampled to 360x360 (~360p) for high FPS
+            dim = 360
+            c1 = d1
+            c2 = d2
+            actual_fov = 8.0
+        elif lod == 0:
+            # LOD 0: Hero Deep Core (central 1.5 arcmin = 90 arcsec = ~56x56 px unbinned crop)
+            dim = 1024
+            half = 28
+            c1 = d1[max(0, cy-half):min(d1.shape[0], cy+half), max(0, cx-half):min(d1.shape[1], cx+half)]
+            c2 = d2[max(0, cy-half):min(d2.shape[0], cy+half), max(0, cx-half):min(d2.shape[1], cx+half)]
+            actual_fov = 1.5
+        else:
+            # LOD 1: Standard Science (central 3.0 arcmin = 180 arcsec = ~112x112 px crop)
+            dim = 720
+            half = 56
+            c1 = d1[max(0, cy-half):min(d1.shape[0], cy+half), max(0, cx-half):min(d1.shape[1], cx+half)]
+            c2 = d2[max(0, cy-half):min(d2.shape[0], cy+half), max(0, cx-half):min(d2.shape[1], cx+half)]
+            actual_fov = 3.0
 
         # Resample to LOD display matrix
-        if d1.shape != (dim, dim):
-            d1 = zoom(d1, (float(dim) / d1.shape[0], float(dim) / d1.shape[1]), order=1)
-        if d2.shape != (dim, dim):
-            d2 = zoom(d2, (float(dim) / d2.shape[0], float(dim) / d2.shape[1]), order=1)
+        if c1.shape != (dim, dim):
+            c1 = zoom(c1, (float(dim) / c1.shape[0], float(dim) / c1.shape[1]), order=1 if lod != 0 else 2)
+        if c2.shape != (dim, dim):
+            c2 = zoom(c2, (float(dim) / c2.shape[0], float(dim) / c2.shape[1]), order=1 if lod != 0 else 2)
 
         # Astropy ZScale & AsinhStretch for authentic photographic contrast
         z1 = ZScaleInterval(contrast=0.25)
-        vmin1, vmax1 = z1.get_limits(d1)
+        vmin1, vmax1 = z1.get_limits(c1)
         if vmax1 <= vmin1: vmax1 = vmin1 + 1.0
-        norm1 = np.clip((d1 - vmin1) / (vmax1 - vmin1), 0.0, 1.0)
+        norm1 = np.clip((c1 - vmin1) / (vmax1 - vmin1), 0.0, 1.0)
         ep1_clean = (AsinhStretch(a=0.1)(norm1) * 255.0).astype(np.uint8)
 
         z2 = ZScaleInterval(contrast=0.25)
-        vmin2, vmax2 = z2.get_limits(d2)
+        vmin2, vmax2 = z2.get_limits(c2)
         if vmax2 <= vmin2: vmax2 = vmin2 + 1.0
-        norm2 = np.clip((d2 - vmin2) / (vmax2 - vmin2), 0.0, 1.0)
+        norm2 = np.clip((c2 - vmin2) / (vmax2 - vmin2), 0.0, 1.0)
         ep2_clean = (AsinhStretch(a=0.1)(norm2) * 255.0).astype(np.uint8)
 
         # Real difference map: I2 - I1 using real astronomical difference algorithm (Alard-Lupton / Bramich)
-        diff_scaled = compute_scientific_difference(d1, d2)
+        diff_scaled = compute_scientific_difference(c1, c2)
 
         pm_ra = meta.get("pm_ra_mas", 0.0)
         pm_dec = meta.get("pm_dec_mas", 0.0)
@@ -329,18 +348,18 @@ def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1) -> tuple[np
         elif shift_arcsec == 0 and "barnard" in str(target_key): shift_arcsec = 5.18
         elif shift_arcsec == 0 and "epsindi" in str(target_key): shift_arcsec = 2.35
 
-        scale_factor = dim / 400.0
+        shift_px = (shift_arcsec / (actual_fov * 60.0)) * dim
         vector_info = {
             "epoch1_pos": {"x": int(dim / 2), "y": int(dim / 2)},
-            "epoch2_pos": {"x": int(dim / 2 + (shift_arcsec / 0.45) * scale_factor), "y": int(dim / 2)},
+            "epoch2_pos": {"x": int(dim / 2 + shift_px), "y": int(dim / 2)},
             "shift_arcsec": shift_arcsec,
             "is_variable": meta.get("variability", 1.0) > 1.5,
             "is_real_fits": True
         }
-        lod_tag = "LOD 0 (Hero Deep)" if lod == 0 else ("LOD 2 (Wide Overview)" if lod == 2 else "LOD 1 (Standard Science)")
+        lod_tag = "LOD 0 (Hero Deep 1024px)" if lod == 0 else ("LOD 2 (Wide Overview 360px)" if lod == 2 else "LOD 1 (Standard Science 720px)")
         lbl1 = f"NASA 2MASS Infrared FITS [{lod_tag}] (J-Band 1.25 μm)"
         lbl2 = f"NASA DSS2 / SPHEREx FITS [{lod_tag}] (Red Band / NIR Co-add)"
-        return ep1_clean, ep2_clean, diff_scaled, vector_info, lbl1, lbl2
+        return ep1_clean, ep2_clean, diff_scaled, vector_info, lbl1, lbl2, actual_fov
     return None
 
 def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: int = 1) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str] | None:
@@ -460,29 +479,33 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             "is_custom": True
         }
     
-    # 1. Check for authentic cached NASA FITS cutouts (for standard <= 4.0' FOV)
+    # 1. Benchmark targets load authentic NASA FITS cutouts directly from disk for all LOD tiers
     fits_result = None
-    if target_key and fov_arcmin <= 4.0:
+    actual_fov = fov_arcmin
+    if target_key:
         fits_result = load_real_fits_cutout(target_key, meta, lod=lod)
     
-    # 2. If wide FOV requested (> 4.0' / zoomed out overview) or custom coords, query NASA IRSA for surrounding field!
+    # 2. Custom sky coordinates: Query NASA IRSA Caltech for real-time surrounding field
     if fits_result is None:
         fits_result = fetch_live_irsa_fits(ra, dec, fov_arcmin, lod=lod)
         if fits_result is not None:
             survey_title = f"Live NASA IRSA Caltech Wide-Field FITS ({fov_arcmin:.1f}' Surrounding Field)"
         elif target_key:
-            # Fallback to local benchmark cutout if IRSA times out
             fits_result = load_real_fits_cutout(target_key, meta, lod=lod)
     
     dim = 360 if lod == 2 else (1024 if lod == 0 else 720)
     if fits_result is not None:
-        ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2 = fits_result
+        if len(fits_result) == 7:
+            ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2, actual_fov = fits_result
+        else:
+            ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2 = fits_result
         if target_key:
             survey_title = "NASA 2MASS & DSS2 / SPHEREx Real FITS"
         else:
             survey_title = "Live NASA IRSA Caltech Real-Time FITS"
     else:
         # Fallback to coordinate-seeded astronomical field if internet offline
+        actual_fov = 8.0 if lod == 2 else (1.5 if lod == 0 else 3.0)
         ep1_arr, ep2_arr, diff_arr, vector_info = generate_clean_space_field(dim, dim, meta)
         lbl1 = "SPHEREx Pass 1 (May 2025)"
         lbl2 = "SPHEREx Pass 2 (Nov 2025)"
@@ -500,7 +523,7 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         "coordinates": {
             "ra_deg": ra,
             "dec_deg": dec,
-            "fov_arcmin": fov_arcmin
+            "fov_arcmin": actual_fov
         },
         "archive_survey": survey_title,
         "is_authentic_fits": vector_info.get("is_real_fits", False),

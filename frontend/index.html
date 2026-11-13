@@ -719,9 +719,9 @@
     // =========================================================================
     // DRAW REAL ASTRONOMICAL FITS IMAGERY (Continuous World-Space Optical Zoom)
     // =========================================================================
-    function drawImageFit(img, w, h, imgFov) {
+    function drawImageFit(img, w, h) {
       if (!img || !img.complete) return;
-      const fov = imgFov || (activeCutoutData && activeCutoutData.coordinates ? activeCutoutData.coordinates.fov_arcmin : 3.0);
+      const fov = (img && img.fov) ? img.fov : (activeCutoutData && activeCutoutData.coordinates ? activeCutoutData.coordinates.fov_arcmin : 3.0);
       const basePx = Math.min(w, h) * 0.90;
       const pixelsPerArcmin = basePx / 3.0; // standard 3.0' fills 90% at 1.0x zoom
       const rw = fov * pixelsPerArcmin;
@@ -743,17 +743,15 @@
       ctx.scale(camera.zoom, camera.zoom);
       ctx.imageSmoothingEnabled = true; // Bilinear filtering for smooth camera zoom
 
-      const imgFov = activeCutoutData && activeCutoutData.coordinates ? activeCutoutData.coordinates.fov_arcmin : (currentLOD === 2 ? 10.0 : (currentLOD === 0 ? 1.5 : 3.0));
-
       if (diffMode) {
         // Difference Image Mode (Authentic numerical subtraction I2 - I1)
         if (prevDiffImg && crossFadeAlpha < 1.0) {
           ctx.globalAlpha = Math.max(0, 1.0 - crossFadeAlpha);
-          drawImageFit(prevDiffImg, w, h, imgFov);
+          drawImageFit(prevDiffImg, w, h);
         }
         if (realDiffImg && realDiffImg.complete) {
           ctx.globalAlpha = crossFadeAlpha;
-          drawImageFit(realDiffImg, w, h, imgFov);
+          drawImageFit(realDiffImg, w, h);
         }
       } else {
         // Flipbook Blink Mode (Epoch 1 <-> Epoch 2)
@@ -762,11 +760,11 @@
 
         if (activePrev && crossFadeAlpha < 1.0) {
           ctx.globalAlpha = Math.max(0, 1.0 - crossFadeAlpha);
-          drawImageFit(activePrev, w, h, imgFov);
+          drawImageFit(activePrev, w, h);
         }
         if (activeImg && activeImg.complete) {
           ctx.globalAlpha = crossFadeAlpha;
-          drawImageFit(activeImg, w, h, imgFov);
+          drawImageFit(activeImg, w, h);
         }
       }
 
@@ -901,7 +899,7 @@
       if (isLODStreaming) return;
       isLODStreaming = true;
       const reqLOD = targetLODTier;
-      const reqFov = (reqLOD === 2) ? 10.0 : ((reqLOD === 0) ? 1.5 : 3.0);
+      const reqFov = (reqLOD === 2) ? 8.0 : ((reqLOD === 0) ? 1.5 : 3.0);
 
       try {
         let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${reqFov}&lod=${reqLOD}`;
@@ -912,33 +910,7 @@
         const data = await res.json();
         activeCutoutData = data;
 
-        // Preload before swapping (Zero screen tear / flicker)
-        const [newImg1, newImg2, newImgDiff] = await Promise.all([
-          preloadImage(data.epochs[0].image_data),
-          preloadImage(data.epochs[1].image_data),
-          preloadImage(data.difference_image.image_data)
-        ]);
-
-        if (newImg1 && newImg2) {
-          // Double buffer previous images for smooth cross-fade
-          prevEpoch1Img = realEpoch1Img;
-          prevEpoch2Img = realEpoch2Img;
-          prevDiffImg = realDiffImg;
-
-          realEpoch1Img = newImg1;
-          realEpoch2Img = newImg2;
-          realDiffImg = newImgDiff;
-          currentLOD = reqLOD;
-
-          updateLODBadge(currentLOD);
-          startLODCrossFade();
-        }
-      } catch (err) {
-        console.warn("LOD streaming background notice:", err);
-      } finally {
-        isLODStreaming = false;
-      }
-    }
+        const fovArcmin = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : reqFov;
 
         // Preload before swapping (Zero screen tear / flicker)
         const [newImg1, newImg2, newImgDiff] = await Promise.all([
@@ -948,6 +920,10 @@
         ]);
 
         if (newImg1 && newImg2) {
+          newImg1.fov = fovArcmin;
+          newImg2.fov = fovArcmin;
+          if (newImgDiff) newImgDiff.fov = fovArcmin;
+
           // Double buffer previous images for smooth cross-fade
           prevEpoch1Img = realEpoch1Img;
           prevEpoch2Img = realEpoch2Img;
@@ -1016,9 +992,10 @@
           preloadImage(data.difference_image.image_data)
         ]);
 
-        if (img1) realEpoch1Img = img1;
-        if (img2) realEpoch2Img = img2;
-        if (imgDiff) realDiffImg = imgDiff;
+        const initFov = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : fov;
+        if (img1) { img1.fov = initFov; realEpoch1Img = img1; }
+        if (img2) { img2.fov = initFov; realEpoch2Img = img2; }
+        if (imgDiff) { imgDiff.fov = initFov; realDiffImg = imgDiff; }
 
         const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
         document.getElementById('vpTargetName').innerText = title;
