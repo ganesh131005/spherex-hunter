@@ -10,9 +10,11 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Chart.js for 102-band Spectrum -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- CDS ALADIN LITE V3 (Official Strasbourg Observatory Sky Engine) -->
-  <link rel="stylesheet" href="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.css" />
-  <script src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.js" charset="utf-8"></script>
+  <!-- CDS ALADIN LITE V3 (Vendored locally for 100% offline & zero cross-origin ORB blocks) -->
+  <script type="module">
+    import A from '/app/vendor/aladin.js';
+    window.A = A;
+  </script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -719,154 +721,53 @@
     // =========================================================================
     // SPATIAL TILE CACHE & HIGH-PERFORMANCE NEAR-IMAGE STREAMER
     // =========================================================================
-    const spatialTileMap = new Map();
-    const activeNearFetches = new Set();
-    const tileFetchQueue = [];
-    let activeWorkerCount = 0;
-    const MAX_PARALLEL_FETCHES = 2; // Flat RAM & zero OOM crashes
-    let nearTileStreamTimer = null;
+    // CONTINUOUS OPTICAL TELESCOPE ZOOM ENGINE (Hubble / ESA Andromeda Style)
+    // =========================================================================
+    // Stores multi-resolution tiers (LOD 2: Wide Overview, LOD 1: Standard Science, LOD 0: Deep Core)
+    // All tiers are geometrically anchored to the EXACT same celestial coordinate center (camera.ra, camera.dec).
+    let isSlewingToNewField = false;
+    let slewDebounceTimer = null;
 
-    function getTileKey(col, row, lod) {
-      return `tile_${lod}_${col}_${row}`;
-    }
-
-    function registerTile(col, row, lod, fov, ra, dec, img1, img2, imgDiff) {
-      const key = getTileKey(col, row, lod);
-      spatialTileMap.set(key, {
-        col, row, lod, fov, ra, dec,
-        img1, img2, imgDiff,
-        timestamp: Date.now()
-      });
-      // Limit cache size to 16 tiles to manage GPU texture memory & keep RAM flat
-      if (spatialTileMap.size > 16) {
-        let oldestKey = null;
-        let oldestTime = Infinity;
-        for (const [k, v] of spatialTileMap.entries()) {
-          if (v.col === 0 && v.row === 0) continue; // Keep primary anchor
-          if (v.timestamp < oldestTime) {
-            oldestTime = v.timestamp;
-            oldestKey = k;
-          }
+    function checkAndTriggerSlewToNewField() {
+      if (slewDebounceTimer) clearTimeout(slewDebounceTimer);
+      slewDebounceTimer = setTimeout(() => {
+        const coords = getCurrentCoordinates();
+        const distArcmin = Math.hypot(
+          (coords.ra - camera.ra) * Math.cos(camera.dec * Math.PI / 180.0) * 60.0,
+          (coords.dec - camera.dec) * 60.0
+        );
+        const maxSafeFov = (currentLOD === 2) ? 6.5 : (currentLOD === 1 ? 2.5 : 1.2);
+        if (distArcmin > maxSafeFov && !isSlewingToNewField) {
+          slewToCurrentPanCenter(coords.ra, coords.dec);
         }
-        if (oldestKey) {
-          const evicted = spatialTileMap.get(oldestKey);
-          if (evicted) {
-            if (evicted.img1) evicted.img1.src = '';
-            if (evicted.img2) evicted.img2.src = '';
-            if (evicted.imgDiff) evicted.imgDiff.src = '';
-          }
-          spatialTileMap.delete(oldestKey);
-        }
+      }, 450);
+    }
+
+    async function slewToCurrentPanCenter(newRA, newDec) {
+      if (isSlewingToNewField) return;
+      isSlewingToNewField = true;
+      const slewBadge = document.getElementById('vpMosaicBadge');
+      if (slewBadge) {
+        slewBadge.classList.remove('hidden');
+        slewBadge.innerText = `🔭 Slewing to RA ${newRA.toFixed(4)}°, Dec ${newDec.toFixed(4)}°...`;
       }
-    }
-
-    function checkAndTriggerNearTileStreaming() {
-      if (nearTileStreamTimer) clearTimeout(nearTileStreamTimer);
-      nearTileStreamTimer = setTimeout(() => {
-        streamVisibleNearTiles();
-      }, 100);
-    }
-
-    async function streamVisibleNearTiles() {
-      const w = canvas.width;
-      const h = canvas.height;
-      if (!w || !h) return;
-
-      const basePx = Math.min(w, h) * 0.90;
-      const pixelsPerArcmin = basePx / 3.0;
-      const tileFov = (currentLOD === 2) ? 8.0 : ((currentLOD === 0) ? 1.5 : 3.0);
-      const tilePx = tileFov * pixelsPerArcmin;
-
-      // Visible frustum in world space relative to camera anchor (0, 0)
-      const halfVisW = (w / (2 * camera.zoom));
-      const halfVisH = (h / (2 * camera.zoom));
-
-      const minX = -halfVisW - camera.panX;
-      const maxX = halfVisW - camera.panX;
-      const minY = -halfVisH - camera.panY;
-      const maxY = halfVisH - camera.panY;
-
-      // Determine required grid range to envelope the visible screen (capped to 2 ring max)
-      const colMin = Math.max(-2, Math.floor((minX - tilePx / 2) / tilePx));
-      const colMax = Math.min(2, Math.ceil((maxX + tilePx / 2) / tilePx));
-      const rowMin = Math.max(-2, Math.floor((-maxY - tilePx / 2) / tilePx));
-      const rowMax = Math.min(2, Math.ceil((-minY + tilePx / 2) / tilePx));
-
-      const mosaicEl = document.getElementById('vpMosaicBadge');
-      if (mosaicEl) {
-        mosaicEl.classList.remove('hidden');
-        mosaicEl.innerText = `Continuous Sky Grid (${spatialTileMap.size} Tiles)`;
-      }
-
-      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
-
-      for (let c = colMin; c <= colMax; c++) {
-        for (let r = rowMin; r <= rowMax; r++) {
-          const key = getTileKey(c, r, currentLOD);
-          if (spatialTileMap.has(key) || activeNearFetches.has(key)) continue;
-
-          // Calculate celestial coordinates for this near tile
-          const tileRA = camera.ra - (c * tileFov / (60.0 * cosDec));
-          const tileDec = camera.dec + (r * tileFov / 60.0);
-
-          enqueueNearTile(c, r, currentLOD, tileFov, tileRA, tileDec);
-        }
-      }
-    }
-
-    function enqueueNearTile(col, row, lod, fov, tileRA, tileDec) {
-      const key = getTileKey(col, row, lod);
-      if (activeNearFetches.has(key)) return;
-      activeNearFetches.add(key);
-
-      tileFetchQueue.push({ col, row, lod, fov, tileRA, tileDec, key });
-      processFetchQueue();
-    }
-
-    function processFetchQueue() {
-      while (activeWorkerCount < MAX_PARALLEL_FETCHES && tileFetchQueue.length > 0) {
-        const item = tileFetchQueue.shift();
-        activeWorkerCount++;
-        executeTileFetch(item).finally(() => {
-          activeWorkerCount--;
-          processFetchQueue();
-        });
-      }
-    }
-
-    async function executeTileFetch({ col, row, lod, fov, tileRA, tileDec, key }) {
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(tileRA)}&dec=${encodeURIComponent(tileDec)}&fov=${fov}&lod=${lod}`;
-        if (currentTargetKey) url += `&target=${currentTargetKey}`;
-
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        const [img1, img2, imgDiff] = await Promise.all([
-          preloadImage(data.epochs[0].image_data),
-          preloadImage(data.epochs[1].image_data),
-          preloadImage(data.difference_image.image_data)
-        ]);
-
-        if (img1 && img2) {
-          const actFov = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : fov;
-          img1.fov = actFov;
-          img2.fov = actFov;
-          if (imgDiff) imgDiff.fov = actFov;
-
-          registerTile(col, row, lod, actFov, tileRA, tileDec, img1, img2, imgDiff);
-          drawFrame();
-        }
-      } catch (err) {
-        // Tolerated edge survey boundary
+        await loadSkyCutout(newRA, newDec, null, `Sky Field (RA ${newRA.toFixed(4)}°, Dec ${newDec.toFixed(4)}°)`, 3.0);
+        camera.panX = 0;
+        camera.panY = 0;
+        drawFrame();
+      } catch (e) {
+        console.warn("Slew failed:", e);
       } finally {
-        activeNearFetches.delete(key);
+        isSlewingToNewField = false;
+        if (slewBadge) {
+          slewBadge.innerText = `Optical Lens: Contiguous NASA FITS Master Field`;
+        }
       }
     }
 
     // =========================================================================
-    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Continuous Multi-Tile Canvas Engine)
+    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Single Continuous Optical Telescope Lens)
     // =========================================================================
     function drawFrame() {
       const w = canvas.width;
@@ -887,43 +788,28 @@
       const basePx = Math.min(w, h) * 0.90;
       const pixelsPerArcmin = basePx / 3.0;
 
-      // Visible frustum in world space for frustum culling
-      const halfVisW = (w / (2 * camera.zoom));
-      const halfVisH = (h / (2 * camera.zoom));
-      const minX = -halfVisW - camera.panX;
-      const maxX = halfVisW - camera.panX;
-      const minY = -halfVisH - camera.panY;
-      const maxY = halfVisH - camera.panY;
-
-      // Render all spatial near tiles covering the viewport
-      if (spatialTileMap.size > 0) {
-        for (const [key, tile] of spatialTileMap.entries()) {
-          const fov = tile.fov || 3.0;
-          const rw = fov * pixelsPerArcmin;
-          const rh = fov * pixelsPerArcmin;
-          const tilePx = fov * pixelsPerArcmin;
-          const cx = tile.col * tilePx;
-          const cy = -tile.row * tilePx;
-
-          // Frustum culling: skip drawing tiles completely outside the camera viewport
-          if (cx + rw / 2 < minX || cx - rw / 2 > maxX || cy + rh / 2 < minY || cy - rh / 2 > maxY) {
-            continue;
-          }
-
-          const activeImg = diffMode ? tile.imgDiff : (currentFrame === 1 ? tile.img1 : tile.img2);
-          if (activeImg && activeImg.complete) {
-            ctx.drawImage(activeImg, cx - rw / 2, cy - rh / 2, rw, rh);
-          }
+      // 1. Draw base contiguous image (or previous tier during cross-fade)
+      if (prevEpoch1Img && crossFadeAlpha < 1.0) {
+        const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
+        if (prevImg && prevImg.complete) {
+          const pfov = prevImg.fov || 3.0;
+          const pw = pfov * pixelsPerArcmin;
+          const ph = pfov * pixelsPerArcmin;
+          ctx.drawImage(prevImg, -pw / 2, -ph / 2, pw, ph);
         }
-      } else {
-        // Fallback for initial load before near tiles populate
-        const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
-        if (activeImg && activeImg.complete) {
-          const fov = activeImg.fov || 3.0;
-          const rw = fov * pixelsPerArcmin;
-          const rh = fov * pixelsPerArcmin;
-          ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
+      }
+
+      // 2. Draw current active master astronomical image centered at exact world coordinates
+      const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
+      if (activeImg && activeImg.complete) {
+        const afov = activeImg.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
+        const rw = afov * pixelsPerArcmin;
+        const rh = afov * pixelsPerArcmin;
+        if (prevEpoch1Img && crossFadeAlpha < 1.0) {
+          ctx.globalAlpha = crossFadeAlpha;
         }
+        ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
+        ctx.globalAlpha = 1.0;
       }
 
       ctx.restore();
@@ -954,7 +840,7 @@
       if (document.activeElement !== inputDec) inputDec.value = coords.dec.toFixed(5);
 
       checkAndTriggerLODUpdate();
-      checkAndTriggerNearTileStreaming();
+      checkAndTriggerSlewToNewField();
     }
 
     // =========================================================================
@@ -1083,10 +969,8 @@
           realDiffImg = newImgDiff;
           currentLOD = reqLOD;
 
-          registerTile(0, 0, reqLOD, fovArcmin, camera.ra, camera.dec, newImg1, newImg2, newImgDiff);
           updateLODBadge(currentLOD);
           startLODCrossFade();
-          checkAndTriggerNearTileStreaming();
         }
       } catch (err) {
         console.warn("LOD streaming background notice:", err);
@@ -1148,8 +1032,11 @@
         if (img2) { img2.fov = initFov; realEpoch2Img = img2; }
         if (imgDiff) { imgDiff.fov = initFov; realDiffImg = imgDiff; }
 
-        registerTile(0, 0, currentLOD, initFov, camera.ra, camera.dec, img1, img2, imgDiff);
-        checkAndTriggerNearTileStreaming();
+        const mosaicEl = document.getElementById('vpMosaicBadge');
+        if (mosaicEl) {
+          mosaicEl.classList.remove('hidden');
+          mosaicEl.innerText = "Optical Lens: Contiguous NASA FITS Master Field";
+        }
 
         const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
         document.getElementById('vpTargetName').innerText = title;
@@ -1352,9 +1239,6 @@
     });
 
     function selectTarget(key) {
-      spatialTileMap.clear();
-      activeNearFetches.clear();
-      tileFetchQueue.length = 0;
       currentTargetKey = key;
       const t = TARGETS[key];
       camera.ra = t.raDeg;
@@ -1388,9 +1272,6 @@
     }
 
     function slewToTypedCoordinates() {
-      spatialTileMap.clear();
-      activeNearFetches.clear();
-      tileFetchQueue.length = 0;
       const raInput = document.getElementById('inputRA').value.trim();
       const decInput = document.getElementById('inputDec').value.trim();
       const fovVal = parseFloat(document.getElementById('selectFOV').value) || 3.0;
@@ -1477,23 +1358,39 @@
     // CDS ALADIN LITE OBSERVATORY CONTROLLER
     // =========================================================================
     let aladinInstance = null;
-    function initAladinLite() {
-      if (typeof A === 'undefined') {
-        console.warn("CDS Aladin Lite library initializing...");
+    let aladinInitPromise = null;
+    function initAladinLite(retryCount = 0) {
+      const container = document.getElementById('aladinContainer');
+      if (!container) return;
+
+      if (typeof window.A === 'undefined' || !window.A.init) {
+        if (retryCount < 20) {
+          setTimeout(() => initAladinLite(retryCount + 1), 100);
+        } else {
+          console.warn("CDS Aladin Lite module loading timeout.");
+        }
         return;
       }
-      if (!aladinInstance) {
-        aladinInstance = A.aladin('#aladinContainer', {
-          survey: 'P/AllWISE/color',
-          fov: (camera.fov / 60.0),
-          target: `${camera.ra} ${camera.dec}`,
-          showReticle: true,
-          showLayersControl: true,
-          showFullscreenControl: false
+
+      if (!aladinInitPromise) {
+        aladinInitPromise = window.A.init.then(() => {
+          aladinInstance = window.A.aladin('#aladinContainer', {
+            survey: 'P/DSS2/color',
+            fov: Math.max(0.05, camera.fov / 60.0),
+            target: `${camera.ra} ${camera.dec}`,
+            showReticle: true,
+            showLayersControl: true,
+            showFullscreenControl: false
+          });
+          return aladinInstance;
+        }).catch(err => {
+          console.error("Aladin Lite init error:", err);
         });
-      } else {
-        aladinInstance.gotoRaDec(camera.ra, camera.dec);
-        aladinInstance.setFov(camera.fov / 60.0);
+      } else if (aladinInstance) {
+        try {
+          aladinInstance.gotoRaDec(camera.ra, camera.dec);
+          aladinInstance.setFov(Math.max(0.05, camera.fov / 60.0));
+        } catch(e) {}
       }
     }
 

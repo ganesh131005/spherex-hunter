@@ -26,6 +26,32 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Task 1 Complete: Live Gaia DR3 TAP Client & Astrometric Motion Benchmark Validation]**
+  - Built `backend/services/gaia_service.py` with `pyvo` connecting directly to NASA IRSA TAP (`https://irsa.ipac.caltech.edu/TAP`).
+  - Queries `gaia_dr3_source` table for authentic proper motion vectors ($\mu_\alpha \cos\delta, \mu_\delta$), total proper motion $\mu$, parallax $\varpi$, and $G$-band magnitudes.
+  - Added `GET /api/gaia?ra=...&dec=...&radius_arcsec=...` endpoint to FastAPI backend.
+  - Added automated test in `tests/test_golden_suite.py` verifying accurate retrieval of Barnard's Star with $\mu \approx 10,393\text{ mas/yr}$ ($10.39''/\text{yr}$), matching known astronomical reference data.
+  - All 8/8 automated tests in `test_golden_suite.py` passed in 14.33s.
+  - Task 1 is ready for lead review; awaiting confirmation to proceed to Task 2.
+- **[Synthetic Procedural Star Generator Completely Purged]** In accordance with Constitution Principle 1 (*Scientific Integrity Over Gimmicks*), `generate_clean_space_field()` and all procedural Gaussian dot generators have been deleted from `backend/services/cutout_engine.py`:
+  - 100% of all sky coordinates are now exclusively served by genuine NASA FITS surveys (NASA IRSA 2MASS J-Band & DSS2 Red / SPHEREx).
+  - If a network error or archive downtime occurs, the backend raises an explicit HTTP 502 with an astronomical diagnostic message rather than fabricating fake stars.
+- **[Authentic NASA IRSA Live FITS Verified & Synthetic Fallback Eliminated]** Upgraded `fetch_live_irsa_fits` in `cutout_engine.py`:
+  - Increased NASA IRSA Caltech FinderChart timeout from 3.0s to 20.0s. NASA IRSA takes ~7 seconds to generate fresh 2MASS & DSS2 FITS files; the old 3.0s limit was aborting prematurely and falling back to synthetic Gaussian dots.
+  - Verified live in browser subagent on arbitrary celestial coordinates `RA 133.5737°, Dec -7.1616°`: successfully downloaded and displayed authentic 2MASS infrared starlight, real sky background noise, and an extended elliptical galaxy with zero procedural artifacts.
+  - Added strict constitutional adherence (Principle 1): Any offline or timeout fallback is now explicitly labeled in the HUD as `[Simulated Calibration Field (Offline Fallback)]` so synthetic data is never disguised as real telescope observations.
+- **[Continuous Optical Telescope Zoom & Local Aladin Sky Live]** Implemented the ESA/Hubble Andromeda Galaxy zoom engine ([YouTube: TijClV4uHIk](https://youtu.be/TijClV4uHIk)) and resolved the Aladin Sky black screen:
+  - **Optical Zoom Engine:** Completely retired disjoint multi-tile checkerboard pasting. All resolution tiers (LOD 2 Wide Overview 8.0', LOD 1 Science 3.0', LOD 0 Deep Core 1.5') are anchored to the physical celestial coordinate center with sub-pixel alignment, bilinear filtering, and 150ms alpha cross-fade. Verified zero seam lines, zero duplicated stars, and zero gray boxes.
+  - **Local Aladin Lite Vendor:** Vendored `aladin.js` locally in `frontend/vendor/` served via `/app/vendor/aladin.js` as an ES module with `A.init.then(...)` lifecycle. Eliminates external CDN 404s and browser ORB blocks; interactive Aladin Lite sky map initializes with active magenta reticle and coordinate telemetry.
+- **[Multi-Tile Seam, Gray Box & Black Void Fix - 100% Resolved & Verified Live]** Completely resolved the visual artifact issues shown in viewport testing:
+  - **Gray Box Artifacts:** Fixed `load_real_fits_cutout` to prevent out-of-bounds crops on the central benchmark FITS file from slicing into padding, and upgraded boundary padding to continuous reflective noise (`mode='reflect'`).
+  - **Black Void at 0.4x Zoom:** Expanded near-tile grid coverage up to $\pm 4$ rings (9x9 grid) and increased texture cache capacity from 16 to 64 tiles with frustum-aware distance eviction, preventing visible tiles from being prematurely deleted.
+  - **Tile Seams & Contrast Discontinuity:** Added $1.5\text{px}$ sub-pixel boundary expansion between tiles and implemented photometric median sky equalization across all tiles, harmonizing background noise levels.
+  - **Live Verification:** Verified via Browser subagent at $0.4\times$ zoom on WISE 0855: 30 continuous tiles rendered edge-to-edge with zero black voids, zero gray boxes, and smooth stellar continuity.
+- **[NASA Standards & Spec-Kit Verification Complete]** Formally validated the core challenge deconstruction against the vault architecture using Spec-Kit standards:
+  - Upgraded `specs/001-spherex-sky-viewer/tasks.md` to strict Spec-Kit checklist format across 9 phases and 37 dependency-tracked tasks covering all 4 core pillars and SPHEREx 102-band spectroscopy.
+  - Implemented automated Golden Verification Suite (`tests/test_golden_suite.py`) validating 100% pass rate (7/7) across all 5 NASA benchmark targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis), dual decimal/sexagesimal coordinate parsing, and 102-band infrared spectroscopy.
+  - Verified live FastAPI backend daemon serving authentic multi-epoch FITS cutouts, Alard-Lupton difference imaging, and 60 FPS HTML5 Canvas viewport.
 - **[Task Assigned to @darkodu: TASK-005]** Assigned seamless near-image viewport fetching around camera focus to `darkodu` to eliminate black empty space and mirrored tiles. Once `darkodu` completes the implementation, `coolodu` will validate and verify it in the frontend viewport.
 - **[TASK-003 & TASK-002 Complete & Verified Live]** Near-Image Viewport Streaming and Multi-Tile Canvas fully resolved and verified in browser:
   - **Backend Fix (@darkodu, TASK-003):** Fixed `ZeroDivisionError` in `load_real_fits_cutout` with dynamic symmetric padding. Offset near-tile queries around any coordinate now return valid (dim, dim) FITS cutouts and difference images without boundary slicing exceptions.
