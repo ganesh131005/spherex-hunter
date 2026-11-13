@@ -106,21 +106,21 @@
 
       <!-- Blender Workspace Mode Tabs -->
       <div class="flex items-center bg-blender-950/80 p-0.5 rounded-md border border-blender-700/80 gap-0.5 shadow-inner">
-        <button id="wsBlink" class="blender-btn blender-btn-active px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Multi-Epoch Flipbook Blink Comparator">
+        <button id="wsBlink" class="blender-btn blender-btn-active px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Multi-Epoch Flipbook Blink Comparator [B]">
           <i data-lucide="split" class="w-3 h-3 text-cyan-300"></i>
-          <span>Blink</span>
+          <span>Blink <span class="text-[9px] text-gray-500 font-mono">[B]</span></span>
         </button>
-        <button id="wsDiff" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Numerical Image Subtraction (I₂ - I₁)">
+        <button id="wsDiff" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Numerical Image Subtraction (I₂ - I₁) [D]">
           <i data-lucide="layers" class="w-3 h-3 text-amber-400"></i>
-          <span>Difference</span>
+          <span>Difference <span class="text-[9px] text-gray-500 font-mono">[D]</span></span>
         </button>
-        <button id="wsSpec" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="102-Band SPHEREx Spectroscopy">
+        <button id="wsSpec" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="102-Band SPHEREx Spectroscopy [S]">
           <i data-lucide="activity" class="w-3 h-3 text-emerald-400"></i>
-          <span>Spectra</span>
+          <span>Spectra <span class="text-[9px] text-gray-500 font-mono">[S]</span></span>
         </button>
-        <button id="wsAladin" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Interactive CDS Strasbourg Aladin Lite">
+        <button id="wsAladin" class="blender-btn px-2.5 py-1 rounded text-[11px] font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Interactive CDS Strasbourg Aladin Lite [A]">
           <i data-lucide="globe" class="w-3 h-3 text-blue-400"></i>
-          <span>Aladin Sky</span>
+          <span>Aladin Sky <span class="text-[9px] text-gray-500 font-mono">[A]</span></span>
         </button>
       </div>
     </div>
@@ -132,11 +132,11 @@
         <span>Targets</span>
       </span>
       <div class="flex items-center gap-0.5 shrink-0">
-        <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="wise0855">WISE 0855</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="barnard">Barnard's Star</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="epsindi">Eps Indi B</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rwaur">RW Aurigae</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rdraconis">R Draconis</button>
+        <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="wise0855" title="[1] WISE 0855-0714 (Cold Brown Dwarf)"><span class="text-blender-orange font-bold">1:</span> WISE 0855</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="barnard" title="[2] Barnard's Star (Proper Motion Red Dwarf)"><span class="text-blender-orange font-bold">2:</span> Barnard's</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="epsindi" title="[3] Epsilon Indi B (Binary Brown Dwarf)"><span class="text-blender-orange font-bold">3:</span> Eps Indi B</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rwaur" title="[4] RW Aurigae (Variable Flare Star)"><span class="text-blender-orange font-bold">4:</span> RW Aur</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rdraconis" title="[5] R Draconis (Mira Pulsating Giant)"><span class="text-blender-orange font-bold">5:</span> R Draconis</button>
       </div>
     </div>
 
@@ -159,7 +159,7 @@
           <option value="15.0">15.0' (Wide)</option>
         </select>
 
-        <button id="btnGoCoords" class="px-2.5 py-0.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-mono font-bold shadow-sm transition-all flex items-center gap-1" title="Query FITS images">
+        <button id="btnGoCoords" class="px-2.5 py-0.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-mono font-bold shadow-sm transition-all flex items-center gap-1" title="Query FITS images (Enter)">
           <i data-lucide="search" class="w-3 h-3"></i>
           <span>Fetch</span>
         </button>
@@ -171,8 +171,19 @@
         <span class="text-emerald-300 font-semibold tracking-wide">NASA IRSA</span>
       </div>
 
+      <!-- Snapshot Export Quick Button -->
+      <button id="btnHeaderSnapshot" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-gray-300 hover:text-white transition-all shadow-sm" title="Capture PNG Snapshot with Astronomical Telemetry [P / F8]">
+        <i data-lucide="camera" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span class="hidden sm:inline">Snapshot</span>
+      </button>
+
+      <!-- Keyboard Shortcuts Help Button -->
+      <button id="btnHeaderShortcuts" class="w-7 h-7 flex items-center justify-center rounded-md blender-btn text-gray-300 hover:text-white transition-all shadow-sm" title="Keyboard Shortcuts Cheat Sheet [?]">
+        <i data-lucide="help-circle" class="w-3.5 h-3.5 text-blender-orange"></i>
+      </button>
+
       <!-- Toggle Properties Sidebar -->
-      <button id="toggleSidebarBtn" class="w-7 h-7 flex items-center justify-center rounded-md blender-btn text-gray-300 hover:text-white" title="Toggle Properties Panel (N)">
+      <button id="toggleSidebarBtn" class="w-7 h-7 flex items-center justify-center rounded-md blender-btn text-gray-300 hover:text-white" title="Toggle Properties Panel [N]">
         <i data-lucide="panel-right-close" class="w-3.5 h-3.5"></i>
       </button>
     </div>
@@ -186,36 +197,46 @@
     <!-- LEFT BLENDER TOOL SHELF (Vertical Toolbar, 40px width) -->
     <aside class="w-10 bg-blender-900 border-r border-blender-700 flex flex-col items-center py-2 gap-1 shrink-0 z-20">
       <!-- Select / Pointer Tool -->
-      <button id="toolSelect" class="w-7 h-7 rounded blender-btn blender-btn-active flex items-center justify-center text-white" title="Select / Cursor (W)">
+      <button id="toolSelect" class="w-7 h-7 rounded blender-btn blender-btn-active flex items-center justify-center text-white transition-all" title="Select / Cursor Tool">
         <i data-lucide="mouse-pointer" class="w-3.5 h-3.5"></i>
       </button>
 
       <!-- Pan / Move Tool -->
-      <button id="toolPan" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300" title="Pan Telescope View (Middle Click / Drag)">
+      <button id="toolPan" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Pan Celestial Canvas [Middle Click / Drag]">
         <i data-lucide="hand" class="w-3.5 h-3.5"></i>
       </button>
 
       <!-- Walk Navigation (Blender Shift + `) -->
-      <button id="toolWalk" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white" title="Walk Navigation Mode (Shift + ` / WASD)">
+      <button id="toolWalk" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Walk Navigation Mode [Shift + ` / WASD]">
         <i data-lucide="gamepad-2" class="w-3.5 h-3.5"></i>
       </button>
 
       <div class="w-5 h-[1px] bg-blender-700 my-1"></div>
 
       <!-- Recenter View -->
-      <button id="toolRecenter" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white" title="Recenter on Target Object (Home)">
+      <button id="toolRecenter" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Recenter on Target Object [Home]">
         <i data-lucide="focus" class="w-3.5 h-3.5"></i>
       </button>
 
       <!-- Reset Zoom 1:1 -->
-      <button id="toolResetZoom" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white" title="Reset Zoom to 1.0x">
+      <button id="toolResetZoom" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Reset Zoom to 1.0x [R]">
         <i data-lucide="scan" class="w-3.5 h-3.5"></i>
+      </button>
+
+      <!-- Snapshot / Export Image -->
+      <button id="toolSnapshot" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Export FITS / PNG Snapshot [P / F8]">
+        <i data-lucide="camera" class="w-3.5 h-3.5 text-cyan-400"></i>
+      </button>
+
+      <!-- Shortcuts Help Cheat Sheet -->
+      <button id="toolShortcuts" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Keyboard Shortcuts Cheat Sheet [?]">
+        <i data-lucide="keyboard" class="w-3.5 h-3.5 text-blender-orange"></i>
       </button>
 
       <div class="flex-1"></div>
 
       <!-- Audio Mute Toggle -->
-      <button id="toolMute" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-400 hover:text-gray-200" title="Toggle Procedural Audio">
+      <button id="toolMute" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-400 hover:text-gray-200 transition-all" title="Toggle Procedural Audio [M]">
         <i id="muteIcon" data-lucide="volume-2" class="w-3.5 h-3.5"></i>
       </button>
     </aside>
@@ -268,14 +289,14 @@
       <!-- TOP-RIGHT VIEWPORT SHADING / COLORMAP CONTROLS (Blender Shading Style) -->
       <div class="absolute top-2.5 right-2.5 flex items-center gap-1 bg-blender-900/85 backdrop-blur px-1.5 py-1 rounded border border-blender-700 shadow z-10">
         <span class="text-[9px] text-gray-400 font-mono mr-1">Shading:</span>
-        <button id="shadeGrayscale" class="blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono rounded" title="Authentic Telescope Grayscale">
-          Gray
+        <button id="shadeGrayscale" class="blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono rounded" title="Authentic Telescope Grayscale [G]">
+          Gray <span class="text-[9px] text-gray-500 font-mono">[G]</span>
         </button>
-        <button id="shadeInverted" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="Inverted Grayscale (DS9 Print Style)">
-          Invert
+        <button id="shadeInverted" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="Inverted Grayscale (DS9 Print Style) [I]">
+          Invert <span class="text-[9px] text-gray-500 font-mono">[I]</span>
         </button>
-        <button id="shadeThermal" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="False Color Infrared Thermal">
-          Thermal
+        <button id="shadeThermal" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="False Color Infrared Thermal [T]">
+          Thermal <span class="text-[9px] text-gray-500 font-mono">[T]</span>
         </button>
       </div>
 
@@ -489,19 +510,28 @@
       </div>
     </div>
 
-    <!-- Center: Playback Speed Slider -->
+    <!-- Center: Playback Speed Slider & Quick Presets -->
     <div class="flex items-center gap-2">
       <span class="text-gray-400 text-[10px]">Blink Speed:</span>
-      <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0" class="w-24 h-1 bg-blender-700 rounded cursor-pointer">
+      <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0" class="w-20 h-1 bg-blender-700 rounded cursor-pointer accent-blender-orange">
       <span id="speedLabel" class="text-gray-200 text-[10px] w-12 font-mono">2.0 FPS</span>
+      <div class="flex items-center gap-0.5">
+        <button class="fps-preset-btn px-1.5 py-0.5 rounded bg-blender-800 hover:bg-blender-700 text-gray-300 hover:text-white text-[9px] transition-all" data-fps="1.0">1 FPS</button>
+        <button class="fps-preset-btn px-1.5 py-0.5 rounded bg-blender-800 hover:bg-blender-700 text-blender-orange font-bold text-[9px] transition-all" data-fps="2.0">2 FPS</button>
+        <button class="fps-preset-btn px-1.5 py-0.5 rounded bg-blender-800 hover:bg-blender-700 text-gray-300 hover:text-white text-[9px] transition-all" data-fps="4.0">4 FPS</button>
+      </div>
     </div>
 
-    <!-- Right: Baseline Epoch Indicator -->
+    <!-- Right: Baseline Epoch Indicator & Snapshot Shortcut -->
     <div class="flex items-center gap-2 text-[10px]">
       <span class="text-gray-400">Temporal Baseline:</span>
       <span id="temporalBaselineText" class="text-emerald-400 font-bold bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
         Δt: 26.2 Years (Historic 2MASS → SPHEREx)
       </span>
+      <button id="btnFooterSnapshot" class="px-2 py-0.5 rounded bg-blender-850 hover:bg-blender-750 border border-blender-700 text-cyan-300 hover:text-white flex items-center gap-1 transition-all" title="Export FITS/PNG Snapshot [P / F8]">
+        <i data-lucide="download" class="w-3 h-3"></i>
+        <span>Export</span>
+      </button>
     </div>
   </footer>
 
@@ -549,6 +579,85 @@
         <button id="submitCandidateBtn" class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold shadow transition-all">
           Record Discovery
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 5. KEYBOARD SHORTCUTS CHEAT SHEET MODAL                                   -->
+  <!-- ========================================================================= -->
+  <div id="shortcutsModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-lg w-full p-5 shadow-2xl space-y-4 font-mono text-xs text-gray-200">
+      <div class="flex items-center justify-between border-b border-blender-700 pb-2.5">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="keyboard" class="w-4 h-4 text-blender-orange"></i>
+          <span>SPHEREx Telescope Controls & Hotkeys</span>
+        </div>
+        <button id="closeShortcutsModalBtn" class="text-gray-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto pr-1">
+        <!-- Group 1: Playback -->
+        <div class="bg-blender-950/60 p-2.5 rounded border border-blender-700/60 space-y-2">
+          <div class="text-blender-orange font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="play" class="w-3 h-3"></i>
+            <span>Flipbook & Blinking</span>
+          </div>
+          <div class="space-y-1.5 text-[11px]">
+            <div class="flex justify-between items-center"><span class="text-gray-400">Play / Pause</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">Space</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Step Frames</span><span class="flex gap-1"><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">←</kbd><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">→</kbd></span></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Jump 1st / Last</span><span class="flex gap-1"><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">Home</kbd><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">End</kbd></span></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Blink Mode</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-cyan-300 font-mono text-[9px]">B</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Difference Mode</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-amber-300 font-mono text-[9px]">D</kbd></div>
+          </div>
+        </div>
+
+        <!-- Group 2: Workspaces & Views -->
+        <div class="bg-blender-950/60 p-2.5 rounded border border-blender-700/60 space-y-2">
+          <div class="text-cyan-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="layers" class="w-3 h-3"></i>
+            <span>Workspaces & Sidebar</span>
+          </div>
+          <div class="space-y-1.5 text-[11px]">
+            <div class="flex justify-between items-center"><span class="text-gray-400">Spectra Workspace</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-emerald-300 font-mono text-[9px]">S</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">CDS Aladin Sky</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-blue-300 font-mono text-[9px]">A</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Toggle Sidebar</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">N</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Audio Mute / On</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">M</kbd></div>
+          </div>
+        </div>
+
+        <!-- Group 3: Viewport Shading -->
+        <div class="bg-blender-950/60 p-2.5 rounded border border-blender-700/60 space-y-2">
+          <div class="text-emerald-400 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="sun" class="w-3 h-3"></i>
+            <span>Viewport Shading</span>
+          </div>
+          <div class="space-y-1.5 text-[11px]">
+            <div class="flex justify-between items-center"><span class="text-gray-400">Grayscale (Telescope)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">G</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Inverted (DS9 Print)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">I</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Thermal (False Color)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">T</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Reset Zoom (1.0x)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">R</kbd></div>
+          </div>
+        </div>
+
+        <!-- Group 4: Targets & Tools -->
+        <div class="bg-blender-950/60 p-2.5 rounded border border-blender-700/60 space-y-2">
+          <div class="text-purple-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+            <i data-lucide="crosshair" class="w-3 h-3"></i>
+            <span>Targets & Citizen Science</span>
+          </div>
+          <div class="space-y-1.5 text-[11px]">
+            <div class="flex justify-between items-center"><span class="text-gray-400">Targets 1 to 5</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">1 - 5</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Flag Discovery</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-orange-400 font-mono text-[9px]">F</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Export PNG Snapshot</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-cyan-300 font-mono text-[9px]">P / F8</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Walk Nav (Fly Mode)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">Shift + `</kbd></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-blender-700/60 flex items-center justify-between text-[10px] text-gray-400">
+        <span>Press <kbd class="px-1 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono">Esc</kbd> or <kbd class="px-1 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono">?</kbd> anytime to toggle</span>
+        <button id="closeShortcutsModalFooterBtn" class="px-3 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white text-[10px]">Close</button>
       </div>
     </div>
   </div>
@@ -714,6 +823,139 @@
         } catch(e) {}
         thrusterNode = null;
       }
+    }
+
+    function playBlinkTick() {
+      if (isMuted) return;
+      try {
+        const actx = getAudioContext();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1100.0, actx.currentTime);
+        gain.gain.setValueAtTime(0.015, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.04);
+      } catch(e) {}
+    }
+
+    function playModeChime() {
+      if (isMuted) return;
+      try {
+        const actx = getAudioContext();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, actx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(659.25, actx.currentTime + 0.1); // E5
+        gain.gain.setValueAtTime(0.03, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.2);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.2);
+      } catch(e) {}
+    }
+
+    function playSnapshotSound() {
+      if (isMuted) return;
+      try {
+        const actx = getAudioContext();
+        // Camera shutter click + chirp
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1600, actx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, actx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.04, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    // =========================================================================
+    // HIGH-RESOLUTION TELESCOPE SNAPSHOT EXPORTER
+    // =========================================================================
+    function captureSnapshot() {
+      if (!canvas || canvas.width === 0 || canvas.height === 0) return;
+
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      const expCtx = exportCanvas.getContext('2d');
+
+      // 1. Draw starlight imagery
+      expCtx.drawImage(canvas, 0, 0);
+
+      // 2. Overlay sleek NASA Space Apps astronomical telemetry bar
+      const barH = 46;
+      const barW = Math.min(420, exportCanvas.width - 24);
+      const startX = 14;
+      const startY = exportCanvas.height - barH - 14;
+
+      expCtx.fillStyle = 'rgba(11, 14, 22, 0.88)';
+      expCtx.fillRect(startX, startY, barW, barH);
+      expCtx.strokeStyle = '#f97316';
+      expCtx.lineWidth = 1.5;
+      expCtx.strokeRect(startX, startY, barW, barH);
+
+      // Corner accent
+      expCtx.fillStyle = '#f97316';
+      expCtx.fillRect(startX, startY, 4, barH);
+
+      const targetTitle = document.getElementById('vpTargetName').innerText || "Celestial Target";
+      const frameDesc = diffMode 
+        ? "Difference Map (I₂ - I₁) | Alard-Lupton Subtraction" 
+        : (currentFrame === 1 ? "Epoch 1 (2MASS 1.25μm Historic 1999)" : "Epoch 2 (SPHEREx Infrared Co-add 2025)");
+
+      expCtx.fillStyle = '#ffffff';
+      expCtx.font = 'bold 11px monospace';
+      expCtx.fillText(`SPHEREx Hunter | ${targetTitle}`, startX + 12, startY + 17);
+
+      expCtx.fillStyle = '#38bdf8';
+      expCtx.font = '10px monospace';
+      expCtx.fillText(`RA: ${camera.ra.toFixed(5)}°  Dec: ${camera.dec.toFixed(5)}°  FOV: ${camera.fov.toFixed(2)}'  Zoom: ${camera.zoom.toFixed(1)}x`, startX + 12, startY + 31);
+
+      expCtx.fillStyle = '#9ca3af';
+      expCtx.font = '9px monospace';
+      expCtx.fillText(frameDesc, startX + 12, startY + 42);
+
+      // 3. Trigger download
+      const targetSlug = (currentTargetKey || 'sky').toLowerCase();
+      const modeSlug = diffMode ? 'diff' : `frame${currentFrame}`;
+      const filename = `spherex_${targetSlug}_${modeSlug}_${Date.now()}.png`;
+
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = exportCanvas.toDataURL('image/png');
+      link.click();
+
+      playSnapshotSound();
+    }
+
+    // =========================================================================
+    // KEYBOARD SHORTCUTS MODAL TOGGLE
+    // =========================================================================
+    const shortcutsModal = document.getElementById('shortcutsModal');
+    function openShortcutsModal() {
+      if (shortcutsModal) {
+        shortcutsModal.classList.remove('hidden');
+        lucide.createIcons();
+      }
+    }
+    function closeShortcutsModal() {
+      if (shortcutsModal) shortcutsModal.classList.add('hidden');
+    }
+    function toggleShortcutsModal() {
+      if (!shortcutsModal) return;
+      if (shortcutsModal.classList.contains('hidden')) openShortcutsModal();
+      else closeShortcutsModal();
     }
 
     // =========================================================================
@@ -1167,6 +1409,7 @@
           currentFrame = (currentFrame === 1) ? 2 : 1;
           updateFrameLabel();
           drawFrame();
+          playBlinkTick();
         }
       }, 1000 / fps);
       isPlaying = true;
@@ -1193,24 +1436,28 @@
       currentFrame = 1;
       updateFrameLabel();
       drawFrame();
+      playBlinkTick();
     });
     document.getElementById('btnJumpEnd').addEventListener('click', () => {
       stopFlipbook();
       currentFrame = 2;
       updateFrameLabel();
       drawFrame();
+      playBlinkTick();
     });
     document.getElementById('btnStepBack').addEventListener('click', () => {
       stopFlipbook();
       currentFrame = 1;
       updateFrameLabel();
       drawFrame();
+      playBlinkTick();
     });
     document.getElementById('btnStepFwd').addEventListener('click', () => {
       stopFlipbook();
       currentFrame = 2;
       updateFrameLabel();
       drawFrame();
+      playBlinkTick();
     });
 
     const speedSlider = document.getElementById('speedSlider');
@@ -1218,7 +1465,34 @@
     speedSlider.addEventListener('input', (e) => {
       fps = parseFloat(e.target.value);
       speedLabel.innerText = `${fps.toFixed(1)} FPS`;
+      updateFpsPresetButtons();
       if (isPlaying) startFlipbook();
+    });
+
+    function setFps(newFps) {
+      fps = newFps;
+      speedSlider.value = newFps;
+      speedLabel.innerText = `${fps.toFixed(1)} FPS`;
+      updateFpsPresetButtons();
+      if (isPlaying) startFlipbook();
+    }
+
+    function updateFpsPresetButtons() {
+      document.querySelectorAll('.fps-preset-btn').forEach(btn => {
+        const val = parseFloat(btn.getAttribute('data-fps'));
+        if (Math.abs(val - fps) < 0.1) {
+          btn.className = "fps-preset-btn px-1.5 py-0.5 rounded bg-blender-800 text-blender-orange font-bold text-[9px] transition-all";
+        } else {
+          btn.className = "fps-preset-btn px-1.5 py-0.5 rounded bg-blender-800 hover:bg-blender-700 text-gray-300 hover:text-white text-[9px] transition-all";
+        }
+      });
+    }
+
+    document.querySelectorAll('.fps-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = parseFloat(btn.getAttribute('data-fps'));
+        if (val) setFps(val);
+      });
     });
 
     // =========================================================================
@@ -1235,6 +1509,13 @@
       document.getElementById('astroCanvas').classList.remove('hidden');
     }
 
+    function setWorkspaceMode(mode) {
+      if (mode === 'blink') wsBlink.click();
+      else if (mode === 'diff') wsDiff.click();
+      else if (mode === 'spec') wsSpec.click();
+      else if (mode === 'aladin') wsAladin.click();
+    }
+
     wsBlink.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsBlink.classList.add('blender-btn-active');
@@ -1242,6 +1523,7 @@
       updateFrameLabel();
       drawFrame();
       startFlipbook();
+      playModeChime();
     });
 
     wsDiff.addEventListener('click', () => {
@@ -1251,6 +1533,7 @@
       stopFlipbook();
       updateFrameLabel();
       drawFrame();
+      playModeChime();
     });
 
     wsSpec.addEventListener('click', () => {
@@ -1260,6 +1543,7 @@
       document.getElementById('propertiesSidebar').classList.remove('hidden');
       loadSpectrumData(camera.ra, camera.dec, currentTargetKey);
       drawFrame();
+      playModeChime();
     });
 
     wsAladin.addEventListener('click', () => {
@@ -1268,6 +1552,7 @@
       document.getElementById('aladinContainer').classList.remove('hidden');
       document.getElementById('astroCanvas').classList.add('hidden');
       initAladinLite();
+      playModeChime();
     });
 
     // Shading Buttons (Grayscale, Inverted, Thermal)
@@ -1278,6 +1563,12 @@
     function setCanvasFilter(filterClass) {
       canvas.className = `w-full h-full block ${filterClass}`;
       [shadeGray, shadeInv, shadeTherm].forEach(b => b.classList.remove('blender-btn-active'));
+    }
+
+    function setShadingMode(mode) {
+      if (mode === 'gray') shadeGray.click();
+      else if (mode === 'invert') shadeInv.click();
+      else if (mode === 'thermal') shadeTherm.click();
     }
 
     shadeGray.addEventListener('click', () => {
@@ -1550,31 +1841,173 @@
       drawFrame();
     }, { passive: false });
 
-    // Keyboard controls for WASD / Space / Shift / Backquote
+    // Keyboard controls for WASD / Space / Shift / Backquote & Hotkeys
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Escape' && isWalkNav) {
-        setWalkNav(false);
-        return;
+      // Escape: exit modals or Walk Nav
+      if (e.code === 'Escape') {
+        if (shortcutsModal && !shortcutsModal.classList.contains('hidden')) {
+          closeShortcutsModal();
+          return;
+        }
+        if (flagModal && !flagModal.classList.contains('hidden')) {
+          closeCandidateModal();
+          return;
+        }
+        if (isWalkNav) {
+          setWalkNav(false);
+          return;
+        }
       }
+
       if (e.shiftKey && e.code === 'Backquote') {
         e.preventDefault();
         setWalkNav(!isWalkNav);
         return;
       }
 
-      // Spacebar toggles Play/Pause when not in Walk Nav or modal
-      if (e.code === 'Space' && !isWalkNav) {
-        const activeTag = document.activeElement ? document.activeElement.tagName : '';
-        if (activeTag !== 'INPUT' && activeTag !== 'TEXTAREA') {
-          e.preventDefault();
-          togglePlayPause();
-          return;
-        }
+      // Do not capture hotkeys if user is typing in search input boxes or text areas
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') {
+        if (e.code === 'Escape') document.activeElement.blur();
+        return;
       }
 
-      // Do not capture keys if typing in search input boxes
-      const activeTag = document.activeElement ? document.activeElement.tagName : '';
-      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+      // Spacebar toggles Play/Pause when not in Walk Nav
+      if (e.code === 'Space' && !isWalkNav) {
+        e.preventDefault();
+        togglePlayPause();
+        return;
+      }
+
+      // Left / Right Arrows: Step Frames
+      if (e.code === 'ArrowLeft' && !isWalkNav) {
+        e.preventDefault();
+        stopFlipbook();
+        currentFrame = 1;
+        updateFrameLabel();
+        drawFrame();
+        playBlinkTick();
+        return;
+      }
+      if (e.code === 'ArrowRight' && !isWalkNav) {
+        e.preventDefault();
+        stopFlipbook();
+        currentFrame = 2;
+        updateFrameLabel();
+        drawFrame();
+        playBlinkTick();
+        return;
+      }
+
+      // Home / End: Jump to Start / End Frame
+      if (e.code === 'Home') {
+        e.preventDefault();
+        camera.panX = 0;
+        camera.panY = 0;
+        camera.zoom = 1.0;
+        updateCoordinateReadouts();
+        drawFrame();
+        return;
+      }
+      if (e.code === 'End' && !isWalkNav) {
+        e.preventDefault();
+        stopFlipbook();
+        currentFrame = 2;
+        updateFrameLabel();
+        drawFrame();
+        playBlinkTick();
+        return;
+      }
+
+      // Workspaces: [B]link, [D]ifference, [S]pectra, [A]ladin
+      if (!isWalkNav) {
+        if (e.code === 'KeyB') {
+          e.preventDefault();
+          setWorkspaceMode('blink');
+          return;
+        }
+        if (e.code === 'KeyD') {
+          e.preventDefault();
+          setWorkspaceMode(diffMode ? 'blink' : 'diff');
+          return;
+        }
+        if (e.code === 'KeyS') {
+          e.preventDefault();
+          setWorkspaceMode('spec');
+          return;
+        }
+        if (e.code === 'KeyA') {
+          e.preventDefault();
+          setWorkspaceMode('aladin');
+          return;
+        }
+        // [N]: Toggle Sidebar
+        if (e.code === 'KeyN') {
+          e.preventDefault();
+          propertiesSidebar.classList.toggle('hidden');
+          return;
+        }
+        // [R]: Reset Zoom
+        if (e.code === 'KeyR') {
+          e.preventDefault();
+          camera.zoom = 1.0;
+          camera.panX = 0;
+          camera.panY = 0;
+          updateCoordinateReadouts();
+          drawFrame();
+          return;
+        }
+        // [G], [I], [T]: Shading modes
+        if (e.code === 'KeyG') {
+          e.preventDefault();
+          setShadingMode('gray');
+          return;
+        }
+        if (e.code === 'KeyI') {
+          e.preventDefault();
+          setShadingMode('invert');
+          return;
+        }
+        if (e.code === 'KeyT') {
+          e.preventDefault();
+          setShadingMode('thermal');
+          return;
+        }
+        // [M]: Toggle Mute
+        if (e.code === 'KeyM') {
+          e.preventDefault();
+          toolMute.click();
+          return;
+        }
+        // [P] or [F8]: Capture Snapshot
+        if (e.code === 'KeyP' || e.code === 'F8') {
+          e.preventDefault();
+          captureSnapshot();
+          return;
+        }
+        // [F]: Flag Discovery Candidate
+        if (e.code === 'KeyF') {
+          e.preventDefault();
+          flagCandidateBtn.click();
+          return;
+        }
+        // [?] or [/]: Toggle Keyboard Shortcuts
+        if (e.key === '?' || (e.shiftKey && e.code === 'Slash') || e.code === 'KeyH') {
+          e.preventDefault();
+          toggleShortcutsModal();
+          return;
+        }
+        // Digits 1-5: Jump to NASA Targets
+        const targetKeys = ['wise0855', 'barnard', 'epsindi', 'rwaur', 'rdraconis'];
+        if (['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].includes(e.code)) {
+          const idx = parseInt(e.code.replace('Digit', '')) - 1;
+          if (targetKeys[idx]) {
+            e.preventDefault();
+            selectTarget(targetKeys[idx]);
+            return;
+          }
+        }
+      }
 
       if (isWalkNav) {
         camera.activeKeys[e.code] = true;
@@ -1703,6 +2136,36 @@
       }
       lucide.createIcons();
     });
+
+    // Snapshot Exporter Event Listeners
+    const bindSnapshot = (id) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', captureSnapshot);
+    };
+    bindSnapshot('toolSnapshot');
+    bindSnapshot('btnHeaderSnapshot');
+    bindSnapshot('btnFooterSnapshot');
+
+    // Shortcuts Cheat Sheet Modal Listeners
+    const bindShortcutsOpen = (id) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', openShortcutsModal);
+    };
+    bindShortcutsOpen('toolShortcuts');
+    bindShortcutsOpen('btnHeaderShortcuts');
+
+    const bindShortcutsClose = (id) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('click', closeShortcutsModal);
+    };
+    bindShortcutsClose('closeShortcutsModalBtn');
+    bindShortcutsClose('closeShortcutsModalFooterBtn');
+
+    if (shortcutsModal) {
+      shortcutsModal.addEventListener('click', (e) => {
+        if (e.target === shortcutsModal) closeShortcutsModal();
+      });
+    }
 
     // =========================================================================
     // INITIALIZATION

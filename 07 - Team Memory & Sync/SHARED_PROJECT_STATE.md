@@ -26,6 +26,7 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Frontend UI & Controls Polish Complete]** Added complete keyboard shortcuts suite (`Space`, `←/→`, `Home/End`, `B`, `D`, `S`, `A`, `G/I/T`, `R`, `M`, `P/F8`, `F`, `1-5`, `?`), dark Blender-style Shortcuts Cheat Sheet modal, high-res PNG canvas snapshot exporter with telemetry stamp, quick FPS preset buttons (1x, 2x, 4x), and sensory audio feedback for frame ticks and snapshot shutters.
 - **[Local Frontend Dev Server Live & Verified]** `coolodu` branch initialized with full Python & astronomy dependencies. Live preview running at `http://127.0.0.1:8000/app/index.html` with all workspace tabs, real FITS comparator, difference subtraction, and 102-band spectra confirmed operational.
 - **[Continuous Optical Camera Zoom & Seam-Free Wide-Field Engine (Phase 7)]** Refined multi-tier LOD rendering to function like a genuine optical camera lens in the viewport:
   - **Calibrated Multi-Tier Matrix Resolutions:**

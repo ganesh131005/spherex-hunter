@@ -3,11 +3,17 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Local development preview active and verified live at http://127.0.0.1:8000/app/index.html.
-- **Next Task:** Implement UI refinements, citizen science enhancements, or audio sonification features based on team needs.
+- **Current Task:** Completed UI & Controls Polish: Keyboard shortcuts system, shortcuts cheat sheet modal, high-res canvas snapshot exporter, quick FPS presets, and audio tactile feedback.
+- **Next Task:** Citizen science modal enhancements or multi-wavelength spectral features.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Implemented complete Telescope Keyboard Shortcuts suite (`Space`, `←/→`, `Home/End`, `B`, `D`, `S`, `A`, `G/I/T`, `R`, `M`, `P/F8`, `F`, `1-5`, `?`).
+- [x] Created Blender-style Keyboard Shortcuts Cheat Sheet modal (`#shortcutsModal`) with grouped categorical key badges.
+- [x] Added High-Resolution Telescope Canvas Snapshot Exporter (`captureSnapshot`) with NASA Space Apps astronomical telemetry stamp and instant PNG download.
+- [x] Added Quick FPS Speed preset pills (`1 FPS`, `2 FPS`, `4 FPS`) to bottom timeline.
+- [x] Added subtle procedural audio click feedback on frame flip (`playBlinkTick`) and camera shutter audio on snapshot (`playSnapshotSound`).
+- [x] Verified full interaction live in browser with zero console errors.
 - [x] Initialized workspace on branch `coolodu/web-frontend` and set up MinGit environment.
 - [x] Installed local Python astronomy & API stack (`fastapi`, `uvicorn`, `astropy`, `scipy`, `numpy`, `astroquery`).
 - [x] Started local FastAPI astronomy backend server running on port 8000.
