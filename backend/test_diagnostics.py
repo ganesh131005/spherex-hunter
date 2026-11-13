@@ -35,6 +35,7 @@ from backend.main import (
     parse_celestial_coords,
     flag_candidate,
     get_discoveries,
+    export_discoveries_csv,
     DiscoveryCandidate
 )
 from backend.services.catalog_engine import (
@@ -187,9 +188,14 @@ def test_fastapi_endpoints():
     )
     flag_res = flag_candidate(test_cand)
     assert flag_res["status"] == "recorded"
+    assert "candidate_id" in flag_res
     discoveries = get_discoveries()
     assert len(discoveries) > 0
-    print(f"  [PASS] flag_candidate()          -> Logged candidate by {test_cand.user_handle} (Total logged: {len(discoveries)})")
+    csv_out = export_discoveries_csv()
+    assert csv_out.status_code == 200
+    assert b"Candidate_ID" in csv_out.body
+    print(f"  [PASS] flag_candidate()          -> Logged candidate {flag_res['candidate_id']} (Total logged: {len(discoveries)})")
+    print(f"  [PASS] export_discoveries_csv()  -> Generated NASA-ready CSV table ({len(csv_out.body)} bytes)")
 
     # 7. Gaia DR3 catalog query
     gaia_res = get_gaia_catalog(ra="269.45208", dec="4.69339", radius=3.0, limit=10)

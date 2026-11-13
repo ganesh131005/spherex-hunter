@@ -1,5 +1,81 @@
 [
   {
+    "candidate_id": "SPX-2026-9FB54F",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T09:45:53.291941+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-25B567",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T09:45:19.433432+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-882551",
+    "target_name": "Barnards Star Fast Mover",
+    "ra": 269.45208,
+    "dec": 4.69339,
+    "object_type": "High Proper Motion Star",
+    "user_handle": "@darkodu_team_rip",
+    "notes": "10.36 arcsec/yr verified against Gaia DR3",
+    "proper_motion_mas": 10393.4,
+    "confidence": 5,
+    "timestamp": "2026-11-13T09:44:41.117459+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 6.93,
+      "simbad_counterpart": "Barnard's Star (V* V2500 Oph)",
+      "spectral_classification": "M4.0V",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-3CC16B",
+    "target_name": "WISE 0855 Deep Dipole",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "Cold Y-Dwarf Brown Dwarf",
+    "user_handle": "@astronomer_coimbatore",
+    "notes": "Prominent negative/positive dipole in SPHEREx difference imaging",
+    "proper_motion_mas": 8550.0,
+    "confidence": 5,
+    "timestamp": "2026-11-13T09:44:28.446804+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
     "ra": 133.79513,
     "dec": -7.24515,
     "object_type": "High Proper Motion Brown Dwarf",

@@ -3,11 +3,17 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Multi-Survey Photometric Cross-Matching Live (Gaia DR3 + NASA 2MASS + SIMBAD).
-- **Next Task:** Assist coolodu with frontend overlay vectors or connect with citizen science pipeline.
+- **Current Task:** Citizen Science Candidate Logging, Automated Scientific Cross-Validation & CSV Export Live (`/api/flag`, `/api/discoveries`, `/api/discoveries/export/csv`).
+- **Next Task:** Assist coolodu with frontend overlay vectors or collaborate on video pitch demo.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Upgraded Citizen Science Discovery Pipeline (`/api/flag`):
+  - Added unique candidate ID generation (`SPX-2026-XXXX`) and real ISO UTC timestamps.
+  - Automated scientific validation: cross-matches every candidate on ingestion against Gaia DR3, 2MASS, and SIMBAD to evaluate Planet X / Brown Dwarf criteria.
+  - Added CSV spreadsheet export (`GET /api/discoveries/export/csv`) for NASA Space Apps project submission.
+  - Added candidate deletion (`DELETE /api/discoveries/{candidate_id}`).
+  - Harmonized frontend modal contract (`motion_type`, `candidate_name`, `proper_motion_mas`) with Swagger schemas.
 - [x] Implemented NASA IRSA 2MASS Point Source Catalog (PSC) query engine (`/api/catalog/2mass`) for $J, H, K_s$ infrared photometry and color indices.
 - [x] Implemented CDS Strasbourg SIMBAD metadata query engine (`/api/catalog/simbad`) for canonical astronomical names, spectral types, and citation counts.
 - [x] Implemented Unified Multi-Survey Photometric Cross-Matching (`/api/catalog/crossmatch`) computing $G - K_s$, $J - K_s$ color baselines and automated Planet X / Brown Dwarf detection flags.

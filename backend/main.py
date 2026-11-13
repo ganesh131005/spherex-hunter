@@ -10,9 +10,14 @@ Provides REST API endpoints for:
 """
 
 import os
+import io
+import csv
 import json
+import uuid
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import FastAPI, Query, HTTPException
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -55,10 +60,14 @@ DISCOVERIES_FILE = os.path.join(os.path.dirname(__file__), "..", "07 - Team Memo
 class DiscoveryCandidate(BaseModel):
     ra: float
     dec: float
-    object_type: str
+    object_type: Optional[str] = None
+    motion_type: Optional[str] = None
+    target_name: Optional[str] = None
+    candidate_name: Optional[str] = None
     user_handle: str = "@citizen_scientist"
     notes: Optional[str] = ""
-    target_name: Optional[str] = "Unknown"
+    proper_motion_mas: Optional[float] = None
+    confidence: Optional[int] = 5
 
 @app.get("/")
 def root():
@@ -76,7 +85,8 @@ def root():
             "/api/catalog/2mass?ra=269.45208&dec=4.69339&radius=3.0",
             "/api/catalog/simbad?ra=269.45208&dec=4.69339",
             "/api/catalog/crossmatch?ra=269.45208&dec=4.69339",
-            "/api/discoveries"
+            "/api/discoveries",
+            "/api/discoveries/export/csv"
         ]
     }
 
@@ -240,19 +250,30 @@ def get_crossmatched_photometry(
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/discoveries")
-def get_discoveries():
-    """Returns community discoveries logged by users."""
+def get_discoveries(
+    object_type: Optional[str] = Query(None, description="Filter by object type"),
+    limit: int = Query(50, description="Max entries to return")
+):
+    """Returns community discoveries logged by users, with optional filtering."""
     if os.path.exists(DISCOVERIES_FILE):
         try:
             with open(DISCOVERIES_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                items = json.load(f)
+                if object_type and isinstance(object_type, str):
+                    items = [it for it in items if object_type.lower() in str(it.get("object_type", "")).lower()]
+                lim = limit if isinstance(limit, int) else 50
+                return items[:lim]
         except Exception:
             return []
     return []
 
 @app.post("/api/flag")
 def flag_candidate(candidate: DiscoveryCandidate):
-    """Logs a new candidate into the community discovery list."""
+    """
+    Logs a citizen science candidate discovery into the community ledger.
+    Automatically cross-references multi-survey archives (Gaia DR3, 2MASS, SIMBAD)
+    and evaluates Planet X / Brown Dwarf color criteria.
+    """
     discoveries = []
     if os.path.exists(DISCOVERIES_FILE):
         try:
@@ -260,15 +281,115 @@ def flag_candidate(candidate: DiscoveryCandidate):
                 discoveries = json.load(f)
         except Exception:
             discoveries = []
-            
-    entry = candidate.model_dump()
-    entry["timestamp"] = "2026-11-12T20:50:00Z"
+
+    # Harmonize naming between frontend & swagger contracts
+    target_name = candidate.target_name or candidate.candidate_name or f"Candidate at {candidate.ra:.4f}, {candidate.dec:.4f}"
+    obj_type = candidate.object_type or candidate.motion_type or "High Proper Motion Transient"
+    cand_id = f"SPX-2026-{uuid.uuid4().hex[:6].upper()}"
+
+    # Auto-crossmatch with multi-wavelength archives
+    try:
+        xmatch = crossmatch_photometry(ra=candidate.ra, dec=candidate.dec, radius_arcmin=1.5)
+        is_ultracold = xmatch.get("color_diagnostics", {}).get("is_ultracold_candidate", False)
+        g_k_color = xmatch.get("color_diagnostics", {}).get("optical_g_minus_infrared_k")
+        simbad_match = xmatch.get("simbad_classification", {}).get("canonical_name", "Uncataloged Source")
+        spectral_type = xmatch.get("simbad_classification", {}).get("spectral_type", "Unknown")
+        verif_status = "CONFIRMED_ULTRACOLD" if is_ultracold else "PENDING_VERIFICATION"
+    except Exception:
+        is_ultracold = False
+        g_k_color = None
+        simbad_match = "Survey Query Pending"
+        spectral_type = "Unknown"
+        verif_status = "LOGGED"
+
+    entry = {
+        "candidate_id": cand_id,
+        "target_name": target_name,
+        "ra": candidate.ra,
+        "dec": candidate.dec,
+        "object_type": obj_type,
+        "user_handle": candidate.user_handle or "@citizen_scientist",
+        "notes": candidate.notes or "",
+        "proper_motion_mas": candidate.proper_motion_mas,
+        "confidence": candidate.confidence or 5,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "scientific_validation": {
+            "is_ultracold_candidate": is_ultracold,
+            "optical_infrared_g_minus_ks": g_k_color,
+            "simbad_counterpart": simbad_match,
+            "spectral_classification": spectral_type,
+            "verification_status": verif_status
+        }
+    }
+
     discoveries.insert(0, entry)
-    
+
     with open(DISCOVERIES_FILE, "w", encoding="utf-8") as f:
-        json.dump(discoveries[:50], f, indent=2)
-        
-    return {"status": "recorded", "entry": entry}
+        json.dump(discoveries[:100], f, indent=2)
+
+    return {"status": "recorded", "candidate_id": cand_id, "entry": entry}
+
+@app.get("/api/discoveries/export/csv")
+def export_discoveries_csv():
+    """Exports all logged citizen science discoveries as a CSV spreadsheet."""
+    discoveries = []
+    if os.path.exists(DISCOVERIES_FILE):
+        try:
+            with open(DISCOVERIES_FILE, "r", encoding="utf-8") as f:
+                discoveries = json.load(f)
+        except Exception:
+            discoveries = []
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Candidate_ID", "Timestamp_UTC", "Target_Name", "RA_deg", "Dec_deg",
+        "Object_Type", "User_Handle", "Confidence", "Proper_Motion_mas_yr",
+        "Optical_IR_G_minus_Ks", "SIMBAD_Match", "Spectral_Type", "Status", "Notes"
+    ])
+
+    for d in discoveries:
+        sci = d.get("scientific_validation", {})
+        writer.writerow([
+            d.get("candidate_id", ""),
+            d.get("timestamp", ""),
+            d.get("target_name", ""),
+            d.get("ra", ""),
+            d.get("dec", ""),
+            d.get("object_type", ""),
+            d.get("user_handle", ""),
+            d.get("confidence", ""),
+            d.get("proper_motion_mas", ""),
+            sci.get("optical_infrared_g_minus_ks", ""),
+            sci.get("simbad_counterpart", ""),
+            sci.get("spectral_classification", ""),
+            sci.get("verification_status", ""),
+            d.get("notes", "")
+        ])
+
+    csv_data = output.getvalue()
+    return Response(
+        content=csv_data,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=spherex_hunter_discoveries.csv"}
+    )
+
+@app.delete("/api/discoveries/{candidate_id}")
+def delete_discovery(candidate_id: str):
+    """Deletes a candidate by ID."""
+    if os.path.exists(DISCOVERIES_FILE):
+        try:
+            with open(DISCOVERIES_FILE, "r", encoding="utf-8") as f:
+                discoveries = json.load(f)
+            original_len = len(discoveries)
+            discoveries = [d for d in discoveries if d.get("candidate_id") != candidate_id]
+            if len(discoveries) < original_len:
+                with open(DISCOVERIES_FILE, "w", encoding="utf-8") as f:
+                    json.dump(discoveries, f, indent=2)
+                return {"status": "deleted", "candidate_id": candidate_id}
+        except Exception:
+            pass
+    raise HTTPException(status_code=404, detail=f"Candidate {candidate_id} not found")
 
 if __name__ == "__main__":
     import uvicorn

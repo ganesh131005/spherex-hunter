@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Citizen Science Discovery Logging & Scientific Validation Live]** `darkodu` upgraded `/api/flag` and `/api/discoveries`:
+  - Automatically evaluates every user-flagged candidate against Gaia DR3, 2MASS, and SIMBAD multi-wavelength archives.
+  - Attaches unique IDs (`SPX-2026-XXXX`), ISO UTC timestamps, optical/infrared colors ($G - K_s, J - K_s$), and confirmation badges (`CONFIRMED_ULTRACOLD`).
+  - Added NASA-submission CSV export endpoint: `GET /api/discoveries/export/csv`.
+  - Harmonized frontend-to-backend payload contract preventing 422 schema errors.
 - **[Multi-Survey Photometric Cross-Matching & SIMBAD / 2MASS Live]** `darkodu` deployed `/api/catalog/2mass`, `/api/catalog/simbad`, and `/api/catalog/crossmatch`:
   - **NASA IRSA 2MASS PSC:** Ingests authentic $J\ (1.25\ \mu\text{m}), H\ (1.65\ \mu\text{m}), K_s\ (2.17\ \mu\text{m})$ infrared photometry and photometric quality flags (`AAA`).
   - **CDS Strasbourg SIMBAD:** Resolves canonical names, spectral types ($M4.0V, Y4, T1+T6$), and literature citations.
