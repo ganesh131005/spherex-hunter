@@ -717,117 +717,15 @@
     }
 
     // =========================================================================
-    // MULTI-TILE SPATIAL NEAR-IMAGE STREAMER & MOSAIC CACHE (Zoom Out Coverage)
+    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Continuous World-Space Optical Zoom)
     // =========================================================================
-    const neighborTileCache = new Map();
-    const pendingNeighborFetches = new Set();
-
-    function getNeighborKey(dx, dy) {
-      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
-      const raNeighbor = camera.ra - (dx * (camera.fov / 60.0) / cosDec);
-      const decNeighbor = camera.dec + (dy * (camera.fov / 60.0));
-      return `${raNeighbor.toFixed(4)}_${decNeighbor.toFixed(4)}_${currentLOD}`;
-    }
-
-    async function fetchNeighborTile(dx, dy) {
-      const key = getNeighborKey(dx, dy);
-      if (neighborTileCache.has(key) || pendingNeighborFetches.has(key)) return;
-      pendingNeighborFetches.add(key);
-
-      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
-      const raNeighbor = (camera.ra - (dx * (camera.fov / 60.0) / cosDec)).toFixed(5);
-      const decNeighbor = (camera.dec + (dy * (camera.fov / 60.0))).toFixed(5);
-
-      try {
-        const url = `${BACKEND_URL}/cutout?ra=${raNeighbor}&dec=${decNeighbor}&fov=${camera.fov}&lod=2`;
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const data = await res.json();
-        const [ep1, ep2, diff] = await Promise.all([
-          preloadImage(data.epochs[0].image_data),
-          preloadImage(data.epochs[1].image_data),
-          preloadImage(data.difference_image.image_data)
-        ]);
-        if (ep1 && ep2) {
-          neighborTileCache.set(key, { ep1, ep2, diff });
-          drawFrame();
-        }
-      } catch (e) {
-        // Fallback procedural sky seamlessly covers background
-      } finally {
-        pendingNeighborFetches.delete(key);
-      }
-    }
-
-    function pseudoRandom(seed) {
-      const x = Math.sin(seed) * 10000;
-      return x - Math.floor(x);
-    }
-
-    function drawProceduralSkyChunk(targetCtx, x, y, w, h, dx, dy, isDiff) {
-      let seed = Math.abs(Math.floor((camera.ra * 100 + dx) * 31 + (camera.dec * 100 + dy) * 17));
-      
-      // Base tone matching FITS detector floor
-      targetCtx.fillStyle = isDiff ? '#808080' : '#080c14';
-      targetCtx.fillRect(x, y, w, h);
-
-      if (isDiff) {
-        // Subtle Poisson noise fluctuations for difference mode
-        targetCtx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-        for (let i = 0; i < 30; i++) {
-          const px = x + pseudoRandom(seed++) * w;
-          const py = y + pseudoRandom(seed++) * h;
-          targetCtx.fillRect(px, py, 1.5, 1.5);
-        }
-        targetCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-        for (let i = 0; i < 30; i++) {
-          const px = x + pseudoRandom(seed++) * w;
-          const py = y + pseudoRandom(seed++) * h;
-          targetCtx.fillRect(px, py, 1.5, 1.5);
-        }
-      } else {
-        // Authentic Poisson photon noise texture
-        targetCtx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-        for (let i = 0; i < 60; i++) {
-          const px = x + pseudoRandom(seed++) * w;
-          const py = y + pseudoRandom(seed++) * h;
-          targetCtx.fillRect(px, py, 1.0, 1.0);
-        }
-        // Astronomical stars distribution with realistic PSF profiles
-        const starCount = 12 + Math.floor(pseudoRandom(seed++) * 18);
-        for (let i = 0; i < starCount; i++) {
-          const sx = x + pseudoRandom(seed++) * w;
-          const sy = y + pseudoRandom(seed++) * h;
-          const rad = 0.8 + pseudoRandom(seed++) * 2.0;
-          const bright = 0.35 + pseudoRandom(seed++) * 0.65;
-
-          const grad = targetCtx.createRadialGradient(sx, sy, 0, sx, sy, rad * 2.5);
-          grad.addColorStop(0, `rgba(255, 255, 255, ${bright})`);
-          grad.addColorStop(0.4, `rgba(215, 230, 255, ${bright * 0.4})`);
-          grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-          targetCtx.fillStyle = grad;
-          targetCtx.beginPath();
-          targetCtx.arc(sx, sy, rad * 2.5, 0, Math.PI * 2);
-          targetCtx.fill();
-        }
-      }
-
-      // Subtle celestial tile boundary
-      targetCtx.strokeStyle = 'rgba(80, 130, 200, 0.15)';
-      targetCtx.lineWidth = 1;
-      targetCtx.strokeRect(x, y, w, h);
-    }
-
-    // =========================================================================
-    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Multi-Tier Game LOD Cross-Fade)
-    // =========================================================================
-    function drawImageFit(img, w, h) {
+    function drawImageFit(img, w, h, imgFov) {
       if (!img || !img.complete) return;
-      const dw = img.width || 400;
-      const dh = img.height || 400;
-      const fitScale = Math.min((w * 0.90) / dw, (h * 0.90) / dh);
-      const rw = dw * fitScale;
-      const rh = dh * fitScale;
+      const fov = imgFov || (activeCutoutData && activeCutoutData.coordinates ? activeCutoutData.coordinates.fov_arcmin : 3.0);
+      const basePx = Math.min(w, h) * 0.90;
+      const pixelsPerArcmin = basePx / 3.0; // standard 3.0' fills 90% at 1.0x zoom
+      const rw = fov * pixelsPerArcmin;
+      const rh = fov * pixelsPerArcmin;
       ctx.drawImage(img, -rw / 2, -rh / 2, rw, rh);
     }
 
@@ -840,21 +738,22 @@
       ctx.fillRect(0, 0, w, h);
 
       ctx.save();
-      // Apply pan & zoom
+      // Continuous camera transform (Pan & Zoom)
       ctx.translate(w / 2 + camera.panX, h / 2 + camera.panY);
       ctx.scale(camera.zoom, camera.zoom);
-      ctx.imageSmoothingEnabled = false; // Sharp detector pixels!
+      ctx.imageSmoothingEnabled = true; // Bilinear filtering for smooth camera zoom
 
-      // 1. Render Center Hero Tile
+      const imgFov = activeCutoutData && activeCutoutData.coordinates ? activeCutoutData.coordinates.fov_arcmin : (currentLOD === 2 ? 10.0 : (currentLOD === 0 ? 1.5 : 3.0));
+
       if (diffMode) {
         // Difference Image Mode (Authentic numerical subtraction I2 - I1)
         if (prevDiffImg && crossFadeAlpha < 1.0) {
           ctx.globalAlpha = Math.max(0, 1.0 - crossFadeAlpha);
-          drawImageFit(prevDiffImg, w, h);
+          drawImageFit(prevDiffImg, w, h, imgFov);
         }
         if (realDiffImg && realDiffImg.complete) {
           ctx.globalAlpha = crossFadeAlpha;
-          drawImageFit(realDiffImg, w, h);
+          drawImageFit(realDiffImg, w, h, imgFov);
         }
       } else {
         // Flipbook Blink Mode (Epoch 1 <-> Epoch 2)
@@ -863,47 +762,11 @@
 
         if (activePrev && crossFadeAlpha < 1.0) {
           ctx.globalAlpha = Math.max(0, 1.0 - crossFadeAlpha);
-          drawImageFit(activePrev, w, h);
+          drawImageFit(activePrev, w, h, imgFov);
         }
         if (activeImg && activeImg.complete) {
           ctx.globalAlpha = crossFadeAlpha;
-          drawImageFit(activeImg, w, h);
-        }
-      }
-
-      // 2. Multi-Tile Surrounding Spatial Grid (Near Images on Zoom Out)
-      if (camera.zoom < 0.95) {
-        const refImg = diffMode ? realDiffImg : ((currentFrame === 1) ? realEpoch1Img : realEpoch2Img);
-        if (refImg && refImg.complete) {
-          const dw = refImg.width || 400;
-          const dh = refImg.height || 400;
-          const fitScale = Math.min((w * 0.90) / dw, (h * 0.90) / dh);
-          const rw = dw * fitScale;
-          const rh = dh * fitScale;
-
-          const maxGrid = camera.zoom < 0.5 ? 2 : 1;
-          for (let dx = -maxGrid; dx <= maxGrid; dx++) {
-            for (let dy = -maxGrid; dy <= maxGrid; dy++) {
-              if (dx === 0 && dy === 0) continue; // Center tile already rendered
-
-              const posX = -rw / 2 + dx * rw;
-              const posY = -rh / 2 - dy * rh;
-              const key = getNeighborKey(dx, dy);
-
-              const neighborData = neighborTileCache.get(key);
-              if (neighborData) {
-                const nImg = diffMode ? neighborData.diff : ((currentFrame === 1) ? neighborData.ep1 : neighborData.ep2);
-                if (nImg && nImg.complete) {
-                  ctx.globalAlpha = 1.0;
-                  ctx.drawImage(nImg, posX, posY, rw, rh);
-                }
-              } else {
-                // Procedural Poisson-noise space background with stars while hydrating from IRSA
-                drawProceduralSkyChunk(ctx, posX, posY, rw, rh, dx, dy, diffMode);
-                fetchNeighborTile(dx, dy);
-              }
-            }
-          }
+          drawImageFit(activeImg, w, h, imgFov);
         }
       }
 
@@ -936,9 +799,9 @@
 
       const mosaicEl = document.getElementById('vpMosaicBadge');
       if (mosaicEl) {
-        if (camera.zoom < 0.95) {
+        if (camera.zoom < 0.75) {
           mosaicEl.classList.remove('hidden');
-          mosaicEl.innerText = camera.zoom < 0.5 ? "Mosaic: 5×5 Near Tiles" : "Mosaic: 3×3 Near Tiles";
+          mosaicEl.innerText = "Broad Sky Context (10')";
         } else {
           mosaicEl.classList.add('hidden');
         }
@@ -993,22 +856,22 @@
     // =========================================================================
     function getTargetLODFromZoom() {
       const effFov = camera.fov / camera.zoom;
-      if (effFov > 5.5) return 2; // LOD 2: Wide Overview (200x200 lightweight tile)
-      if (effFov < 1.8) return 0; // LOD 0: Hero Deep (600x600 unbinned sub-pixel matrix)
-      return 1;                   // LOD 1: Standard Science (400x400 standard tile)
+      if (effFov > 4.5) return 2; // LOD 2: Wide Overview (~360p broad view)
+      if (effFov < 1.8) return 0; // LOD 0: Hero Deep (1024p unbinned core)
+      return 1;                   // LOD 1: Standard Science (720p HD standard)
     }
 
     function updateLODBadge(lod) {
       const el = document.getElementById('vpLOD');
       if (!el) return;
       if (lod === 0) {
-        el.innerText = "LOD 0 (Hero 600px)";
+        el.innerText = "LOD 0 (Hero 1024p Full-Res)";
         el.className = "text-purple-300 font-bold";
       } else if (lod === 2) {
-        el.innerText = "LOD 2 (Wide 200px)";
+        el.innerText = "LOD 2 (Wide 360p Overview)";
         el.className = "text-amber-300 font-bold";
       } else {
-        el.innerText = "LOD 1 (Std 400px)";
+        el.innerText = "LOD 1 (Std 720p HD)";
         el.className = "text-cyan-300 font-bold";
       }
     }
@@ -1038,14 +901,44 @@
       if (isLODStreaming) return;
       isLODStreaming = true;
       const reqLOD = targetLODTier;
+      const reqFov = (reqLOD === 2) ? 10.0 : ((reqLOD === 0) ? 1.5 : 3.0);
 
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${camera.fov}&lod=${reqLOD}`;
+        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${reqFov}&lod=${reqLOD}`;
         if (currentTargetKey) url += `&target=${currentTargetKey}`;
 
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
+        activeCutoutData = data;
+
+        // Preload before swapping (Zero screen tear / flicker)
+        const [newImg1, newImg2, newImgDiff] = await Promise.all([
+          preloadImage(data.epochs[0].image_data),
+          preloadImage(data.epochs[1].image_data),
+          preloadImage(data.difference_image.image_data)
+        ]);
+
+        if (newImg1 && newImg2) {
+          // Double buffer previous images for smooth cross-fade
+          prevEpoch1Img = realEpoch1Img;
+          prevEpoch2Img = realEpoch2Img;
+          prevDiffImg = realDiffImg;
+
+          realEpoch1Img = newImg1;
+          realEpoch2Img = newImg2;
+          realDiffImg = newImgDiff;
+          currentLOD = reqLOD;
+
+          updateLODBadge(currentLOD);
+          startLODCrossFade();
+        }
+      } catch (err) {
+        console.warn("LOD streaming background notice:", err);
+      } finally {
+        isLODStreaming = false;
+      }
+    }
 
         // Preload before swapping (Zero screen tear / flicker)
         const [newImg1, newImg2, newImgDiff] = await Promise.all([
@@ -1099,8 +992,9 @@
         isCustom ? "Querying live NASA IRSA multi-epoch FITS servers (2MASS & DSS2)..." : "Calibrating Astropy ZScale multi-epoch FITS images..."
       );
 
+      const reqFov = (currentLOD === 2) ? 10.0 : ((currentLOD === 0) ? 1.5 : fov);
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${fov}&lod=${currentLOD}`;
+        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${reqFov}&lod=${currentLOD}`;
         if (targetKey) url += `&target=${targetKey}`;
         
         const res = await fetch(url);

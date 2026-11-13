@@ -53,3 +53,19 @@
 - [x] **Task 6.3:** Build a sleek, minimalist Blender loading overlay (orbital pulse spinner with status message `Fetching live NASA FITS data...`) in `frontend/index.html`.
 - [x] **Task 6.4:** Optimize frontend state management so that during fetch delays, the previous frame remains visible behind the loading spinner, and smoothly swaps when new FITS frames arrive.
 - [x] **Task 6.5:** Verify live dynamic coordinate queries (e.g. typing arbitrary celestial coordinates) load real FITS images with zero gimmicks.
+
+---
+
+## Phase 7: Optical Multi-Tier LOD Camera Zoom & Seamless Wide Mosaic
+- [x] **Task 7.1:** Calibrate multi-tier matrix resolutions in `cutout_engine.py`:
+  - **LOD 2 (Wide Overview):** $360 \times 360$ matrix, broad $10.0' - 15.0'$ FOV for ultra-fast, smooth 60 FPS transit.
+  - **LOD 1 (Standard Science):** $720 \times 720$ matrix, standard $3.0' - 4.0'$ FOV for rich stellar fidelity.
+  - **LOD 0 (Hero Deep Core):** $1024 \times 1024$ unbinned sub-pixel matrix, deep $1.0' - 1.5'$ FOV for diffraction cores and micro-arcsecond astrometry.
+- [x] **Task 7.2:** Eliminate square tile seam artifacts:
+  - Remove discrete procedural square grid drawing that created visible border seams in the viewport.
+  - Serve continuous, single-frame astronomical wide-field images from NASA IRSA / 2MASS / DSS2 for broad zoom-out views.
+- [x] **Task 7.3:** World-Space Celestial Camera Zoom & Seamless Alpha Blending:
+  - Map FITS images to continuous celestial world coordinates so stars stay locked in place across all zoom levels.
+  - Implement smooth optical camera zoom with double-buffered cross-fade ($0.0 \to 1.0$) so zooming in and out feels like an authentic optical telescope lens.
+- [ ] **Task 7.4:** Browser DevTools & Viewport Verification using `/browser` subagent:
+  - Verify smooth zoom from $0.4\times$ to $6.0\times$ with zero tile seams and seamless resolution transitions.

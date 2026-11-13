@@ -294,8 +294,11 @@ def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1) -> tuple[np
         with fits.open(p_dss2) as h2:
             d2 = np.nan_to_num(h2[0].data.astype(float))
 
-        # Dynamic Game LOD Target Dimension
-        dim = 200 if lod == 2 else (600 if lod == 0 else 400)
+        # Dynamic Game LOD Target Dimension:
+        # LOD 2: 360x360 (~360p broad overview, lightning-fast 60 FPS transit)
+        # LOD 1: 720x720 (~720p/1080p standard science resolution)
+        # LOD 0: 1024x1024 (full unbinned sensor resolution)
+        dim = 360 if lod == 2 else (1024 if lod == 0 else 720)
 
         # Resample to LOD display matrix
         if d1.shape != (dim, dim):
@@ -402,7 +405,7 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
         return None
 
     # Dynamic Game LOD Target Dimension
-    dim = 200 if lod == 2 else (600 if lod == 0 else 400)
+    dim = 360 if lod == 2 else (1024 if lod == 0 else 720)
 
     # Resample to LOD display matrix
     if d1.shape != (dim, dim):
@@ -433,7 +436,7 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
         "is_variable": False,
         "is_real_fits": True
     }
-    lod_tag = "LOD 0 (Hero Deep)" if lod == 0 else ("LOD 2 (Wide Overview)" if lod == 2 else "LOD 1 (Standard Science)")
+    lod_tag = "LOD 0 (Hero Deep 1024px)" if lod == 0 else ("LOD 2 (Wide Overview 360px)" if lod == 2 else "LOD 1 (Standard Science 720px)")
     lbl1 = f"Live NASA 2MASS Infrared FITS [{lod_tag}] (J-Band 1.25 μm)"
     lbl2 = f"Live NASA DSS2 Optical FITS [{lod_tag}] (Red Band / SPHEREx Baseline)"
     return ep1_clean, ep2_clean, diff_scaled, vector_info, lbl1, lbl2
@@ -471,7 +474,7 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             # Fallback to local benchmark cutout if IRSA times out
             fits_result = load_real_fits_cutout(target_key, meta, lod=lod)
     
-    dim = 200 if lod == 2 else (600 if lod == 0 else 400)
+    dim = 360 if lod == 2 else (1024 if lod == 0 else 720)
     if fits_result is not None:
         ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2 = fits_result
         if target_key:
@@ -493,7 +496,7 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         "status": "success",
         "target": meta["name"],
         "lod_tier": lod,
-        "lod_label": "LOD 0 (Hero Deep)" if lod == 0 else ("LOD 2 (Wide Overview)" if lod == 2 else "LOD 1 (Standard Science)"),
+        "lod_label": "LOD 0 (Hero Deep 1024px Full-Res)" if lod == 0 else ("LOD 2 (Wide Overview 360px)" if lod == 2 else "LOD 1 (Standard Science 720px HD)"),
         "coordinates": {
             "ra_deg": ra,
             "dec_deg": dec,
