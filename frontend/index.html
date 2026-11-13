@@ -959,14 +959,50 @@
     }
 
     // =========================================================================
-    // SPATIAL TILE CACHE & VIEWPORT FOCUS NEAR-IMAGE STREAMER
+    // SPATIAL TILE CACHE & HIGH-PERFORMANCE NEAR-IMAGE STREAMER (CRASH-PROOF)
     // =========================================================================
     const spatialTileMap = new Map();
     const activeNearFetches = new Set();
+    const MAX_CONCURRENT_TILE_FETCHES = 3;
+    const MAX_CACHED_TILES = 16;
+    let inFlightTileFetches = 0;
+    const tileFetchQueue = [];
+    let tileAbortController = new AbortController();
     let nearTileStreamTimer = null;
 
     function getTileKey(col, row, lod) {
-      return `tile_${lod}_${col}_${row}`;
+      return `tile_${currentTargetKey || 'coord'}_${lod}_${col}_${row}`;
+    }
+
+    function cancelPendingTileFetches() {
+      if (tileAbortController) tileAbortController.abort();
+      tileAbortController = new AbortController();
+      tileFetchQueue.length = 0;
+      activeNearFetches.clear();
+      inFlightTileFetches = 0;
+    }
+
+    function pruneSpatialTileMap() {
+      if (spatialTileMap.size <= MAX_CACHED_TILES) return;
+
+      const entries = Array.from(spatialTileMap.entries());
+      entries.sort((a, b) => {
+        if (a[1].col === 0 && a[1].row === 0) return -1;
+        if (b[1].col === 0 && b[1].row === 0) return 1;
+        const distA = Math.hypot(a[1].col, a[1].row);
+        const distB = Math.hypot(b[1].col, b[1].row);
+        return distA - distB;
+      });
+
+      while (entries.length > MAX_CACHED_TILES) {
+        const [keyToRemove, tile] = entries.pop();
+        if (tile) {
+          if (tile.img1) tile.img1.src = '';
+          if (tile.img2) tile.img2.src = '';
+          if (tile.imgDiff) tile.imgDiff.src = '';
+        }
+        spatialTileMap.delete(keyToRemove);
+      }
     }
 
     function registerTile(col, row, lod, fov, ra, dec, img1, img2, imgDiff) {
@@ -974,28 +1010,17 @@
       spatialTileMap.set(key, {
         col, row, lod, fov, ra, dec,
         img1, img2, imgDiff,
+        targetKey: currentTargetKey,
         timestamp: Date.now()
       });
-      // Limit cache size to 36 tiles to manage GPU texture memory
-      if (spatialTileMap.size > 36) {
-        let oldestKey = null;
-        let oldestTime = Infinity;
-        for (const [k, v] of spatialTileMap.entries()) {
-          if (v.col === 0 && v.row === 0) continue; // Keep primary anchor
-          if (v.timestamp < oldestTime) {
-            oldestTime = v.timestamp;
-            oldestKey = k;
-          }
-        }
-        if (oldestKey) spatialTileMap.delete(oldestKey);
-      }
+      pruneSpatialTileMap();
     }
 
     function checkAndTriggerNearTileStreaming() {
       if (nearTileStreamTimer) clearTimeout(nearTileStreamTimer);
       nearTileStreamTimer = setTimeout(() => {
         streamVisibleNearTiles();
-      }, 120);
+      }, 150);
     }
 
     async function streamVisibleNearTiles() {
@@ -1017,11 +1042,11 @@
       const minY = -halfVisH - camera.panY;
       const maxY = halfVisH - camera.panY;
 
-      // Determine required grid range to envelope the entire visible screen + 1 buffer ring
-      const colMin = Math.max(-3, Math.floor((minX - tilePx / 2) / tilePx));
-      const colMax = Math.min(3, Math.ceil((maxX + tilePx / 2) / tilePx));
-      const rowMin = Math.max(-3, Math.floor((-maxY - tilePx / 2) / tilePx));
-      const rowMax = Math.min(3, Math.ceil((-minY + tilePx / 2) / tilePx));
+      // Bounded grid range (max 2-ring buffer around visible view)
+      const colMin = Math.max(-2, Math.floor((minX - tilePx / 2) / tilePx));
+      const colMax = Math.min(2, Math.ceil((maxX + tilePx / 2) / tilePx));
+      const rowMin = Math.max(-2, Math.floor((-maxY - tilePx / 2) / tilePx));
+      const rowMax = Math.min(2, Math.ceil((-minY + tilePx / 2) / tilePx));
 
       const mosaicEl = document.getElementById('vpMosaicBadge');
       if (mosaicEl) {
@@ -1030,32 +1055,67 @@
       }
 
       const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+      const targetSnapshotKey = currentTargetKey;
 
+      const newCandidates = [];
       for (let c = colMin; c <= colMax; c++) {
         for (let r = rowMin; r <= rowMax; r++) {
           const key = getTileKey(c, r, currentLOD);
           if (spatialTileMap.has(key) || activeNearFetches.has(key)) continue;
 
-          // Calculate celestial coordinates for this near tile
           const tileRA = camera.ra - (c * tileFov / (60.0 * cosDec));
           const tileDec = camera.dec + (r * tileFov / 60.0);
+          const dist = Math.hypot(c, r);
 
-          fetchSingleNearTile(c, r, currentLOD, tileFov, tileRA, tileDec);
+          newCandidates.push({
+            col: c, row: r, lod: currentLOD, fov: tileFov,
+            tileRA, tileDec, dist,
+            targetKey: targetSnapshotKey
+          });
         }
+      }
+
+      // Prioritize closest tiles to center first
+      newCandidates.sort((a, b) => a.dist - b.dist);
+
+      for (const item of newCandidates) {
+        const key = getTileKey(item.col, item.row, item.lod);
+        if (!activeNearFetches.has(key) && !tileFetchQueue.some(q => getTileKey(q.col, q.row, q.lod) === key)) {
+          tileFetchQueue.push(item);
+        }
+      }
+
+      processTileFetchQueue();
+    }
+
+    function processTileFetchQueue() {
+      while (inFlightTileFetches < MAX_CONCURRENT_TILE_FETCHES && tileFetchQueue.length > 0) {
+        const item = tileFetchQueue.shift();
+        const key = getTileKey(item.col, item.row, item.lod);
+        if (spatialTileMap.has(key) || item.targetKey !== currentTargetKey) continue;
+
+        inFlightTileFetches++;
+        activeNearFetches.add(key);
+
+        executeSingleTileFetch(item, tileAbortController.signal).finally(() => {
+          inFlightTileFetches--;
+          activeNearFetches.delete(key);
+          processTileFetchQueue();
+        });
       }
     }
 
-    async function fetchSingleNearTile(col, row, lod, fov, tileRA, tileDec) {
-      const key = getTileKey(col, row, lod);
-      activeNearFetches.add(key);
-
+    async function executeSingleTileFetch(item, signal) {
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(tileRA)}&dec=${encodeURIComponent(tileDec)}&fov=${fov}&lod=${lod}`;
-        if (currentTargetKey) url += `&target=${currentTargetKey}`;
+        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(item.tileRA)}&dec=${encodeURIComponent(item.tileDec)}&fov=${item.fov}&lod=${item.lod}`;
+        if (item.targetKey) url += `&target=${item.targetKey}`;
 
-        const res = await fetch(url);
+        const res = await fetch(url, { signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
+
+        // Discard if target changed during flight
+        if (currentTargetKey !== item.targetKey) return;
 
         const [img1, img2, imgDiff] = await Promise.all([
           preloadImage(data.epochs[0].image_data),
@@ -1063,19 +1123,17 @@
           preloadImage(data.difference_image.image_data)
         ]);
 
-        if (img1 && img2) {
-          const actFov = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : fov;
+        if (img1 && img2 && currentTargetKey === item.targetKey) {
+          const actFov = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : item.fov;
           img1.fov = actFov;
           img2.fov = actFov;
           if (imgDiff) imgDiff.fov = actFov;
 
-          registerTile(col, row, lod, actFov, tileRA, tileDec, img1, img2, imgDiff);
+          registerTile(item.col, item.row, item.lod, actFov, item.tileRA, item.tileDec, img1, img2, imgDiff);
           drawFrame();
         }
       } catch (err) {
-        // Silently tolerate edge survey boundaries
-      } finally {
-        activeNearFetches.delete(key);
+        // Silently tolerate aborts & edge boundaries
       }
     }
 
@@ -1085,6 +1143,7 @@
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
+      if (!w || !h) return;
 
       // Deep space background
       ctx.fillStyle = '#06080e';
@@ -1099,7 +1158,15 @@
       const basePx = Math.min(w, h) * 0.90;
       const pixelsPerArcmin = basePx / 3.0;
 
-      // Render all spatial near tiles covering the viewport
+      // Visible frustum bounds in world coordinates for high-performance culling
+      const halfVisW = (w / (2 * camera.zoom));
+      const halfVisH = (h / (2 * camera.zoom));
+      const viewLeft = -halfVisW - camera.panX;
+      const viewRight = halfVisW - camera.panX;
+      const viewTop = -halfVisH - camera.panY;
+      const viewBottom = halfVisH - camera.panY;
+
+      // Render spatial near tiles covering the viewport with frustum culling
       if (spatialTileMap.size > 0) {
         for (const [key, tile] of spatialTileMap.entries()) {
           const fov = tile.fov || 3.0;
@@ -1109,9 +1176,36 @@
           const cx = tile.col * tilePx;
           const cy = -tile.row * tilePx;
 
-          const activeImg = diffMode ? tile.imgDiff : (currentFrame === 1 ? tile.img1 : tile.img2);
-          if (activeImg && activeImg.complete) {
-            ctx.drawImage(activeImg, cx - rw / 2, cy - rh / 2, rw, rh);
+          // Frustum Culling: Skip off-screen tiles to preserve 60 FPS
+          if (cx + rw / 2 < viewLeft || cx - rw / 2 > viewRight ||
+              cy + rh / 2 < viewTop || cy - rh / 2 > viewBottom) {
+            continue;
+          }
+
+          // Handle smooth LOD cross-fade on anchor tile (0, 0)
+          if (tile.col === 0 && tile.row === 0 && crossFadeAlpha < 1.0 && prevEpoch1Img) {
+            const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
+            if (prevImg && prevImg.complete) {
+              ctx.save();
+              ctx.globalAlpha = 1.0 - crossFadeAlpha;
+              const pFov = prevImg.fov || fov;
+              const prw = pFov * pixelsPerArcmin;
+              const prh = pFov * pixelsPerArcmin;
+              ctx.drawImage(prevImg, cx - prw / 2, cy - prh / 2, prw, prh);
+              ctx.restore();
+            }
+            ctx.save();
+            ctx.globalAlpha = crossFadeAlpha;
+            const activeImg = diffMode ? tile.imgDiff : (currentFrame === 1 ? tile.img1 : tile.img2);
+            if (activeImg && activeImg.complete) {
+              ctx.drawImage(activeImg, cx - rw / 2, cy - rh / 2, rw, rh);
+            }
+            ctx.restore();
+          } else {
+            const activeImg = diffMode ? tile.imgDiff : (currentFrame === 1 ? tile.img1 : tile.img2);
+            if (activeImg && activeImg.complete) {
+              ctx.drawImage(activeImg, cx - rw / 2, cy - rh / 2, rw, rh);
+            }
           }
         }
       } else {
@@ -1235,6 +1329,9 @@
         if (crossFadeAlpha < 1.0) {
           crossFadeAnimId = requestAnimationFrame(stepFade);
         } else {
+          if (prevEpoch1Img) prevEpoch1Img.src = '';
+          if (prevEpoch2Img) prevEpoch2Img.src = '';
+          if (prevDiffImg) prevDiffImg.src = '';
           prevEpoch1Img = null;
           prevEpoch2Img = null;
           prevDiffImg = null;
@@ -1600,6 +1697,7 @@
     });
 
     function selectTarget(key) {
+      cancelPendingTileFetches();
       spatialTileMap.clear();
       activeNearFetches.clear();
       currentTargetKey = key;
@@ -1635,6 +1733,7 @@
     }
 
     function slewToTypedCoordinates() {
+      cancelPendingTileFetches();
       spatialTileMap.clear();
       activeNearFetches.clear();
       const raInput = document.getElementById('inputRA').value.trim();

@@ -305,42 +305,46 @@ def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1, center_ra: 
         else:
             dx_pix, dy_pix = 0, 0
 
-        # Pad with reflection to allow arbitrary offset crops beyond borders without black voids
-        pad_size = 200
-        d1_padded = np.pad(d1, pad_width=pad_size, mode='reflect')
-        d2_padded = np.pad(d2, pad_width=pad_size, mode='reflect')
-
-        cy = d1.shape[0] // 2 + pad_size + dy_pix
-        cx = d1.shape[1] // 2 + pad_size + dx_pix
-
         # Determine FOV and Crop Box based on Multi-Tier Game LOD:
         if lod == 2:
             # LOD 2: Full 8.0 arcminute Wide Overview, resampled to 360x360 (~360p) for high FPS
             dim = 360
             half = 140
-            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
-            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 8.0
         elif lod == 0:
             # LOD 0: Hero Deep Core (central 1.5 arcmin = 90 arcsec = ~56x56 px unbinned crop)
             dim = 1024
             half = 28
-            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
-            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 1.5
         else:
             # LOD 1: Standard Science (central 3.0 arcmin = 180 arcsec = ~112x112 px crop)
             dim = 720
             half = 56
-            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
-            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 3.0
 
-        # Resample to LOD display matrix
-        if c1.shape != (dim, dim):
-            c1 = zoom(c1, (float(dim) / c1.shape[0], float(dim) / c1.shape[1]), order=1 if lod != 0 else 2)
-        if c2.shape != (dim, dim):
-            c2 = zoom(c2, (float(dim) / c2.shape[0], float(dim) / c2.shape[1]), order=1 if lod != 0 else 2)
+        # Dynamically compute safe reflection padding so crops never exceed array bounds regardless of pan offset
+        required_pad = max(400, abs(dx_pix) + half + 50, abs(dy_pix) + half + 50)
+        d1_padded = np.pad(d1, pad_width=required_pad, mode='reflect')
+        d2_padded = np.pad(d2, pad_width=required_pad, mode='reflect')
+
+        cy = d1.shape[0] // 2 + required_pad + dy_pix
+        cx = d1.shape[1] // 2 + required_pad + dx_pix
+
+        # Safe bound-checked cropping
+        y1, y2 = max(0, cy - half), min(d1_padded.shape[0], cy + half)
+        x1, x2 = max(0, cx - half), min(d1_padded.shape[1], cx + half)
+        c1 = d1_padded[y1:y2, x1:x2]
+        c2 = d2_padded[y1:y2, x1:x2]
+
+        # Resample to LOD display matrix safely (prevent zero-division crashes)
+        if c1.shape[0] == 0 or c1.shape[1] == 0:
+            c1 = np.zeros((dim, dim), dtype=float)
+            c2 = np.zeros((dim, dim), dtype=float)
+        else:
+            if c1.shape != (dim, dim):
+                c1 = zoom(c1, (float(dim) / c1.shape[0], float(dim) / c1.shape[1]), order=1 if lod != 0 else 2)
+            if c2.shape != (dim, dim):
+                c2 = zoom(c2, (float(dim) / c2.shape[0], float(dim) / c2.shape[1]), order=1 if lod != 0 else 2)
 
         # Astropy ZScale & AsinhStretch for authentic photographic contrast
         z1 = ZScaleInterval(contrast=0.25)
@@ -437,7 +441,7 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
             print(f"NASA IRSA live fetch fallback for RA {ra}, Dec {dec}: {err}")
             return None
 
-    if d1 is None or d2 is None:
+    if d1 is None or d2 is None or d1.size == 0 or d2.size == 0:
         return None
 
     # Dynamic Game LOD Target Dimension

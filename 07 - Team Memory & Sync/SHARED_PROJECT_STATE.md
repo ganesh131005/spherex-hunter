@@ -26,6 +26,7 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[TASK-002 Complete by @coolodu]** Resolved viewport crash and stabilized multi-tile LOD camera streaming: implemented 3-worker concurrency queue, 16-tile distance-based texture eviction, frustum culling, backend dynamic reflection padding, and smooth LOD cross-fade verified at 60 FPS in browser with zero console errors.
 - **[URGENT Task Forwarded to @coolodu: TASK-002]** Forwarded viewport crash fix, optical camera LOD streaming, and seamless near-tile multi-canvas optimization to `coolodu` to leverage their high laptop specifications and Paid Pro Gemini token allocation.
 - **[Frontend UI & Controls Polish Complete]** Added complete keyboard shortcuts suite (`Space`, `←/→`, `Home/End`, `B`, `D`, `S`, `A`, `G/I/T`, `R`, `M`, `P/F8`, `F`, `1-5`, `?`), dark Blender-style Shortcuts Cheat Sheet modal, high-res PNG canvas snapshot exporter with telemetry stamp, quick FPS preset buttons (1x, 2x, 4x), and sensory audio feedback for frame ticks and snapshot shutters.
 - **[Teammate Task Sharing & Forwarding System Live]** Deployed Git-based task delegation system:

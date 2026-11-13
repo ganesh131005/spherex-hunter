@@ -3,11 +3,17 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed UI & Controls Polish: Keyboard shortcuts system, shortcuts cheat sheet modal, high-res canvas snapshot exporter, quick FPS presets, and audio tactile feedback.
+- **Current Task:** Completed TASK-002: Fixed viewport crash and optimized near-tile LOD camera streaming.
 - **Next Task:** Citizen science modal enhancements or multi-wavelength spectral features.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[TASK-002 Complete]** Fixed viewport crash & optimized near-tile LOD streaming:
+  - Added bounded 3-worker concurrency queue (`tileFetchQueue`) with prioritized center-out ordering and AbortController cancellation on camera target/slew shifts.
+  - Implemented distance-based texture pruning limiting in-memory cache to 16 visible tiles, releasing decoded bitmap image buffers to prevent browser OOM tab crashes.
+  - Added frustum culling to `drawFrame()`, rendering only tiles intersecting the active camera viewport bounds for locked 60 FPS performance.
+  - Fixed backend reflection padding bug in `cutout_engine.py` preventing zero-division errors when panning far beyond benchmark boundaries.
+  - Verified live in browser: continuous smooth panning, LOD zoom tiers (LOD 2 360p $\to$ LOD 1 720p $\to$ LOD 0 1024p), and seamless difference imaging without visual seams or tab crashes.
 - [x] Implemented complete Telescope Keyboard Shortcuts suite (`Space`, `←/→`, `Home/End`, `B`, `D`, `S`, `A`, `G/I/T`, `R`, `M`, `P/F8`, `F`, `1-5`, `?`).
 - [x] Created Blender-style Keyboard Shortcuts Cheat Sheet modal (`#shortcutsModal`) with grouped categorical key badges.
 - [x] Added High-Resolution Telescope Canvas Snapshot Exporter (`captureSnapshot`) with NASA Space Apps astronomical telemetry stamp and instant PNG download.
