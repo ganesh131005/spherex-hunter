@@ -104,7 +104,9 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
     gaia = query_gaia_dr3(ra, dec, radius_arcmin=max(2.0, min(6.0, fov_arcmin)), row_limit=200)
     for src in gaia.get("sources", []):
         d = _point_to_track_distance_arcsec(ra, dec, src)
-        if d <= GAIA_MATCH_RADIUS_ARCSEC and (gaia_match is None or d < gaia_match["track_distance_arcsec"]):
+        pm_src = src.get("total_pm_mas_yr") or 0.0
+        allowed_r = GAIA_MATCH_RADIUS_ARCSEC if pm_src >= 100.0 else 2.5
+        if d <= allowed_r and (gaia_match is None or d < gaia_match["track_distance_arcsec"]):
             gaia_match = dict(src, track_distance_arcsec=round(d, 2))
     if gaia_match:
         pm = gaia_match.get("total_pm_mas_yr") or 0.0
