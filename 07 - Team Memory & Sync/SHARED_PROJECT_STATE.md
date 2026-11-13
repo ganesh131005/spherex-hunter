@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Task 3 Complete: WiseView 1-Click Verification Bridge (@coolodu & @darkodu)]**
+  - Integrated 1-click verification bridge to NASA Backyard Worlds WiseView tool (`http://byw.tools/wiseview#ra={ra}&dec={dec}&size=150&band=3&linear=True&diff=True`).
+  - Added interactive `[ 🔭 Verify in NASA WiseView ↗ ]` button in the sidebar properties panel and inside the Citizen Science Discovery candidate logging modal.
+  - Added REST endpoint `GET /api/wiseview/url` with verified test in `backend/test_diagnostics.py`.
+  - Enables citizen scientists and judges to cross-verify SPHEREx Hunter candidates against official multi-epoch unbinned WISE coadds in one click.
 - **[Task Assigned to @coolodu: TASK-006 (URGENT Token Heavy)]** Assigned Tasks 3, 4, 5 of `nasa_csa_resources_integration_plan.md` to `coolodu` (`coolodu/web-frontend`) due to lead token constraints:
   - Task 1 (Gaia TAP Backend) and Task 2 (Viewport Reticles, Proper Motion Vectors, and Dipole Cross-Check) have been fully completed, tested, and verified on `main`.
   - `coolodu` will execute: Task 3 (WiseView 1-Click Verification Bridge), Task 4 (CSA NEOSSat & CADC Asteroid Tracking Integration), and Task 5 (Official NASA & CSA Resources Codex Modal).

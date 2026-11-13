@@ -166,7 +166,10 @@ def get_cutout(
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
-        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target, lod=lod, force_refresh=force_refresh)
+        fov_val = float(fov) if isinstance(fov, (int, float, str)) else 3.0
+        lod_val = int(lod) if isinstance(lod, (int, str)) else 1
+        is_refresh = bool(force_refresh) if isinstance(force_refresh, bool) else False
+        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target, lod=lod_val, force_refresh=is_refresh)
         return data
     except HTTPException:
         raise
@@ -220,8 +223,42 @@ def get_gaia_catalog(
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
-        catalog_data = query_gaia_dr3(ra=ra_deg, dec=dec_deg, radius_arcmin=radius, limit=limit)
+        catalog_data = query_gaia_dr3(ra=ra_deg, dec=dec_deg, radius_arcmin=radius, row_limit=limit)
+        catalog_data["total_sources"] = catalog_data.get("matched_count", len(catalog_data.get("sources", [])))
+        for s in catalog_data.get("sources", []):
+            if "phot_g_mag" in s and "g_mag" not in s:
+                s["g_mag"] = s["phot_g_mag"]
+            if "pm_ra_mas_yr" in s and "pmra_mas_yr" not in s:
+                s["pmra_mas_yr"] = s["pm_ra_mas_yr"]
+            if "pm_dec_mas_yr" in s and "pmdec_mas_yr" not in s:
+                s["pmdec_mas_yr"] = s["pm_dec_mas_yr"]
         return catalog_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/wiseview/url")
+def get_wiseview_url(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    size: int = Query(150, description="Cutout box size in pixels (default: 150)")
+):
+    """
+    Task 3: WiseView 1-Click Verification Bridge.
+    Generates verified deep-link URL to NASA Backyard Worlds WiseView tool
+    (http://byw.tools/wiseview) for multi-epoch WISE coadd verification.
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        wiseview_url = f"http://byw.tools/wiseview#ra={ra_deg:.5f}&dec={dec_deg:.5f}&size={size}&band=3&linear=True&diff=True"
+        return {
+            "status": "success",
+            "ra_deg": ra_deg,
+            "dec_deg": dec_deg,
+            "wiseview_url": wiseview_url,
+            "description": "NASA Backyard Worlds: Planet 9 unbinned multi-epoch WISE coadd viewer"
+        }
     except HTTPException:
         raise
     except Exception as e:

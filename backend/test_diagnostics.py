@@ -28,6 +28,7 @@ from backend.main import (
     get_benchmark_targets,
     get_cutout,
     get_spectrum,
+    get_wiseview_url,
     get_gaia_catalog,
     get_2mass_catalog,
     get_simbad_metadata,
@@ -176,6 +177,12 @@ def test_fastapi_endpoints():
     spec = get_spectrum(ra="133.79513", dec="-7.24515", target="wise0855")
     assert len(spec["wavelengths_microns"]) == 102
     print(f"  [PASS] get_spectrum()            -> Target: WISE 0855, Channels: {len(spec['wavelengths_microns'])} (0.75 - 5.0 μm)")
+
+    # 5b. Task 3: WiseView 1-Click Verification Bridge
+    wv_res = get_wiseview_url(ra="133.79513", dec="-7.24515")
+    assert wv_res["status"] == "success"
+    assert "byw.tools/wiseview" in wv_res["wiseview_url"]
+    print(f"  [PASS] get_wiseview_url()        -> WiseView Bridge: {wv_res['wiseview_url'][:55]}...")
 
     # 6. Citizen science discovery logger
     test_cand = DiscoveryCandidate(

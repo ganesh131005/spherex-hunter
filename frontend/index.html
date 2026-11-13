@@ -388,6 +388,16 @@
             <span class="text-gray-400">Temperature:</span>
             <span id="propTemp" class="text-cyan-300">~250 K</span>
           </div>
+
+          <!-- TASK 3: WiseView 1-Click Verification Bridge -->
+          <div class="pt-1.5">
+            <a id="btnWiseView" href="http://byw.tools/wiseview#ra=133.79513&dec=-7.24515&size=150&band=3&linear=True&diff=True" target="_blank" rel="noopener noreferrer"
+               class="w-full py-1.5 px-2 rounded bg-blender-800 hover:bg-blender-750 border border-blender-700 hover:border-blender-orange text-amber-300 hover:text-amber-200 text-[10px] font-mono font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm"
+               title="Open celestial coordinates directly in NASA Backyard Worlds WiseView unbinned flipbook">
+              <i data-lucide="external-link" class="w-3 h-3 text-blender-orange"></i>
+              <span>Verify in NASA WiseView ↗</span>
+            </a>
+          </div>
         </div>
       </div>
 
@@ -579,6 +589,12 @@
             <option value="variable_star">Variable Flux Pulsation (RW Aur / Mira)</option>
             <option value="fast_transient">Fast Transient / Asteroid</option>
           </select>
+        </div>
+        <div class="pt-1">
+          <a id="modalWiseViewLink" href="#" target="_blank" rel="noopener noreferrer" class="text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 text-[10px] bg-blender-950/80 p-1.5 rounded border border-blender-700/60">
+            <i data-lucide="external-link" class="w-3 h-3 text-blender-orange"></i>
+            <span>Cross-verify candidate coordinates on NASA WiseView flipbook ↗</span>
+          </a>
         </div>
       </div>
 
@@ -1094,6 +1110,11 @@
       if (document.activeElement !== inputRA) inputRA.value = coords.ra.toFixed(5);
       if (document.activeElement !== inputDec) inputDec.value = coords.dec.toFixed(5);
 
+      const btnWiseView = document.getElementById('btnWiseView');
+      if (btnWiseView) {
+        btnWiseView.href = `http://byw.tools/wiseview#ra=${coords.ra.toFixed(5)}&dec=${coords.dec.toFixed(5)}&size=150&band=3&linear=True&diff=True`;
+      }
+
       checkAndTriggerLODUpdate();
       checkAndTriggerSlewToNewField();
     }
@@ -1540,6 +1561,11 @@
       document.getElementById('inputRA').value = t.raDeg.toFixed(5);
       document.getElementById('inputDec').value = t.decDeg.toFixed(5);
 
+      const btnWiseView = document.getElementById('btnWiseView');
+      if (btnWiseView) {
+        btnWiseView.href = `http://byw.tools/wiseview#ra=${t.raDeg.toFixed(5)}&dec=${t.decDeg.toFixed(5)}&size=150&band=3&linear=True&diff=True`;
+      }
+
       document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-btn-active'));
       const activeBtn = document.querySelector(`[data-target="${key}"]`);
       if (activeBtn) activeBtn.classList.add('blender-btn-active');
@@ -1919,6 +1945,10 @@
       document.getElementById('candRAInput').value = coords.ra.toFixed(5);
       document.getElementById('candDecInput').value = coords.dec.toFixed(5);
       document.getElementById('candNameInput').value = `${document.getElementById('vpTargetName').innerText} Candidate`;
+      const modalWiseViewLink = document.getElementById('modalWiseViewLink');
+      if (modalWiseViewLink) {
+        modalWiseViewLink.href = `http://byw.tools/wiseview#ra=${coords.ra.toFixed(5)}&dec=${coords.dec.toFixed(5)}&size=150&band=3&linear=True&diff=True`;
+      }
       flagModal.classList.remove('hidden');
     });
 

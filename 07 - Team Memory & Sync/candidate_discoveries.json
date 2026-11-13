@@ -1,5 +1,62 @@
 [
   {
+    "candidate_id": "SPX-2026-39169C",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:46:30.744766+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-EF0AA7",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:45:54.903930+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-4AD466",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:45:39.970919+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
     "candidate_id": "SPX-2026-D8116B",
     "target_name": "WISE 0855 Test Flag",
     "ra": 133.79513,
