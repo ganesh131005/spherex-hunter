@@ -204,6 +204,12 @@
         <span class="hidden sm:inline">Discoveries</span>
       </button>
 
+      <!-- Official NASA & CSA Resources Codex Button (Task 5) -->
+      <button id="btnHeaderCodex" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-cyan-300 hover:text-white transition-all shadow-sm" title="Official NASA & CSA Resources Codex [O]">
+        <i data-lucide="library" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span class="hidden sm:inline">Codex</span>
+      </button>
+
       <!-- Keyboard Shortcuts Help Button -->
       <button id="btnHeaderShortcuts" class="w-7 h-7 flex items-center justify-center rounded-md blender-btn text-gray-300 hover:text-white transition-all shadow-sm" title="Keyboard Shortcuts Cheat Sheet [?]">
         <i data-lucide="help-circle" class="w-3.5 h-3.5 text-blender-orange"></i>
@@ -607,6 +613,32 @@
           </a>
         </div>
 
+        <div class="space-y-1 pt-1 border-t border-blender-700/60 font-mono text-[9px]">
+          <button id="btnOpenWiseViewBridge" class="w-full py-1 px-2 rounded bg-amber-950/60 hover:bg-amber-900/80 border border-amber-600/60 text-amber-200 hover:text-white flex items-center justify-between transition-all shadow-sm">
+            <span class="flex items-center gap-1.5 font-bold">
+              <i data-lucide="shield-check" class="w-3 h-3 text-amber-400"></i>
+              <span>WiseView Verification Bridge</span>
+            </span>
+            <span class="text-[8px] text-amber-300">Vet ↗</span>
+          </button>
+
+          <button id="btnOpenNeossatModal" class="w-full py-1 px-2 rounded bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-600/60 text-emerald-200 hover:text-white flex items-center justify-between transition-all shadow-sm">
+            <span class="flex items-center gap-1.5 font-bold">
+              <i data-lucide="satellite" class="w-3 h-3 text-emerald-400"></i>
+              <span>CSA NEOSSat & Asteroid Check</span>
+            </span>
+            <span class="text-[8px] text-emerald-300">Live ↗</span>
+          </button>
+
+          <button id="btnOpenCodexModal" class="w-full py-1 px-2 rounded bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-600/60 text-cyan-200 hover:text-white flex items-center justify-between transition-all shadow-sm">
+            <span class="flex items-center gap-1.5 font-bold">
+              <i data-lucide="library" class="w-3 h-3 text-cyan-400"></i>
+              <span>NASA & CSA Resources Codex</span>
+            </span>
+            <span class="text-[8px] text-cyan-300">[O]</span>
+          </button>
+        </div>
+
         <div class="flex items-center justify-between text-[9px] text-gray-400 pt-0.5">
           <a href="https://caltech-ipac.github.io/irsa-tutorials/spherex/" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-1">
             <i data-lucide="book-open" class="w-2.5 h-2.5"></i>
@@ -929,6 +961,135 @@
           <span>Export CSV Report</span>
         </button>
         <button id="closeDiscoveriesModalFooterBtn" class="px-3 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white text-[10px]">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 8. TASK 3: WISEVIEW 1-CLICK VERIFICATION BRIDGE MODAL                     -->
+  <!-- ========================================================================= -->
+  <div id="wiseviewBridgeModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-xl w-full p-5 shadow-2xl space-y-3 font-mono text-xs text-gray-200">
+      <div class="flex items-center justify-between border-b border-blender-700 pb-2.5">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+          <span>Backyard Worlds WiseView 1-Click Verification Bridge</span>
+        </div>
+        <button id="closeWiseViewBridgeBtn" class="text-gray-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <div id="wiseviewVerdictBanner" class="p-2.5 rounded border border-blender-700 bg-blender-950 flex items-center justify-between">
+        <div>
+          <div id="wiseviewVerdictTitle" class="text-amber-300 font-bold text-xs">Running Multi-Archive Candidate Vetting...</div>
+          <div id="wiseviewVerdictDesc" class="text-[10px] text-gray-400 mt-0.5">Cross-matching Alard-Lupton dipole, Gaia DR3 proper-motion tracks & IMCCE SkyBoT asteroids...</div>
+        </div>
+        <span id="wiseviewScoreBadge" class="px-2 py-1 rounded bg-blender-800 text-cyan-300 font-bold text-[10px]">--</span>
+      </div>
+
+      <div id="wiseviewChecklistBody" class="space-y-1.5 max-h-60 overflow-y-auto pr-1">
+        <div class="p-3 text-center text-gray-400 text-[11px]">Querying live astronomical archives...</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-2 border-t border-blender-700/60">
+        <a id="btnLaunchWiseViewStandard" href="http://byw.tools/wiseview" target="_blank" rel="noopener noreferrer" class="py-2 px-3 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] flex items-center justify-center gap-1.5 shadow transition-all">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          <span>1-Click WiseView (W1+W2 Blink)</span>
+        </a>
+        <a id="btnLaunchWiseViewDiff" href="http://byw.tools/wiseview" target="_blank" rel="noopener noreferrer" class="py-2 px-3 rounded bg-blender-800 hover:bg-blender-700 border border-amber-500/60 text-amber-300 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all">
+          <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+          <span>WiseView Difference Mode (diff=1)</span>
+        </a>
+      </div>
+
+      <div class="pt-1 flex items-center justify-between text-[10px] text-gray-400">
+        <span>Synced to current telescope coordinates</span>
+        <button id="closeWiseViewBridgeFooterBtn" class="px-3 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white text-[10px]">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 9. TASK 4: CSA NEOSSAT & CADC ASTEROID TRACKING MODAL                     -->
+  <!-- ========================================================================= -->
+  <div id="neossatModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-2xl w-full p-5 shadow-2xl space-y-3 font-mono text-xs text-gray-200">
+      <div class="flex items-center justify-between border-b border-blender-700 pb-2.5">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="satellite" class="w-4 h-4 text-emerald-400"></i>
+          <span>CSA NEOSSat & CADC Solar System Asteroid Tracker</span>
+        </div>
+        <button id="closeNeossatModalBtn" class="text-gray-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <div id="neossatVerdictBanner" class="p-2.5 rounded border border-emerald-700/60 bg-emerald-950/30 flex items-center justify-between">
+        <div>
+          <div id="neossatVerdictTitle" class="text-emerald-300 font-bold text-xs">Querying IMCCE SkyBoT & CADC CAOM-2 TAP (`NEOSSAT`)...</div>
+          <div id="neossatVerdictDesc" class="text-[10px] text-gray-400 mt-0.5">Checking known asteroids/comets and Canadian Space Agency NEOSSat space telescope exposures...</div>
+        </div>
+        <button id="btnToggleStreakletsFromModal" class="px-2.5 py-1 rounded bg-purple-950 hover:bg-purple-900 border border-purple-600 text-purple-200 text-[10px] font-bold shrink-0">
+          Toggle LSD Streaklets [X]
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+        <!-- Left: Known Solar System Objects (IMCCE SkyBoT) -->
+        <div class="border border-blender-700 rounded bg-blender-950 p-2.5 space-y-1.5">
+          <div class="text-[10px] font-bold text-amber-300 flex items-center justify-between">
+            <span>IMCCE SkyBoT Known Asteroids in Cone</span>
+            <span id="skybotCountBadge" class="text-[9px] text-gray-400">--</span>
+          </div>
+          <div id="skybotObjectsList" class="space-y-1 text-[10px] text-gray-300">
+            <div class="text-gray-500 py-2">Loading ephemerides...</div>
+          </div>
+        </div>
+
+        <!-- Right: CADC CAOM-2 NEOSSat Archival Observations -->
+        <div class="border border-blender-700 rounded bg-blender-950 p-2.5 space-y-1.5">
+          <div class="text-[10px] font-bold text-emerald-300 flex items-center justify-between">
+            <span>CADC `NEOSSAT` Science Exposures</span>
+            <span id="cadcCountBadge" class="text-[9px] text-gray-400">--</span>
+          </div>
+          <div id="cadcObservationsList" class="space-y-1 text-[10px] text-gray-300">
+            <div class="text-gray-500 py-2">Querying CADC Argus TAP...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-blender-700/60 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-[10px]">
+          <a id="linkCadcNeossatSearch" href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/search/?Observation.collection=NEOSSAT" target="_blank" class="px-2.5 py-1 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-emerald-300">CADC Search ↗</a>
+          <a href="https://data.asc-csa.gc.ca/dataset/neossat" target="_blank" class="px-2.5 py-1 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-cyan-300">CSA NEOSSat Dataset ↗</a>
+          <a href="https://github.com/asc-csa/NEOSSAT_Tutorial" target="_blank" class="px-2.5 py-1 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-purple-300">CSA GitHub Tutorial ↗</a>
+        </div>
+        <button id="closeNeossatModalFooterBtn" class="px-3 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white text-[10px]">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 10. TASK 5: OFFICIAL NASA & CSA RESOURCES CODEX MODAL [O]                 -->
+  <!-- ========================================================================= -->
+  <div id="codexModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-3xl w-full p-5 shadow-2xl space-y-3 font-mono text-xs text-gray-200">
+      <div class="flex items-center justify-between border-b border-blender-700 pb-2.5">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="library" class="w-4 h-4 text-cyan-400"></i>
+          <span>Official NASA, IPAC, MAST, WiseView & CSA NEOSSat Resources Codex</span>
+        </div>
+        <button id="closeCodexModalBtn" class="text-gray-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <p class="text-[10px] text-gray-400">
+        Interactive reference codex for all 7 official mission archives, tutorials, and programmatic TAP/CAOM-2 queries dynamically parameterized to <span id="codexCoordBadge" class="text-cyan-300 font-bold">RA 133.79513°, Dec -7.24515°</span>.
+      </p>
+
+      <div id="codexCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[60vh] overflow-y-auto pr-1">
+        <div class="p-4 text-center text-gray-400 col-span-2">Loading Official NASA & CSA Resources Codex...</div>
+      </div>
+
+      <div class="pt-2 border-t border-blender-700/60 flex items-center justify-between text-[10px] text-gray-400">
+        <span>Press <kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white">O</kbd> anytime to open this Codex</span>
+        <button id="closeCodexModalFooterBtn" class="px-3 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white text-[10px]">Close</button>
       </div>
     </div>
   </div>
@@ -2883,6 +3044,18 @@
           closeDiscoveriesModal();
           return;
         }
+        if (wiseviewBridgeModal && !wiseviewBridgeModal.classList.contains('hidden')) {
+          closeWiseViewBridgeModal();
+          return;
+        }
+        if (neossatModal && !neossatModal.classList.contains('hidden')) {
+          closeNeossatModal();
+          return;
+        }
+        if (codexModal && !codexModal.classList.contains('hidden')) {
+          closeCodexModal();
+          return;
+        }
         if (flagModal && !flagModal.classList.contains('hidden')) {
           closeCandidateModal();
           return;
@@ -3040,6 +3213,12 @@
         if (e.code === 'KeyC') {
           e.preventDefault();
           openDiscoveriesModal();
+          return;
+        }
+        // [O]: Open Official NASA & CSA Resources Codex
+        if (e.code === 'KeyO') {
+          e.preventDefault();
+          openCodexModal();
           return;
         }
         // [P] or [F8]: Capture Snapshot
@@ -3487,6 +3666,254 @@
     if (discoveriesModal) {
       discoveriesModal.addEventListener('click', (e) => {
         if (e.target === discoveriesModal) closeDiscoveriesModal();
+      });
+    }
+
+    // =========================================================================
+    // TASK 3: WISEVIEW 1-CLICK VERIFICATION BRIDGE CONTROLLER
+    // =========================================================================
+    const wiseviewBridgeModal = document.getElementById('wiseviewBridgeModal');
+    async function openWiseViewBridgeModal() {
+      if (!wiseviewBridgeModal) return;
+      wiseviewBridgeModal.classList.remove('hidden');
+      lucide.createIcons();
+
+      const coords = clickReticle || getCurrentCoordinates();
+      const titleEl = document.getElementById('wiseviewVerdictTitle');
+      const descEl = document.getElementById('wiseviewVerdictDesc');
+      const scoreEl = document.getElementById('wiseviewScoreBadge');
+      const bodyEl = document.getElementById('wiseviewChecklistBody');
+      const btnStd = document.getElementById('btnLaunchWiseViewStandard');
+      const btnDiff = document.getElementById('btnLaunchWiseViewDiff');
+
+      titleEl.innerText = `Vetting Coordinates (RA ${coords.ra.toFixed(5)}°, Dec ${coords.dec.toFixed(5)}°)...`;
+      descEl.innerText = "Running live 5-step Backyard Worlds cross-survey verification checklist...";
+      scoreEl.innerText = "Checking...";
+      bodyEl.innerHTML = `<div class="p-4 text-center text-gray-400"><span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-amber-400 border-t-transparent rounded-full mr-2 align-middle"></span>Querying Gaia DR3 TAP, IMCCE SkyBoT & Difference Map...</div>`;
+
+      const sizeArcsec = Math.max(30, Math.min(300, Math.round((camera.fov / camera.zoom) * 60.0)));
+      btnStd.href = `http://byw.tools/wiseview#ra=${coords.ra.toFixed(5)}&dec=${coords.dec.toFixed(5)}&size=${sizeArcsec}&band=3&speed=200&gaia=1&diff=0`;
+      btnDiff.href = `http://byw.tools/wiseview#ra=${coords.ra.toFixed(5)}&dec=${coords.dec.toFixed(5)}&size=${sizeArcsec}&band=3&speed=200&gaia=1&diff=1`;
+
+      try {
+        let url = `${BACKEND_URL}/verify_candidate?ra=${encodeURIComponent(coords.ra)}&dec=${encodeURIComponent(coords.dec)}&fov=${camera.fov}`;
+        if (currentTargetKey) url += `&target=${currentTargetKey}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        titleEl.innerText = `Verdict: ${data.verdict}`;
+        descEl.innerText = data.verdict_text || "";
+        scoreEl.innerText = data.score ? `${data.score.passed}/${data.score.scored} Passed` : "Verified";
+        if (data.links) {
+          if (data.links.wiseview) btnStd.href = data.links.wiseview;
+          if (data.links.wiseview_difference) btnDiff.href = data.links.wiseview_difference;
+        }
+
+        bodyEl.innerHTML = (data.checklist || []).map(item => {
+          const badgeColor = item.status === 'pass'
+            ? 'bg-emerald-950 text-emerald-300 border-emerald-700'
+            : (item.status === 'warn' ? 'bg-amber-950 text-amber-300 border-amber-700' : (item.status === 'fail' ? 'bg-red-950 text-red-300 border-red-700' : 'bg-cyan-950 text-cyan-300 border-cyan-700'));
+          return `
+            <div class="p-2 rounded bg-blender-950 border border-blender-700 flex items-start justify-between gap-2">
+              <div>
+                <div class="text-white font-semibold text-[11px]">${escapeHtml(item.label)}</div>
+                <div class="text-[10px] text-gray-400 mt-0.5">${escapeHtml(item.evidence)}</div>
+              </div>
+              <span class="px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase shrink-0 ${badgeColor}">${escapeHtml(item.status)}</span>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        titleEl.innerText = "WiseView Direct Bridge Ready";
+        descEl.innerText = `Verification notice: ${err.message}`;
+        bodyEl.innerHTML = `<div class="p-3 text-amber-300 text-[10px]">Click either button below to inspect unWISE W1/W2 time-series directly in Dan Caselden's WiseView.</div>`;
+      }
+    }
+
+    function closeWiseViewBridgeModal() {
+      if (wiseviewBridgeModal) wiseviewBridgeModal.classList.add('hidden');
+    }
+
+    const btnOpenWiseViewBridge = document.getElementById('btnOpenWiseViewBridge');
+    if (btnOpenWiseViewBridge) btnOpenWiseViewBridge.addEventListener('click', openWiseViewBridgeModal);
+    const closeWiseViewBridgeBtn = document.getElementById('closeWiseViewBridgeBtn');
+    if (closeWiseViewBridgeBtn) closeWiseViewBridgeBtn.addEventListener('click', closeWiseViewBridgeModal);
+    const closeWiseViewBridgeFooterBtn = document.getElementById('closeWiseViewBridgeFooterBtn');
+    if (closeWiseViewBridgeFooterBtn) closeWiseViewBridgeFooterBtn.addEventListener('click', closeWiseViewBridgeModal);
+    if (wiseviewBridgeModal) {
+      wiseviewBridgeModal.addEventListener('click', (e) => {
+        if (e.target === wiseviewBridgeModal) closeWiseViewBridgeModal();
+      });
+    }
+
+    // =========================================================================
+    // TASK 4: CSA NEOSSAT & CADC ASTEROID TRACKER CONTROLLER
+    // =========================================================================
+    const neossatModal = document.getElementById('neossatModal');
+    async function openNeossatModal() {
+      if (!neossatModal) return;
+      neossatModal.classList.remove('hidden');
+      lucide.createIcons();
+
+      const coords = clickReticle || getCurrentCoordinates();
+      const titleEl = document.getElementById('neossatVerdictTitle');
+      const descEl = document.getElementById('neossatVerdictDesc');
+      const ssoListEl = document.getElementById('skybotObjectsList');
+      const cadcListEl = document.getElementById('cadcObservationsList');
+      const ssoBadge = document.getElementById('skybotCountBadge');
+      const cadcBadge = document.getElementById('cadcCountBadge');
+
+      titleEl.innerText = `Querying IMCCE SkyBoT & CADC NEOSSat (RA ${coords.ra.toFixed(4)}°, Dec ${coords.dec.toFixed(4)}°)...`;
+      descEl.innerText = "Checking known Solar System asteroids/NEOs and Canadian Space Agency NEOSSat exposures...";
+      ssoListEl.innerHTML = `<div class="text-gray-400 py-2">Querying IMCCE SkyBoT cone search...</div>`;
+      cadcListEl.innerHTML = `<div class="text-gray-400 py-2">Querying CADC CAOM-2 Argus TAP...</div>`;
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/neossat?ra=${encodeURIComponent(coords.ra)}&dec=${encodeURIComponent(coords.dec)}&fov=${camera.fov}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        titleEl.innerText = `Asteroid Verdict: ${data.verdict}`;
+        descEl.innerText = data.verdict_text || "";
+
+        const sso = data.known_solar_system_objects || {};
+        const objs = sso.objects || [];
+        ssoBadge.innerText = `${objs.length} Objects`;
+        if (objs.length === 0) {
+          ssoListEl.innerHTML = `<div class="text-emerald-300 py-1">${escapeHtml(sso.message || '0 known asteroids within search cone (Confirmed Sidereal / Extrasolar).')}</div>`;
+        } else {
+          ssoListEl.innerHTML = objs.map(o => `
+            <div class="p-1.5 rounded bg-blender-900 border border-blender-800 flex items-center justify-between">
+              <div>
+                <span class="text-amber-300 font-bold">${escapeHtml(o.name)}</span>
+                <span class="text-gray-400 text-[9px] ml-1">(${escapeHtml(o.object_class || 'SSO')})</span>
+                <div class="text-[9px] text-gray-400">Offset: ${o.offset_arcsec}" | V=${o.v_mag} | μ=${o.rate_total_arcsec_hr}"/hr</div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        const cadc = data.neossat_archive || {};
+        const obs = cadc.observations || [];
+        cadcBadge.innerText = `${obs.length} Exposures`;
+        if (obs.length === 0) {
+          cadcListEl.innerHTML = `<div class="text-gray-400 py-1">${escapeHtml(cadc.message || 'No NEOSSat science footprint within 0.5° cone.')}</div>`;
+        } else {
+          cadcListEl.innerHTML = obs.slice(0, 8).map(o => `
+            <div class="p-1.5 rounded bg-blender-900 border border-blender-800 flex items-center justify-between">
+              <div>
+                <div class="text-emerald-300 font-bold">ObsID ${escapeHtml(o.observation_id)} (${escapeHtml(o.target_name || 'Field')})</div>
+                <div class="text-[9px] text-gray-400">${escapeHtml(o.start_utc || '')} | Exp: ${o.exposure_s || '?'}s</div>
+              </div>
+              ${o.datalink_url ? `<a href="${escapeHtml(o.datalink_url)}" target="_blank" class="text-[9px] text-cyan-300 hover:underline">FITS ↗</a>` : ''}
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        titleEl.innerText = "CSA NEOSSat & SkyBoT Status";
+        descEl.innerText = `Query notice: ${err.message}`;
+      }
+    }
+
+    function closeNeossatModal() {
+      if (neossatModal) neossatModal.classList.add('hidden');
+    }
+
+    const btnOpenNeossatModal = document.getElementById('btnOpenNeossatModal');
+    if (btnOpenNeossatModal) btnOpenNeossatModal.addEventListener('click', openNeossatModal);
+    const closeNeossatModalBtn = document.getElementById('closeNeossatModalBtn');
+    if (closeNeossatModalBtn) closeNeossatModalBtn.addEventListener('click', closeNeossatModal);
+    const closeNeossatModalFooterBtn = document.getElementById('closeNeossatModalFooterBtn');
+    if (closeNeossatModalFooterBtn) closeNeossatModalFooterBtn.addEventListener('click', closeNeossatModal);
+    const btnToggleStreakletsFromModal = document.getElementById('btnToggleStreakletsFromModal');
+    if (btnToggleStreakletsFromModal) {
+      btnToggleStreakletsFromModal.addEventListener('click', () => {
+        closeNeossatModal();
+        if (!isAutoScanEnabled) toggleAutoScan();
+      });
+    }
+    if (neossatModal) {
+      neossatModal.addEventListener('click', (e) => {
+        if (e.target === neossatModal) closeNeossatModal();
+      });
+    }
+
+    // =========================================================================
+    // TASK 5: OFFICIAL NASA & CSA RESOURCES CODEX MODAL CONTROLLER [O]
+    // =========================================================================
+    const codexModal = document.getElementById('codexModal');
+    let lastCodexPortals = [];
+    async function openCodexModal() {
+      if (!codexModal) return;
+      codexModal.classList.remove('hidden');
+      lucide.createIcons();
+
+      const coords = clickReticle || getCurrentCoordinates();
+      const coordBadge = document.getElementById('codexCoordBadge');
+      if (coordBadge) coordBadge.innerText = `RA ${coords.ra.toFixed(5)}°, Dec ${coords.dec.toFixed(5)}°`;
+      const container = document.getElementById('codexCardsContainer');
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/resources_codex?ra=${encodeURIComponent(coords.ra)}&dec=${encodeURIComponent(coords.dec)}&fov=${camera.fov}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        lastCodexPortals = data.portals || [];
+
+        container.innerHTML = lastCodexPortals.map((p, idx) => `
+          <div class="p-3 rounded bg-blender-950 border border-blender-700 space-y-1.5 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-white font-bold text-[11px]">${escapeHtml(p.title)}</span>
+                <span class="px-1.5 py-0.5 rounded bg-blender-800 text-cyan-300 text-[8px] font-bold">${escapeHtml(p.agency)}</span>
+              </div>
+              <p class="text-[10px] text-gray-400 leading-relaxed">${escapeHtml(p.role)}</p>
+              <div class="pt-1">
+                <div class="flex items-center justify-between text-[9px] text-amber-300 mb-0.5">
+                  <span>${escapeHtml(p.query_lang)}</span>
+                  <button onclick="copyCodexSnippet(${idx})" class="text-cyan-300 hover:underline" id="codexCopyBtn${idx}">Copy Snippet</button>
+                </div>
+                <pre class="bg-blender-900 border border-blender-800 rounded p-1.5 text-[8.5px] text-emerald-300 overflow-x-auto max-h-20 whitespace-pre-wrap">${escapeHtml(p.query_snippet)}</pre>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-1.5 border-t border-blender-800 text-[9.5px]">
+              <a href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline font-bold">Open Portal ↗</a>
+              <a href="${escapeHtml(p.explorer_url)}" target="_blank" rel="noopener noreferrer" class="text-amber-300 hover:underline">Live Query / Tool ↗</a>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="p-4 text-center text-red-400 col-span-2">Failed to load Codex: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    window.copyCodexSnippet = async function(idx) {
+      if (!lastCodexPortals[idx]) return;
+      try {
+        await navigator.clipboard.writeText(lastCodexPortals[idx].query_snippet);
+      } catch (e) {}
+      const btn = document.getElementById(`codexCopyBtn${idx}`);
+      if (btn) {
+        btn.innerText = 'Copied!';
+        setTimeout(() => { btn.innerText = 'Copy Snippet'; }, 1500);
+      }
+    };
+
+    function closeCodexModal() {
+      if (codexModal) codexModal.classList.add('hidden');
+    }
+
+    const btnHeaderCodex = document.getElementById('btnHeaderCodex');
+    if (btnHeaderCodex) btnHeaderCodex.addEventListener('click', openCodexModal);
+    const btnOpenCodexModal = document.getElementById('btnOpenCodexModal');
+    if (btnOpenCodexModal) btnOpenCodexModal.addEventListener('click', openCodexModal);
+    const closeCodexModalBtn = document.getElementById('closeCodexModalBtn');
+    if (closeCodexModalBtn) closeCodexModalBtn.addEventListener('click', closeCodexModal);
+    const closeCodexModalFooterBtn = document.getElementById('closeCodexModalFooterBtn');
+    if (closeCodexModalFooterBtn) closeCodexModalFooterBtn.addEventListener('click', closeCodexModal);
+    if (codexModal) {
+      codexModal.addEventListener('click', (e) => {
+        if (e.target === codexModal) closeCodexModal();
       });
     }
 

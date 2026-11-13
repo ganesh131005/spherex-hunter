@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[TASK-006 Completed by @coolodu: Tasks 3, 4, 5 of NASA/CSA Integration & Benchmark Validation]**:
+  - **Task 3 (WiseView 1-Click Verification Bridge):** Added `backend/services/verification_service.py`, `GET /api/verify_candidate`, and `#wiseviewBridgeModal` performing automated 5-step Backyard Worlds candidate vetting (Difference Dipole + Track-Aware Gaia DR3 + IMCCE SkyBoT Asteroid Check + W1–W2 Color + 1-Click WiseView Standard & Difference Mode deep links).
+  - **Task 4 (CSA NEOSSat & CADC Asteroid Tracking Integration):** Added `backend/services/neossat_service.py`, `GET /api/neossat`, and `#neossatModal` querying live IMCCE SkyBoT known Solar System objects (`ssp.imcce.fr`) and live Canadian Astronomy Data Centre (CADC) CAOM-2 Argus TAP `NEOSSAT` science exposures alongside CSA NEOSSat LSD streaklet detection (`[X]`).
+  - **Task 5 (Official NASA & CSA Resources Codex Modal):** Added `GET /api/resources_codex` and `#codexModal` (hotkey `O` / topbar `Codex`) showcasing all 7 official NASA/IPAC/MAST/WiseView/CSA/CADC portals with live coordinate-synced ADQL & Python snippets.
+  - **Golden Verification Suite:** Expanded `tests/test_golden_suite.py` to 11 tests; all 11/11 pass. Marked `TASK-006` as `COMPLETED` on `TASK_FORWARDING_BOARD.md`.
 - **[Multi-Portal Scientific Upgrade Completed by @coolodu]**:
   - Updated `backend/services/cutout_engine.py`, `backend/main.py`, and `frontend/index.html` to solve the Planet X & SPHEREx challenge end-to-end using all 8 NASA/IPAC/MAST/WiseView/CSA/CADC resources.
   - Added `GET /api/source_discovery` (IPAC difference dipoles + CSA NEOSSat LSD streaklets + SPHEREx L2 cosmic ray bitmasks) and fixed `GET /api/spectrum` (102 bands + `A1`–`A6` detector array counts) & `POST /api/flag`.

@@ -8,6 +8,11 @@
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[TASK-006 Complete: Tasks 3, 4, 5 of NASA/CSA Integration & Benchmark Validation]**:
+  - **Task 3 — WiseView 1-Click Verification Bridge (`backend/services/verification_service.py` + `#wiseviewBridgeModal`):** Built `GET /api/verify_candidate` executing a live 5-step Backyard Worlds candidate vetting checklist (Alard-Lupton difference dipole, track-aware Gaia DR3 proper-motion check over 2000–2026, IMCCE SkyBoT known asteroid rejection, W1–W2 color threshold, and 1-click WiseView standard & `diff=1` deep-linking).
+  - **Task 4 — CSA NEOSSat & CADC Asteroid Tracking Integration (`backend/services/neossat_service.py` + `#neossatModal`):** Built `GET /api/neossat` combining live IMCCE SkyBoT cone searches (`ssp.imcce.fr`) for known asteroids/NEOs with live Canadian Astronomy Data Centre (CADC) CAOM-2 Argus TAP queries (`collection='NEOSSAT'`), plus CSA NEOSSat Line Segment Detector (LSD) streaklet overlay (`[X]`).
+  - **Task 5 — Official NASA & CSA Resources Codex Modal (`GET /api/resources_codex` + `#codexModal` / hotkey `[O]`):** Built interactive Codex modal displaying all 7 official NASA/IPAC/MAST/WiseView/CSA/CADC archives with live coordinate-parameterized ADQL/Python query snippets and 1-click copy/open controls.
+  - Expanded `tests/test_golden_suite.py` to 11 automated tests (all 11 passing) and completed `TASK-006` via `tools/task_forwarder.py`.
 - [x] **[Multi-Portal Scientific Upgrade: SPHEREx + IPAC + WiseView + Gaia DR3 + CSA NEOSSat]**:
   - Upgraded `backend/services/cutout_engine.py` with cross-survey benchmark telemetry (`w1_w2_color`, `gaia_dr3` optical dropout vs matched status, SPHEREx L2 `contamination_flags` bitmasks, and `cadc_neossat` flags) plus dynamic ADQL / `astroquery.cadc` queries (`adql_queries`).
   - Fixed & enhanced `GET /api/spectrum` (`get_102_band_spectrum`) to return all 102 SPHEREx LVF channels (`bands`), integrated `array_counts` (`A1`–`A6`), resolving power metadata, and temperature-tailored molecular absorption dips ($\text{H}_2\text{O}$ ice, $\text{CH}_4$, $\text{CO}_2$, $\text{CO}$).

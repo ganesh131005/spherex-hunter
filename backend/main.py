@@ -27,6 +27,8 @@ from backend.services.cutout_engine import (
     get_cache_stats
 )
 from backend.services.gaia_service import query_gaia_dr3
+from backend.services.neossat_service import build_neossat_tracking_report, build_portal_links
+from backend.services.verification_service import run_wiseview_verification
 
 app = FastAPI(
     title="SPHEREx Hunter Astronomical API",
@@ -209,6 +211,153 @@ def source_discovery(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/neossat")
+def get_neossat_tracking(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    fov: float = Query(3.0, description="Field of View in arcminutes"),
+    epoch: Optional[str] = Query(None, description="ISO UTC observation epoch"),
+    include_cadc: bool = Query(True, description="Query CADC CAOM-2 TAP for NEOSSat archival footprints")
+):
+    """Task 4: Queries IMCCE SkyBoT known Solar System objects and CADC CAOM-2 NEOSSat observations."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return build_neossat_tracking_report(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, epoch=epoch, include_cadc=include_cadc)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/verify_candidate")
+def verify_candidate_wiseview(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    fov: float = Query(3.0, description="Field of View in arcminutes"),
+    target: Optional[str] = Query(None, description="Benchmark target key")
+):
+    """Task 3: Runs Backyard Worlds WiseView 5-step verification checklist (Dipole + Gaia DR3 + SkyBoT + W1-W2 + WiseView)."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return run_wiseview_verification(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/resources_codex")
+def get_resources_codex(
+    ra: str = Query("133.79513", description="Current Right Ascension"),
+    dec: str = Query("-7.24515", description="Current Declination"),
+    fov: float = Query(3.0, description="Current Field of View in arcminutes")
+):
+    """Task 5: Official NASA, IPAC, MAST, WiseView, CSA NEOSSat & CADC Resources Codex with live coordinate queries."""
+    ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+    links = build_portal_links(ra_deg, dec_deg, fov)
+    return {
+        "status": "success",
+        "coordinates": {"ra_deg": ra_deg, "dec_deg": dec_deg, "fov_arcmin": fov},
+        "links": links,
+        "portals": [
+            {
+                "id": "irsa_spherex",
+                "title": "1. NASA/IPAC IRSA SPHEREx Archive",
+                "agency": "NASA / Caltech-IPAC",
+                "url": "https://irsa.ipac.caltech.edu/Missions/spherex.html",
+                "explorer_url": links["irsa_spherex"],
+                "role": "102-band Linear Variable Filter (0.75–5.0 μm) all-sky spectrophotometry, L2 quality bitmasks & AWS S3 cloud FITS.",
+                "query_lang": "ADQL (IRSA TAP)",
+                "query_snippet": (
+                    f"SELECT 'https://irsa.ipac.caltech.edu/' || a.uri || '?center=' || p.ra || ',' || p.dec || 'd&size=0.1' AS uri,\n"
+                    f"       p.energy_bandpassname, p.time_bounds_lower\n"
+                    f"FROM spherex.artifact a JOIN spherex.plane p ON a.planeid = p.planeid\n"
+                    f"WHERE 1 = CONTAINS(POINT('ICRS', {ra_deg:.5f}, {dec_deg:.5f}), p.poly)\n"
+                    f"ORDER BY p.time_bounds_lower"
+                )
+            },
+            {
+                "id": "ipac_tutorials",
+                "title": "2. Caltech-IPAC SPHEREx Python Tutorials",
+                "agency": "Caltech-IPAC",
+                "url": "https://caltech-ipac.github.io/irsa-tutorials/spherex/",
+                "explorer_url": "https://caltech-ipac.github.io/spherex-archive-documentation/spherex-data-products/",
+                "role": "Source Discovery Tool Demo (Alard-Lupton image subtraction), wavelength-dependent PSF extraction & HiPS spectral cubes.",
+                "query_lang": "Python (PyVO)",
+                "query_snippet": (
+                    f"import pyvo as vo\n"
+                    f"tap = vo.dal.TAPService('https://irsa.ipac.caltech.edu/TAP')\n"
+                    f"res = tap.search(\"SELECT TOP 10 * FROM spherex.plane WHERE 1=CONTAINS(POINT('ICRS',{ra_deg:.5f},{dec_deg:.5f}),poly)\")"
+                )
+            },
+            {
+                "id": "wiseview",
+                "title": "3. Backyard Worlds WiseView Comparator",
+                "agency": "NASA Citizen Science / Dan Caselden",
+                "url": links["wiseview"],
+                "explorer_url": links["wiseview_difference"],
+                "role": "14+ years of unWISE time-resolved W1 (3.4 μm) & W2 (4.6 μm) co-adds with AsinhStretch and dipole difference blinking.",
+                "query_lang": "Deep-Link URL",
+                "query_snippet": links["wiseview"]
+            },
+            {
+                "id": "mast_gaia",
+                "title": "4. STScI MAST & ESA Gaia DR3 Archive",
+                "agency": "STScI / ESA",
+                "url": "https://archive.stsci.edu/missions-and-data/gaia",
+                "explorer_url": links["mast_portal"],
+                "role": "1.8 billion optical stars with micro-arcsecond proper motion vectors (pmra, pmdec), parallax & optical dropout vetting.",
+                "query_lang": "ADQL (Gaia DR3 TAP)",
+                "query_snippet": (
+                    f"SELECT TOP 50 source_id, ra, dec, pmra, pmdec, parallax, phot_g_mean_mag\n"
+                    f"FROM gaia_dr3_source\n"
+                    f"WHERE CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra_deg:.5f}, {dec_deg:.5f}, {fov/60.0:.4f})) = 1\n"
+                    f"ORDER BY phot_g_mean_mag ASC"
+                )
+            },
+            {
+                "id": "csa_neossat",
+                "title": "5. CSA NEOSSat Space Telescope Mission",
+                "agency": "Canadian Space Agency (CSA)",
+                "url": "https://www.asc-csa.gc.ca/eng/satellites/neossat/",
+                "explorer_url": links["csa_neossat_dataset"],
+                "role": "15 cm f/5.88 Maksutov space telescope in sun-synchronous orbit tracking Near-Earth Asteroids (NEOs) & comets.",
+                "query_lang": "Open Data Portal",
+                "query_snippet": "https://data.asc-csa.gc.ca/dataset/neossat"
+            },
+            {
+                "id": "cadc_archive",
+                "title": "6. Canadian Astronomy Data Centre (CADC)",
+                "agency": "NRC Canada / CADC",
+                "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/",
+                "explorer_url": links["cadc_neossat_search"],
+                "role": "CAOM-2 TAP programmatic archive hosting calibrated NEOSSat science FITS exposures and DataLink products.",
+                "query_lang": "ADQL (CADC CAOM-2 TAP)",
+                "query_snippet": (
+                    f"SELECT TOP 25 o.observationID, o.target_name, p.time_bounds_lower, p.time_exposure\n"
+                    f"FROM caom2.Observation AS o JOIN caom2.Plane AS p ON o.obsID = p.obsID\n"
+                    f"WHERE o.collection = 'NEOSSAT' AND o.intent = 'science'\n"
+                    f"  AND INTERSECTS(CIRCLE('ICRS', {ra_deg:.5f}, {dec_deg:.5f}, 0.50), p.position_bounds) = 1\n"
+                    f"ORDER BY p.time_bounds_lower DESC"
+                )
+            },
+            {
+                "id": "neossat_tutorial",
+                "title": "7. CSA NEOSSAT_Tutorial GitHub Pipeline",
+                "agency": "CSA Open Source",
+                "url": "https://github.com/asc-csa/NEOSSAT_Tutorial",
+                "explorer_url": links["csa_neossat_tutorial"],
+                "role": "Official Python notebooks for overscan/dark subtraction, temporal median stacking & Line Segment Detector (LSD) streaklets.",
+                "query_lang": "Python (astroquery.cadc)",
+                "query_snippet": (
+                    f"from astroquery.cadc import Cadc\n"
+                    f"from astropy.coordinates import SkyCoord\n"
+                    f"import astropy.units as u\n"
+                    f"cadc = Cadc()\n"
+                    f"results = cadc.query_region(SkyCoord({ra_deg:.5f}, {dec_deg:.5f}, unit='deg'), radius=0.5*u.deg, collection='NEOSSAT')"
+                )
+            }
+        ]
+    }
 
 @app.get("/api/download_fits")
 def download_fits(
