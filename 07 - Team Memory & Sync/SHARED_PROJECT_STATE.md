@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Official GitHub Repository Live]** Created and published the official repository:
+  - **GitHub URL:** https://github.com/joker0210G/spherex-hunter
+  - **All 5 Team Branches Pushed:** `main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`.
+- **[Viewport Focus Near-Image Streamer & Multi-Tile Canvas]** Solved the black space issue when panning and zooming:
+  - Dynamically computes visible viewport frustum bounds in world celestial space.
+  - Automatically queries and renders adjacent near-sky tiles around the viewport focus.
+  - Panning in any direction streams real astronomical starlight with zero black borders.
 - **[Continuous Optical Camera Zoom & Seam-Free Wide-Field Engine (Phase 7)]** Refined multi-tier LOD rendering to function like a genuine optical camera lens in the viewport:
   - **Calibrated Multi-Tier Matrix Resolutions:**
     - **LOD 2 (Wide Overview):** $360 \times 360$ matrix, broad $10.0' - 15.0'$ FOV for ultra-fast, smooth 60 FPS transit.
