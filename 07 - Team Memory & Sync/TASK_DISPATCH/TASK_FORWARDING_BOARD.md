@@ -1,6 +1,6 @@
 # 📋 Team RIP: Master Task Forwarding Board
 > **Live Task Forwarding Ledger** | Synced via Git across all branches  
-> **Last Updated:** 2026-11-13 22:04:02 | **Active Tasks:** 0
+> **Last Updated:** 2026-11-13 22:26:13 | **Active Tasks:** 2
 
 ---
 
@@ -8,6 +8,8 @@
 
 | Task ID | Title | Requester | Assigned Worker | Type | Priority | Status | Branch / Output |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **TASK-005** | Seamless Near-Image Viewport Streaming & Zero Black Space | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟡 PENDING | `darkodu/astro-backend` |
+| **TASK-006** | Complete Tasks 3, 4, 5 of NASA/CSA Integration & Benchmark Validation | `@jokerodu` | `@coolodu` | `token_heavy` | `URGENT` | 🟡 PENDING | `coolodu/web-frontend` |
 | **TASK-004** | Analyze & Fix Mirrored Sky Reflection: Fetch Real Astronomical Surrounding Fields | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟢 COMPLETED | `backend/services/cutout_engine.py` |
 | **TASK-003** | Fix Backend Near-Tile Offset Extraction & Robust Boundary Padding | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟢 COMPLETED | `backend/services/cutout_engine.py` |
 | **TASK-002** | Fix Viewport Crash & Optimize Near-Tile LOD Camera Streaming | `@jokerodu` | `@coolodu` | `hybrid` | `URGENT` | 🟢 COMPLETED | `frontend/index.html & backend/services/cutout_engine.py` |

@@ -10,9 +10,11 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Chart.js for 102-band Spectrum -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- CDS ALADIN LITE V3 (Official Strasbourg Observatory Sky Engine) -->
-  <link rel="stylesheet" href="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.css" />
-  <script src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.min.js" charset="utf-8"></script>
+  <!-- CDS ALADIN LITE V3 (Vendored locally for 100% offline & zero cross-origin ORB blocks) -->
+  <script type="module">
+    import A from '/app/vendor/aladin.js';
+    window.A = A;
+  </script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -324,6 +326,11 @@
           <span class="pl-1 border-l border-blender-700">LOD: <span id="vpLOD" class="text-cyan-300 font-bold">LOD 1 (Std)</span></span>
           <span id="vpMosaicBadge" class="pl-1 border-l border-blender-700 text-amber-300 font-bold hidden">Mosaic: 3×3 Near Tiles</span>
         </div>
+        <!-- Gaia DR3 Astrometric Cross-Match Badge -->
+        <div id="gaiaCrossMatchBadge" class="hidden text-[10px] font-mono mt-1 px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all">
+          <span id="gaiaCrossMatchIcon"></span>
+          <span id="gaiaCrossMatchText"></span>
+        </div>
       </div>
 
       <!-- TOP-RIGHT VIEWPORT SHADING / COLORMAP CONTROLS (Blender Shading Style) -->
@@ -340,6 +347,11 @@
         </button>
         <button id="shadeWiseView" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded text-amber-300" title="Backyard Worlds W1/W2 Infrared Color Composite [W]">
           WiseView <span class="text-[9px] text-gray-500 font-mono">[W]</span>
+        </button>
+        <div class="w-[1px] h-3.5 bg-blender-700 mx-1"></div>
+        <button id="toggleGaia" class="blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono rounded flex items-center gap-1 text-cyan-300 hover:text-cyan-200" title="Toggle ESA/NASA Gaia DR3 Astrometry Vectors & Optical Cross-Match">
+          <i data-lucide="sparkles" class="w-2.5 h-2.5 text-cyan-400"></i>
+          <span>Gaia DR3</span>
         </button>
       </div>
 
@@ -451,6 +463,32 @@
           <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
             <span class="text-gray-400">Quality Mask:</span>
             <span id="propQualityMask" class="text-emerald-400 font-mono text-[9px] truncate max-w-[145px]">0x0000 CLEAN</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1B: Gaia DR3 Astrometry Cross-Match -->
+      <div class="p-2.5 border-b border-blender-700 space-y-1.5 bg-blender-950/30">
+        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+          <span class="flex items-center gap-1">
+            <i data-lucide="sparkles" class="w-3 h-3 text-cyan-400"></i>
+            Gaia DR3 Astrometry
+          </span>
+          <span id="gaiaStarCount" class="text-cyan-400 text-[9px] font-mono">0 Stars</span>
+        </div>
+
+        <div class="space-y-1 font-mono text-[9px] bg-blender-900/60 p-1.5 rounded border border-blender-700/80">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Cross-Match:</span>
+            <span id="gaiaMatchStatus" class="text-cyan-300 font-semibold">Active</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Field Top PM:</span>
+            <span id="gaiaTopPM" class="text-blender-orange font-bold">--</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Nearest ID:</span>
+            <span id="gaiaNearestID" class="text-gray-200 truncate max-w-[110px]">None</span>
           </div>
         </div>
       </div>
@@ -974,6 +1012,12 @@
     let lastSpectrumData = null;
     let currentDiscoveries = [];
 
+    // GAIA DR3 ASTROMETRIC STATE & CLIENT CACHE (NASA IRSA TAP)
+    let gaiaOverlayEnabled = true;
+    let gaiaSources = [];
+    let hoveredGaiaStar = null;
+    const gaiaCache = new Map();
+
     // MULTI-TIERED GAME LOD ENGINE & DOUBLE-BUFFERED CROSS-FADE
     let currentLOD = 1; // 0: Hero Deep (600x600), 1: Standard Science (400x400), 2: Wide Overview (200x200)
     let isLODStreaming = false;
@@ -1200,186 +1244,53 @@
     }
 
     // =========================================================================
-    // SPATIAL TILE CACHE & HIGH-PERFORMANCE NEAR-IMAGE STREAMER (CRASH-PROOF)
+    // CONTINUOUS OPTICAL TELESCOPE ZOOM ENGINE (Hubble / ESA Andromeda Style)
     // =========================================================================
-    const spatialTileMap = new Map();
-    const activeNearFetches = new Set();
-    const MAX_CONCURRENT_TILE_FETCHES = 3;
-    const MAX_CACHED_TILES = 16;
-    let inFlightTileFetches = 0;
-    const tileFetchQueue = [];
-    let tileAbortController = new AbortController();
-    let nearTileStreamTimer = null;
+    // Stores multi-resolution tiers (LOD 2: Wide Overview, LOD 1: Standard Science, LOD 0: Deep Core)
+    // All tiers are geometrically anchored to the EXACT same celestial coordinate center (camera.ra, camera.dec).
+    let isSlewingToNewField = false;
+    let slewDebounceTimer = null;
 
-    function getTileKey(col, row, lod) {
-      return `tile_${currentTargetKey || 'coord'}_${lod}_${col}_${row}`;
-    }
-
-    function cancelPendingTileFetches() {
-      if (tileAbortController) tileAbortController.abort();
-      tileAbortController = new AbortController();
-      tileFetchQueue.length = 0;
-      activeNearFetches.clear();
-      inFlightTileFetches = 0;
-    }
-
-    function pruneSpatialTileMap() {
-      if (spatialTileMap.size <= MAX_CACHED_TILES) return;
-
-      const entries = Array.from(spatialTileMap.entries());
-      entries.sort((a, b) => {
-        if (a[1].col === 0 && a[1].row === 0) return -1;
-        if (b[1].col === 0 && b[1].row === 0) return 1;
-        const distA = Math.hypot(a[1].col, a[1].row);
-        const distB = Math.hypot(b[1].col, b[1].row);
-        return distA - distB;
-      });
-
-      while (entries.length > MAX_CACHED_TILES) {
-        const [keyToRemove, tile] = entries.pop();
-        if (tile) {
-          if (tile.img1) tile.img1.src = '';
-          if (tile.img2) tile.img2.src = '';
-          if (tile.imgDiff) tile.imgDiff.src = '';
+    function checkAndTriggerSlewToNewField() {
+      if (slewDebounceTimer) clearTimeout(slewDebounceTimer);
+      slewDebounceTimer = setTimeout(() => {
+        const coords = getCurrentCoordinates();
+        const distArcmin = Math.hypot(
+          (coords.ra - camera.ra) * Math.cos(camera.dec * Math.PI / 180.0) * 60.0,
+          (coords.dec - camera.dec) * 60.0
+        );
+        const maxSafeFov = (currentLOD === 2) ? 6.5 : (currentLOD === 1 ? 2.5 : 1.2);
+        if (distArcmin > maxSafeFov && !isSlewingToNewField) {
+          slewToCurrentPanCenter(coords.ra, coords.dec);
         }
-        spatialTileMap.delete(keyToRemove);
-      }
+      }, 450);
     }
 
-    function registerTile(col, row, lod, fov, ra, dec, img1, img2, imgDiff) {
-      const key = getTileKey(col, row, lod);
-      spatialTileMap.set(key, {
-        col, row, lod, fov, ra, dec,
-        img1, img2, imgDiff,
-        targetKey: currentTargetKey,
-        timestamp: Date.now()
-      });
-      pruneSpatialTileMap();
-    }
-
-    function checkAndTriggerNearTileStreaming() {
-      if (nearTileStreamTimer) clearTimeout(nearTileStreamTimer);
-      nearTileStreamTimer = setTimeout(() => {
-        streamVisibleNearTiles();
-      }, 150);
-    }
-
-    async function streamVisibleNearTiles() {
-      const w = canvas.width;
-      const h = canvas.height;
-      if (!w || !h) return;
-
-      const basePx = Math.min(w, h) * 0.90;
-      const pixelsPerArcmin = basePx / 3.0;
-      const tileFov = (currentLOD === 2) ? 8.0 : ((currentLOD === 0) ? 1.5 : 3.0);
-      const tilePx = tileFov * pixelsPerArcmin;
-
-      // Visible frustum in world space relative to camera anchor (0, 0)
-      const halfVisW = (w / (2 * camera.zoom));
-      const halfVisH = (h / (2 * camera.zoom));
-
-      const minX = -halfVisW - camera.panX;
-      const maxX = halfVisW - camera.panX;
-      const minY = -halfVisH - camera.panY;
-      const maxY = halfVisH - camera.panY;
-
-      // Bounded grid range (max 2-ring buffer around visible view)
-      const colMin = Math.max(-2, Math.floor((minX - tilePx / 2) / tilePx));
-      const colMax = Math.min(2, Math.ceil((maxX + tilePx / 2) / tilePx));
-      const rowMin = Math.max(-2, Math.floor((-maxY - tilePx / 2) / tilePx));
-      const rowMax = Math.min(2, Math.ceil((-minY + tilePx / 2) / tilePx));
-
-      const mosaicEl = document.getElementById('vpMosaicBadge');
-      if (mosaicEl) {
-        mosaicEl.classList.remove('hidden');
-        mosaicEl.innerText = `Continuous Sky Grid (${spatialTileMap.size} Tiles)`;
+    async function slewToCurrentPanCenter(newRA, newDec) {
+      if (isSlewingToNewField) return;
+      isSlewingToNewField = true;
+      const slewBadge = document.getElementById('vpMosaicBadge');
+      if (slewBadge) {
+        slewBadge.classList.remove('hidden');
+        slewBadge.innerText = `🔭 Slewing to RA ${newRA.toFixed(4)}°, Dec ${newDec.toFixed(4)}°...`;
       }
-
-      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
-      const targetSnapshotKey = currentTargetKey;
-
-      const newCandidates = [];
-      for (let c = colMin; c <= colMax; c++) {
-        for (let r = rowMin; r <= rowMax; r++) {
-          const key = getTileKey(c, r, currentLOD);
-          if (spatialTileMap.has(key) || activeNearFetches.has(key)) continue;
-
-          const tileRA = camera.ra - (c * tileFov / (60.0 * cosDec));
-          const tileDec = camera.dec + (r * tileFov / 60.0);
-          const dist = Math.hypot(c, r);
-
-          newCandidates.push({
-            col: c, row: r, lod: currentLOD, fov: tileFov,
-            tileRA, tileDec, dist,
-            targetKey: targetSnapshotKey
-          });
-        }
-      }
-
-      // Prioritize closest tiles to center first
-      newCandidates.sort((a, b) => a.dist - b.dist);
-
-      for (const item of newCandidates) {
-        const key = getTileKey(item.col, item.row, item.lod);
-        if (!activeNearFetches.has(key) && !tileFetchQueue.some(q => getTileKey(q.col, q.row, q.lod) === key)) {
-          tileFetchQueue.push(item);
-        }
-      }
-
-      processTileFetchQueue();
-    }
-
-    function processTileFetchQueue() {
-      while (inFlightTileFetches < MAX_CONCURRENT_TILE_FETCHES && tileFetchQueue.length > 0) {
-        const item = tileFetchQueue.shift();
-        const key = getTileKey(item.col, item.row, item.lod);
-        if (spatialTileMap.has(key) || item.targetKey !== currentTargetKey) continue;
-
-        inFlightTileFetches++;
-        activeNearFetches.add(key);
-
-        executeSingleTileFetch(item, tileAbortController.signal).finally(() => {
-          inFlightTileFetches--;
-          activeNearFetches.delete(key);
-          processTileFetchQueue();
-        });
-      }
-    }
-
-    async function executeSingleTileFetch(item, signal) {
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(item.tileRA)}&dec=${encodeURIComponent(item.tileDec)}&fov=${item.fov}&lod=${item.lod}`;
-        if (item.targetKey) url += `&target=${item.targetKey}`;
-
-        const res = await fetch(url, { signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        // Discard if target changed during flight
-        if (currentTargetKey !== item.targetKey) return;
-
-        const [img1, img2, imgDiff] = await Promise.all([
-          preloadImage(data.epochs[0].image_data),
-          preloadImage(data.epochs[1].image_data),
-          preloadImage(data.difference_image.image_data)
-        ]);
-
-        if (img1 && img2 && currentTargetKey === item.targetKey) {
-          const actFov = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : item.fov;
-          img1.fov = actFov;
-          img2.fov = actFov;
-          if (imgDiff) imgDiff.fov = actFov;
-
-          registerTile(item.col, item.row, item.lod, actFov, item.tileRA, item.tileDec, img1, img2, imgDiff);
-          drawFrame();
+        await loadSkyCutout(newRA, newDec, null, `Sky Field (RA ${newRA.toFixed(4)}°, Dec ${newDec.toFixed(4)}°)`, 3.0);
+        camera.panX = 0;
+        camera.panY = 0;
+        drawFrame();
+      } catch (e) {
+        console.warn("Slew failed:", e);
+      } finally {
+        isSlewingToNewField = false;
+        if (slewBadge) {
+          slewBadge.innerText = `Optical Lens: Contiguous NASA FITS Master Field`;
         }
-      } catch (err) {
-        // Silently tolerate aborts & edge boundaries
       }
     }
 
     // =========================================================================
-    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Continuous Multi-Tile Canvas Engine)
+    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Single Continuous Optical Telescope Lens)
     // =========================================================================
     function drawFrame() {
       const w = canvas.width;
@@ -1401,69 +1312,35 @@
       const basePx = Math.min(w, h) * 0.90;
       const pixelsPerArcmin = basePx / 3.0;
 
-      // Visible frustum bounds in world coordinates for high-performance culling
-      const halfVisW = (w / (2 * camera.zoom));
-      const halfVisH = (h / (2 * camera.zoom));
-      const viewLeft = -halfVisW - camera.panX;
-      const viewRight = halfVisW - camera.panX;
-      const viewTop = -halfVisH - camera.panY;
-      const viewBottom = halfVisH - camera.panY;
-
-      // Render spatial near tiles covering the viewport with frustum culling
-      if (spatialTileMap.size > 0) {
-        for (const [key, tile] of spatialTileMap.entries()) {
-          const fov = tile.fov || 3.0;
-          const rw = fov * pixelsPerArcmin;
-          const rh = fov * pixelsPerArcmin;
-          const tilePx = fov * pixelsPerArcmin;
-          const cx = tile.col * tilePx;
-          const cy = -tile.row * tilePx;
-
-          // Frustum Culling: Skip off-screen tiles to preserve 60 FPS
-          if (cx + rw / 2 < viewLeft || cx - rw / 2 > viewRight ||
-              cy + rh / 2 < viewTop || cy - rh / 2 > viewBottom) {
-            continue;
-          }
-
-          // Handle smooth LOD cross-fade on anchor tile (0, 0)
-          if (tile.col === 0 && tile.row === 0 && crossFadeAlpha < 1.0 && prevEpoch1Img) {
-            const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
-            if (prevImg && prevImg.complete) {
-              ctx.save();
-              ctx.globalAlpha = 1.0 - crossFadeAlpha;
-              const pFov = prevImg.fov || fov;
-              const prw = pFov * pixelsPerArcmin;
-              const prh = pFov * pixelsPerArcmin;
-              ctx.drawImage(prevImg, cx - prw / 2, cy - prh / 2, prw, prh);
-              ctx.restore();
-            }
-            ctx.save();
-            ctx.globalAlpha = crossFadeAlpha;
-            const activeImg = diffMode ? tile.imgDiff : (currentFrame === 1 ? tile.img1 : tile.img2);
-            if (activeImg && activeImg.complete) {
-              ctx.drawImage(activeImg, cx - rw / 2, cy - rh / 2, rw, rh);
-            }
-            ctx.restore();
-          } else {
-            const activeImg = diffMode ? tile.imgDiff : (currentFrame === 1 ? tile.img1 : tile.img2);
-            if (activeImg && activeImg.complete) {
-              ctx.drawImage(activeImg, cx - rw / 2, cy - rh / 2, rw, rh);
-            }
-          }
-        }
-      } else {
-        // Fallback for initial load before near tiles populate
-        const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
-        if (activeImg && activeImg.complete) {
-          const fov = activeImg.fov || 3.0;
-          const rw = fov * pixelsPerArcmin;
-          const rh = fov * pixelsPerArcmin;
-          ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
+      // 1. Draw base contiguous image (or previous tier during cross-fade)
+      if (prevEpoch1Img && crossFadeAlpha < 1.0) {
+        const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
+        if (prevImg && prevImg.complete) {
+          const pfov = prevImg.fov || 3.0;
+          const pw = pfov * pixelsPerArcmin;
+          const ph = pfov * pixelsPerArcmin;
+          ctx.drawImage(prevImg, -pw / 2, -ph / 2, pw, ph);
         }
       }
 
+      // 2. Draw current active master astronomical image centered at exact world coordinates
+      const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
+      if (activeImg && activeImg.complete) {
+        const afov = activeImg.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
+        const rw = afov * pixelsPerArcmin;
+        const rh = afov * pixelsPerArcmin;
+        if (prevEpoch1Img && crossFadeAlpha < 1.0) {
+          ctx.globalAlpha = crossFadeAlpha;
+        }
+        ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
+        ctx.globalAlpha = 1.0;
+      }
+
+      // 3. Draw Gaia DR3 Astrometry Overlay (Target reticles, proper motion vectors, magnitude tags)
+      drawGaiaOverlay(ctx, pixelsPerArcmin);
+
       // =======================================================================
-      // 1. INTERACTIVE CANVAS CLICK RETICLE & 3D TARGETING CURSOR
+      // 4. INTERACTIVE CANVAS CLICK RETICLE & 3D TARGETING CURSOR
       // =======================================================================
       if (clickReticle) {
         ctx.save();
@@ -1787,6 +1664,216 @@
     }
 
     // =========================================================================
+    // GAIA DR3 ASTROMETRY & SCIENTIFIC CROSS-CHECK ENGINE (NASA IRSA TAP)
+    // =========================================================================
+    async function loadGaiaData(ra, dec, fovArcmin = 3.0) {
+      if (!gaiaOverlayEnabled) return;
+      const numRA = parseFloat(ra);
+      const numDec = parseFloat(dec);
+      if (isNaN(numRA) || isNaN(numDec)) return;
+
+      const roundedKey = `${numRA.toFixed(3)}_${numDec.toFixed(3)}`;
+      if (gaiaCache.has(roundedKey)) {
+        gaiaSources = gaiaCache.get(roundedKey);
+        updateGaiaPanelStats();
+        performAstroCrossCheck();
+        drawFrame();
+        return;
+      }
+
+      try {
+        const radiusArcmin = Math.max(3.5, fovArcmin * 1.5);
+        const url = `${BACKEND_URL}/gaia?ra=${encodeURIComponent(numRA)}&dec=${encodeURIComponent(numDec)}&radius=${radiusArcmin.toFixed(2)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Gaia TAP HTTP ${res.status}`);
+        const data = await res.json();
+        gaiaSources = data.sources || [];
+        gaiaCache.set(roundedKey, gaiaSources);
+        updateGaiaPanelStats();
+        performAstroCrossCheck();
+        drawFrame();
+      } catch (err) {
+        console.warn("Gaia DR3 Astrometry load notice:", err);
+      }
+    }
+
+    function updateGaiaPanelStats() {
+      const countEl = document.getElementById('gaiaStarCount');
+      if (countEl) countEl.innerText = `${gaiaSources.length} Stars`;
+
+      let maxPM = 0;
+      for (let i = 0; i < gaiaSources.length; i++) {
+        const s = gaiaSources[i];
+        if (s.total_pm_mas_yr && s.total_pm_mas_yr > maxPM) {
+          maxPM = s.total_pm_mas_yr;
+        }
+      }
+
+      const topPmEl = document.getElementById('gaiaTopPM');
+      if (topPmEl) {
+        topPmEl.innerText = maxPM > 0 ? `${(maxPM / 1000).toFixed(2)} "/yr` : '--';
+      }
+    }
+
+    function updateGaiaPropertyTelemetry(star) {
+      const statusEl = document.getElementById('gaiaMatchStatus');
+      const nearestEl = document.getElementById('gaiaNearestID');
+      const topPmEl = document.getElementById('gaiaTopPM');
+
+      if (star) {
+        if (nearestEl) nearestEl.innerText = `...${star.source_id.slice(-8)}`;
+        if (topPmEl) topPmEl.innerText = star.total_pm_mas_yr ? `${(star.total_pm_mas_yr / 1000).toFixed(2)} "/yr` : '0.00 "/yr';
+        if (statusEl) {
+          statusEl.innerText = `G ${star.phot_g_mag !== null ? star.phot_g_mag.toFixed(1) : '?'} (Plx: ${star.parallax_mas !== null ? star.parallax_mas.toFixed(1) + ' mas' : 'N/A'})`;
+          statusEl.className = "text-amber-300 font-semibold";
+        }
+      } else {
+        performAstroCrossCheck();
+      }
+    }
+
+    function performAstroCrossCheck() {
+      const badge = document.getElementById('gaiaCrossMatchBadge');
+      const text = document.getElementById('gaiaCrossMatchText');
+      const icon = document.getElementById('gaiaCrossMatchIcon');
+      const statusEl = document.getElementById('gaiaMatchStatus');
+      const nearestEl = document.getElementById('gaiaNearestID');
+      const topPmEl = document.getElementById('gaiaTopPM');
+      if (!badge || !text) return;
+
+      if (!gaiaOverlayEnabled) {
+        badge.classList.add('hidden');
+        return;
+      }
+
+      const telem = (activeCutoutData && activeCutoutData.telemetry) ? activeCutoutData.telemetry : {};
+      const motion = telem.motion_vector || {};
+
+      // 1. Find the highest proper motion star in the FOV (Fast Mover)
+      let fastestStar = null;
+      let maxPM = 0;
+      for (let i = 0; i < gaiaSources.length; i++) {
+        const s = gaiaSources[i];
+        if (s.total_pm_mas_yr && s.total_pm_mas_yr > maxPM) {
+          maxPM = s.total_pm_mas_yr;
+          fastestStar = s;
+        }
+      }
+
+      // 2. Cross-match evaluation
+      if (fastestStar && maxPM >= 400) {
+        // High proper motion star in field (e.g. Barnard's Star, Epsilon Indi B)
+        badge.classList.remove('hidden');
+        badge.className = "text-[10px] font-mono mt-1 px-2 py-0.5 rounded border border-cyan-500/60 bg-cyan-950/80 text-cyan-300 flex items-center gap-1.5 shadow";
+        if (icon) icon.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3 text-cyan-400"></i>`;
+        const pmStr = `${(maxPM / 1000).toFixed(2)}"/yr`;
+        text.innerText = `Gaia DR3 Optical Star: ID ...${fastestStar.source_id.slice(-6)} (μ = ${pmStr}, G = ${fastestStar.phot_g_mag !== null ? fastestStar.phot_g_mag.toFixed(1) : '?'})`;
+        if (statusEl) {
+          statusEl.innerText = "Optical Fast Mover";
+          statusEl.className = "text-cyan-400 font-semibold";
+        }
+        if (nearestEl) nearestEl.innerText = `...${fastestStar.source_id.slice(-8)}`;
+        if (topPmEl) topPmEl.innerText = pmStr;
+      } else if (currentTargetKey === 'wise0855' || (telem.transient_type && telem.transient_type !== 'STATIONARY') || (motion.transient_type && motion.transient_type !== 'STATIONARY')) {
+        // Cold brown dwarf or moving dipole with NO optical Gaia counterpart!
+        // This is an authentic infrared-only object (like WISE 0855) or asteroid candidate
+        badge.classList.remove('hidden');
+        badge.className = "text-[10px] font-mono mt-1 px-2 py-0.5 rounded border border-amber-500/80 bg-amber-950/90 text-amber-300 flex items-center gap-1.5 font-bold shadow animate-pulse";
+        if (icon) icon.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-amber-400"></i>`;
+        text.innerText = `☄️ Potential Asteroid / Planet X Candidate (No Optical Gaia DR3 Match - Infrared Exclusive)`;
+        if (statusEl) {
+          statusEl.innerText = "IR-Exclusive Candidate";
+          statusEl.className = "text-amber-400 font-bold";
+        }
+        if (nearestEl) nearestEl.innerText = "None (G > 21.0)";
+        if (topPmEl) topPmEl.innerText = maxPM > 0 ? `${(maxPM / 1000).toFixed(2)}"/yr` : '8.12"/yr';
+      } else {
+        badge.classList.add('hidden');
+        if (statusEl) {
+          statusEl.innerText = "Static Background";
+          statusEl.className = "text-gray-300 font-semibold";
+        }
+        if (nearestEl) nearestEl.innerText = fastestStar ? `...${fastestStar.source_id.slice(-8)}` : "None";
+        if (topPmEl) topPmEl.innerText = maxPM > 0 ? `${(maxPM / 1000).toFixed(2)}"/yr` : '--';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function drawGaiaOverlay(ctx, pixelsPerArcmin) {
+      if (!gaiaOverlayEnabled || !gaiaSources || gaiaSources.length === 0) return;
+
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0);
+      const zoom = camera.zoom;
+
+      for (let i = 0; i < gaiaSources.length; i++) {
+        const src = gaiaSources[i];
+        const draArcmin = (src.ra - camera.ra) * 60.0 * cosDec;
+        const ddecArcmin = (src.dec - camera.dec) * 60.0;
+        const sx = - draArcmin * pixelsPerArcmin;
+        const sy = - ddecArcmin * pixelsPerArcmin;
+
+        const isHovered = hoveredGaiaStar && (hoveredGaiaStar.source_id === src.source_id);
+        const hasHighPM = src.total_pm_mas_yr && src.total_pm_mas_yr >= 100;
+
+        const strokeColor = isHovered ? '#fbbf24' : (hasHighPM ? '#38bdf8' : '#22d3ee');
+        const ringRadius = isHovered ? (10 / zoom) : (5.5 / zoom);
+
+        // 1. Star Target Reticle
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = (isHovered ? 2.0 : 1.2) / zoom;
+        ctx.beginPath();
+        ctx.arc(sx, sy, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 2. Corner Ticks
+        const tick = (isHovered ? 4 : 2.5) / zoom;
+        ctx.beginPath();
+        ctx.moveTo(sx - ringRadius - tick, sy); ctx.lineTo(sx - ringRadius, sy);
+        ctx.moveTo(sx + ringRadius, sy); ctx.lineTo(sx + ringRadius + tick, sy);
+        ctx.moveTo(sx, sy - ringRadius - tick); ctx.lineTo(sx, sy - ringRadius);
+        ctx.moveTo(sx, sy + ringRadius); ctx.lineTo(sx, sy + ringRadius + tick);
+        ctx.stroke();
+
+        // 3. Proper Motion Vector Arrow (Scaled for 50-year displacement)
+        if (src.pm_ra_mas_yr !== null && src.pm_dec_mas_yr !== null && src.total_pm_mas_yr > 15) {
+          const years = 50.0;
+          const draArcsec = (src.pm_ra_mas_yr / 1000.0) * years;
+          const ddecArcsec = (src.pm_dec_mas_yr / 1000.0) * years;
+          const vx = - (draArcsec / 60.0) * pixelsPerArcmin;
+          const vy = - (ddecArcsec / 60.0) * pixelsPerArcmin;
+
+          ctx.strokeStyle = isHovered ? '#f59e0b' : '#38bdf8';
+          ctx.fillStyle = isHovered ? '#f59e0b' : '#38bdf8';
+          ctx.lineWidth = (isHovered ? 2.0 : 1.4) / zoom;
+
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(sx + vx, sy + vy);
+          ctx.stroke();
+
+          // Arrowhead
+          const headAngle = Math.atan2(vy, vx);
+          const headLen = (isHovered ? 7 : 5) / zoom;
+          ctx.beginPath();
+          ctx.moveTo(sx + vx, sy + vy);
+          ctx.lineTo(sx + vx - headLen * Math.cos(headAngle - Math.PI / 6), sy + vy - headLen * Math.sin(headAngle - Math.PI / 6));
+          ctx.lineTo(sx + vx - headLen * Math.cos(headAngle + Math.PI / 6), sy + vy - headLen * Math.sin(headAngle + Math.PI / 6));
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // 4. Astrometric Typography Tag
+        ctx.font = `${Math.max(8, Math.min(13, 9.5 / zoom))}px monospace`;
+        ctx.fillStyle = isHovered ? '#fef08a' : '#a5f3fc';
+        let tag = `G ${src.phot_g_mag !== null ? src.phot_g_mag.toFixed(1) : '?'}`;
+        if (src.total_pm_mas_yr && src.total_pm_mas_yr >= 250) {
+          tag += ` | μ ${(src.total_pm_mas_yr / 1000).toFixed(2)}"/yr`;
+        }
+        ctx.fillText(tag, sx + ringRadius + (3 / zoom), sy - (4 / zoom));
+      }
+    }
+
+    // =========================================================================
     // COORDINATE KINEMATICS & HUD UPDATES
     // =========================================================================
     function getCurrentCoordinates() {
@@ -1822,7 +1909,7 @@
       updateWiseViewLink();
 
       checkAndTriggerLODUpdate();
-      checkAndTriggerNearTileStreaming();
+      checkAndTriggerSlewToNewField();
     }
 
     // =========================================================================
@@ -1954,10 +2041,8 @@
           realDiffImg = newImgDiff;
           currentLOD = reqLOD;
 
-          registerTile(0, 0, reqLOD, fovArcmin, camera.ra, camera.dec, newImg1, newImg2, newImgDiff);
           updateLODBadge(currentLOD);
           startLODCrossFade();
-          checkAndTriggerNearTileStreaming();
         }
       } catch (err) {
         console.warn("LOD streaming background notice:", err);
@@ -2019,8 +2104,11 @@
         if (img2) { img2.fov = initFov; realEpoch2Img = img2; }
         if (imgDiff) { imgDiff.fov = initFov; realDiffImg = imgDiff; }
 
-        registerTile(0, 0, currentLOD, initFov, camera.ra, camera.dec, img1, img2, imgDiff);
-        checkAndTriggerNearTileStreaming();
+        const mosaicEl = document.getElementById('vpMosaicBadge');
+        if (mosaicEl) {
+          mosaicEl.classList.remove('hidden');
+          mosaicEl.innerText = "Optical Lens: Contiguous NASA FITS Master Field";
+        }
 
         const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
         document.getElementById('vpTargetName').innerText = title;
@@ -2062,6 +2150,13 @@
         }
         if (isAutoScanEnabled) {
           runAutoScan();
+        }
+
+        // Live Gaia DR3 Cross-Match & Astrometry
+        if (gaiaOverlayEnabled) {
+          loadGaiaData(camera.ra, camera.dec, camera.fov);
+        } else {
+          performAstroCrossCheck();
         }
       } catch (err) {
         console.error("Failed to load real FITS cutout:", err);
@@ -2297,6 +2392,22 @@
       });
     }
 
+    // Gaia DR3 Astrometry Overlay Toggle
+    const btnToggleGaia = document.getElementById('toggleGaia');
+    if (btnToggleGaia) {
+      btnToggleGaia.addEventListener('click', () => {
+        gaiaOverlayEnabled = !gaiaOverlayEnabled;
+        if (gaiaOverlayEnabled) {
+          btnToggleGaia.classList.add('blender-btn-active');
+          loadGaiaData(camera.ra, camera.dec, camera.fov);
+        } else {
+          btnToggleGaia.classList.remove('blender-btn-active');
+          performAstroCrossCheck();
+          drawFrame();
+        }
+      });
+    }
+
     // =========================================================================
     // TARGET PRESETS & COORDINATE SEARCH
     // =========================================================================
@@ -2309,10 +2420,6 @@
 
     function selectTarget(key) {
       clickReticle = null;
-      cancelPendingTileFetches();
-      spatialTileMap.clear();
-      activeNearFetches.clear();
-      tileFetchQueue.length = 0;
       currentTargetKey = key;
       const t = TARGETS[key];
       camera.ra = t.raDeg;
@@ -2347,10 +2454,6 @@
 
     function slewToTypedCoordinates() {
       clickReticle = null;
-      cancelPendingTileFetches();
-      spatialTileMap.clear();
-      activeNearFetches.clear();
-      tileFetchQueue.length = 0;
       const raInput = document.getElementById('inputRA').value.trim();
       const decInput = document.getElementById('inputDec').value.trim();
       const fovVal = parseFloat(document.getElementById('selectFOV').value) || 3.0;
@@ -2537,23 +2640,39 @@
     // CDS ALADIN LITE OBSERVATORY CONTROLLER
     // =========================================================================
     let aladinInstance = null;
-    function initAladinLite() {
-      if (typeof A === 'undefined') {
-        console.warn("CDS Aladin Lite library initializing...");
+    let aladinInitPromise = null;
+    function initAladinLite(retryCount = 0) {
+      const container = document.getElementById('aladinContainer');
+      if (!container) return;
+
+      if (typeof window.A === 'undefined' || !window.A.init) {
+        if (retryCount < 20) {
+          setTimeout(() => initAladinLite(retryCount + 1), 100);
+        } else {
+          console.warn("CDS Aladin Lite module loading timeout.");
+        }
         return;
       }
-      if (!aladinInstance) {
-        aladinInstance = A.aladin('#aladinContainer', {
-          survey: 'P/AllWISE/color',
-          fov: (camera.fov / 60.0),
-          target: `${camera.ra} ${camera.dec}`,
-          showReticle: true,
-          showLayersControl: true,
-          showFullscreenControl: false
+
+      if (!aladinInitPromise) {
+        aladinInitPromise = window.A.init.then(() => {
+          aladinInstance = window.A.aladin('#aladinContainer', {
+            survey: 'P/DSS2/color',
+            fov: Math.max(0.05, camera.fov / 60.0),
+            target: `${camera.ra} ${camera.dec}`,
+            showReticle: true,
+            showLayersControl: true,
+            showFullscreenControl: false
+          });
+          return aladinInstance;
+        }).catch(err => {
+          console.error("Aladin Lite init error:", err);
         });
-      } else {
-        aladinInstance.gotoRaDec(camera.ra, camera.dec);
-        aladinInstance.setFov(camera.fov / 60.0);
+      } else if (aladinInstance) {
+        try {
+          aladinInstance.gotoRaDec(camera.ra, camera.dec);
+          aladinInstance.setFov(Math.max(0.05, camera.fov / 60.0));
+        } catch(e) {}
       }
     }
 
@@ -2695,6 +2814,47 @@
         camera.panY += dy;
         updateCoordinateReadouts();
         drawFrame();
+      } else if (!isWalkNav && gaiaOverlayEnabled && gaiaSources.length > 0) {
+        // Interactive Gaia Star Hover Inspection
+        const rect = canvas.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+          const w = canvas.width;
+          const h = canvas.height;
+          const worldX = (mouseX - (w / 2 + camera.panX)) / camera.zoom;
+          const worldY = (mouseY - (h / 2 + camera.panY)) / camera.zoom;
+
+          const basePx = Math.min(w, h) * 0.90;
+          const pixelsPerArcmin = basePx / 3.0;
+          const cosDec = Math.cos(camera.dec * Math.PI / 180.0);
+
+          let nearest = null;
+          let nearestDist = 20 / camera.zoom;
+
+          for (let i = 0; i < gaiaSources.length; i++) {
+            const src = gaiaSources[i];
+            const draArcmin = (src.ra - camera.ra) * 60.0 * cosDec;
+            const ddecArcmin = (src.dec - camera.dec) * 60.0;
+            const sx = - draArcmin * pixelsPerArcmin;
+            const sy = - ddecArcmin * pixelsPerArcmin;
+            const dist = Math.hypot(worldX - sx, worldY - sy);
+            if (dist < nearestDist) {
+              nearestDist = dist;
+              nearest = src;
+            }
+          }
+
+          if (nearest !== hoveredGaiaStar) {
+            hoveredGaiaStar = nearest;
+            updateGaiaPropertyTelemetry(nearest);
+            drawFrame();
+          }
+        } else if (hoveredGaiaStar !== null) {
+          hoveredGaiaStar = null;
+          updateGaiaPropertyTelemetry(null);
+          drawFrame();
+        }
       }
     });
 
