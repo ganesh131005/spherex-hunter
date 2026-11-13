@@ -26,6 +26,7 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[URGENT Task Forwarded to @coolodu: TASK-002]** Forwarded viewport crash fix, optical camera LOD streaming, and seamless near-tile multi-canvas optimization to `coolodu` to leverage their high laptop specifications and Paid Pro Gemini token allocation.
 - **[Teammate Task Sharing & Forwarding System Live]** Deployed Git-based task delegation system:
   - **Resource Matrix (`TEAM_RESOURCE_MATRIX.md`):** Documents `coolodu` (Paid Pro + High Lap Specs), `iceodu` (Free Tier + High Lap Specs), `jokerodu`/`darkodu` (Nonpaid Pro Gemini), and `astrodu` (UX/Story).
   - **CLI Helper (`tools/task_forwarder.py`):** Provides `dispatch`, `check`, `claim`, `complete`, and `list` commands.
