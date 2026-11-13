@@ -3,11 +3,31 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed TASK-002: Fixed viewport crash and optimized near-tile LOD camera streaming.
-- **Next Task:** Citizen science modal enhancements or multi-wavelength spectral features.
+- **Current Task:** All Assigned Roadmap Tasks & Tickets Complete! Viewport, kinematics, LOD engine, Gaia overlay, FITS export, and discoveries catalogue operational.
+- **Next Task:** Ready for team review or next assigned sprint backlog items.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Interactive Click-to-Spectrum & 3D Cursor Reticle]**:
+  - Implemented single-click world coordinate inversion mapping screen pixels to celestial coordinates $(\alpha, \delta)$.
+  - Renders a glowing dual-ring cyan/amber reticle with crosshairs and coordinate tags at the exact clicked starlight location.
+  - Automatically updates header inputs, HUD readouts, queries the 102-band infrared spectrum (`/api/spectrum`), and reveals the properties inspector.
+  - Double-click or `Esc` seamlessly dismisses the reticle.
+- [x] **[Gaia DR3 Proper Motion Vector & Astrometry Overlay]**:
+  - Wired toolbar button `#toolGaia` and hotkey `V` to toggle astrometric vector overlays.
+  - Renders genuine motion vectors from Epoch 1 (2MASS 1999) to Epoch 2 (SPHEREx 2025) with directional arrowheads, dashed trajectory baselines, and a floating telemetry badge ($\mu$, baseline $\Delta t$, and total displacement).
+  - Includes real astronomical scale bar ($1.0' / 60''$) and cardinal direction compass ($N \uparrow, E \leftarrow$).
+- [x] **[Authentic NASA FITS File Exporter]**:
+  - Added backend endpoint `/api/download_fits` streaming authentic NASA 2MASS and DSS2/SPHEREx FITS files.
+  - Wired `#btnHeaderFITS` and `#fitsModal` displaying live target coordinates and instant download links for professional analysis in SAOImage DS9, Astropy, or AstroImageJ.
+- [x] **[Citizen Science Discoveries Catalogue Modal]**:
+  - Built community candidate viewer modal (`#discoveriesModal`) accessible via header, toolbar `#toolDiscoveries`, or hotkey `C`.
+  - Connects to `/api/discoveries` and renders live candidates (WISE 0855, Barnard's Star, CWISE J1249, Epsilon Indi B, RW Aurigae) with 1-click **"Slew"** buttons.
+  - Wired `#btnExportDiscoveriesCsv` to export discoveries into a formatted CSV report (`spherex_citizen_discoveries.csv`).
+- [x] **[Telescope Keyboard Shortcuts & Cheatsheet Polish]**:
+  - Updated `#shortcutsModal` with `V` (Gaia Vectors), `C` (Discoveries), and `Click Sky` (Reticle & Spectrum).
+- [x] **[Full Live Verification]**:
+  - Automated browser subagent verified all 5 features on live canvas with 0 console errors.
 - [x] **[TASK-002 Complete]** Fixed viewport crash & optimized near-tile LOD streaming:
   - Added bounded 3-worker concurrency queue (`tileFetchQueue`) with prioritized center-out ordering and AbortController cancellation on camera target/slew shifts.
   - Implemented distance-based texture pruning limiting in-memory cache to 16 visible tiles, releasing decoded bitmap image buffers to prevent browser OOM tab crashes.

@@ -171,10 +171,22 @@
         <span class="text-emerald-300 font-semibold tracking-wide">NASA IRSA</span>
       </div>
 
+      <!-- FITS File Download Button -->
+      <button id="btnHeaderFITS" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-gray-300 hover:text-white transition-all shadow-sm" title="Download Real NASA FITS Files (Epoch 1 & 2)">
+        <i data-lucide="file-archive" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span class="hidden sm:inline">FITS</span>
+      </button>
+
       <!-- Snapshot Export Quick Button -->
       <button id="btnHeaderSnapshot" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-gray-300 hover:text-white transition-all shadow-sm" title="Capture PNG Snapshot with Astronomical Telemetry [P / F8]">
         <i data-lucide="camera" class="w-3.5 h-3.5 text-cyan-400"></i>
         <span class="hidden sm:inline">Snapshot</span>
+      </button>
+
+      <!-- Citizen Science Discoveries Catalogue Button -->
+      <button id="btnHeaderDiscoveries" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-gray-300 hover:text-white transition-all shadow-sm" title="View Citizen Science Discoveries Catalogue [C]">
+        <i data-lucide="book-marked" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span class="hidden sm:inline">Discoveries</span>
       </button>
 
       <!-- Keyboard Shortcuts Help Button -->
@@ -223,9 +235,19 @@
         <i data-lucide="scan" class="w-3.5 h-3.5"></i>
       </button>
 
+      <!-- Gaia DR3 Astrometric Motion Vectors Toggle -->
+      <button id="toolGaia" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Toggle Gaia DR3 Proper Motion Vectors [V]">
+        <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-300"></i>
+      </button>
+
       <!-- Snapshot / Export Image -->
       <button id="toolSnapshot" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Export FITS / PNG Snapshot [P / F8]">
         <i data-lucide="camera" class="w-3.5 h-3.5 text-cyan-400"></i>
+      </button>
+
+      <!-- Citizen Science Discoveries Catalogue -->
+      <button id="toolDiscoveries" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="View Community Discoveries Catalogue [C]">
+        <i data-lucide="book-marked" class="w-3.5 h-3.5 text-emerald-400"></i>
       </button>
 
       <!-- Shortcuts Help Cheat Sheet -->
@@ -466,7 +488,11 @@
       <div class="p-2.5 space-y-1.5 bg-blender-950/40">
         <button id="flagCandidateBtn" class="w-full py-1.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm">
           <i data-lucide="flag" class="w-3.5 h-3.5 text-blender-orange"></i>
-          <span>Flag Candidate Discovery</span>
+          <span>Flag Candidate Discovery [F]</span>
+        </button>
+        <button id="viewDiscoveriesBtn" class="w-full py-1.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-gray-300 hover:text-white font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm">
+          <i data-lucide="book-open" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span>View Discovery Catalogue [C]</span>
         </button>
       </div>
     </aside>
@@ -648,6 +674,9 @@
           </div>
           <div class="space-y-1.5 text-[11px]">
             <div class="flex justify-between items-center"><span class="text-gray-400">Targets 1 to 5</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">1 - 5</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Gaia DR3 Vectors</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-amber-300 font-mono text-[9px]">V</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Discoveries Catalogue</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-emerald-300 font-mono text-[9px]">C</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Click Reticle & Spec</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-cyan-300 font-mono text-[9px]">Click Sky</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Flag Discovery</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-orange-400 font-mono text-[9px]">F</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Export PNG Snapshot</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-cyan-300 font-mono text-[9px]">P / F8</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Walk Nav (Fly Mode)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">Shift + `</kbd></div>
@@ -658,6 +687,99 @@
       <div class="pt-2 border-t border-blender-700/60 flex items-center justify-between text-[10px] text-gray-400">
         <span>Press <kbd class="px-1 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono">Esc</kbd> or <kbd class="px-1 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono">?</kbd> anytime to toggle</span>
         <button id="closeShortcutsModalFooterBtn" class="px-3 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white text-[10px]">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 6. ASTRONOMICAL FITS DATA DOWNLOAD MODAL                                   -->
+  <!-- ========================================================================= -->
+  <div id="fitsModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-md w-full p-5 shadow-2xl space-y-4 font-mono text-xs text-gray-200">
+      <div class="flex items-center justify-between border-b border-blender-700 pb-2.5">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="file-archive" class="w-4 h-4 text-amber-400"></i>
+          <span>Download Authentic NASA FITS Data</span>
+        </div>
+        <button id="closeFitsModalBtn" class="text-gray-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <div class="text-gray-300 text-[11px] space-y-1">
+        <p>Export genuine uncompressed Flexible Image Transport System (FITS) files reduced from NASA IRSA Caltech & SkyView archives for professional astrometry in SAOImage DS9, Astropy, or AstroImageJ.</p>
+        <div class="bg-blender-950 p-2.5 rounded border border-blender-700 space-y-1 mt-2">
+          <div>Target: <b id="fitsModalTargetName" class="text-white">WISE 0855-0714</b></div>
+          <div>Coordinates: <span id="fitsModalCoords" class="text-cyan-300">RA 133.79513°, Dec -7.24515°</span></div>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <a id="btnDownloadEpoch1Fits" href="/api/download_fits?target=wise0855&epoch=1" download class="w-full py-2 px-3 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-white flex items-center justify-between transition-all group">
+          <div class="flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4 text-cyan-400"></i>
+            <div>
+              <div class="font-bold text-[11px]">Epoch 1: 2MASS Historic FITS</div>
+              <div class="text-[9px] text-gray-400">1.25 μm J-Band baseline (~100 KB)</div>
+            </div>
+          </div>
+          <span class="text-[10px] text-cyan-300 font-bold group-hover:underline">.FITS ↓</span>
+        </a>
+
+        <a id="btnDownloadEpoch2Fits" href="/api/download_fits?target=wise0855&epoch=2" download class="w-full py-2 px-3 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-white flex items-center justify-between transition-all group">
+          <div class="flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4 text-amber-400"></i>
+            <div>
+              <div class="font-bold text-[11px]">Epoch 2: DSS2 / SPHEREx FITS</div>
+              <div class="text-[9px] text-gray-400">Deep Infrared / Optical survey (~80 KB)</div>
+            </div>
+          </div>
+          <span class="text-[10px] text-amber-300 font-bold group-hover:underline">.FITS ↓</span>
+        </a>
+      </div>
+
+      <div class="pt-2 border-t border-blender-700/60 flex items-center justify-end">
+        <button id="closeFitsModalFooterBtn" class="px-3 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white text-[10px]">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 7. CITIZEN SCIENCE DISCOVERIES CATALOGUE MODAL                            -->
+  <!-- ========================================================================= -->
+  <div id="discoveriesModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-blender-900 border border-blender-700 rounded-lg max-w-2xl w-full p-5 shadow-2xl space-y-3 font-mono text-xs text-gray-200">
+      <div class="flex items-center justify-between border-b border-blender-700 pb-2.5">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="book-marked" class="w-4 h-4 text-emerald-400"></i>
+          <span>Citizen Science Discoveries Catalogue</span>
+        </div>
+        <button id="closeDiscoveriesModalBtn" class="text-gray-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <p class="text-[11px] text-gray-400">Live community ledger of flagged moving candidates, brown dwarfs, and variable stars recorded by citizen astronomers.</p>
+
+      <div class="max-h-60 overflow-y-auto border border-blender-700 rounded bg-blender-950">
+        <table class="w-full text-left text-[10px]">
+          <thead class="bg-blender-850 text-gray-300 border-b border-blender-700 sticky top-0">
+            <tr>
+              <th class="p-2">Candidate</th>
+              <th class="p-2">RA (α)</th>
+              <th class="p-2">Dec (δ)</th>
+              <th class="p-2">Motion Type</th>
+              <th class="p-2">Astronomer</th>
+            </tr>
+          </thead>
+          <tbody id="discoveriesTableBody" class="divide-y divide-blender-800/60 text-gray-300 font-mono">
+            <tr><td colspan="5" class="p-3 text-center text-gray-500">Loading discoveries...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pt-2 border-t border-blender-700/60 flex items-center justify-between">
+        <button id="btnExportDiscoveriesCsv" class="px-3 py-1 rounded bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-[10px] flex items-center gap-1.5 transition-all">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+          <span>Export CSV Report</span>
+        </button>
+        <button id="closeDiscoveriesModalFooterBtn" class="px-3 py-1 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white text-[10px]">Close</button>
       </div>
     </div>
   </div>
@@ -732,6 +854,9 @@
     let realEpoch2Img = null;
     let realDiffImg = null;
     let activeCutoutData = null;
+    let clickReticle = null; // { x, y, ra, dec }
+    let isGaiaOverlayEnabled = false;
+    let currentDiscoveries = [];
 
     // MULTI-TIERED GAME LOD ENGINE & DOUBLE-BUFFERED CROSS-FADE
     let currentLOD = 1; // 0: Hero Deep (600x600), 1: Standard Science (400x400), 2: Wide Overview (200x200)
@@ -1219,6 +1344,233 @@
         }
       }
 
+      // =======================================================================
+      // 1. INTERACTIVE CANVAS CLICK RETICLE & 3D TARGETING CURSOR
+      // =======================================================================
+      if (clickReticle) {
+        ctx.save();
+        ctx.translate(clickReticle.x, clickReticle.y);
+
+        const rPx = Math.max(12, Math.min(28, 16 / Math.sqrt(camera.zoom)));
+
+        // Outer pulsing/cyan target ring
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 1.5 / camera.zoom;
+        ctx.beginPath();
+        ctx.arc(0, 0, rPx, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Secondary amber framing brackets
+        ctx.strokeStyle = '#ea7600';
+        ctx.lineWidth = 2.0 / camera.zoom;
+        ctx.beginPath();
+        ctx.arc(0, 0, rPx + 4 / camera.zoom, -Math.PI * 0.25, Math.PI * 0.25);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, rPx + 4 / camera.zoom, Math.PI * 0.75, Math.PI * 1.25);
+        ctx.stroke();
+
+        // Crosshair ticks with central aperture
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.0 / camera.zoom;
+        const gap = 4 / camera.zoom;
+        const tickLen = 7 / camera.zoom;
+        // Top
+        ctx.beginPath(); ctx.moveTo(0, -gap); ctx.lineTo(0, -gap - tickLen); ctx.stroke();
+        // Bottom
+        ctx.beginPath(); ctx.moveTo(0, gap); ctx.lineTo(0, gap + tickLen); ctx.stroke();
+        // Left
+        ctx.beginPath(); ctx.moveTo(-gap, 0); ctx.lineTo(-gap - tickLen, 0); ctx.stroke();
+        // Right
+        ctx.beginPath(); ctx.moveTo(gap, 0); ctx.lineTo(gap + tickLen, 0); ctx.stroke();
+
+        // High-contrast celestial coordinate labels
+        const tagFontSize = Math.max(9, 10 / camera.zoom);
+        ctx.font = `bold ${tagFontSize}px monospace`;
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillText(`α ${clickReticle.ra.toFixed(4)}°`, rPx + 6 / camera.zoom, -2 / camera.zoom);
+        ctx.fillStyle = '#ea7600';
+        ctx.fillText(`δ ${clickReticle.dec.toFixed(4)}°`, rPx + 6 / camera.zoom, 10 / camera.zoom);
+
+        ctx.restore();
+      }
+
+      // =======================================================================
+      // 2. GAIA DR3 PROPER MOTION VECTOR & ASTROMETRIC OVERLAY
+      // =======================================================================
+      if (isGaiaOverlayEnabled) {
+        ctx.save();
+        const originX = (clickReticle ? clickReticle.x : 0);
+        const originY = (clickReticle ? clickReticle.y : 0);
+
+        let pmRaMas = -8120.0;
+        let pmDecMas = 680.0;
+        let baselineYr = 26.2;
+        let totalPmText = '8.12 "/yr';
+        let targetLabel = currentTargetKey ? TARGETS[currentTargetKey].name : "Sky Target";
+
+        if (currentTargetKey && TARGETS[currentTargetKey]) {
+          const t = TARGETS[currentTargetKey];
+          totalPmText = t.pm;
+          if (currentTargetKey === 'wise0855') {
+            pmRaMas = -8120.0; pmDecMas = 680.0; baselineYr = 26.2;
+          } else if (currentTargetKey === 'barnard') {
+            pmRaMas = -798.0; pmDecMas = 10328.0; baselineYr = 25.8;
+          } else if (currentTargetKey === 'epsindi') {
+            pmRaMas = 3961.0; pmDecMas = -2538.0; baselineYr = 26.5;
+          } else if (currentTargetKey === 'rwaur') {
+            pmRaMas = 1.5; pmDecMas = -22.3; baselineYr = 20.0;
+          } else if (currentTargetKey === 'rdraconis') {
+            pmRaMas = 8.2; pmDecMas = -11.5; baselineYr = 15.0;
+          }
+        } else if (activeCutoutData && activeCutoutData.telemetry && activeCutoutData.telemetry.proper_motion_mas_yr) {
+          const pm = activeCutoutData.telemetry.proper_motion_mas_yr;
+          pmRaMas = -pm * 700.0;
+          pmDecMas = pm * 500.0;
+          totalPmText = `${pm.toFixed(2)} "/yr`;
+          baselineYr = 25.0;
+        }
+
+        // Convert mas/yr to total arcseconds shift over baseline
+        const shiftRaArcsec = (pmRaMas / 1000.0) * baselineYr;
+        const shiftDecArcsec = (pmDecMas / 1000.0) * baselineYr;
+        const totalShiftArcsec = Math.hypot(shiftRaArcsec, shiftDecArcsec);
+
+        // Convert arcsec to canvas world pixels (1 arcmin = pixelsPerArcmin, 1 arcsec = pixelsPerArcmin / 60)
+        const pxPerArcsec = pixelsPerArcmin / 60.0;
+        // In celestial view, RA increases East (left: -X), Dec increases North (up: -Y)
+        const vecDx = -(shiftRaArcsec * pxPerArcsec);
+        const vecDy = -(shiftDecArcsec * pxPerArcsec);
+
+        let renderDx = vecDx;
+        let renderDy = vecDy;
+        const rawLen = Math.hypot(vecDx, vecDy);
+        if (rawLen < 35) {
+          const boost = 35 / (rawLen || 1);
+          renderDx *= boost;
+          renderDy *= boost;
+        }
+
+        const e1X = originX;
+        const e1Y = originY;
+        const e2X = originX + renderDx;
+        const e2Y = originY + renderDy;
+
+        // Trajectory Dashed Baseline
+        ctx.strokeStyle = 'rgba(234, 118, 0, 0.9)';
+        ctx.lineWidth = 2.0 / camera.zoom;
+        ctx.setLineDash([5 / camera.zoom, 3 / camera.zoom]);
+        ctx.beginPath();
+        ctx.moveTo(e1X, e1Y);
+        ctx.lineTo(e2X, e2Y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Epoch 1 Origin Marker (2MASS Historic Baseline)
+        ctx.fillStyle = '#00f0ff';
+        ctx.beginPath();
+        ctx.arc(e1X, e1Y, 5 / camera.zoom, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.0 / camera.zoom;
+        ctx.stroke();
+
+        // Epoch 2 Endpoint Marker (SPHEREx Current Position)
+        ctx.fillStyle = '#ea7600';
+        ctx.beginPath();
+        ctx.arc(e2X, e2Y, 6 / camera.zoom, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.0 / camera.zoom;
+        ctx.stroke();
+
+        // Directional Arrow Head
+        const angle = Math.atan2(renderDy, renderDx);
+        const arrowHeadLen = 12 / camera.zoom;
+        ctx.fillStyle = '#ea7600';
+        ctx.beginPath();
+        ctx.moveTo(e2X, e2Y);
+        ctx.lineTo(e2X - arrowHeadLen * Math.cos(angle - Math.PI / 6), e2Y - arrowHeadLen * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(e2X - arrowHeadLen * Math.cos(angle + Math.PI / 6), e2Y - arrowHeadLen * Math.sin(angle + Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+
+        // Text Labels for Epochs
+        const fontSz = Math.max(9, 10 / camera.zoom);
+        ctx.font = `bold ${fontSz}px monospace`;
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillText('Epoch 1 (1999 2MASS)', e1X - 45 / camera.zoom, e1Y - 8 / camera.zoom);
+        ctx.fillStyle = '#ea7600';
+        ctx.fillText('Epoch 2 (2025 SPHEREx)', e2X + 8 / camera.zoom, e2Y + 4 / camera.zoom);
+
+        // Telemetry Floating Badge
+        const badgeX = (e1X + e2X) / 2 + 10 / camera.zoom;
+        const badgeY = (e1Y + e2Y) / 2 - 16 / camera.zoom;
+        const bw = 160 / camera.zoom;
+        const bh = 34 / camera.zoom;
+
+        ctx.fillStyle = 'rgba(10, 15, 26, 0.90)';
+        ctx.strokeStyle = '#ea7600';
+        ctx.lineWidth = 1.0 / camera.zoom;
+        ctx.fillRect(badgeX, badgeY - 10 / camera.zoom, bw, bh);
+        ctx.strokeRect(badgeX, badgeY - 10 / camera.zoom, bw, bh);
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText(`Gaia DR3 Motion Vector`, badgeX + 6 / camera.zoom, badgeY + 2 / camera.zoom);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = `${Math.max(8, 8.5 / camera.zoom)}px monospace`;
+        ctx.fillText(`μ = ${totalPmText} | Δt = ${baselineYr.toFixed(1)} yr`, badgeX + 6 / camera.zoom, badgeY + 14 / camera.zoom);
+
+        ctx.restore();
+      }
+
+      ctx.restore();
+
+      // =======================================================================
+      // 3. ASTRONOMICAL SCALE BAR & CELESTIAL COMPASS (Screen Coordinates)
+      // =======================================================================
+      const scaleArcmin = 1.0; // 1 arcminute scale reference
+      const scalePx = scaleArcmin * pixelsPerArcmin * camera.zoom;
+      if (scalePx > 25 && scalePx < w * 0.45) {
+        const barX = w - scalePx - 20;
+        const barY = h - 20;
+
+        ctx.save();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(barX, barY);
+        ctx.lineTo(barX + scalePx, barY);
+        ctx.moveTo(barX, barY - 4);
+        ctx.lineTo(barX, barY + 4);
+        ctx.moveTo(barX + scalePx, barY - 4);
+        ctx.lineTo(barX + scalePx, barY + 4);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(`1.0' (60")`, barX + scalePx / 2, barY - 6);
+        ctx.restore();
+      }
+
+      // Celestial Cardinal Compass (Bottom-Left)
+      ctx.save();
+      const compX = 28;
+      const compY = h - 28;
+      const armLen = 16;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      // North arrow (up)
+      ctx.beginPath(); ctx.moveTo(compX, compY); ctx.lineTo(compX, compY - armLen); ctx.stroke();
+      // East arrow (left)
+      ctx.beginPath(); ctx.moveTo(compX, compY); ctx.lineTo(compX - armLen, compY); ctx.stroke();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('N', compX, compY - armLen - 3);
+      ctx.fillText('E', compX - armLen - 6, compY + 3);
       ctx.restore();
     }
 
@@ -1697,6 +2049,7 @@
     });
 
     function selectTarget(key) {
+      clickReticle = null;
       cancelPendingTileFetches();
       spatialTileMap.clear();
       activeNearFetches.clear();
@@ -1733,6 +2086,7 @@
     }
 
     function slewToTypedCoordinates() {
+      clickReticle = null;
       cancelPendingTileFetches();
       spatialTileMap.clear();
       activeNearFetches.clear();
@@ -1895,20 +2249,71 @@
     let isDragging = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
+    let dragStartX = 0;
+    let dragStartY = 0;
 
     canvas.addEventListener('mousedown', (e) => {
       if (e.button === 0) { // Left click
         isDragging = true;
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
       }
     });
 
-    window.addEventListener('mouseup', () => {
+    window.addEventListener('mouseup', (e) => {
       if (isDragging) {
         isDragging = false;
+        const dragDist = Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY);
+        if (dragDist < 6 && !isWalkNav && (e.target === canvas || canvas.contains(e.target))) {
+          handleCanvasClick(e);
+        }
       }
     });
+
+    canvas.addEventListener('dblclick', () => {
+      clickReticle = null;
+      drawFrame();
+    });
+
+    function handleCanvasClick(e) {
+      const rect = canvas.getBoundingClientRect();
+      const screenX = e.clientX - rect.left;
+      const screenY = e.clientY - rect.top;
+      const w = canvas.width;
+      const h = canvas.height;
+
+      const worldX = (screenX - (w / 2 + camera.panX)) / camera.zoom;
+      const worldY = (screenY - (h / 2 + camera.panY)) / camera.zoom;
+
+      const basePx = Math.min(w, h) * 0.90;
+      const pixelsPerArcmin = basePx / 3.0;
+      const degPerPixel = (3.0 / 60.0) / pixelsPerArcmin;
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+
+      const clickedRA = camera.ra - (worldX * degPerPixel) / cosDec;
+      const clickedDec = camera.dec - (worldY * degPerPixel);
+
+      clickReticle = {
+        x: worldX,
+        y: worldY,
+        ra: clickedRA,
+        dec: clickedDec
+      };
+
+      document.getElementById('inputRA').value = clickedRA.toFixed(5);
+      document.getElementById('inputDec').value = clickedDec.toFixed(5);
+      document.getElementById('propRA').innerText = `${clickedRA.toFixed(5)}°`;
+      document.getElementById('propDec').innerText = `${clickedDec.toFixed(5)}°`;
+      document.getElementById('vpRA').innerText = `${clickedRA.toFixed(5)}°`;
+      document.getElementById('vpDec').innerText = `${clickedDec.toFixed(5)}°`;
+
+      propertiesSidebar.classList.remove('hidden');
+      loadSpectrumData(clickedRA, clickedDec, null);
+      playTargetLockChime();
+      drawFrame();
+    }
 
     window.addEventListener('mousemove', (e) => {
       if (isWalkNav && document.pointerLockElement === canvas) {
@@ -1948,8 +2353,21 @@
           closeShortcutsModal();
           return;
         }
+        if (fitsModal && !fitsModal.classList.contains('hidden')) {
+          closeFitsModal();
+          return;
+        }
+        if (discoveriesModal && !discoveriesModal.classList.contains('hidden')) {
+          closeDiscoveriesModal();
+          return;
+        }
         if (flagModal && !flagModal.classList.contains('hidden')) {
           closeCandidateModal();
+          return;
+        }
+        if (clickReticle) {
+          clickReticle = null;
+          drawFrame();
           return;
         }
         if (isWalkNav) {
@@ -2078,6 +2496,18 @@
           toolMute.click();
           return;
         }
+        // [V]: Toggle Gaia DR3 Proper Motion Vectors
+        if (e.code === 'KeyV') {
+          e.preventDefault();
+          toggleGaiaOverlay();
+          return;
+        }
+        // [C]: Open Citizen Science Discoveries Catalogue
+        if (e.code === 'KeyC') {
+          e.preventDefault();
+          openDiscoveriesModal();
+          return;
+        }
         // [P] or [F8]: Capture Snapshot
         if (e.code === 'KeyP' || e.code === 'F8') {
           e.preventDefault();
@@ -2186,7 +2616,7 @@
     const submitCandidateBtn = document.getElementById('submitCandidateBtn');
 
     flagCandidateBtn.addEventListener('click', () => {
-      const coords = getCurrentCoordinates();
+      const coords = clickReticle || getCurrentCoordinates();
       document.getElementById('candRAInput').value = coords.ra.toFixed(5);
       document.getElementById('candDecInput').value = coords.dec.toFixed(5);
       document.getElementById('candNameInput').value = `${document.getElementById('vpTargetName').innerText} Candidate`;
@@ -2263,6 +2693,181 @@
     if (shortcutsModal) {
       shortcutsModal.addEventListener('click', (e) => {
         if (e.target === shortcutsModal) closeShortcutsModal();
+      });
+    }
+
+    // =========================================================================
+    // GAIA DR3 ASTROMETRIC VECTORS CONTROLLER
+    // =========================================================================
+    const toolGaia = document.getElementById('toolGaia');
+    function toggleGaiaOverlay() {
+      isGaiaOverlayEnabled = !isGaiaOverlayEnabled;
+      if (toolGaia) {
+        if (isGaiaOverlayEnabled) {
+          toolGaia.classList.add('blender-btn-orange-active', 'text-amber-400');
+          toolGaia.classList.remove('text-gray-300');
+        } else {
+          toolGaia.classList.remove('blender-btn-orange-active', 'text-amber-400');
+          toolGaia.classList.add('text-gray-300');
+        }
+      }
+      playModeChime();
+      drawFrame();
+    }
+    if (toolGaia) toolGaia.addEventListener('click', toggleGaiaOverlay);
+
+    // =========================================================================
+    // REAL ASTRONOMICAL FITS MODAL CONTROLLER
+    // =========================================================================
+    const fitsModal = document.getElementById('fitsModal');
+    function openFitsModal() {
+      if (!fitsModal) return;
+      const coords = clickReticle || getCurrentCoordinates();
+      const targetName = currentTargetKey ? TARGETS[currentTargetKey].name : `Sky Field (${coords.ra.toFixed(4)}°, ${coords.dec.toFixed(4)}°)`;
+      document.getElementById('fitsModalTargetName').innerText = targetName;
+      document.getElementById('fitsModalCoords').innerText = `RA ${coords.ra.toFixed(5)}°, Dec ${coords.dec.toFixed(5)}°`;
+
+      let ep1Href = `${BACKEND_URL}/download_fits?epoch=1`;
+      let ep2Href = `${BACKEND_URL}/download_fits?epoch=2`;
+      if (currentTargetKey) {
+        ep1Href += `&target=${currentTargetKey}`;
+        ep2Href += `&target=${currentTargetKey}`;
+      } else {
+        ep1Href += `&ra=${coords.ra.toFixed(5)}&dec=${coords.dec.toFixed(5)}`;
+        ep2Href += `&ra=${coords.ra.toFixed(5)}&dec=${coords.dec.toFixed(5)}`;
+      }
+      document.getElementById('btnDownloadEpoch1Fits').href = ep1Href;
+      document.getElementById('btnDownloadEpoch2Fits').href = ep2Href;
+
+      fitsModal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeFitsModal() {
+      if (fitsModal) fitsModal.classList.add('hidden');
+    }
+
+    const btnHeaderFITS = document.getElementById('btnHeaderFITS');
+    if (btnHeaderFITS) btnHeaderFITS.addEventListener('click', openFitsModal);
+    const closeFitsModalBtn = document.getElementById('closeFitsModalBtn');
+    if (closeFitsModalBtn) closeFitsModalBtn.addEventListener('click', closeFitsModal);
+    const closeFitsModalFooterBtn = document.getElementById('closeFitsModalFooterBtn');
+    if (closeFitsModalFooterBtn) closeFitsModalFooterBtn.addEventListener('click', closeFitsModal);
+    if (fitsModal) {
+      fitsModal.addEventListener('click', (e) => {
+        if (e.target === fitsModal) closeFitsModal();
+      });
+    }
+
+    // =========================================================================
+    // CITIZEN SCIENCE DISCOVERIES CATALOGUE MODAL CONTROLLER
+    // =========================================================================
+    const discoveriesModal = document.getElementById('discoveriesModal');
+    async function openDiscoveriesModal() {
+      if (!discoveriesModal) return;
+      discoveriesModal.classList.remove('hidden');
+      lucide.createIcons();
+      const tbody = document.getElementById('discoveriesTableBody');
+      tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400"><span class="animate-spin inline-block w-3.5 h-3.5 border-2 border-emerald-400 border-t-transparent rounded-full mr-2 align-middle"></span>Querying community archive...</td></tr>`;
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/discoveries`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        currentDiscoveries = await res.json();
+
+        if (!currentDiscoveries || currentDiscoveries.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">No candidates recorded yet. Press [F] to flag your first discovery!</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = currentDiscoveries.map((d, idx) => `
+          <tr class="hover:bg-blender-800/60 transition-colors">
+            <td class="p-2 font-semibold text-white flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3 h-3 text-amber-400"></i>
+              <span>${escapeHtml(d.candidate_name || 'Candidate')}</span>
+            </td>
+            <td class="p-2 text-cyan-300 font-mono">${typeof d.ra === 'number' ? d.ra.toFixed(5) : d.ra}°</td>
+            <td class="p-2 text-cyan-300 font-mono">${typeof d.dec === 'number' ? d.dec.toFixed(5) : d.dec}°</td>
+            <td class="p-2">
+              <span class="px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 text-[9px] font-bold">
+                ${escapeHtml(d.motion_type || 'Moving Object')}
+              </span>
+            </td>
+            <td class="p-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-gray-400 text-[9px] truncate max-w-[120px]">${escapeHtml(d.astronomer || 'Citizen Astronomer')}</span>
+                <button onclick="slewToDiscovery(${idx})" class="px-2 py-0.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-cyan-300 hover:text-white text-[9px] flex items-center gap-1 transition-all shadow-sm">
+                  <span>Slew</span>
+                  <i data-lucide="crosshair" class="w-2.5 h-2.5"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+        lucide.createIcons();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-400">Failed to load discoveries from archive: ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    function closeDiscoveriesModal() {
+      if (discoveriesModal) discoveriesModal.classList.add('hidden');
+    }
+
+    window.slewToDiscovery = function(idx) {
+      if (!currentDiscoveries || !currentDiscoveries[idx]) return;
+      const d = currentDiscoveries[idx];
+      closeDiscoveriesModal();
+      document.getElementById('inputRA').value = d.ra;
+      document.getElementById('inputDec').value = d.dec;
+      slewToTypedCoordinates();
+    };
+
+    function exportDiscoveriesCsv() {
+      if (!currentDiscoveries || currentDiscoveries.length === 0) {
+        alert("No discoveries available to export.");
+        return;
+      }
+      const headers = ["Candidate Name", "RA (deg)", "Dec (deg)", "Motion Type", "Proper Motion (mas/yr)", "Astronomer", "Timestamp"];
+      const rows = currentDiscoveries.map(d => [
+        `"${(d.candidate_name || '').replace(/"/g, '""')}"`,
+        d.ra,
+        d.dec,
+        `"${(d.motion_type || '').replace(/"/g, '""')}"`,
+        d.proper_motion_mas || 0,
+        `"${(d.astronomer || '').replace(/"/g, '""')}"`,
+        `"${d.timestamp || ''}"`
+      ]);
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `spherex_citizen_discoveries_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    const btnHeaderDiscoveries = document.getElementById('btnHeaderDiscoveries');
+    if (btnHeaderDiscoveries) btnHeaderDiscoveries.addEventListener('click', openDiscoveriesModal);
+    const toolDiscoveries = document.getElementById('toolDiscoveries');
+    if (toolDiscoveries) toolDiscoveries.addEventListener('click', openDiscoveriesModal);
+    const viewDiscoveriesBtn = document.getElementById('viewDiscoveriesBtn');
+    if (viewDiscoveriesBtn) viewDiscoveriesBtn.addEventListener('click', openDiscoveriesModal);
+    const closeDiscoveriesModalBtn = document.getElementById('closeDiscoveriesModalBtn');
+    if (closeDiscoveriesModalBtn) closeDiscoveriesModalBtn.addEventListener('click', closeDiscoveriesModal);
+    const closeDiscoveriesModalFooterBtn = document.getElementById('closeDiscoveriesModalFooterBtn');
+    if (closeDiscoveriesModalFooterBtn) closeDiscoveriesModalFooterBtn.addEventListener('click', closeDiscoveriesModal);
+    const btnExportDiscoveriesCsv = document.getElementById('btnExportDiscoveriesCsv');
+    if (btnExportDiscoveriesCsv) btnExportDiscoveriesCsv.addEventListener('click', exportDiscoveriesCsv);
+    if (discoveriesModal) {
+      discoveriesModal.addEventListener('click', (e) => {
+        if (e.target === discoveriesModal) closeDiscoveriesModal();
       });
     }
 

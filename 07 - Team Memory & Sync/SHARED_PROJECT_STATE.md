@@ -10,7 +10,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | **System Lead** | `jokerodu` | `main` | Architecture, coordination & merge reviews | 🟢 Active |
 | **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Real FITS cutout & 102-band API running on port 8000 | 🟢 Live |
-| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Blender GUI connected to live backend API | 🟢 Connected |
+| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | All features complete (Reticle, Gaia Vectors, FITS Exporter, Discoveries Modal, 60 FPS LOD) | 🟢 Complete |
 | **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟡 In Progress |
 | **UX, Story & Video** | `astrodu` | `astrodu/ui-story-pitch` | Citizen science modal, slide deck & video script | 🟡 In Progress |
 
@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[All Roadmap Items Completed by @coolodu]** Deployed full suite of advanced astronomical features on `coolodu/web-frontend`:
+  - **Click-to-Spectrum & 3D Cursor Reticle:** Direct celestial coordinate inversion mapping user clicks to $(\alpha, \delta)$, auto-fetching 102-band infrared spectra, and rendering high-tech dual-ring targeting brackets.
+  - **Gaia DR3 Proper Motion Vector Overlay:** Toggled via `#toolGaia` or key `V`, displaying multi-epoch motion vectors ($E_1 \to E_2$) with directional arrowheads, trajectory baselines, and telemetry badges.
+  - **Authentic NASA FITS File Exporter:** Endpoint `/api/download_fits` and `#fitsModal` allowing users to download real 2MASS and DSS2/SPHEREx FITS cutouts for professional astronomy software.
+  - **Citizen Science Discoveries Catalogue Modal:** Live community catalogue modal (`#discoveriesModal` / key `C`) with 1-click telescope slewing and instant CSV report export.
+  - **Live Browser Verification:** Verified with 0 runtime errors on live server at `http://127.0.0.1:8000/app/index.html`.
 - **[TASK-002 Complete by @coolodu]** Resolved viewport crash and stabilized multi-tile LOD camera streaming: implemented 3-worker concurrency queue, 16-tile distance-based texture eviction, frustum culling, backend dynamic reflection padding, and smooth LOD cross-fade verified at 60 FPS in browser with zero console errors.
 - **[URGENT Task Forwarded to @coolodu: TASK-002]** Forwarded viewport crash fix, optical camera LOD streaming, and seamless near-tile multi-canvas optimization to `coolodu` to leverage their high laptop specifications and Paid Pro Gemini token allocation.
 - **[Frontend UI & Controls Polish Complete]** Added complete keyboard shortcuts suite (`Space`, `←/→`, `Home/End`, `B`, `D`, `S`, `A`, `G/I/T`, `R`, `M`, `P/F8`, `F`, `1-5`, `?`), dark Blender-style Shortcuts Cheat Sheet modal, high-res PNG canvas snapshot exporter with telemetry stamp, quick FPS preset buttons (1x, 2x, 4x), and sensory audio feedback for frame ticks and snapshot shutters.

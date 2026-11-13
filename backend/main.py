@@ -13,6 +13,7 @@ import os
 import json
 from typing import Optional
 from fastapi import FastAPI, Query, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -153,6 +154,57 @@ def get_spectrum(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/download_fits")
+def download_fits(
+    target: Optional[str] = Query(None, description="Benchmark target key"),
+    ra: Optional[str] = Query(None, description="Right Ascension"),
+    dec: Optional[str] = Query(None, description="Declination"),
+    epoch: int = Query(1, description="Epoch 1 (2MASS) or Epoch 2 (DSS2/SPHEREx)")
+):
+    """Streams authentic NASA scientific FITS file for requested target/coordinates & epoch."""
+    import glob
+    survey_suffix = "2mass.fits" if epoch == 1 else "dss2.fits"
+    dyn_dir = os.path.join(os.path.dirname(__file__), "cache", "dynamic_fits")
+    fits_dir = os.path.join(os.path.dirname(__file__), "cache", "fits")
+
+    target_ra = None
+    target_dec = None
+    target_name = "target"
+
+    if target and target.lower() in BENCHMARKS:
+        b = BENCHMARKS[target.lower()]
+        target_ra = b["ra"]
+        target_dec = b["dec"]
+        target_name = target.lower()
+    elif ra and dec:
+        target_ra, target_dec = parse_celestial_coords(ra, dec)
+        target_name = f"sky_{target_ra:.4f}_{target_dec:.4f}"
+
+    # 1. Search dynamic_fits by coordinate string
+    if target_ra is not None and target_dec is not None and os.path.exists(dyn_dir):
+        ra_str = f"{target_ra:.4f}"
+        pattern = os.path.join(dyn_dir, f"*{ra_str}*{survey_suffix}")
+        matches = glob.glob(pattern)
+        if matches:
+            filename = f"spherex_{target_name}_epoch{epoch}_{survey_suffix}"
+            return FileResponse(matches[0], media_type="application/fits", filename=filename)
+
+    # 2. Search fits dir by target name
+    if target and os.path.exists(fits_dir):
+        p = os.path.join(fits_dir, f"{target.lower()}_{survey_suffix}")
+        if os.path.exists(p):
+            filename = f"spherex_{target.lower()}_epoch{epoch}_{survey_suffix}"
+            return FileResponse(p, media_type="application/fits", filename=filename)
+
+    # 3. If any FITS file in dynamic_fits matches epoch, return most recent
+    if os.path.exists(dyn_dir):
+        matches = sorted(glob.glob(os.path.join(dyn_dir, f"*{survey_suffix}")), key=os.path.getmtime, reverse=True)
+        if matches:
+            filename = f"spherex_field_epoch{epoch}_{survey_suffix}"
+            return FileResponse(matches[0], media_type="application/fits", filename=filename)
+
+    raise HTTPException(status_code=404, detail="Requested FITS file not found in telescope archive.")
 
 @app.get("/api/discoveries")
 def get_discoveries():

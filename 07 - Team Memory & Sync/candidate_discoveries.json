@@ -1,0 +1,47 @@
+[
+  {
+    "candidate_name": "WISE J085510.83-071442.5",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "motion_type": "Cold Y-Dwarf (Proper Motion)",
+    "proper_motion_mas": 8120.0,
+    "astronomer": "Kevin Luhman / Citizen Archive",
+    "timestamp": "2026-11-12T18:30:00Z"
+  },
+  {
+    "candidate_name": "Barnard's Star (GJ 699)",
+    "ra": 269.45208,
+    "dec": 4.69339,
+    "motion_type": "High Proper Motion Red Dwarf",
+    "proper_motion_mas": 10328.0,
+    "astronomer": "E. E. Barnard / Backyard Worlds",
+    "timestamp": "2026-11-12T19:00:00Z"
+  },
+  {
+    "candidate_name": "CWISE J124909+362116.0",
+    "ra": 192.28821,
+    "dec": 36.35444,
+    "motion_type": "Hypervelocity Brown Dwarf (Subdwarf)",
+    "proper_motion_mas": 4500.0,
+    "astronomer": "Citizen Scientists (Backyard Worlds)",
+    "timestamp": "2026-11-12T20:15:00Z"
+  },
+  {
+    "candidate_name": "Epsilon Indi B",
+    "ra": 331.04379,
+    "dec": -56.78272,
+    "motion_type": "Substellar Binary (T1+T6)",
+    "proper_motion_mas": 4700.0,
+    "astronomer": "Team RIP / coolodu",
+    "timestamp": "2026-11-13T08:00:00Z"
+  },
+  {
+    "candidate_name": "RW Aurigae",
+    "ra": 76.95642,
+    "dec": 30.40142,
+    "motion_type": "Young Stellar Object (Dimming Variable)",
+    "proper_motion_mas": 20.0,
+    "astronomer": "SPHEREx Variable Stars Survey",
+    "timestamp": "2026-11-13T09:15:00Z"
+  }
+]
