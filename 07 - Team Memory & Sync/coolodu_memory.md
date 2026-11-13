@@ -3,11 +3,15 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Review interactive frontend prototype in `/frontend/index.html` and customize components.
-- **Next Task:** Connect backend cutout API when ready and hook up real FITS tiles.
+- **Current Task:** Local development preview active and verified live at http://127.0.0.1:8000/app/index.html.
+- **Next Task:** Implement UI refinements, citizen science enhancements, or audio sonification features based on team needs.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Initialized workspace on branch `coolodu/web-frontend` and set up MinGit environment.
+- [x] Installed local Python astronomy & API stack (`fastapi`, `uvicorn`, `astropy`, `scipy`, `numpy`, `astroquery`).
+- [x] Started local FastAPI astronomy backend server running on port 8000.
+- [x] Verified full live frontend at `http://127.0.0.1:8000/app/index.html` via automated browser testing (Blink, Difference, Spectra, CDS Aladin, timeline controls, benchmark switching).
 - [x] Assigned role and received task prompts for Antigravity.
 - [x] Initialized interactive SPHEREx Hunter Blink Comparator prototype in `/frontend/index.html`.
 - [x] Implemented animated blink player with play/pause, 1-10 FPS slider, and step buttons.
