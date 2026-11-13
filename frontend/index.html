@@ -277,9 +277,6 @@
         <button id="shadeThermal" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="False Color Infrared Thermal">
           Thermal
         </button>
-        <button id="shadeDifference" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded text-blender-orange" title="Difference Map (I₂ - I₁)">
-          Diff
-        </button>
       </div>
 
       <!-- FLOATING GAMER WALK MODE HUD BANNER (Only active during Walk Nav) -->
@@ -1259,8 +1256,6 @@
     wsBlink.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsBlink.classList.add('blender-btn-active');
-      setCanvasFilter('filter-grayscale');
-      shadeGray.classList.add('blender-btn-active');
       diffMode = false;
       updateFrameLabel();
       drawFrame();
@@ -1270,8 +1265,6 @@
     wsDiff.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsDiff.classList.add('blender-btn-active');
-      setCanvasFilter('filter-grayscale');
-      shadeDiff.classList.add('blender-btn-active');
       diffMode = true;
       stopFlipbook();
       updateFrameLabel();
@@ -1295,58 +1288,31 @@
       initAladinLite();
     });
 
-    // Shading Buttons (Grayscale, Inverted, Thermal, Diff)
+    // Shading Buttons (Grayscale, Inverted, Thermal)
     const shadeGray = document.getElementById('shadeGrayscale');
     const shadeInv = document.getElementById('shadeInverted');
     const shadeTherm = document.getElementById('shadeThermal');
-    const shadeDiff = document.getElementById('shadeDifference');
 
     function setCanvasFilter(filterClass) {
       canvas.className = `w-full h-full block ${filterClass}`;
-      [shadeGray, shadeInv, shadeTherm, shadeDiff].forEach(b => b.classList.remove('blender-btn-active'));
+      [shadeGray, shadeInv, shadeTherm].forEach(b => b.classList.remove('blender-btn-active'));
     }
 
     shadeGray.addEventListener('click', () => {
       setCanvasFilter('filter-grayscale');
       shadeGray.classList.add('blender-btn-active');
-      diffMode = false;
-      resetWorkspaceButtons();
-      wsBlink.classList.add('blender-btn-active');
-      updateFrameLabel();
       drawFrame();
-      startFlipbook();
     });
 
     shadeInv.addEventListener('click', () => {
       setCanvasFilter('filter-inverted');
       shadeInv.classList.add('blender-btn-active');
-      diffMode = false;
-      resetWorkspaceButtons();
-      wsBlink.classList.add('blender-btn-active');
-      updateFrameLabel();
       drawFrame();
-      startFlipbook();
     });
 
     shadeTherm.addEventListener('click', () => {
       setCanvasFilter('filter-thermal');
       shadeTherm.classList.add('blender-btn-active');
-      diffMode = false;
-      resetWorkspaceButtons();
-      wsBlink.classList.add('blender-btn-active');
-      updateFrameLabel();
-      drawFrame();
-      startFlipbook();
-    });
-
-    shadeDiff.addEventListener('click', () => {
-      setCanvasFilter('filter-grayscale');
-      shadeDiff.classList.add('blender-btn-active');
-      diffMode = true;
-      resetWorkspaceButtons();
-      wsDiff.classList.add('blender-btn-active');
-      stopFlipbook();
-      updateFrameLabel();
       drawFrame();
     });
 
