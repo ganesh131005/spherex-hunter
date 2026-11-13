@@ -26,12 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-- **[Multi-Tile Spatial Near-Image Streamer & Sky Mosaic Grid]** Resolved the zoomed-out "isolated postage stamp" issue by implementing a dynamic spatial celestial tile matrix:
-  - When zooming out (`camera.zoom < 0.95`, reaching 0.4x), the canvas automatically generates and streams adjacent near-image celestial chunks in a $3 \times 3$ or $5 \times 5$ spatial grid around the target.
-  - Queries adjacent celestial coordinates ($\text{RA} \pm \Delta\text{RA}, \text{Dec} \pm \Delta\text{Dec}$) asynchronously from NASA IRSA (`fetchNeighborTile(dx, dy)`).
-  - Renders continuous Poisson photon noise floor and stellar distributions matching the central target, eliminating any empty black void when viewing wide celestial fields.
-  - Displays dynamic HUD badge `#vpMosaicBadge`: `Mosaic: 3×3 Near Tiles` or `Mosaic: 5×5 Near Tiles`.
-- **[Multi-Tier Gaming Level of Detail (LOD) Engine]** Integrated a dynamic 3-tier gaming LOD streaming engine into both the FastAPI backend and HTML5 Canvas frontend based on apparent FOV ($\text{camera.fov} / \text{camera.zoom}$):
+- **[Continuous Optical Camera Zoom & Seam-Free Wide-Field Engine (Phase 7)]** Refined multi-tier LOD rendering to function like a genuine optical camera lens in the viewport:
+  - **Calibrated Multi-Tier Matrix Resolutions:**
+    - **LOD 2 (Wide Overview):** $360 \times 360$ matrix, broad $10.0' - 15.0'$ FOV for ultra-fast, smooth 60 FPS transit.
+    - **LOD 1 (Standard Science):** $720 \times 720$ matrix, standard $3.0' - 4.0'$ FOV for crisp stellar PSFs and faint background sources.
+    - **LOD 0 (Hero Deep Core):** $1024 \times 1024$ unbinned sub-pixel matrix, deep $1.0' - 1.5'$ FOV for diffraction cores and micro-arcsecond astrometry.
+  - **Zero Tile Seams:** Eliminated discrete square checkerboard grid loops that caused visible border seams. The entire wide-field overview is rendered from a single, contiguous astronomical FITS image from NASA IRSA.
+  - **Continuous Celestial Coordinate Camera Zoom:** Images are mapped to physical world celestial coordinates ($\text{drawSize} = \text{imageFov} \times \text{pixels\_per\_arcmin}$). Zooming with the mouse wheel smoothly magnifies the starlight continuously through the virtual telescope lens with bilinear filtering and 150ms alpha cross-fade between resolution tiers.
+- **[Streamlined Separation of Workspaces vs. Shading]** Decoupled the topbar data mode (`[ Blink ]` vs `[ Difference ]`) from the viewport shading colormaps (`[ Gray ]`, `[ Invert ]`, `[ Thermal ]`). Both data modes can now be inspected in any colormap without mode conflicts.
   - **LOD 2 (Wide Overview / Fast Scan):** $\text{eff\_fov} > 5.5'$, serves lightweight $200 \times 200$ tiles reducing bandwidth and GPU load by 75% for butter-smooth 60 FPS galactic transit.
   - **LOD 1 (Standard Science):** $1.8' \le \text{eff\_fov} \le 5.5'$, serves standard $400 \times 400$ Astropy ZScaled FITS cutouts.
   - **LOD 0 (Hero Deep Zoom):** $\text{eff\_fov} < 1.8'$, streams unbinned $600 \times 600$ sub-pixel matrices resolving fine Airy disk diffraction patterns and micro-arcsecond proper motion dipoles.
