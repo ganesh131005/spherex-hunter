@@ -717,10 +717,13 @@
     }
 
     // =========================================================================
-    // SPATIAL TILE CACHE & VIEWPORT FOCUS NEAR-IMAGE STREAMER
+    // SPATIAL TILE CACHE & HIGH-PERFORMANCE NEAR-IMAGE STREAMER
     // =========================================================================
     const spatialTileMap = new Map();
     const activeNearFetches = new Set();
+    const tileFetchQueue = [];
+    let activeWorkerCount = 0;
+    const MAX_PARALLEL_FETCHES = 2; // Flat RAM & zero OOM crashes
     let nearTileStreamTimer = null;
 
     function getTileKey(col, row, lod) {
@@ -734,8 +737,8 @@
         img1, img2, imgDiff,
         timestamp: Date.now()
       });
-      // Limit cache size to 36 tiles to manage GPU texture memory
-      if (spatialTileMap.size > 36) {
+      // Limit cache size to 16 tiles to manage GPU texture memory & keep RAM flat
+      if (spatialTileMap.size > 16) {
         let oldestKey = null;
         let oldestTime = Infinity;
         for (const [k, v] of spatialTileMap.entries()) {
@@ -745,7 +748,15 @@
             oldestKey = k;
           }
         }
-        if (oldestKey) spatialTileMap.delete(oldestKey);
+        if (oldestKey) {
+          const evicted = spatialTileMap.get(oldestKey);
+          if (evicted) {
+            if (evicted.img1) evicted.img1.src = '';
+            if (evicted.img2) evicted.img2.src = '';
+            if (evicted.imgDiff) evicted.imgDiff.src = '';
+          }
+          spatialTileMap.delete(oldestKey);
+        }
       }
     }
 
@@ -753,7 +764,7 @@
       if (nearTileStreamTimer) clearTimeout(nearTileStreamTimer);
       nearTileStreamTimer = setTimeout(() => {
         streamVisibleNearTiles();
-      }, 120);
+      }, 100);
     }
 
     async function streamVisibleNearTiles() {
@@ -775,11 +786,11 @@
       const minY = -halfVisH - camera.panY;
       const maxY = halfVisH - camera.panY;
 
-      // Determine required grid range to envelope the entire visible screen + 1 buffer ring
-      const colMin = Math.max(-3, Math.floor((minX - tilePx / 2) / tilePx));
-      const colMax = Math.min(3, Math.ceil((maxX + tilePx / 2) / tilePx));
-      const rowMin = Math.max(-3, Math.floor((-maxY - tilePx / 2) / tilePx));
-      const rowMax = Math.min(3, Math.ceil((-minY + tilePx / 2) / tilePx));
+      // Determine required grid range to envelope the visible screen (capped to 2 ring max)
+      const colMin = Math.max(-2, Math.floor((minX - tilePx / 2) / tilePx));
+      const colMax = Math.min(2, Math.ceil((maxX + tilePx / 2) / tilePx));
+      const rowMin = Math.max(-2, Math.floor((-maxY - tilePx / 2) / tilePx));
+      const rowMax = Math.min(2, Math.ceil((-minY + tilePx / 2) / tilePx));
 
       const mosaicEl = document.getElementById('vpMosaicBadge');
       if (mosaicEl) {
@@ -798,15 +809,32 @@
           const tileRA = camera.ra - (c * tileFov / (60.0 * cosDec));
           const tileDec = camera.dec + (r * tileFov / 60.0);
 
-          fetchSingleNearTile(c, r, currentLOD, tileFov, tileRA, tileDec);
+          enqueueNearTile(c, r, currentLOD, tileFov, tileRA, tileDec);
         }
       }
     }
 
-    async function fetchSingleNearTile(col, row, lod, fov, tileRA, tileDec) {
+    function enqueueNearTile(col, row, lod, fov, tileRA, tileDec) {
       const key = getTileKey(col, row, lod);
+      if (activeNearFetches.has(key)) return;
       activeNearFetches.add(key);
 
+      tileFetchQueue.push({ col, row, lod, fov, tileRA, tileDec, key });
+      processFetchQueue();
+    }
+
+    function processFetchQueue() {
+      while (activeWorkerCount < MAX_PARALLEL_FETCHES && tileFetchQueue.length > 0) {
+        const item = tileFetchQueue.shift();
+        activeWorkerCount++;
+        executeTileFetch(item).finally(() => {
+          activeWorkerCount--;
+          processFetchQueue();
+        });
+      }
+    }
+
+    async function executeTileFetch({ col, row, lod, fov, tileRA, tileDec, key }) {
       try {
         let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(tileRA)}&dec=${encodeURIComponent(tileDec)}&fov=${fov}&lod=${lod}`;
         if (currentTargetKey) url += `&target=${currentTargetKey}`;
@@ -831,7 +859,7 @@
           drawFrame();
         }
       } catch (err) {
-        // Silently tolerate edge survey boundaries
+        // Tolerated edge survey boundary
       } finally {
         activeNearFetches.delete(key);
       }
@@ -844,8 +872,10 @@
       const w = canvas.width;
       const h = canvas.height;
 
-      // Deep space background
-      ctx.fillStyle = '#06080e';
+      // Dynamic background based on active mode
+      // Blink Mode = Deep Space Black (#06080e)
+      // Difference Mode = Astrophotometric Neutral Baseline (#808080 mid-gray)
+      ctx.fillStyle = diffMode ? '#808080' : '#06080e';
       ctx.fillRect(0, 0, w, h);
 
       ctx.save();
@@ -857,6 +887,14 @@
       const basePx = Math.min(w, h) * 0.90;
       const pixelsPerArcmin = basePx / 3.0;
 
+      // Visible frustum in world space for frustum culling
+      const halfVisW = (w / (2 * camera.zoom));
+      const halfVisH = (h / (2 * camera.zoom));
+      const minX = -halfVisW - camera.panX;
+      const maxX = halfVisW - camera.panX;
+      const minY = -halfVisH - camera.panY;
+      const maxY = halfVisH - camera.panY;
+
       // Render all spatial near tiles covering the viewport
       if (spatialTileMap.size > 0) {
         for (const [key, tile] of spatialTileMap.entries()) {
@@ -866,6 +904,11 @@
           const tilePx = fov * pixelsPerArcmin;
           const cx = tile.col * tilePx;
           const cy = -tile.row * tilePx;
+
+          // Frustum culling: skip drawing tiles completely outside the camera viewport
+          if (cx + rw / 2 < minX || cx - rw / 2 > maxX || cy + rh / 2 < minY || cy - rh / 2 > maxY) {
+            continue;
+          }
 
           const activeImg = diffMode ? tile.imgDiff : (currentFrame === 1 ? tile.img1 : tile.img2);
           if (activeImg && activeImg.complete) {
@@ -1311,6 +1354,7 @@
     function selectTarget(key) {
       spatialTileMap.clear();
       activeNearFetches.clear();
+      tileFetchQueue.length = 0;
       currentTargetKey = key;
       const t = TARGETS[key];
       camera.ra = t.raDeg;
@@ -1346,6 +1390,7 @@
     function slewToTypedCoordinates() {
       spatialTileMap.clear();
       activeNearFetches.clear();
+      tileFetchQueue.length = 0;
       const raInput = document.getElementById('inputRA').value.trim();
       const decInput = document.getElementById('inputDec').value.trim();
       const fovVal = parseFloat(document.getElementById('selectFOV').value) || 3.0;

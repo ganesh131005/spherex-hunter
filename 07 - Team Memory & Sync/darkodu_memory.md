@@ -3,12 +3,13 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Dispatched `TASK-002` to `@coolodu` for rendering Gaia DR3 proper motion vector overlays on the canvas.
-- **Next Task:** Await coolodu's canvas integration / support astrodu with presentation numbers and video demo.
+- **Current Task:** Execute `TASK-005`: Seamless Near-Image Viewport Streaming & Zero Black Space (assigned by @jokerodu).
+- **Next Task:** Assist coolodu with frontend verification & support astrodu with presentation numbers and video demo.
 - **Blockers:** None.
 
 ## Completed Tasks:
-- [x] Dispatched `TASK-002` to `@coolodu` via Team RIP Task Forwarding System to integrate live `/api/catalog/gaia` proper motion vectors and 2MASS badges into the Blender viewport canvas.
+- [x] Analyzed and eliminated mirrored sky reflections (`TASK-004`): When offset queries exceed authentic benchmark FITS bounds, cutout_engine queries authentic surrounding fields via NASA IRSA or coordinate-seeded unique fields. Removed symmetric reflection padding and replaced with median cosmic sky flux.
+- [x] Fixed ZeroDivisionError in `backend/services/cutout_engine.py` (`load_real_fits_cutout`): implemented dynamic symmetric padding based on offset RA/Dec coordinates so near-tile queries return valid FITS cutouts and difference images across all LODs without boundary exceptions (`TASK-003`).
 - [x] Upgraded Citizen Science Discovery Pipeline (`/api/flag`):
   - Added unique candidate ID generation (`SPX-2026-XXXX`) and real ISO UTC timestamps.
   - Automated scientific validation: cross-matches every candidate on ingestion against Gaia DR3, 2MASS, and SIMBAD to evaluate Planet X / Brown Dwarf criteria.
@@ -38,10 +39,4 @@
   - Returns `actual_fov` in `data.coordinates.fov_arcmin` ensuring mathematically consistent angular scale across all LOD transitions.
   - Integrates Alard-Lupton & Bramich scientific difference imaging with median sky background subtraction, PSF matching ($\sigma=1.15$), photometric flux ratio scaling $S$, and photon noise floor $Z$-score mapping.
 - [x] Configured dedicated Python 3.12 virtual environment (`.venv`) with Astropy 8.0, Astroquery, Scipy, Numpy, Pillow, and FastAPI.
-- [x] Implemented and verified comprehensive diagnostic test suite (`backend/test_diagnostics.py`):
-  - Verified 100% of NASA benchmark targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis).
-  - Validated multi-tier LOD latency benchmarks: LOD 2 (~60ms), LOD 1 (~240ms), LOD 0 (~470ms).
-  - Validated Alard-Lupton difference imaging residuals, neutral 128 mid-gray background, and positive/negative dipole bounds in 2.2ms.
-  - Validated 102-band near-infrared SPHEREx spectroscopy (0.75 - 5.0 μm) and molecular signature detections in 0.2ms.
-  - Validated all FastAPI route handlers, Astropy sexagesimal coordinate conversion, and citizen science discovery logging.
-- [x] Upgraded `start_backend.bat` for seamless 1-click launch using `.venv`.
+- [x] Implemented and verified comprehensive diagnostic test suite (`backend/test_diagnostics.py`).
