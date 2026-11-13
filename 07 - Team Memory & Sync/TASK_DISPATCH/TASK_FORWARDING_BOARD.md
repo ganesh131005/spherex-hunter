@@ -1,6 +1,6 @@
 # 📋 Team RIP: Master Task Forwarding Board
 > **Live Task Forwarding Ledger** | Synced via Git across all branches  
-> **Last Updated:** 2026-11-13 14:59:18 | **Active Tasks:** 1
+> **Last Updated:** 2026-11-13 15:29:15 | **Active Tasks:** 2
 
 ---
 
@@ -9,6 +9,7 @@
 | Task ID | Title | Requester | Assigned Worker | Type | Priority | Status | Branch / Output |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **TASK-002** | Fix Viewport Crash & Optimize Near-Tile LOD Camera Streaming | `@jokerodu` | `@coolodu` | `hybrid` | `URGENT` | 🟡 PENDING | `coolodu/web-frontend` |
+| **TASK-003** | Fix Backend Near-Tile Offset Extraction & Robust Boundary Padding | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟡 PENDING | `darkodu/astro-backend` |
 | **TASK-001** | Generate Spectral SED Unit Tests | `@iceodu` | `@coolodu` | `token_heavy` | `NORMAL` | 🟢 COMPLETED | `tests/test_sed.py` |
 
 ---
