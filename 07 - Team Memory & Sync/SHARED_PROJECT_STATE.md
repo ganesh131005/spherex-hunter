@@ -26,6 +26,7 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Task Assigned to @darkodu: TASK-005]** Assigned seamless near-image viewport fetching around camera focus to `darkodu` to eliminate black empty space and mirrored tiles. Once `darkodu` completes the implementation, `coolodu` will validate and verify it in the frontend viewport.
 - **[TASK-003 & TASK-002 Complete & Verified Live]** Near-Image Viewport Streaming and Multi-Tile Canvas fully resolved and verified in browser:
   - **Backend Fix (@darkodu, TASK-003):** Fixed `ZeroDivisionError` in `load_real_fits_cutout` with dynamic symmetric padding. Offset near-tile queries around any coordinate now return valid (dim, dim) FITS cutouts and difference images without boundary slicing exceptions.
   - **Frontend Streaming & Memory Stabilization (@coolodu, TASK-002):** Implemented concurrency queue (max 2 parallel fetches), frustum culling, neutral mid-gray (128) baseline in Difference mode, and 16-tile LRU texture caching.
