@@ -17,10 +17,8 @@
 - [x] Formalize and validate Spec-Kit core objective deconstruction, 4 pillars, and 37-task dependency graph (`specs/001-spherex-sky-viewer/tasks.md`).
 - [x] Build and pass automated Golden Verification Suite (`tests/test_golden_suite.py`).
 - [x] [Task 1 Complete] Implement Live Gaia DR3 TAP Client (`backend/services/gaia_service.py`) querying NASA IRSA TAP (`irsa.ipac.caltech.edu/TAP`) and validating real proper motions ($\mu \approx 10,393\text{ mas/yr}$ for Barnard's Star). 8/8 tests passing.
-- [ ] [Task 2] Viewport Gaia DR3 Astrometry Overlay & Dipole Cross-Check in `frontend/index.html`.
-- [ ] [Task 3] WiseView (NASA WISE) 1-Click Verification Bridge.
-- [ ] [Task 4] CSA NEOSSat & CADC Asteroid Tracking Integration.
-- [ ] [Task 5] Official NASA & CSA Mission Resources Codex Modal.
+- [x] [Task 2 Complete] Viewport Gaia DR3 Astrometry Overlay & Dipole Cross-Check in `frontend/index.html` (verified live in browser on WISE 0855 and Barnard's Star).
+- [ ] [TASK-006 Assigned to coolodu] Tasks 3, 4, 5 of `nasa_csa_resources_integration_plan.md` forwarded to `coolodu` via `/assign` protocol.
 - [ ] Guide darkodu, coolodu, iceodu, and astrodu to fetch repository and execute forwarded tasks.
 - [ ] Review upcoming feature PRs from team branches into `main`.
 
