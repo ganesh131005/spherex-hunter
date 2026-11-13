@@ -140,3 +140,4 @@ def query_csa_neossat(ra: float, dec: float, radius_arcmin: float = 3.0) -> dict
     _CSA_CACHE[cache_key] = result
 
     return result
+
