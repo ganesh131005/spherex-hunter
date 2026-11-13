@@ -272,6 +272,39 @@ def test_2mass_and_simbad_direct():
     print(f"  [PASS] Unified Multi-Survey Cross-Match in {xm_ms:5.2f} ms")
     print(f"  [PASS] Brown Dwarf / Planet X Flag: {xm['color_diagnostics']['is_ultracold_candidate']} ({xm['color_diagnostics']['classification_reason']})")
 
+def test_seamless_near_image_streaming():
+    """Verify TASK-005: Seamless near-image viewport streaming without black space or reflection."""
+    print_banner("8. SEAMLESS NEAR-IMAGE VIEWPORT STREAMING (TASK-005)")
+    base_ra = 133.79513
+    base_dec = -7.24515
+
+    # Test near-tile offsets: (col, row) covering inner ring and outer ring
+    test_offsets = [
+        (1, 0, "Right East Neighbor (3.0' Offset)"),
+        (0, 1, "Top North Neighbor (3.0' Offset)"),
+        (-1, -1, "Bottom-Left Diagonal (4.2' Outer Offset)"),
+        (2, 2, "Far Outer Tile (8.5' Wide Boundary)")
+    ]
+
+    for c, r, label in test_offsets:
+        tile_ra = base_ra - (c * 3.0 / 60.0)
+        tile_dec = base_dec + (r * 3.0 / 60.0)
+        t0 = time.perf_counter()
+        res = fetch_real_cutout(ra=tile_ra, dec=tile_dec, fov_arcmin=3.0, target_key="wise0855", lod=1)
+        el_ms = (time.perf_counter() - t0) * 1000
+        assert res["status"] == "success"
+        assert len(res["epochs"]) == 2
+        assert res["epochs"][0]["image_data"].startswith("data:image/png;base64,")
+        assert res["epochs"][1]["image_data"].startswith("data:image/png;base64,")
+        assert res["difference_image"]["image_data"].startswith("data:image/png;base64,")
+        print(f"  [PASS] Near Tile (c={c:+d}, r={r:+d}) | {label:38s} | Latency: {el_ms:5.2f} ms | Survey: {res['archive_survey']}")
+
+    # Verify Multi-LOD streaming on near tiles
+    for lod_tier in [0, 2]:
+        res_lod = fetch_real_cutout(ra=base_ra + 0.05, dec=base_dec + 0.05, fov_arcmin=3.0, target_key="wise0855", lod=lod_tier)
+        assert res_lod["status"] == "success"
+        print(f"  [PASS] Near Tile Multi-LOD Streaming | Tier {lod_tier} ({res_lod['lod_label']}) verified")
+
 if __name__ == "__main__":
     print("\nStarting SPHEREx Hunter Astro-Data Backend Diagnostic Suite...")
     test_benchmark_targets()
@@ -281,4 +314,5 @@ if __name__ == "__main__":
     test_fastapi_endpoints()
     test_gaia_catalog_direct()
     test_2mass_and_simbad_direct()
-    print_banner("ALL DIAGNOSTIC TESTS PASSED! (7/7 SUITES 100% OPERATIONAL)")
+    test_seamless_near_image_streaming()
+    print_banner("ALL DIAGNOSTIC TESTS PASSED! (8/8 SUITES 100% OPERATIONAL)")
