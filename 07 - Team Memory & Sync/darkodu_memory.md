@@ -20,5 +20,6 @@
 - [x] Calibrated Multi-Tier Game LOD Engine (`backend/services/cutout_engine.py`):
   - Calibrated matrix dimensions: LOD 2 ($360 \times 360$, ~360p, 8.0' FOV), LOD 1 ($720 \times 720$, ~720p HD, 3.0' FOV), and LOD 0 ($1024 \times 1024$, full unbinned sensor resolution, 1.5' FOV).
   - Implemented dynamic sub-array cropping from authentic NASA 2MASS and DSS2 FITS data so benchmark targets serve all 3 LOD tiers in sub-20ms from disk with zero network latency.
+  - Added support for arbitrary offset coordinate crops (`center_ra`, `center_dec`) using padded master arrays with reflection, allowing the frontend near-tile streamer to query any coordinate around benchmark targets in <10ms.
   - Returns `actual_fov` in `data.coordinates.fov_arcmin` ensuring mathematically consistent angular scale across all LOD transitions.
   - Integrates Alard-Lupton & Bramich scientific difference imaging with median sky background subtraction, PSF matching ($\sigma=1.15$), photometric flux ratio scaling $S$, and photon noise floor $Z$-score mapping.
