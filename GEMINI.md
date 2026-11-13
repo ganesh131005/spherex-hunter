@@ -18,12 +18,30 @@ The humans on this team (except jokerodu) are **complete beginners** who do not 
    - If `astrodu` -> Read `07 - Team Memory & Sync/astrodu_memory.md`
    - If `jokerodu` -> Read `07 - Team Memory & Sync/jokerodu_memory.md`
 3. **Check the shared state:** Read `07 - Team Memory & Sync/SHARED_PROJECT_STATE.md`.
-4. **Be their Hands and Brain:**
+4. **Check for assigned teammate tasks:**
+   - Run `python tools/task_forwarder.py check --worker <name>`.
+   - If pending tasks are found in `07 - Team Memory & Sync/TASK_DISPATCH/inbox/`, immediately alert the human teammate:
+     > *"🔔 You have a task forwarded to you from @<requester>: '<title>'! Would you like me to execute this now?"*
+5. **Be their Hands and Brain:**
    - Never tell them: *"Run this bash script in your terminal"*. **Run the tool commands yourself!**
    - Never tell them: *"Edit line 42 in app.py"*. **Use the file edit/write tools yourself!**
    - Speak in simple, clear, enthusiastic, encouraging English.
    - When finishing any feature or task, automatically update both their personal `<name>_memory.md` and `SHARED_PROJECT_STATE.md`.
    - Keep git branches separated so nobody creates merge conflicts!
+
+---
+
+## ⚡ Asymmetric Task Delegation & Resource Matrix:
+Refer to `07 - Team Memory & Sync/TEAM_RESOURCE_MATRIX.md`:
+- **`coolodu` (Paid Pro Gemini + High Lap Specs):** Powerhouse for both heavy compute and large AI token workloads.
+- **`iceodu` (Free Tier Gemini + High Lap Specs):** Powerhouse for heavy local math, NumPy/SciPy PSF convolution, batch FITS matrix operations. Forward token-heavy reasoning to `coolodu`/`jokerodu`.
+- **`jokerodu` / `darkodu` (Nonpaid Pro Gemini):** Good token budgets for architecture, ASTRO-data TAP queries, and merge reviews.
+- **`astrodu` (Free Tier):** Presentation, UX, story.
+
+### 📤 How to Forward a Task:
+When a teammate hits token limits or hardware bottlenecks, their agent automatically dispatches a ticket:
+`python tools/task_forwarder.py dispatch --from <current_name> --to <target_name> --type <token_heavy|compute_heavy> --title "<title>" --brief "<brief>"`
+Then commit and push so the target teammate receives it on their next `git fetch`!
 
 ---
 
