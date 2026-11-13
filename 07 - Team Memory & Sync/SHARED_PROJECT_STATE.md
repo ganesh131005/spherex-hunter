@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Multi-Survey Photometric Cross-Matching & SIMBAD / 2MASS Live]** `darkodu` deployed `/api/catalog/2mass`, `/api/catalog/simbad`, and `/api/catalog/crossmatch`:
+  - **NASA IRSA 2MASS PSC:** Ingests authentic $J\ (1.25\ \mu\text{m}), H\ (1.65\ \mu\text{m}), K_s\ (2.17\ \mu\text{m})$ infrared photometry and photometric quality flags (`AAA`).
+  - **CDS Strasbourg SIMBAD:** Resolves canonical names, spectral types ($M4.0V, Y4, T1+T6$), and literature citations.
+  - **Unified Cross-Matching:** Calculates optical-to-infrared $G - K_s$ and $J - K_s$ color baselines to automatically flag ultracold Brown Dwarfs and Planet X candidates.
+  - Verified across 7 complete diagnostic suites (`backend/test_diagnostics.py`).
 - **[Gaia DR3 Astrometric & Proper Motion Catalog Live]** `darkodu` deployed `/api/catalog/gaia`:
   - Connected live to European Space Agency (ESA) Gaia DR3 Virtual Observatory TAP archive (`gaiadr3.gaia_source`).
   - Delivers high-precision astrometric positions, multi-band photometry ($G, BP, RP$), proper motion vectors ($\mu_\alpha, \mu_\delta$, total PM, position angle), and parallax distances.

@@ -22,7 +22,12 @@ from backend.services.cutout_engine import (
     get_102_band_spectrum,
     BENCHMARKS
 )
-from backend.services.catalog_engine import query_gaia_dr3
+from backend.services.catalog_engine import (
+    query_gaia_dr3,
+    query_2mass_psc,
+    query_simbad_metadata,
+    crossmatch_photometry
+)
 
 app = FastAPI(
     title="SPHEREx Hunter Astronomical API",
@@ -68,6 +73,9 @@ def root():
             "/api/cutout?ra=133.79513&dec=-7.24515&target=wise0855",
             "/api/spectrum?ra=133.79513&dec=-7.24515&target=wise0855",
             "/api/catalog/gaia?ra=269.45208&dec=4.69339&radius=3.0",
+            "/api/catalog/2mass?ra=269.45208&dec=4.69339&radius=3.0",
+            "/api/catalog/simbad?ra=269.45208&dec=4.69339",
+            "/api/catalog/crossmatch?ra=269.45208&dec=4.69339",
             "/api/discoveries"
         ]
     }
@@ -171,6 +179,61 @@ def get_gaia_catalog(
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         catalog_data = query_gaia_dr3(ra=ra_deg, dec=dec_deg, radius_arcmin=radius, limit=limit)
         return catalog_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/catalog/2mass")
+def get_2mass_catalog(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes (0.2 to 15.0)"),
+    limit: int = Query(50, description="Maximum number of sources to return (1 to 200)")
+):
+    """
+    Queries NASA IRSA 2MASS Point Source Catalog (PSC) for near-infrared
+    J (1.25 μm), H (1.65 μm), and Ks (2.17 μm) photometry and color indices.
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return query_2mass_psc(ra=ra_deg, dec=dec_deg, radius_arcmin=radius, limit=limit)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/catalog/simbad")
+def get_simbad_metadata(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes")
+):
+    """
+    Queries CDS Strasbourg SIMBAD database for canonical astronomical object identification,
+    morphological and spectral classifications, and literature citation counts.
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return query_simbad_metadata(ra=ra_deg, dec=dec_deg, radius_arcmin=radius)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/catalog/crossmatch")
+def get_crossmatched_photometry(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes")
+):
+    """
+    Performs unified optical-to-infrared photometric cross-matching across Gaia DR3, 2MASS,
+    and SIMBAD. Computes diagnostic color baselines (G - Ks, J - Ks) to flag Brown Dwarfs and Planet X candidates.
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return crossmatch_photometry(ra=ra_deg, dec=dec_deg, radius_arcmin=radius)
     except HTTPException:
         raise
     except Exception as e:

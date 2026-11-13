@@ -3,11 +3,15 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Gaia DR3 Astrometric & Proper Motion Catalog Live on `/api/catalog/gaia`.
-- **Next Task:** Assist coolodu with frontend overlay vectors or add SIMBAD / NED catalog queries.
+- **Current Task:** Multi-Survey Photometric Cross-Matching Live (Gaia DR3 + NASA 2MASS + SIMBAD).
+- **Next Task:** Assist coolodu with frontend overlay vectors or connect with citizen science pipeline.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Implemented NASA IRSA 2MASS Point Source Catalog (PSC) query engine (`/api/catalog/2mass`) for $J, H, K_s$ infrared photometry and color indices.
+- [x] Implemented CDS Strasbourg SIMBAD metadata query engine (`/api/catalog/simbad`) for canonical astronomical names, spectral types, and citation counts.
+- [x] Implemented Unified Multi-Survey Photometric Cross-Matching (`/api/catalog/crossmatch`) computing $G - K_s$, $J - K_s$ color baselines and automated Planet X / Brown Dwarf detection flags.
+- [x] Expanded backend test suite (`backend/test_diagnostics.py`) to 7 comprehensive suites (100% pass).
 - [x] Implemented European Space Agency (ESA) Gaia DR3 catalog query engine in `backend/services/catalog_engine.py` using PyVO TAP.
 - [x] Added `GET /api/catalog/gaia` endpoint with proper motion vector math, position angles, parallax distances, and sub-10ms disk caching.
 - [x] Verified authentic Gaia DR3 source records for Barnard's Star (G=8.19, PM=10,393 mas/yr, distance 1.83 pc).

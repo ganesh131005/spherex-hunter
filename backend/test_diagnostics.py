@@ -29,12 +29,20 @@ from backend.main import (
     get_cutout,
     get_spectrum,
     get_gaia_catalog,
+    get_2mass_catalog,
+    get_simbad_metadata,
+    get_crossmatched_photometry,
     parse_celestial_coords,
     flag_candidate,
     get_discoveries,
     DiscoveryCandidate
 )
-from backend.services.catalog_engine import query_gaia_dr3
+from backend.services.catalog_engine import (
+    query_gaia_dr3,
+    query_2mass_psc,
+    query_simbad_metadata,
+    crossmatch_photometry
+)
 
 def print_banner(text):
     print("\n" + "=" * 65)
@@ -193,6 +201,22 @@ def test_fastapi_endpoints():
     assert "pmdec_mas_yr" in top_star
     print(f"  [PASS] get_gaia_catalog()        -> Retrieved {gaia_res['total_sources']} Gaia DR3 sources (Top star G={top_star['g_mag']}, PM={top_star['total_pm_mas_yr']:.1f} mas/yr)")
 
+    # 8. 2MASS, SIMBAD & Cross-Match endpoint tests
+    twomass_res = get_2mass_catalog(ra="269.45208", dec="4.69339", radius=3.0, limit=10)
+    assert twomass_res["status"] == "success"
+    assert twomass_res["total_sources"] > 0
+    print(f"  [PASS] get_2mass_catalog()       -> Retrieved {twomass_res['total_sources']} 2MASS infrared sources (Top star J={twomass_res['sources'][0]['j_mag']}, Ks={twomass_res['sources'][0]['k_mag']})")
+
+    simbad_res = get_simbad_metadata(ra="269.45208", dec="4.69339", radius=3.0)
+    assert simbad_res["status"] == "resolved"
+    print(f"  [PASS] get_simbad_metadata()     -> Resolved: {simbad_res['canonical_name']} | Spectral Type: {simbad_res['spectral_type']}")
+
+    xmatch_res = get_crossmatched_photometry(ra="269.45208", dec="4.69339", radius=3.0)
+    assert xmatch_res["status"] == "success"
+    assert "optical_counterpart" in xmatch_res
+    assert "infrared_counterpart" in xmatch_res
+    print(f"  [PASS] get_crossmatched_photometry() -> Optical G={xmatch_res['optical_counterpart']['g_mag']} + Infrared J={xmatch_res['infrared_counterpart']['j_mag']} (Ultracold Candidate: {xmatch_res['color_diagnostics']['is_ultracold_candidate']})")
+
 def test_gaia_catalog_direct():
     print_banner("6. GAIA DR3 ASTROMETRIC ENGINE & PROPER MOTION VECTORS")
     t0 = time.perf_counter()
@@ -210,6 +234,38 @@ def test_gaia_catalog_direct():
         if hero.get('distance_pc'):
             print(f"  [PASS] Parallax Distance: {hero['distance_pc']:.2f} pc ({hero['distance_pc']*3.26:.2f} light years)")
 
+def test_2mass_and_simbad_direct():
+    print_banner("7. 2MASS INFRARED PSC & SIMBAD MULTI-SURVEY CROSS-MATCH")
+    # 2MASS Test
+    t0 = time.perf_counter()
+    tm_res = query_2mass_psc(ra=269.45208, dec=4.69339, radius_arcmin=3.0, limit=10)
+    tm_ms = (time.perf_counter() - t0) * 1000
+    assert tm_res["status"] == "success"
+    assert len(tm_res["sources"]) > 0
+    top_2m = tm_res["sources"][0]
+    print(f"  [PASS] NASA 2MASS PSC queried in {tm_ms:5.2f} ms | Designation: {top_2m['designation']}")
+    print(f"  [PASS] Photometry: J={top_2m['j_mag']:.2f}, H={top_2m['h_mag']:.2f}, Ks={top_2m['k_mag']:.2f} (Quality: {top_2m['ph_qual']})")
+
+    # SIMBAD Test
+    t0 = time.perf_counter()
+    sim_barnard = query_simbad_metadata(ra=269.45208, dec=4.69339)
+    sim_wise = query_simbad_metadata(ra=133.79513, dec=-7.24515)
+    sim_ms = (time.perf_counter() - t0) * 1000
+    assert sim_barnard["status"] == "resolved"
+    assert sim_wise["status"] == "resolved"
+    print(f"  [PASS] SIMBAD Database queried in {sim_ms:5.2f} ms")
+    print(f"  [PASS] Resolved: {sim_barnard['canonical_name']} -> {sim_barnard['spectral_type']} ({sim_barnard['citations_count']} citations)")
+    print(f"  [PASS] Resolved: {sim_wise['canonical_name']} -> {sim_wise['spectral_type']} (T={sim_wise.get('effective_temp_k')}K)")
+
+    # Unified Cross-Match
+    t0 = time.perf_counter()
+    xm = crossmatch_photometry(ra=133.79513, dec=-7.24515, radius_arcmin=3.0)
+    xm_ms = (time.perf_counter() - t0) * 1000
+    assert xm["status"] == "success"
+    assert xm["color_diagnostics"]["is_ultracold_candidate"] == True
+    print(f"  [PASS] Unified Multi-Survey Cross-Match in {xm_ms:5.2f} ms")
+    print(f"  [PASS] Brown Dwarf / Planet X Flag: {xm['color_diagnostics']['is_ultracold_candidate']} ({xm['color_diagnostics']['classification_reason']})")
+
 if __name__ == "__main__":
     print("\nStarting SPHEREx Hunter Astro-Data Backend Diagnostic Suite...")
     test_benchmark_targets()
@@ -218,4 +274,5 @@ if __name__ == "__main__":
     test_102_band_spectroscopy()
     test_fastapi_endpoints()
     test_gaia_catalog_direct()
-    print_banner("ALL DIAGNOSTIC TESTS PASSED! (6/6 SUITES 100% OPERATIONAL)")
+    test_2mass_and_simbad_direct()
+    print_banner("ALL DIAGNOSTIC TESTS PASSED! (7/7 SUITES 100% OPERATIONAL)")
