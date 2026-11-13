@@ -8,6 +8,7 @@
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Validated and verified darkodu's backend near-tile fix: implemented crash-proof parallel fetch queue (max 2 parallel fetches), frustum culling, neutral mid-gray baseline in Difference mode, and 16-tile LRU cache in `frontend/index.html`. Validated in live browser at zoom 0.4x with 16 continuous tiles and zero black voids (`TASK-002`).
 - [x] Assigned role and received task prompts for Antigravity.
 - [x] Initialized interactive SPHEREx Hunter Blink Comparator prototype in `/frontend/index.html`.
 - [x] Implemented animated blink player with play/pause, 1-10 FPS slider, and step buttons.
