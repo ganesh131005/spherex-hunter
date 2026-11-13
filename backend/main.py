@@ -25,10 +25,12 @@ from pydantic import BaseModel
 from backend.services.cutout_engine import (
     fetch_real_cutout,
     get_102_band_spectrum,
-    BENCHMARKS
+    BENCHMARKS,
+    clear_all_caches,
+    get_cache_stats
 )
+from backend.services.gaia_service import query_gaia_dr3
 from backend.services.catalog_engine import (
-    query_gaia_dr3,
     query_2mass_psc,
     query_simbad_metadata,
     crossmatch_photometry
@@ -100,8 +102,9 @@ def health_check():
     }
 
 @app.get("/api/targets")
+@app.get("/api/benchmarks")
 def get_benchmark_targets():
-    """Returns the 5 NASA benchmark target specifications."""
+    """Returns the 5 NASA benchmark validation targets as pure coordinate bookmarks."""
     return [
         {
             "id": k,
@@ -114,6 +117,16 @@ def get_benchmark_targets():
         }
         for k, v in BENCHMARKS.items()
     ]
+
+@app.post("/api/cache/clear")
+def clear_cache():
+    """Flushes L1 RAM LRU cache and purges dynamic FITS files from disk."""
+    return clear_all_caches()
+
+@app.get("/api/cache/stats")
+def cache_stats():
+    """Returns current cache metrics."""
+    return get_cache_stats()
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
@@ -143,16 +156,36 @@ def get_cutout(
     dec: str = Query(..., description="Declination in decimal deg or sexagesimal ('-7d14m42.53s')"),
     fov: float = Query(3.0, description="Field of View in arcminutes"),
     target: Optional[str] = Query(None, description="Benchmark target key (wise0855, barnard, etc.)"),
-    lod: int = Query(1, description="Game Level of Detail tier: 0 (Hero Deep), 1 (Standard Science), 2 (Wide Overview)")
+    lod: int = Query(1, description="Game Level of Detail tier: 0 (Hero Deep), 1 (Standard Science), 2 (Wide Overview)"),
+    force_refresh: bool = Query(False, description="Bypass all caches and force fresh NASA query")
 ):
     """
-    Fetches real astronomical data for the given coordinates, generates Epoch 1 & Epoch 2
-    with true proper motion or variable star flares, and returns the difference map.
+    Universal Astronomical Pipeline:
+    Processes ANY celestial coordinates through authentic FITS retrieval, WCS alignment,
+    difference imaging, and multi-tier caching.
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
-        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target, lod=lod)
+        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target, lod=lod, force_refresh=force_refresh)
         return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/gaia")
+def get_gaia_astrometry(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes")
+):
+    """
+    Queries official Gaia Data Release 3 (DR3) catalog directly from NASA IRSA TAP.
+    Returns stellar proper motions, parallax, and optical G-band magnitudes.
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return query_gaia_dr3(ra=ra_deg, dec=dec_deg, radius_arcmin=radius)
     except HTTPException:
         raise
     except Exception as e:
