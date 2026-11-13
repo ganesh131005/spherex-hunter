@@ -1260,6 +1260,7 @@
       } catch (err) {
         // Silently tolerate aborts & edge boundaries
       }
+      }
     }
 
     // =========================================================================
@@ -1270,8 +1271,10 @@
       const h = canvas.height;
       if (!w || !h) return;
 
-      // Deep space background
-      ctx.fillStyle = '#06080e';
+      // Dynamic background based on active mode
+      // Blink Mode = Deep Space Black (#06080e)
+      // Difference Mode = Astrophotometric Neutral Baseline (#808080 mid-gray)
+      ctx.fillStyle = diffMode ? '#808080' : '#06080e';
       ctx.fillRect(0, 0, w, h);
 
       ctx.save();
@@ -2053,6 +2056,7 @@
       cancelPendingTileFetches();
       spatialTileMap.clear();
       activeNearFetches.clear();
+      tileFetchQueue.length = 0;
       currentTargetKey = key;
       const t = TARGETS[key];
       camera.ra = t.raDeg;
@@ -2090,6 +2094,7 @@
       cancelPendingTileFetches();
       spatialTileMap.clear();
       activeNearFetches.clear();
+      tileFetchQueue.length = 0;
       const raInput = document.getElementById('inputRA').value.trim();
       const decInput = document.getElementById('inputDec').value.trim();
       const fovVal = parseFloat(document.getElementById('selectFOV').value) || 3.0;

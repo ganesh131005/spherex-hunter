@@ -38,10 +38,28 @@ Refer to `07 - Team Memory & Sync/TEAM_RESOURCE_MATRIX.md`:
 - **`jokerodu` / `darkodu` (Nonpaid Pro Gemini):** Good token budgets for architecture, ASTRO-data TAP queries, and merge reviews.
 - **`astrodu` (Free Tier):** Presentation, UX, story.
 
-### 📤 How to Forward a Task:
-When a teammate hits token limits or hardware bottlenecks, their agent automatically dispatches a ticket:
-`python tools/task_forwarder.py dispatch --from <current_name> --to <target_name> --type <token_heavy|compute_heavy> --title "<title>" --brief "<brief>"`
-Then commit and push so the target teammate receives it on their next `git fetch`!
+### 📤 How to Forward / Assign a Task (`/assign` Protocol):
+When a teammate hits token limits or hardware bottlenecks, or when the user says *"assign the task to <name>"* or uses `/assign`:
+1. **Identify the target teammate & branch:**
+   - `coolodu` -> `coolodu/web-frontend` (Paid Pro + High Laptop Specs: WebGL, large frontend builds, high tokens)
+   - `iceodu` -> `iceodu/image-math-ai` (Free Tier + High Laptop Specs: NumPy/SciPy math, batch FITS matrix crunching)
+   - `darkodu` -> `darkodu/astro-backend` (Nonpaid Pro: FastAPI, Astropy cutouts, TAP/IRSA queries)
+   - `astrodu` -> `astrodu/ui-story-pitch` (Free Tier: slides, pitch script, citizen science docs)
+   - `jokerodu` -> `main` (Nonpaid Pro: system lead, architecture & merge review)
+2. **Dispatch via CLI tool:**
+   `python tools/task_forwarder.py dispatch --from <current_name> --to <target_name> --type <token_heavy|compute_heavy|hybrid> --priority <NORMAL|HIGH|URGENT> --branch <target_branch> --title "<title>" --brief "<brief>"`
+3. **Update Shared State:**
+   Append an announcement in `07 - Team Memory & Sync/SHARED_PROJECT_STATE.md`.
+4. **Commit & Push to Git:**
+   - Commit the ticket to `main` and merge into `<target_branch>`.
+   - Push both branches to GitHub (`origin main` and `origin <target_branch>`).
+5. **Verify Inbox:**
+   Run `python tools/task_forwarder.py check --worker <target_name>`.
+6. **Provide Formatted Teammate Message:**
+   Give the user a ready-to-copy chat message to send to that teammate.
+7. 🛑 **STRICT GUARDRAIL — DO NOT AUTO-CLAIM:**
+   **NEVER claim, code, or execute a task you just assigned to another teammate!**
+   Your turn is complete once the ticket is dispatched and pushed. Only the target teammate can claim and work on it, unless the user explicitly commands: *"Act as <name> now and execute this on my machine."*
 
 ---
 

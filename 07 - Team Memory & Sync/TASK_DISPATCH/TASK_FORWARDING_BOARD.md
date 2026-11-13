@@ -1,6 +1,6 @@
 # 📋 Team RIP: Master Task Forwarding Board
 > **Live Task Forwarding Ledger** | Synced via Git across all branches  
-> **Last Updated:** 2026-11-13 15:20:01 | **Active Tasks:** 0
+> **Last Updated:** 2026-11-13 21:25:00 | **Active Tasks:** 0
 
 ---
 
@@ -8,6 +8,8 @@
 
 | Task ID | Title | Requester | Assigned Worker | Type | Priority | Status | Branch / Output |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **TASK-004** | Analyze & Fix Mirrored Sky Reflection: Fetch Real Astronomical Surrounding Fields | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟢 COMPLETED | `backend/services/cutout_engine.py` |
+| **TASK-003** | Fix Backend Near-Tile Offset Extraction & Robust Boundary Padding | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟢 COMPLETED | `backend/services/cutout_engine.py` |
 | **TASK-002** | Fix Viewport Crash & Optimize Near-Tile LOD Camera Streaming | `@jokerodu` | `@coolodu` | `hybrid` | `URGENT` | 🟢 COMPLETED | `frontend/index.html & backend/services/cutout_engine.py` |
 | **TASK-001** | Generate Spectral SED Unit Tests | `@iceodu` | `@coolodu` | `token_heavy` | `NORMAL` | 🟢 COMPLETED | `tests/test_sed.py` |
 

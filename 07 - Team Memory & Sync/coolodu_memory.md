@@ -34,6 +34,7 @@
   - Added frustum culling to `drawFrame()`, rendering only tiles intersecting the active camera viewport bounds for locked 60 FPS performance.
   - Fixed backend reflection padding bug in `cutout_engine.py` preventing zero-division errors when panning far beyond benchmark boundaries.
   - Verified live in browser: continuous smooth panning, LOD zoom tiers (LOD 2 360p $\to$ LOD 1 720p $\to$ LOD 0 1024p), and seamless difference imaging without visual seams or tab crashes.
+- [x] Validated and verified darkodu's backend near-tile fix: implemented crash-proof parallel fetch queue, frustum culling, neutral mid-gray baseline in Difference mode, and 16-tile cache in `frontend/index.html`. Validated in live browser at zoom 0.4x with 16 continuous tiles and zero black voids (`TASK-002`).
 - [x] Implemented complete Telescope Keyboard Shortcuts suite (`Space`, `←/→`, `Home/End`, `B`, `D`, `S`, `A`, `G/I/T`, `R`, `M`, `P/F8`, `F`, `1-5`, `?`).
 - [x] Created Blender-style Keyboard Shortcuts Cheat Sheet modal (`#shortcutsModal`) with grouped categorical key badges.
 - [x] Added High-Resolution Telescope Canvas Snapshot Exporter (`captureSnapshot`) with NASA Space Apps astronomical telemetry stamp and instant PNG download.
