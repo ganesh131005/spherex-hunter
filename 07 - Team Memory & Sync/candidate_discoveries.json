@@ -2,6 +2,15 @@
   {
     "ra": 133.79513,
     "dec": -7.24515,
+    "object_type": "Brown Dwarf",
+    "user_handle": "@darkodu_swagger_test",
+    "notes": "",
+    "target_name": "WISE 0855",
+    "timestamp": "2026-11-12T20:50:00Z"
+  },
+  {
+    "ra": 133.79513,
+    "dec": -7.24515,
     "object_type": "High Proper Motion Brown Dwarf",
     "user_handle": "@darkodu",
     "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",

@@ -41,6 +41,18 @@
   - Validated Alard-Lupton difference imaging ($I_2 - I_1$) with robust median background subtraction, PSF convolution matching, and $Z$-score mapping centered at neutral 128 in 2.2ms.
   - Validated 102-band near-infrared SPHEREx spectroscopy (0.75 - 5.0 μm) with molecular detection signatures for H₂O Ice, CH₄ Methane, and CO₂ Ice in 0.2ms.
   - Validated FastAPI endpoints, Astropy decimal & sexagesimal coordinate parsing, and discovery logging.
+- **[Teammate Task Sharing & Forwarding System Live]** Deployed Git-based task delegation system:
+  - **Resource Matrix (`TEAM_RESOURCE_MATRIX.md`):** Documents `coolodu` (Paid Pro + High Lap Specs), `iceodu` (Free Tier + High Lap Specs), `jokerodu`/`darkodu` (Nonpaid Pro Gemini), and `astrodu` (UX/Story).
+  - **CLI Helper (`tools/task_forwarder.py`):** Provides `dispatch`, `check`, `claim`, `complete`, and `list` commands.
+  - **Git-Based Notification:** Teammates simply run `git fetch` / `git pull`, and their Antigravity co-pilot automatically detects assigned tasks in `07 - Team Memory & Sync/TASK_DISPATCH/inbox/`.
+  - **Live Task Board (`TASK_FORWARDING_BOARD.md`):** Automatically tracked and synced across GitHub.
+- **[Official GitHub Repository Live]** Created and published the official repository:
+  - **GitHub URL:** https://github.com/joker0210G/spherex-hunter
+  - **All 5 Team Branches Pushed:** `main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`.
+- **[Viewport Focus Near-Image Streamer & Multi-Tile Canvas]** Solved the black space issue when panning and zooming:
+  - Dynamically computes visible viewport frustum bounds in world celestial space.
+  - Automatically queries and renders adjacent near-sky tiles around the viewport focus.
+  - Panning in any direction streams real astronomical starlight with zero black borders.
 - **[Continuous Optical Camera Zoom & Seam-Free Wide-Field Engine (Phase 7)]** Refined multi-tier LOD rendering to function like a genuine optical camera lens in the viewport:
   - **Calibrated Multi-Tier Matrix Resolutions:**
     - **LOD 2 (Wide Overview):** $360 \times 360$ matrix, broad $10.0' - 15.0'$ FOV for ultra-fast, smooth 60 FPS transit.
