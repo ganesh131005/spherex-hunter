@@ -305,36 +305,34 @@ def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1, center_ra: 
         else:
             dx_pix, dy_pix = 0, 0
 
-        # Pad with reflection to allow arbitrary offset crops beyond borders without black voids
-        pad_size = 200
-        d1_padded = np.pad(d1, pad_width=pad_size, mode='reflect')
-        d2_padded = np.pad(d2, pad_width=pad_size, mode='reflect')
-
-        cy = d1.shape[0] // 2 + pad_size + dy_pix
-        cx = d1.shape[1] // 2 + pad_size + dx_pix
-
         # Determine FOV and Crop Box based on Multi-Tier Game LOD:
         if lod == 2:
             # LOD 2: Full 8.0 arcminute Wide Overview, resampled to 360x360 (~360p) for high FPS
             dim = 360
             half = 140
-            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
-            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 8.0
         elif lod == 0:
             # LOD 0: Hero Deep Core (central 1.5 arcmin = 90 arcsec = ~56x56 px unbinned crop)
             dim = 1024
             half = 28
-            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
-            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 1.5
         else:
             # LOD 1: Standard Science (central 3.0 arcmin = 180 arcsec = ~112x112 px crop)
             dim = 720
             half = 56
-            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
-            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 3.0
+
+        # Dynamic symmetric padding ensures slicing never exceeds array bounds regardless of offset
+        pad_y = max(half + 10, abs(dy_pix) + half + 20)
+        pad_x = max(half + 10, abs(dx_pix) + half + 20)
+        d1_padded = np.pad(d1, ((pad_y, pad_y), (pad_x, pad_x)), mode='symmetric')
+        d2_padded = np.pad(d2, ((pad_y, pad_y), (pad_x, pad_x)), mode='symmetric')
+
+        cy = d1.shape[0] // 2 + pad_y + dy_pix
+        cx = d1.shape[1] // 2 + pad_x + dx_pix
+
+        c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
+        c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
 
         # Resample to LOD display matrix
         if c1.shape != (dim, dim):

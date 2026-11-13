@@ -8,6 +8,7 @@
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Fixed ZeroDivisionError in `backend/services/cutout_engine.py` (`load_real_fits_cutout`): implemented dynamic symmetric padding based on offset RA/Dec coordinates so near-tile queries return valid FITS cutouts and difference images across all LODs without boundary exceptions (`TASK-003`).
 - [x] Assigned role and received task prompts for Antigravity.
 - [x] Initialized `backend/step1_wise0855_irsa.py` for querying NASA IRSA TAP archive.
 - [x] Installed and configured `astropy`, `astroquery`, and `pyvo`.
