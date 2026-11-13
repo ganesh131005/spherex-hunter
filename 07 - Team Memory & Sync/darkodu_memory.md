@@ -3,11 +3,12 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Citizen Science Candidate Logging, Automated Scientific Cross-Validation & CSV Export Live (`/api/flag`, `/api/discoveries`, `/api/discoveries/export/csv`).
-- **Next Task:** Assist coolodu with frontend overlay vectors or collaborate on video pitch demo.
+- **Current Task:** Dispatched `TASK-002` to `@coolodu` for rendering Gaia DR3 proper motion vector overlays on the canvas.
+- **Next Task:** Await coolodu's canvas integration / support astrodu with presentation numbers and video demo.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Dispatched `TASK-002` to `@coolodu` via Team RIP Task Forwarding System to integrate live `/api/catalog/gaia` proper motion vectors and 2MASS badges into the Blender viewport canvas.
 - [x] Upgraded Citizen Science Discovery Pipeline (`/api/flag`):
   - Added unique candidate ID generation (`SPX-2026-XXXX`) and real ISO UTC timestamps.
   - Automated scientific validation: cross-matches every candidate on ingestion against Gaia DR3, 2MASS, and SIMBAD to evaluate Planet X / Brown Dwarf criteria.
