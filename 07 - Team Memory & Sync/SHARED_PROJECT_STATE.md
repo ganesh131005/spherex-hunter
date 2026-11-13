@@ -26,6 +26,9 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[FastAPI Live Server Active on Port 8000]** Backend daemon running on `http://localhost:8000`:
+  - Verified live endpoints: `/api/health`, `/api/targets`, `/api/cutout`, `/api/spectrum`, `/api/discoveries`, and interactive Swagger docs at `/docs`.
+  - Static frontend mounted and accessible directly at `http://localhost:8000/app/`.
 - **[Astro-Backend Full Diagnostic Suite Verified (100% Pass)]** `darkodu` verified all backend pipelines via `backend/test_diagnostics.py`:
   - Calibrated Python 3.12 environment with Astropy 8.0, Scipy, Numpy, Astroquery, Pillow, and FastAPI.
   - Verified 5/5 NASA benchmark targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis).
