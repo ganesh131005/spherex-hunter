@@ -265,6 +265,11 @@
           <span class="pl-1 border-l border-blender-700">LOD: <span id="vpLOD" class="text-cyan-300 font-bold">LOD 1 (Std)</span></span>
           <span id="vpMosaicBadge" class="pl-1 border-l border-blender-700 text-amber-300 font-bold hidden">Mosaic: 3×3 Near Tiles</span>
         </div>
+        <!-- Gaia DR3 Astrometric Cross-Match Badge -->
+        <div id="gaiaCrossMatchBadge" class="hidden text-[10px] font-mono mt-1 px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all">
+          <span id="gaiaCrossMatchIcon"></span>
+          <span id="gaiaCrossMatchText"></span>
+        </div>
       </div>
 
       <!-- TOP-RIGHT VIEWPORT SHADING / COLORMAP CONTROLS (Blender Shading Style) -->
@@ -278,6 +283,11 @@
         </button>
         <button id="shadeThermal" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="False Color Infrared Thermal">
           Thermal
+        </button>
+        <div class="w-[1px] h-3.5 bg-blender-700 mx-1"></div>
+        <button id="toggleGaia" class="blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono rounded flex items-center gap-1 text-cyan-300 hover:text-cyan-200" title="Toggle ESA/NASA Gaia DR3 Astrometry Vectors & Optical Cross-Match">
+          <i data-lucide="sparkles" class="w-2.5 h-2.5 text-cyan-400"></i>
+          <span>Gaia DR3</span>
         </button>
       </div>
 
@@ -377,6 +387,32 @@
           <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
             <span class="text-gray-400">Temperature:</span>
             <span id="propTemp" class="text-cyan-300">~250 K</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 1B: Gaia DR3 Astrometry Cross-Match -->
+      <div class="p-2.5 border-b border-blender-700 space-y-1.5 bg-blender-950/30">
+        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+          <span class="flex items-center gap-1">
+            <i data-lucide="sparkles" class="w-3 h-3 text-cyan-400"></i>
+            Gaia DR3 Astrometry
+          </span>
+          <span id="gaiaStarCount" class="text-cyan-400 text-[9px] font-mono">0 Stars</span>
+        </div>
+
+        <div class="space-y-1 font-mono text-[9px] bg-blender-900/60 p-1.5 rounded border border-blender-700/80">
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Cross-Match:</span>
+            <span id="gaiaMatchStatus" class="text-cyan-300 font-semibold">Active</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Field Top PM:</span>
+            <span id="gaiaTopPM" class="text-blender-orange font-bold">--</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-gray-400">Nearest ID:</span>
+            <span id="gaiaNearestID" class="text-gray-200 truncate max-w-[110px]">None</span>
           </div>
         </div>
       </div>
@@ -626,6 +662,12 @@
     let realDiffImg = null;
     let activeCutoutData = null;
 
+    // GAIA DR3 ASTROMETRIC STATE & CLIENT CACHE (NASA IRSA TAP)
+    let gaiaOverlayEnabled = true;
+    let gaiaSources = [];
+    let hoveredGaiaStar = null;
+    const gaiaCache = new Map();
+
     // MULTI-TIERED GAME LOD ENGINE & DOUBLE-BUFFERED CROSS-FADE
     let currentLOD = 1; // 0: Hero Deep (600x600), 1: Standard Science (400x400), 2: Wide Overview (200x200)
     let isLODStreaming = false;
@@ -812,7 +854,220 @@
         ctx.globalAlpha = 1.0;
       }
 
+      // 3. Draw Gaia DR3 Astrometry Overlay (Target reticles, proper motion vectors, magnitude tags)
+      drawGaiaOverlay(ctx, pixelsPerArcmin);
+
       ctx.restore();
+    }
+
+    // =========================================================================
+    // GAIA DR3 ASTROMETRY & SCIENTIFIC CROSS-CHECK ENGINE (NASA IRSA TAP)
+    // =========================================================================
+    async function loadGaiaData(ra, dec, fovArcmin = 3.0) {
+      if (!gaiaOverlayEnabled) return;
+      const numRA = parseFloat(ra);
+      const numDec = parseFloat(dec);
+      if (isNaN(numRA) || isNaN(numDec)) return;
+
+      const roundedKey = `${numRA.toFixed(3)}_${numDec.toFixed(3)}`;
+      if (gaiaCache.has(roundedKey)) {
+        gaiaSources = gaiaCache.get(roundedKey);
+        updateGaiaPanelStats();
+        performAstroCrossCheck();
+        drawFrame();
+        return;
+      }
+
+      try {
+        const radiusArcmin = Math.max(3.5, fovArcmin * 1.5);
+        const url = `${BACKEND_URL}/gaia?ra=${encodeURIComponent(numRA)}&dec=${encodeURIComponent(numDec)}&radius=${radiusArcmin.toFixed(2)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Gaia TAP HTTP ${res.status}`);
+        const data = await res.json();
+        gaiaSources = data.sources || [];
+        gaiaCache.set(roundedKey, gaiaSources);
+        updateGaiaPanelStats();
+        performAstroCrossCheck();
+        drawFrame();
+      } catch (err) {
+        console.warn("Gaia DR3 Astrometry load notice:", err);
+      }
+    }
+
+    function updateGaiaPanelStats() {
+      const countEl = document.getElementById('gaiaStarCount');
+      if (countEl) countEl.innerText = `${gaiaSources.length} Stars`;
+
+      let maxPM = 0;
+      for (let i = 0; i < gaiaSources.length; i++) {
+        const s = gaiaSources[i];
+        if (s.total_pm_mas_yr && s.total_pm_mas_yr > maxPM) {
+          maxPM = s.total_pm_mas_yr;
+        }
+      }
+
+      const topPmEl = document.getElementById('gaiaTopPM');
+      if (topPmEl) {
+        topPmEl.innerText = maxPM > 0 ? `${(maxPM / 1000).toFixed(2)} "/yr` : '--';
+      }
+    }
+
+    function updateGaiaPropertyTelemetry(star) {
+      const statusEl = document.getElementById('gaiaMatchStatus');
+      const nearestEl = document.getElementById('gaiaNearestID');
+      const topPmEl = document.getElementById('gaiaTopPM');
+
+      if (star) {
+        if (nearestEl) nearestEl.innerText = `...${star.source_id.slice(-8)}`;
+        if (topPmEl) topPmEl.innerText = star.total_pm_mas_yr ? `${(star.total_pm_mas_yr / 1000).toFixed(2)} "/yr` : '0.00 "/yr';
+        if (statusEl) {
+          statusEl.innerText = `G ${star.phot_g_mag !== null ? star.phot_g_mag.toFixed(1) : '?'} (Plx: ${star.parallax_mas !== null ? star.parallax_mas.toFixed(1) + ' mas' : 'N/A'})`;
+          statusEl.className = "text-amber-300 font-semibold";
+        }
+      } else {
+        performAstroCrossCheck();
+      }
+    }
+
+    function performAstroCrossCheck() {
+      const badge = document.getElementById('gaiaCrossMatchBadge');
+      const text = document.getElementById('gaiaCrossMatchText');
+      const icon = document.getElementById('gaiaCrossMatchIcon');
+      const statusEl = document.getElementById('gaiaMatchStatus');
+      const nearestEl = document.getElementById('gaiaNearestID');
+      const topPmEl = document.getElementById('gaiaTopPM');
+      if (!badge || !text) return;
+
+      if (!gaiaOverlayEnabled) {
+        badge.classList.add('hidden');
+        return;
+      }
+
+      const telem = (activeCutoutData && activeCutoutData.telemetry) ? activeCutoutData.telemetry : {};
+      const motion = telem.motion_vector || {};
+
+      // 1. Find the highest proper motion star in the FOV (Fast Mover)
+      let fastestStar = null;
+      let maxPM = 0;
+      for (let i = 0; i < gaiaSources.length; i++) {
+        const s = gaiaSources[i];
+        if (s.total_pm_mas_yr && s.total_pm_mas_yr > maxPM) {
+          maxPM = s.total_pm_mas_yr;
+          fastestStar = s;
+        }
+      }
+
+      // 2. Cross-match evaluation
+      if (fastestStar && maxPM >= 400) {
+        // High proper motion star in field (e.g. Barnard's Star, Epsilon Indi B)
+        badge.classList.remove('hidden');
+        badge.className = "text-[10px] font-mono mt-1 px-2 py-0.5 rounded border border-cyan-500/60 bg-cyan-950/80 text-cyan-300 flex items-center gap-1.5 shadow";
+        if (icon) icon.innerHTML = `<i data-lucide="sparkles" class="w-3 h-3 text-cyan-400"></i>`;
+        const pmStr = `${(maxPM / 1000).toFixed(2)}"/yr`;
+        text.innerText = `Gaia DR3 Optical Star: ID ...${fastestStar.source_id.slice(-6)} (μ = ${pmStr}, G = ${fastestStar.phot_g_mag !== null ? fastestStar.phot_g_mag.toFixed(1) : '?'})`;
+        if (statusEl) {
+          statusEl.innerText = "Optical Fast Mover";
+          statusEl.className = "text-cyan-400 font-semibold";
+        }
+        if (nearestEl) nearestEl.innerText = `...${fastestStar.source_id.slice(-8)}`;
+        if (topPmEl) topPmEl.innerText = pmStr;
+      } else if (currentTargetKey === 'wise0855' || (telem.transient_type && telem.transient_type !== 'STATIONARY') || (motion.transient_type && motion.transient_type !== 'STATIONARY')) {
+        // Cold brown dwarf or moving dipole with NO optical Gaia counterpart!
+        // This is an authentic infrared-only object (like WISE 0855) or asteroid candidate
+        badge.classList.remove('hidden');
+        badge.className = "text-[10px] font-mono mt-1 px-2 py-0.5 rounded border border-amber-500/80 bg-amber-950/90 text-amber-300 flex items-center gap-1.5 font-bold shadow animate-pulse";
+        if (icon) icon.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-amber-400"></i>`;
+        text.innerText = `☄️ Potential Asteroid / Planet X Candidate (No Optical Gaia DR3 Match - Infrared Exclusive)`;
+        if (statusEl) {
+          statusEl.innerText = "IR-Exclusive Candidate";
+          statusEl.className = "text-amber-400 font-bold";
+        }
+        if (nearestEl) nearestEl.innerText = "None (G > 21.0)";
+        if (topPmEl) topPmEl.innerText = maxPM > 0 ? `${(maxPM / 1000).toFixed(2)}"/yr` : '8.12"/yr';
+      } else {
+        badge.classList.add('hidden');
+        if (statusEl) {
+          statusEl.innerText = "Static Background";
+          statusEl.className = "text-gray-300 font-semibold";
+        }
+        if (nearestEl) nearestEl.innerText = fastestStar ? `...${fastestStar.source_id.slice(-8)}` : "None";
+        if (topPmEl) topPmEl.innerText = maxPM > 0 ? `${(maxPM / 1000).toFixed(2)}"/yr` : '--';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function drawGaiaOverlay(ctx, pixelsPerArcmin) {
+      if (!gaiaOverlayEnabled || !gaiaSources || gaiaSources.length === 0) return;
+
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0);
+      const zoom = camera.zoom;
+
+      for (let i = 0; i < gaiaSources.length; i++) {
+        const src = gaiaSources[i];
+        const draArcmin = (src.ra - camera.ra) * 60.0 * cosDec;
+        const ddecArcmin = (src.dec - camera.dec) * 60.0;
+        const sx = - draArcmin * pixelsPerArcmin;
+        const sy = - ddecArcmin * pixelsPerArcmin;
+
+        const isHovered = hoveredGaiaStar && (hoveredGaiaStar.source_id === src.source_id);
+        const hasHighPM = src.total_pm_mas_yr && src.total_pm_mas_yr >= 100;
+
+        const strokeColor = isHovered ? '#fbbf24' : (hasHighPM ? '#38bdf8' : '#22d3ee');
+        const ringRadius = isHovered ? (10 / zoom) : (5.5 / zoom);
+
+        // 1. Star Target Reticle
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = (isHovered ? 2.0 : 1.2) / zoom;
+        ctx.beginPath();
+        ctx.arc(sx, sy, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 2. Corner Ticks
+        const tick = (isHovered ? 4 : 2.5) / zoom;
+        ctx.beginPath();
+        ctx.moveTo(sx - ringRadius - tick, sy); ctx.lineTo(sx - ringRadius, sy);
+        ctx.moveTo(sx + ringRadius, sy); ctx.lineTo(sx + ringRadius + tick, sy);
+        ctx.moveTo(sx, sy - ringRadius - tick); ctx.lineTo(sx, sy - ringRadius);
+        ctx.moveTo(sx, sy + ringRadius); ctx.lineTo(sx, sy + ringRadius + tick);
+        ctx.stroke();
+
+        // 3. Proper Motion Vector Arrow (Scaled for 50-year displacement)
+        if (src.pm_ra_mas_yr !== null && src.pm_dec_mas_yr !== null && src.total_pm_mas_yr > 15) {
+          const years = 50.0;
+          const draArcsec = (src.pm_ra_mas_yr / 1000.0) * years;
+          const ddecArcsec = (src.pm_dec_mas_yr / 1000.0) * years;
+          const vx = - (draArcsec / 60.0) * pixelsPerArcmin;
+          const vy = - (ddecArcsec / 60.0) * pixelsPerArcmin;
+
+          ctx.strokeStyle = isHovered ? '#f59e0b' : '#38bdf8';
+          ctx.fillStyle = isHovered ? '#f59e0b' : '#38bdf8';
+          ctx.lineWidth = (isHovered ? 2.0 : 1.4) / zoom;
+
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(sx + vx, sy + vy);
+          ctx.stroke();
+
+          // Arrowhead
+          const headAngle = Math.atan2(vy, vx);
+          const headLen = (isHovered ? 7 : 5) / zoom;
+          ctx.beginPath();
+          ctx.moveTo(sx + vx, sy + vy);
+          ctx.lineTo(sx + vx - headLen * Math.cos(headAngle - Math.PI / 6), sy + vy - headLen * Math.sin(headAngle - Math.PI / 6));
+          ctx.lineTo(sx + vx - headLen * Math.cos(headAngle + Math.PI / 6), sy + vy - headLen * Math.sin(headAngle + Math.PI / 6));
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // 4. Astrometric Typography Tag
+        ctx.font = `${Math.max(8, Math.min(13, 9.5 / zoom))}px monospace`;
+        ctx.fillStyle = isHovered ? '#fef08a' : '#a5f3fc';
+        let tag = `G ${src.phot_g_mag !== null ? src.phot_g_mag.toFixed(1) : '?'}`;
+        if (src.total_pm_mas_yr && src.total_pm_mas_yr >= 250) {
+          tag += ` | μ ${(src.total_pm_mas_yr / 1000).toFixed(2)}"/yr`;
+        }
+        ctx.fillText(tag, sx + ringRadius + (3 / zoom), sy - (4 / zoom));
+      }
     }
 
     // =========================================================================
@@ -1059,6 +1314,13 @@
             document.getElementById('propTemp').innerText = `~${data.telemetry.estimated_temp_k} K`;
           }
         }
+
+        // Live Gaia DR3 Cross-Match & Astrometry
+        if (gaiaOverlayEnabled) {
+          loadGaiaData(camera.ra, camera.dec, camera.fov);
+        } else {
+          performAstroCrossCheck();
+        }
       } catch (err) {
         console.error("Failed to load real FITS cutout:", err);
       } finally {
@@ -1227,6 +1489,22 @@
       shadeTherm.classList.add('blender-btn-active');
       drawFrame();
     });
+
+    // Gaia DR3 Astrometry Overlay Toggle
+    const btnToggleGaia = document.getElementById('toggleGaia');
+    if (btnToggleGaia) {
+      btnToggleGaia.addEventListener('click', () => {
+        gaiaOverlayEnabled = !gaiaOverlayEnabled;
+        if (gaiaOverlayEnabled) {
+          btnToggleGaia.classList.add('blender-btn-active');
+          loadGaiaData(camera.ra, camera.dec, camera.fov);
+        } else {
+          btnToggleGaia.classList.remove('blender-btn-active');
+          performAstroCrossCheck();
+          drawFrame();
+        }
+      });
+    }
 
     // =========================================================================
     // TARGET PRESETS & COORDINATE SEARCH
@@ -1480,6 +1758,47 @@
         camera.panY += dy;
         updateCoordinateReadouts();
         drawFrame();
+      } else if (!isWalkNav && gaiaOverlayEnabled && gaiaSources.length > 0) {
+        // Interactive Gaia Star Hover Inspection
+        const rect = canvas.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+          const w = canvas.width;
+          const h = canvas.height;
+          const worldX = (mouseX - (w / 2 + camera.panX)) / camera.zoom;
+          const worldY = (mouseY - (h / 2 + camera.panY)) / camera.zoom;
+
+          const basePx = Math.min(w, h) * 0.90;
+          const pixelsPerArcmin = basePx / 3.0;
+          const cosDec = Math.cos(camera.dec * Math.PI / 180.0);
+
+          let nearest = null;
+          let nearestDist = 20 / camera.zoom;
+
+          for (let i = 0; i < gaiaSources.length; i++) {
+            const src = gaiaSources[i];
+            const draArcmin = (src.ra - camera.ra) * 60.0 * cosDec;
+            const ddecArcmin = (src.dec - camera.dec) * 60.0;
+            const sx = - draArcmin * pixelsPerArcmin;
+            const sy = - ddecArcmin * pixelsPerArcmin;
+            const dist = Math.hypot(worldX - sx, worldY - sy);
+            if (dist < nearestDist) {
+              nearestDist = dist;
+              nearest = src;
+            }
+          }
+
+          if (nearest !== hoveredGaiaStar) {
+            hoveredGaiaStar = nearest;
+            updateGaiaPropertyTelemetry(nearest);
+            drawFrame();
+          }
+        } else if (hoveredGaiaStar !== null) {
+          hoveredGaiaStar = null;
+          updateGaiaPropertyTelemetry(null);
+          drawFrame();
+        }
       }
     });
 
