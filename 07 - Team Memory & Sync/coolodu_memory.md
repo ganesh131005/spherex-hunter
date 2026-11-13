@@ -33,7 +33,11 @@
   - Displays live LOD status badge in top-left viewport HUD (`#vpLOD`).
   - Added double-buffered anti-popping cross-fade with 150ms alpha transition (`ctx.globalAlpha`) in `drawFrame()`.
   - Connected debounced LOD updates into mouse wheel zoom, Walk Nav WASD keys, FOV dropdown, and zoom reset.
-- [x] Fixed shading mode transition bug: switching from Diff mode back to Gray, Invert, or Thermal now automatically resets `diffMode = false`, synchronizes workspace tabs to `Layout (Blink)`, and immediately resumes continuous two-frame looping playback (`startFlipbook()`).
+- [x] Streamlined separation between Topbar Workspaces and Viewport Shading:
+  - Removed duplicate `Diff` button from the top-right shading bar.
+  - Shading bar is now strictly optical colormaps: `Gray`, `Invert`, `Thermal`.
+  - Topbar `[ Blink ]` and `[ Difference ]` exclusively control the underlying astronomical data pipeline.
+  - Users can freely view either Blink flipbook or Difference subtraction in Grayscale, Inverted, or False-Color Thermal without state conflicts.
 - [x] Completely redesigned top workspace header (40px height):
   - Segmented workspace pill bar with Lucide icons (`Blink`, `Difference`, `Spectra`, `Aladin Sky`).
   - Target benchmark bar with `whitespace-nowrap` single-line buttons preventing awkward vertical wrapping on any screen width.
