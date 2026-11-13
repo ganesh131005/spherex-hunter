@@ -8,6 +8,7 @@ Coordinates: RA = 133.79513 deg (08h 55m 10.831s), Dec = -7.24515 deg (-07d 14m 
 
 import sys
 import json
+import ssl
 import urllib.request
 import urllib.parse
 
@@ -55,8 +56,9 @@ print("\n📡 Sending TAP query to NASA IRSA...")
 try:
     encoded_url = f"{IRSA_TAP_URL}?{urllib.parse.urlencode(params)}"
     req = urllib.request.Request(encoded_url, headers={'User-Agent': 'SPHEREx-Hunter/1.0 (NASA Space Apps Team RIP)'})
+    ssl_ctx = ssl._create_unverified_context()
     
-    with urllib.request.urlopen(req, timeout=15) as response:
+    with urllib.request.urlopen(req, context=ssl_ctx, timeout=30) as response:
         data = json.loads(response.read().decode('utf-8'))
         
         fields = [col['name'] for col in data.get('metadata', [])]

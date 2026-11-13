@@ -8,6 +8,20 @@
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[NASA & Partner Portals Comprehensive Research & Dynamic Deep-Linking]**:
+  - Fetched, analyzed, and synthesized data schemas, spectral coverages, and query protocols from 8 official astronomical archives:
+    1. **NASA IPAC IRSA SPHEREx Archive (`spherex.html`)**: 6 detector arrays (0.75–5.0 μm, 102 spectral channels, $R \sim 35\text{--}128$), TAP ADQL schema (`spherex.artifact`, `spherex.plane`), and release timeline.
+    2. **Caltech/IPAC SPHEREx Tutorial Series (`spherex/`)**: ADQL `CONTAINS(POINT('ICRS', ra, dec), p.poly)` queries with `energy_bandpassname` indexing.
+    3. **Dan Caselden's WiseView (`byw.tools/wiseview`)**: Deep-link URL hash format (`#ra={ra}&dec={dec}&size={fov_arcsec}&band=3&speed=200`), AsinhStretch, and 14-year unWISE W1/W2 baseline.
+    4. **STScI MAST Gaia Archive (`gaia`)**: DR3 astrometry ($\mu_\alpha \cos \delta, \mu_\delta$, parallax $\varpi$, G/BP/RP).
+    5. **CSA NEOSSat Spacecraft Mission (`neossat/`)**: 15 cm space surveillance telescope specs and CAOM-2 TAP access.
+    6. **Canadian Astronomy Data Centre Portal (`cadc-ccda`)**: CAOM-2 TAP queries and `astroquery.cadc` integration.
+    7. **CSA NEOSSat Tutorial Repository (`NEOSSAT_Tutorial`)**: FITS calibration pipeline, streaklet Line Segment Detector, and temporal stacking.
+    8. **Government of Canada Open Data NEOSSat Dataset (`dataset/neossat`)**: Direct open-access FITS buckets.
+  - Documented full reference guide in `05 - Research & Resources/NASA_AND_PARTNER_DATA_PORTALS.md`.
+  - Added "SECTION 4: NASA & Partner Portals" in `frontend/index.html` properties sidebar with live sync indicators and dynamic deep-link pills for WiseView, NASA IRSA, MAST Gaia, CADC NEOSSat, IPAC Tutorials, and CSA Code.
+  - Implemented dynamic `updateWiseViewLink()` in `frontend/index.html`: automatically calculates the current target RA, Dec, and clamped FOV size (30–300 arcsec) on pan, zoom, click reticle, and reset, enabling 1-click cross-survey validation on Dan Caselden's WiseView.
+  - Patched `backend/step1_wise0855_irsa.py` with SSL unverified context (`ssl._create_unverified_context()`) to bypass Windows CA bundle errors during live NASA IRSA TAP queries.
 - [x] **[Interactive Click-to-Spectrum & 3D Cursor Reticle]**:
   - Implemented single-click world coordinate inversion mapping screen pixels to celestial coordinates $(\alpha, \delta)$.
   - Renders a glowing dual-ring cyan/amber reticle with crosshairs and coordinate tags at the exact clicked starlight location.

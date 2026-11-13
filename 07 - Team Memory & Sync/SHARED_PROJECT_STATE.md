@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[NASA & Partner Portals Integrated into SPHEREx Hunter by @coolodu]**:
+  - Researched, mapped, and cataloged 8 NASA, IPAC, MAST, and CSA portals into `05 - Research & Resources/NASA_AND_PARTNER_DATA_PORTALS.md`.
+  - Added dedicated Cross-Survey Portals panel in `frontend/index.html` with real-time coordinate synchronization.
+  - Implemented dynamic deep-linking to Dan Caselden's WiseView (`byw.tools/wiseview#ra=...&dec=...&size=...&band=3&speed=200`), allowing citizen scientists to jump directly from a flagged SPHEREx candidate into 14 years of unWISE co-added epochs.
+  - Patched Windows SSL validation in `backend/step1_wise0855_irsa.py` for direct NASA IRSA TAP querying.
 - **[All Roadmap Items Completed by @coolodu]** Deployed full suite of advanced astronomical features on `coolodu/web-frontend`:
   - **Click-to-Spectrum & 3D Cursor Reticle:** Direct celestial coordinate inversion mapping user clicks to $(\alpha, \delta)$, auto-fetching 102-band infrared spectra, and rendering high-tech dual-ring targeting brackets.
   - **Gaia DR3 Proper Motion Vector Overlay:** Toggled via `#toolGaia` or key `V`, displaying multi-epoch motion vectors ($E_1 \to E_2$) with directional arrowheads, trajectory baselines, and telemetry badges.

@@ -484,7 +484,67 @@
         </div>
       </div>
 
-      <!-- SECTION 4: Citizen Science Discovery Candidate -->
+      <!-- SECTION 4: Cross-Survey Portals & Validation Links -->
+      <div class="p-2.5 border-b border-blender-700 space-y-2 bg-blender-950/20">
+        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+          <span class="flex items-center gap-1">
+            <i data-lucide="external-link" class="w-3 h-3 text-cyan-400"></i>
+            NASA & Partner Portals
+          </span>
+          <span class="text-amber-400 text-[9px] font-mono">Live Sync</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-1.5 font-mono text-[9px]">
+          <!-- WiseView (Dan Caselden / Backyard Worlds) -->
+          <a id="btnWiseViewLink" href="http://byw.tools/wiseview#ra=133.79513&dec=-7.24515&size=100&band=3&speed=200" target="_blank" rel="noopener noreferrer" class="p-1.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-amber-300 hover:text-white flex items-center justify-between transition-all group shadow-sm" title="Open Dan Caselden's WiseView at current coordinates">
+            <span class="flex items-center gap-1 font-bold">
+              <i data-lucide="scan" class="w-3 h-3 text-amber-400"></i>
+              WiseView
+            </span>
+            <span class="text-gray-400 group-hover:text-amber-300 text-[8px]">↗</span>
+          </a>
+
+          <!-- NASA IPAC IRSA SPHEREx -->
+          <a href="https://irsa.ipac.caltech.edu/applications/spherex" target="_blank" rel="noopener noreferrer" class="p-1.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-cyan-300 hover:text-white flex items-center justify-between transition-all group shadow-sm" title="Open NASA IPAC IRSA SPHEREx Explorer">
+            <span class="flex items-center gap-1 font-bold">
+              <i data-lucide="telescope" class="w-3 h-3 text-cyan-400"></i>
+              NASA IRSA
+            </span>
+            <span class="text-gray-400 group-hover:text-cyan-300 text-[8px]">↗</span>
+          </a>
+
+          <!-- STScI MAST Gaia DR3 -->
+          <a href="https://archive.stsci.edu/missions-and-data/gaia" target="_blank" rel="noopener noreferrer" class="p-1.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-purple-300 hover:text-white flex items-center justify-between transition-all group shadow-sm" title="Open STScI MAST Gaia DR3 Astrometry Archive">
+            <span class="flex items-center gap-1 font-bold">
+              <i data-lucide="compass" class="w-3 h-3 text-purple-400"></i>
+              MAST Gaia
+            </span>
+            <span class="text-gray-400 group-hover:text-purple-300 text-[8px]">↗</span>
+          </a>
+
+          <!-- CADC NEOSSat Open Data -->
+          <a href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/" target="_blank" rel="noopener noreferrer" class="p-1.5 rounded bg-blender-850 hover:bg-blender-800 border border-blender-700 text-emerald-300 hover:text-white flex items-center justify-between transition-all group shadow-sm" title="Open Canadian Astronomy Data Centre (NEOSSat Open Data)">
+            <span class="flex items-center gap-1 font-bold">
+              <i data-lucide="satellite" class="w-3 h-3 text-emerald-400"></i>
+              CADC NEO
+            </span>
+            <span class="text-gray-400 group-hover:text-emerald-300 text-[8px]">↗</span>
+          </a>
+        </div>
+
+        <div class="flex items-center justify-between text-[9px] text-gray-400 pt-0.5">
+          <a href="https://caltech-ipac.github.io/irsa-tutorials/spherex/" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-1">
+            <i data-lucide="book-open" class="w-2.5 h-2.5"></i>
+            <span>IPAC Tutorials</span>
+          </a>
+          <a href="https://github.com/asc-csa/NEOSSAT_Tutorial" target="_blank" class="text-emerald-400 hover:underline flex items-center gap-1">
+            <i data-lucide="code" class="w-2.5 h-2.5"></i>
+            <span>CSA Code</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- SECTION 5: Citizen Science Discovery Candidate -->
       <div class="p-2.5 space-y-1.5 bg-blender-950/40">
         <button id="flagCandidateBtn" class="w-full py-1.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm">
           <i data-lucide="flag" class="w-3.5 h-3.5 text-blender-orange"></i>
@@ -1587,19 +1647,30 @@
       return { ra: currentRA, dec: currentDec };
     }
 
+    function updateWiseViewLink() {
+      const el = document.getElementById('btnWiseViewLink');
+      if (!el) return;
+      const targetCoords = clickReticle ? { ra: clickReticle.ra, dec: clickReticle.dec } : getCurrentCoordinates();
+      const fovArcsec = Math.round((camera.fov / camera.zoom) * 60.0);
+      const clampedSize = Math.max(30, Math.min(300, fovArcsec));
+      el.href = `http://byw.tools/wiseview#ra=${targetCoords.ra.toFixed(5)}&dec=${targetCoords.dec.toFixed(5)}&size=${clampedSize}&band=3&speed=200`;
+    }
+
     function updateCoordinateReadouts() {
       const coords = getCurrentCoordinates();
       document.getElementById('vpRA').innerText = `${coords.ra.toFixed(5)}°`;
       document.getElementById('vpDec').innerText = `${coords.dec.toFixed(5)}°`;
-      document.getElementById('propRA').innerText = `${coords.ra.toFixed(5)}°`;
-      document.getElementById('propDec').innerText = `${coords.dec.toFixed(5)}°`;
+      document.getElementById('propRA').innerText = `${(clickReticle ? clickReticle.ra : coords.ra).toFixed(5)}°`;
+      document.getElementById('propDec').innerText = `${(clickReticle ? clickReticle.dec : coords.dec).toFixed(5)}°`;
       document.getElementById('vpFOV').innerText = `${(camera.fov / camera.zoom).toFixed(2)}'`;
       document.getElementById('vpZoom').innerText = `${camera.zoom.toFixed(1)}x`;
 
       const inputRA = document.getElementById('inputRA');
       const inputDec = document.getElementById('inputDec');
-      if (document.activeElement !== inputRA) inputRA.value = coords.ra.toFixed(5);
-      if (document.activeElement !== inputDec) inputDec.value = coords.dec.toFixed(5);
+      if (document.activeElement !== inputRA) inputRA.value = (clickReticle ? clickReticle.ra : coords.ra).toFixed(5);
+      if (document.activeElement !== inputDec) inputDec.value = (clickReticle ? clickReticle.dec : coords.dec).toFixed(5);
+
+      updateWiseViewLink();
 
       checkAndTriggerLODUpdate();
       checkAndTriggerNearTileStreaming();
@@ -2315,6 +2386,7 @@
       document.getElementById('vpDec').innerText = `${clickedDec.toFixed(5)}°`;
 
       propertiesSidebar.classList.remove('hidden');
+      updateWiseViewLink();
       loadSpectrumData(clickedRA, clickedDec, null);
       playTargetLockChime();
       drawFrame();
@@ -2372,6 +2444,7 @@
         }
         if (clickReticle) {
           clickReticle = null;
+          updateCoordinateReadouts();
           drawFrame();
           return;
         }
