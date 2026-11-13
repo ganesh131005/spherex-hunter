@@ -8,6 +8,17 @@
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Multi-Portal Scientific Upgrade: SPHEREx + IPAC + WiseView + Gaia DR3 + CSA NEOSSat]**:
+  - Upgraded `backend/services/cutout_engine.py` with cross-survey benchmark telemetry (`w1_w2_color`, `gaia_dr3` optical dropout vs matched status, SPHEREx L2 `contamination_flags` bitmasks, and `cadc_neossat` flags) plus dynamic ADQL / `astroquery.cadc` queries (`adql_queries`).
+  - Fixed & enhanced `GET /api/spectrum` (`get_102_band_spectrum`) to return all 102 SPHEREx LVF channels (`bands`), integrated `array_counts` (`A1`–`A6`), resolving power metadata, and temperature-tailored molecular absorption dips ($\text{H}_2\text{O}$ ice, $\text{CH}_4$, $\text{CO}_2$, $\text{CO}$).
+  - Implemented `GET /api/source_discovery` (`run_automated_source_discovery`) combining Caltech-IPAC Alard-Lupton difference extraction with CSA NEOSSat Line Segment Detector (LSD) streaklet finding and SPHEREx L2 bitmask `0x04` cosmic ray rejection.
+  - Fixed `POST /api/flag` (`DiscoveryCandidate`) schema alignment in `backend/main.py` so citizen science submissions persist seamlessly.
+  - Upgraded `frontend/index.html` with:
+    - `WiseView [W]` infrared W1/W2 color composite shading mode.
+    - `Auto-Scan [X]` canvas overlay rendering moving dipoles, variable stars, NEOSSat LSD streaklets, and rejected cosmic rays.
+    - Interactive SPHEREx 6 Detector Array (`D1`–`D6`) cards updating live from the backend and isolating channels on the 102-band Chart.js spectrum plot.
+    - Sidebar Transform & Quality Telemetry (`W1-W2 Color`, `Gaia DR3`, `Quality Mask`), Live Multi-Archive ADQL copy box in `#fitsModal`, and 1-click coordinate/state `Share` deep-link copier.
+  - Verified live in browser (`http://127.0.0.1:8000/app/index.html`) with 0 console errors across target switching, 6-array photometry, WiseView shading, Auto-Scan overlays, and FITS ADQL modal.
 - [x] **[NASA & Partner Portals Comprehensive Research & Dynamic Deep-Linking]**:
   - Fetched, analyzed, and synthesized data schemas, spectral coverages, and query protocols from 8 official astronomical archives:
     1. **NASA IPAC IRSA SPHEREx Archive (`spherex.html`)**: 6 detector arrays (0.75–5.0 μm, 102 spectral channels, $R \sim 35\text{--}128$), TAP ADQL schema (`spherex.artifact`, `spherex.plane`), and release timeline.

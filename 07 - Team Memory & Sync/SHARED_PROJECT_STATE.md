@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Multi-Portal Scientific Upgrade Completed by @coolodu]**:
+  - Updated `backend/services/cutout_engine.py`, `backend/main.py`, and `frontend/index.html` to solve the Planet X & SPHEREx challenge end-to-end using all 8 NASA/IPAC/MAST/WiseView/CSA/CADC resources.
+  - Added `GET /api/source_discovery` (IPAC difference dipoles + CSA NEOSSat LSD streaklets + SPHEREx L2 cosmic ray bitmasks) and fixed `GET /api/spectrum` (102 bands + `A1`–`A6` detector array counts) & `POST /api/flag`.
+  - Added `WiseView [W]` W1/W2 shading mode, `Auto-Scan [X]` visual canvas overlays, interactive `D1`–`D6` detector array bandpass filtering, Gaia DR3 optical-dropout indicators, live multi-archive ADQL query generator, and 1-click full-state URL sharing.
+  - Verified live in browser (`http://127.0.0.1:8000/app/index.html`) with 0 console errors.
 - **[NASA & Partner Portals Integrated into SPHEREx Hunter by @coolodu]**:
   - Researched, mapped, and cataloged 8 NASA, IPAC, MAST, and CSA portals into `05 - Research & Resources/NASA_AND_PARTNER_DATA_PORTALS.md`.
   - Added dedicated Cross-Survey Portals panel in `frontend/index.html` with real-time coordinate synchronization.

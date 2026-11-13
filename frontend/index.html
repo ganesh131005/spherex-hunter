@@ -82,6 +82,7 @@
     .filter-grayscale { filter: none; }
     .filter-inverted { filter: invert(1) hue-rotate(180deg); }
     .filter-thermal { filter: contrast(1.3) saturate(1.8) hue-rotate(190deg); }
+    .filter-wiseview { filter: sepia(0.85) hue-rotate(330deg) saturate(2.5) contrast(1.2); }
   </style>
 </head>
 <body class="h-screen flex flex-col bg-blender-950 text-xs">
@@ -171,10 +172,22 @@
         <span class="text-emerald-300 font-semibold tracking-wide">NASA IRSA</span>
       </div>
 
+      <!-- Automated Source & Streaklet Discovery Scanner -->
+      <button id="btnHeaderAutoScan" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-gray-300 hover:text-white transition-all shadow-sm" title="Run IPAC Source Discovery + NEOSSat LSD Streaklet Scanner [X]">
+        <i data-lucide="radar" class="w-3.5 h-3.5 text-purple-400"></i>
+        <span class="hidden sm:inline">Auto-Scan</span>
+      </button>
+
       <!-- FITS File Download Button -->
-      <button id="btnHeaderFITS" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-gray-300 hover:text-white transition-all shadow-sm" title="Download Real NASA FITS Files (Epoch 1 & 2)">
+      <button id="btnHeaderFITS" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-gray-300 hover:text-white transition-all shadow-sm" title="Download Real NASA FITS Files & Multi-Archive ADQL">
         <i data-lucide="file-archive" class="w-3.5 h-3.5 text-amber-400"></i>
         <span class="hidden sm:inline">FITS</span>
+      </button>
+
+      <!-- 1-Click Share Deep-Link Button -->
+      <button id="btnHeaderShare" class="h-7 px-2.5 flex items-center gap-1.5 rounded-md blender-btn text-[10px] font-mono text-gray-300 hover:text-white transition-all shadow-sm" title="Copy Shareable Coordinate Deep-Link URL">
+        <i data-lucide="share-2" class="w-3.5 h-3.5 text-cyan-300"></i>
+        <span id="shareBtnLabel" class="hidden sm:inline">Share</span>
       </button>
 
       <!-- Snapshot Export Quick Button -->
@@ -238,6 +251,11 @@
       <!-- Gaia DR3 Astrometric Motion Vectors Toggle -->
       <button id="toolGaia" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Toggle Gaia DR3 Proper Motion Vectors [V]">
         <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-300"></i>
+      </button>
+
+      <!-- Automated Source & Streaklet Discovery Toggle -->
+      <button id="toolAutoScan" class="w-7 h-7 rounded blender-btn flex items-center justify-center text-gray-300 hover:text-white transition-all" title="Toggle Automated Dipole & NEOSSat Streaklet Scan [X]">
+        <i data-lucide="radar" class="w-3.5 h-3.5 text-purple-400"></i>
       </button>
 
       <!-- Snapshot / Export Image -->
@@ -319,6 +337,9 @@
         </button>
         <button id="shadeThermal" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded" title="False Color Infrared Thermal [T]">
           Thermal <span class="text-[9px] text-gray-500 font-mono">[T]</span>
+        </button>
+        <button id="shadeWiseView" class="blender-btn px-2 py-0.5 text-[10px] font-mono rounded text-amber-300" title="Backyard Worlds W1/W2 Infrared Color Composite [W]">
+          WiseView <span class="text-[9px] text-gray-500 font-mono">[W]</span>
         </button>
       </div>
 
@@ -419,6 +440,18 @@
             <span class="text-gray-400">Temperature:</span>
             <span id="propTemp" class="text-cyan-300">~250 K</span>
           </div>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+            <span class="text-gray-400">W1-W2 Color:</span>
+            <span id="propW1W2" class="text-amber-300 font-bold text-[9px] truncate max-w-[145px]">+4.85 mag (Y-Dwarf)</span>
+          </div>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+            <span class="text-gray-400">Gaia DR3:</span>
+            <span id="propGaiaStatus" class="text-purple-300 font-bold text-[9px] truncate max-w-[150px]">Optical Dropout (IR-Only)</span>
+          </div>
+          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+            <span class="text-gray-400">Quality Mask:</span>
+            <span id="propQualityMask" class="text-emerald-400 font-mono text-[9px] truncate max-w-[145px]">0x0000 CLEAN</span>
+          </div>
         </div>
       </div>
 
@@ -429,35 +462,39 @@
             <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
             SPHEREx 6-Array Photometry
           </span>
-          <span class="text-emerald-400 text-[9px]">4.12x SNR</span>
+          <div class="flex items-center gap-1.5">
+            <button id="btnResetArrayFilter" class="hidden px-1 py-0.2 rounded bg-blender-800 hover:bg-blender-700 text-cyan-300 text-[8px] font-mono border border-blender-700">All 6</button>
+            <span class="text-emerald-400 text-[9px]">4.12x SNR</span>
+          </div>
         </div>
 
         <div class="grid grid-cols-3 gap-1 font-mono text-[9px] text-center">
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+          <button data-array="1" class="array-card bg-blender-850 hover:bg-blender-800 p-1 rounded border border-blender-700 transition-all cursor-pointer" title="Click to isolate SPHEREx Array 1 (0.75-1.11 μm, R~39)">
             <div class="text-gray-400">A1 (0.75μm)</div>
-            <div class="text-white font-bold">842 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div id="arrCountA1" class="text-white font-bold">842 ct</div>
+          </button>
+          <button data-array="2" class="array-card bg-blender-850 hover:bg-blender-800 p-1 rounded border border-blender-700 transition-all cursor-pointer" title="Click to isolate SPHEREx Array 2 (1.11-1.64 μm, R~41)">
             <div class="text-gray-400">A2 (1.20μm)</div>
-            <div class="text-white font-bold">1,210 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div id="arrCountA2" class="text-white font-bold">1,210 ct</div>
+          </button>
+          <button data-array="3" class="array-card bg-blender-850 hover:bg-blender-800 p-1 rounded border border-blender-700 transition-all cursor-pointer" title="Click to isolate SPHEREx Array 3 (1.64-2.42 μm, R~41)">
             <div class="text-gray-400">A3 (1.90μm)</div>
-            <div class="text-white font-bold">2,480 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div id="arrCountA3" class="text-white font-bold">2,480 ct</div>
+          </button>
+          <button data-array="4" class="array-card bg-blender-850 hover:bg-blender-800 p-1 rounded border border-blender-700 transition-all cursor-pointer" title="Click to isolate SPHEREx Array 4 (2.42-3.82 μm, R~35)">
             <div class="text-gray-400">A4 (2.42μm)</div>
-            <div class="text-white font-bold">3,910 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div id="arrCountA4" class="text-white font-bold">3,910 ct</div>
+          </button>
+          <button data-array="5" class="array-card bg-blender-850 hover:bg-blender-800 p-1 rounded border border-blender-700 transition-all cursor-pointer" title="Click to isolate SPHEREx Array 5 (3.82-4.42 μm, R~112 H2O/CO Ice)">
             <div class="text-gray-400">A5 (3.82μm)</div>
-            <div class="text-blender-orange font-bold">8,740 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
+            <div id="arrCountA5" class="text-blender-orange font-bold">8,740 ct</div>
+          </button>
+          <button data-array="6" class="array-card bg-blender-850 hover:bg-blender-800 p-1 rounded border border-blender-700 transition-all cursor-pointer" title="Click to isolate SPHEREx Array 6 (4.42-5.00 μm, R~128 CO2/Thermal)">
             <div class="text-gray-400">A6 (4.42μm)</div>
-            <div class="text-blender-orange font-bold">12,190 ct</div>
-          </div>
+            <div id="arrCountA6" class="text-blender-orange font-bold">12,190 ct</div>
+          </button>
         </div>
+        <div id="activeArrayInfo" class="text-[8px] font-mono text-cyan-300 hidden"></div>
       </div>
 
       <!-- SECTION 3: 102 Spectral Bands & Molecular Telemetry -->
@@ -476,11 +513,11 @@
         </div>
 
         <!-- Molecular features detected -->
-        <div class="flex items-center justify-between font-mono text-[9px] text-gray-400 pt-0.5">
+        <div id="molecularDipsContainer" class="flex items-center justify-between font-mono text-[9px] text-gray-400 pt-0.5 flex-wrap gap-1">
           <span>Key Dips:</span>
-          <span class="text-cyan-300">H₂O (1.4μm)</span>
-          <span class="text-emerald-400">CH₄ (3.3μm)</span>
-          <span class="text-orange-400">CO₂ (4.3μm)</span>
+          <span class="text-cyan-300">H₂O (3.05μm)</span>
+          <span class="text-emerald-400">CH₄ (3.30μm)</span>
+          <span class="text-orange-400">CO₂ (4.27μm)</span>
         </div>
       </div>
 
@@ -722,6 +759,7 @@
             <div class="flex justify-between items-center"><span class="text-gray-400">Grayscale (Telescope)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">G</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Inverted (DS9 Print)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">I</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Thermal (False Color)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">T</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">WiseView (W1/W2 Gold)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-amber-300 font-mono text-[9px]">W</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Reset Zoom (1.0x)</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">R</kbd></div>
           </div>
         </div>
@@ -735,6 +773,7 @@
           <div class="space-y-1.5 text-[11px]">
             <div class="flex justify-between items-center"><span class="text-gray-400">Targets 1 to 5</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-white font-mono text-[9px]">1 - 5</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Gaia DR3 Vectors</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-amber-300 font-mono text-[9px]">V</kbd></div>
+            <div class="flex justify-between items-center"><span class="text-gray-400">Auto-Scan Dipoles/NEO</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-purple-300 font-mono text-[9px]">X</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Discoveries Catalogue</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-emerald-300 font-mono text-[9px]">C</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Click Reticle & Spec</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-cyan-300 font-mono text-[9px]">Click Sky</kbd></div>
             <div class="flex justify-between items-center"><span class="text-gray-400">Flag Discovery</span><kbd class="px-1.5 py-0.5 rounded bg-blender-800 border border-blender-700 text-orange-400 font-mono text-[9px]">F</kbd></div>
@@ -794,6 +833,18 @@
           </div>
           <span class="text-[10px] text-amber-300 font-bold group-hover:underline">.FITS ↓</span>
         </a>
+      </div>
+
+      <!-- Live Multi-Archive ADQL & PyVO Queries -->
+      <div class="space-y-1.5 pt-1 border-t border-blender-700/60">
+        <div class="flex items-center justify-between text-[10px]">
+          <span class="text-cyan-300 font-bold">Live Multi-Archive ADQL / CADC Query</span>
+          <button id="btnCopyAdql" class="px-2 py-0.5 rounded bg-blender-850 hover:bg-blender-700 border border-blender-700 text-gray-200 text-[9px] flex items-center gap-1 transition-all">
+            <i data-lucide="copy" class="w-3 h-3 text-cyan-400"></i>
+            <span id="copyAdqlLabel">Copy ADQL</span>
+          </button>
+        </div>
+        <pre id="fitsModalAdqlBox" class="bg-blender-950 border border-blender-700 rounded p-2 text-[9px] text-emerald-300 overflow-x-auto max-h-28 font-mono whitespace-pre-wrap select-all"></pre>
       </div>
 
       <div class="pt-2 border-t border-blender-700/60 flex items-center justify-end">
@@ -916,6 +967,11 @@
     let activeCutoutData = null;
     let clickReticle = null; // { x, y, ra, dec }
     let isGaiaOverlayEnabled = false;
+    let isAutoScanEnabled = false;
+    let autoScanResults = null;
+    let activeArrayFilter = null; // 1..6 or null
+    let activeShadingMode = 'gray';
+    let lastSpectrumData = null;
     let currentDiscoveries = [];
 
     // MULTI-TIERED GAME LOD ENGINE & DOUBLE-BUFFERED CROSS-FADE
@@ -1586,6 +1642,100 @@
         ctx.restore();
       }
 
+      // =======================================================================
+      // 2B. AUTOMATED SOURCE DISCOVERY & NEOSSAT LSD STREAKLET OVERLAY
+      // =======================================================================
+      if (isAutoScanEnabled && autoScanResults && Array.isArray(autoScanResults.candidates)) {
+        ctx.save();
+        const spanPx = 3.0 * pixelsPerArcmin;
+        autoScanResults.candidates.forEach((cand) => {
+          const x1 = (cand.norm_x || 0) * spanPx;
+          const y1 = (cand.norm_y || 0) * spanPx;
+          const x2 = (cand.norm_x2 !== undefined ? cand.norm_x2 : (cand.norm_x || 0)) * spanPx;
+          const y2 = (cand.norm_y2 !== undefined ? cand.norm_y2 : (cand.norm_y || 0)) * spanPx;
+          const lblFont = Math.max(8.5, 9.5 / camera.zoom);
+          ctx.font = `bold ${lblFont}px monospace`;
+
+          if (cand.classification === 'MOVING_DIPOLE') {
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 1.6 / camera.zoom;
+            ctx.beginPath();
+            ctx.arc(x1, y1, 14 / camera.zoom, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#ea7600';
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x2, y2, 10 / camera.zoom, 0, Math.PI * 2);
+            ctx.stroke();
+
+            const tag = `[DIPOLE] ${cand.name} (SNR ${cand.snr}σ${cand.gaia_dropout ? ' • GAIA DROPOUT' : ''})`;
+            ctx.fillStyle = 'rgba(10, 15, 26, 0.85)';
+            const tw = ctx.measureText(tag).width + 8 / camera.zoom;
+            ctx.fillRect(x1 + 16 / camera.zoom, y1 - 12 / camera.zoom, tw, 14 / camera.zoom);
+            ctx.fillStyle = '#00f0ff';
+            ctx.fillText(tag, x1 + 20 / camera.zoom, y1 - 2 / camera.zoom);
+          } else if (cand.classification === 'VARIABLE_STAR') {
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 1.8 / camera.zoom;
+            ctx.beginPath();
+            ctx.arc(x1, y1, 14 / camera.zoom, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(x1, y1, 20 / camera.zoom, 0, Math.PI * 2);
+            ctx.stroke();
+
+            const tag = `[VARIABLE] ${cand.name} (SNR ${cand.snr}σ)`;
+            ctx.fillStyle = 'rgba(10, 15, 26, 0.85)';
+            const tw = ctx.measureText(tag).width + 8 / camera.zoom;
+            ctx.fillRect(x1 + 22 / camera.zoom, y1 - 10 / camera.zoom, tw, 14 / camera.zoom);
+            ctx.fillStyle = '#34d399';
+            ctx.fillText(tag, x1 + 26 / camera.zoom, y1);
+          } else if (cand.classification === 'NEO_STREAKLET') {
+            ctx.strokeStyle = '#c084fc';
+            ctx.lineWidth = 2.0 / camera.zoom;
+            ctx.setLineDash([4 / camera.zoom, 3 / camera.zoom]);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#c084fc';
+            ctx.beginPath();
+            ctx.arc(x1, y1, 3.5 / camera.zoom, 0, Math.PI * 2);
+            ctx.arc(x2, y2, 3.5 / camera.zoom, 0, Math.PI * 2);
+            ctx.fill();
+
+            const tag = `[NEOSSat LSD STREAKLET] ${cand.proper_motion_arcsec_yr}"/hr`;
+            ctx.fillStyle = 'rgba(15, 10, 30, 0.88)';
+            const tw = ctx.measureText(tag).width + 8 / camera.zoom;
+            ctx.fillRect(x2 + 6 / camera.zoom, y2 - 10 / camera.zoom, tw, 14 / camera.zoom);
+            ctx.fillStyle = '#d8b4fe';
+            ctx.fillText(tag, x2 + 10 / camera.zoom, y2);
+          } else if (cand.classification === 'COSMIC_RAY_REJECTED') {
+            const s = 6 / camera.zoom;
+            ctx.strokeStyle = '#f87171';
+            ctx.lineWidth = 1.6 / camera.zoom;
+            ctx.beginPath();
+            ctx.moveTo(x1 - s, y1 - s); ctx.lineTo(x1 + s, y1 + s);
+            ctx.moveTo(x1 + s, y1 - s); ctx.lineTo(x1 - s, y1 + s);
+            ctx.stroke();
+
+            const tag = `[SPHEREx MASK 0x04: CR REJECTED]`;
+            ctx.fillStyle = 'rgba(30, 10, 10, 0.85)';
+            const tw = ctx.measureText(tag).width + 8 / camera.zoom;
+            ctx.fillRect(x1 + 9 / camera.zoom, y1 - 8 / camera.zoom, tw, 13 / camera.zoom);
+            ctx.fillStyle = '#fca5a5';
+            ctx.fillText(tag, x1 + 13 / camera.zoom, y1 + 1 / camera.zoom);
+          }
+        });
+        ctx.restore();
+      }
+
       ctx.restore();
 
       // =======================================================================
@@ -1892,6 +2042,26 @@
           if (data.telemetry.estimated_temp_k) {
             document.getElementById('propTemp').innerText = `~${data.telemetry.estimated_temp_k} K`;
           }
+          const w1w2El = document.getElementById('propW1W2');
+          if (w1w2El && data.telemetry.w1_w2_color) {
+            w1w2El.innerText = data.telemetry.w1_w2_color;
+          }
+          const gaiaEl = document.getElementById('propGaiaStatus');
+          if (gaiaEl && data.telemetry.gaia_dr3) {
+            const g = data.telemetry.gaia_dr3;
+            gaiaEl.innerText = g.matched ? `Matched (G=${g.g_mag}, ${g.distance_pc} pc)` : `Optical Dropout (IR-Only)`;
+            gaiaEl.className = g.matched
+              ? "text-purple-300 font-bold text-[9px] truncate max-w-[150px]"
+              : "text-amber-400 font-bold text-[9px] truncate max-w-[150px]";
+          }
+          const maskEl = document.getElementById('propQualityMask');
+          if (maskEl && data.telemetry.contamination_flags) {
+            const cf = data.telemetry.contamination_flags;
+            maskEl.innerText = `${cf.bitmask} CLEAN (Zodi ${cf.zodiacal_mjy_sr})`;
+          }
+        }
+        if (isAutoScanEnabled) {
+          runAutoScan();
         }
       } catch (err) {
         console.error("Failed to load real FITS cutout:", err);
@@ -2077,39 +2247,55 @@
       playModeChime();
     });
 
-    // Shading Buttons (Grayscale, Inverted, Thermal)
+    // Shading Buttons (Grayscale, Inverted, Thermal, WiseView)
     const shadeGray = document.getElementById('shadeGrayscale');
     const shadeInv = document.getElementById('shadeInverted');
     const shadeTherm = document.getElementById('shadeThermal');
+    const shadeWise = document.getElementById('shadeWiseView');
 
     function setCanvasFilter(filterClass) {
       canvas.className = `w-full h-full block ${filterClass}`;
-      [shadeGray, shadeInv, shadeTherm].forEach(b => b.classList.remove('blender-btn-active'));
+      [shadeGray, shadeInv, shadeTherm, shadeWise].forEach(b => {
+        if (b) b.classList.remove('blender-btn-active');
+      });
     }
 
     function setShadingMode(mode) {
-      if (mode === 'gray') shadeGray.click();
-      else if (mode === 'invert') shadeInv.click();
-      else if (mode === 'thermal') shadeTherm.click();
+      if (mode === 'gray' && shadeGray) shadeGray.click();
+      else if (mode === 'invert' && shadeInv) shadeInv.click();
+      else if (mode === 'thermal' && shadeTherm) shadeTherm.click();
+      else if (mode === 'wiseview' && shadeWise) shadeWise.click();
     }
 
     shadeGray.addEventListener('click', () => {
+      activeShadingMode = 'gray';
       setCanvasFilter('filter-grayscale');
       shadeGray.classList.add('blender-btn-active');
       drawFrame();
     });
 
     shadeInv.addEventListener('click', () => {
+      activeShadingMode = 'invert';
       setCanvasFilter('filter-inverted');
       shadeInv.classList.add('blender-btn-active');
       drawFrame();
     });
 
     shadeTherm.addEventListener('click', () => {
+      activeShadingMode = 'thermal';
       setCanvasFilter('filter-thermal');
       shadeTherm.classList.add('blender-btn-active');
       drawFrame();
     });
+
+    if (shadeWise) {
+      shadeWise.addEventListener('click', () => {
+        activeShadingMode = 'wiseview';
+        setCanvasFilter('filter-wiseview');
+        shadeWise.classList.add('blender-btn-active');
+        drawFrame();
+      });
+    }
 
     // =========================================================================
     // TARGET PRESETS & COORDINATE SEARCH
@@ -2193,8 +2379,17 @@
     });
 
     // =========================================================================
-    // 102-BAND SPECTRUM CHART
+    // 102-BAND SPECTRUM CHART & INTERACTIVE 6 DETECTOR ARRAYS (D1 - D6)
     // =========================================================================
+    const SPHEREX_ARRAYS_INFO = {
+      1: { name: "D1", range: "0.75–1.11 μm", r: "R~39", desc: "Optical-NIR Stellar Continuum" },
+      2: { name: "D2", range: "1.11–1.64 μm", r: "R~41", desc: "H₂O Vapor & J/H-Band" },
+      3: { name: "D3", range: "1.64–2.42 μm", r: "R~41", desc: "K-Band & CO Overtone" },
+      4: { name: "D4", range: "2.42–3.82 μm", r: "R~35", desc: "H₂O Ice (3.05μm) & CH₄ (3.3μm)" },
+      5: { name: "D5", range: "3.82–4.42 μm", r: "R~112", desc: "CO₂ Ice Absorption (4.27μm)" },
+      6: { name: "D6", range: "4.42–5.00 μm", r: "R~128", desc: "Cold Y-Dwarf / Planet X Thermal Peak" }
+    };
+
     let specChart;
     function initSpectrumChart() {
       const chartCanvas = document.getElementById('spectrumChart');
@@ -2210,10 +2405,11 @@
           datasets: [{
             data: [],
             borderColor: '#ea7600',
-            backgroundColor: 'rgba(234, 118, 0, 0.1)',
+            backgroundColor: 'rgba(234, 118, 0, 0.14)',
             fill: true,
             borderWidth: 1.5,
             pointRadius: 0,
+            pointBackgroundColor: [],
             tension: 0.25
           }]
         },
@@ -2224,8 +2420,73 @@
             x: { display: false },
             y: { display: false }
           },
-          plugins: { legend: { display: false } }
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (items) => `λ = ${items[0].label} μm`,
+                label: (item) => `${item.formattedValue} μJy`
+              }
+            }
+          }
         }
+      });
+    }
+
+    function applyArrayHighlightToChart() {
+      if (!specChart) return;
+      const ds = specChart.data.datasets[0];
+      if (!activeArrayFilter) {
+        ds.borderColor = '#ea7600';
+        ds.pointRadius = 0;
+        ds.segment = undefined;
+      } else {
+        const startIdx = (activeArrayFilter - 1) * 17;
+        const endIdx = Math.min(101, activeArrayFilter * 17 - 1);
+        ds.pointRadius = specChart.data.labels.map((_, idx) => (idx >= startIdx && idx <= endIdx) ? 2.2 : 0);
+        ds.pointBackgroundColor = specChart.data.labels.map((_, idx) => (idx >= startIdx && idx <= endIdx) ? '#00f0ff' : 'rgba(234, 118, 0, 0.2)');
+        ds.borderColor = 'rgba(234, 118, 0, 0.45)';
+      }
+      specChart.update('none');
+    }
+
+    function selectDetectorArray(arrNum) {
+      activeArrayFilter = (activeArrayFilter === arrNum) ? null : arrNum;
+      document.querySelectorAll('.array-card').forEach(card => {
+        const n = parseInt(card.getAttribute('data-array'), 10);
+        if (n === activeArrayFilter) {
+          card.classList.add('border-cyan-400', 'bg-cyan-950/40');
+        } else {
+          card.classList.remove('border-cyan-400', 'bg-cyan-950/40');
+        }
+      });
+      const resetBtn = document.getElementById('btnResetArrayFilter');
+      const infoEl = document.getElementById('activeArrayInfo');
+      if (activeArrayFilter && SPHEREX_ARRAYS_INFO[activeArrayFilter]) {
+        const info = SPHEREX_ARRAYS_INFO[activeArrayFilter];
+        if (resetBtn) resetBtn.classList.remove('hidden');
+        if (infoEl) {
+          infoEl.innerText = `${info.name}: ${info.range} (${info.r}) — ${info.desc}`;
+          infoEl.classList.remove('hidden');
+        }
+      } else {
+        if (resetBtn) resetBtn.classList.add('hidden');
+        if (infoEl) infoEl.classList.add('hidden');
+      }
+      applyArrayHighlightToChart();
+    }
+
+    document.querySelectorAll('.array-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const n = parseInt(card.getAttribute('data-array'), 10);
+        if (n) selectDetectorArray(n);
+      });
+    });
+    const btnResetArrayFilter = document.getElementById('btnResetArrayFilter');
+    if (btnResetArrayFilter) {
+      btnResetArrayFilter.addEventListener('click', () => {
+        activeArrayFilter = null;
+        selectDetectorArray(0);
       });
     }
 
@@ -2236,10 +2497,35 @@
         const res = await fetch(url);
         if (res.ok) {
           const spec = await res.json();
-          if (specChart && spec.bands) {
-            const fluxes = spec.bands.map(b => b.flux_ujy);
+          lastSpectrumData = spec;
+          if (specChart) {
+            const fluxes = spec.bands
+              ? spec.bands.map(b => b.flux_ujy)
+              : (spec.flux_microjanskys || []);
+            if (spec.wavelengths_microns && spec.wavelengths_microns.length === 102) {
+              specChart.data.labels = spec.wavelengths_microns.map(w => w.toFixed(2));
+            }
             specChart.data.datasets[0].data = fluxes;
+            applyArrayHighlightToChart();
             specChart.update();
+          }
+
+          if (spec.array_counts) {
+            for (let i = 1; i <= 6; i++) {
+              const el = document.getElementById(`arrCountA${i}`);
+              const ct = spec.array_counts[`A${i}`];
+              if (el && ct !== undefined) {
+                el.innerText = `${Number(ct).toLocaleString()} ct`;
+              }
+            }
+          }
+
+          const molBox = document.getElementById('molecularDipsContainer');
+          if (molBox && Array.isArray(spec.detected_molecules)) {
+            const colors = ['text-cyan-300', 'text-emerald-400', 'text-orange-400'];
+            molBox.innerHTML = '<span>Key Dips:</span>' + spec.detected_molecules.map((m, idx) =>
+              `<span class="${colors[idx % colors.length]}" title="Confidence ${m.confidence}">${escapeHtml(m.molecule)} (${m.wavelength_um}μm)</span>`
+            ).join('');
           }
         }
       } catch (e) {
@@ -2551,7 +2837,7 @@
           drawFrame();
           return;
         }
-        // [G], [I], [T]: Shading modes
+        // [G], [I], [T], [W]: Shading modes
         if (e.code === 'KeyG') {
           e.preventDefault();
           setShadingMode('gray');
@@ -2567,6 +2853,11 @@
           setShadingMode('thermal');
           return;
         }
+        if (e.code === 'KeyW') {
+          e.preventDefault();
+          setShadingMode('wiseview');
+          return;
+        }
         // [M]: Toggle Mute
         if (e.code === 'KeyM') {
           e.preventDefault();
@@ -2577,6 +2868,12 @@
         if (e.code === 'KeyV') {
           e.preventDefault();
           toggleGaiaOverlay();
+          return;
+        }
+        // [X]: Toggle Automated Source Discovery & NEOSSat LSD Scan
+        if (e.code === 'KeyX') {
+          e.preventDefault();
+          toggleAutoScan();
           return;
         }
         // [C]: Open Citizen Science Discoveries Catalogue
@@ -2794,6 +3091,65 @@
     if (toolGaia) toolGaia.addEventListener('click', toggleGaiaOverlay);
 
     // =========================================================================
+    // AUTOMATED SOURCE DISCOVERY & NEOSSAT LSD STREAKLET SCANNER [X]
+    // =========================================================================
+    const toolAutoScan = document.getElementById('toolAutoScan');
+    const btnHeaderAutoScan = document.getElementById('btnHeaderAutoScan');
+
+    async function runAutoScan() {
+      try {
+        let url = `${BACKEND_URL}/source_discovery?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${camera.fov}`;
+        if (currentTargetKey) url += `&target=${currentTargetKey}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          autoScanResults = await res.json();
+          drawFrame();
+        }
+      } catch (err) {
+        console.warn("Automated source discovery error:", err);
+      }
+    }
+
+    function toggleAutoScan() {
+      isAutoScanEnabled = !isAutoScanEnabled;
+      [toolAutoScan, btnHeaderAutoScan].forEach(el => {
+        if (!el) return;
+        if (isAutoScanEnabled) {
+          el.classList.add('blender-btn-orange-active');
+        } else {
+          el.classList.remove('blender-btn-orange-active');
+        }
+      });
+      playModeChime();
+      if (isAutoScanEnabled) {
+        runAutoScan();
+      } else {
+        drawFrame();
+      }
+    }
+    if (toolAutoScan) toolAutoScan.addEventListener('click', toggleAutoScan);
+    if (btnHeaderAutoScan) btnHeaderAutoScan.addEventListener('click', toggleAutoScan);
+
+    // 1-Click Coordinate & State Deep-Link Share Copier
+    const btnHeaderShare = document.getElementById('btnHeaderShare');
+    if (btnHeaderShare) {
+      btnHeaderShare.addEventListener('click', async () => {
+        const coords = clickReticle || getCurrentCoordinates();
+        const mode = diffMode ? 'diff' : 'blink';
+        const url = `${window.location.origin}${window.location.pathname}?ra=${coords.ra.toFixed(5)}&dec=${coords.dec.toFixed(5)}&fov=${camera.fov}&mode=${mode}&shade=${activeShadingMode}&speed=${fps}${isAutoScanEnabled ? '&scan=1' : ''}`;
+        try {
+          await navigator.clipboard.writeText(url);
+        } catch (e) {}
+        const lbl = document.getElementById('shareBtnLabel');
+        if (lbl) {
+          lbl.innerText = 'Copied!';
+          setTimeout(() => { lbl.innerText = 'Share'; }, 1800);
+        }
+        playTargetLockChime();
+      });
+    }
+
+    // =========================================================================
     // REAL ASTRONOMICAL FITS MODAL CONTROLLER
     // =========================================================================
     const fitsModal = document.getElementById('fitsModal');
@@ -2816,8 +3172,34 @@
       document.getElementById('btnDownloadEpoch1Fits').href = ep1Href;
       document.getElementById('btnDownloadEpoch2Fits').href = ep2Href;
 
+      const adqlBox = document.getElementById('fitsModalAdqlBox');
+      if (adqlBox) {
+        const q = (activeCutoutData && activeCutoutData.adql_queries) ? activeCutoutData.adql_queries : null;
+        if (q) {
+          adqlBox.textContent = `-- [1] NASA IPAC IRSA SPHEREx TAP\n${q.irsa_spherex}\n\n-- [2] STScI MAST Gaia DR3\n${q.mast_gaia}\n\n# [3] CADC CSA NEOSSat Python\n${q.cadc_neossat}`;
+        } else {
+          adqlBox.textContent = `SELECT p.ra, p.dec, p.energy_bandpassname FROM spherex.plane p WHERE 1 = CONTAINS(POINT('ICRS', ${coords.ra.toFixed(5)}, ${coords.dec.toFixed(5)}), p.poly)`;
+        }
+      }
+
       fitsModal.classList.remove('hidden');
       lucide.createIcons();
+    }
+
+    const btnCopyAdql = document.getElementById('btnCopyAdql');
+    if (btnCopyAdql) {
+      btnCopyAdql.addEventListener('click', async () => {
+        const adqlBox = document.getElementById('fitsModalAdqlBox');
+        if (!adqlBox) return;
+        try {
+          await navigator.clipboard.writeText(adqlBox.textContent);
+        } catch (e) {}
+        const lbl = document.getElementById('copyAdqlLabel');
+        if (lbl) {
+          lbl.innerText = 'Copied!';
+          setTimeout(() => { lbl.innerText = 'Copy ADQL'; }, 1800);
+        }
+      });
     }
 
     function closeFitsModal() {
@@ -2961,6 +3343,18 @@
       const paramDec = urlParams.get('dec');
       const paramFOV = urlParams.get('fov');
       const paramTarget = urlParams.get('target');
+      const paramMode = urlParams.get('mode');
+      const paramShade = urlParams.get('shade');
+      const paramSpeed = urlParams.get('speed');
+      const paramScan = urlParams.get('scan');
+
+      if (paramSpeed) {
+        const parsedFps = parseFloat(paramSpeed);
+        if (!isNaN(parsedFps) && parsedFps >= 0.5 && parsedFps <= 6.0) setFps(parsedFps);
+      }
+      if (paramShade) {
+        setShadingMode(paramShade);
+      }
 
       if (paramRA && paramDec) {
         document.getElementById('inputRA').value = paramRA;
@@ -2973,7 +3367,15 @@
         selectTarget('wise0855');
       }
 
-      startFlipbook();
+      if (paramMode === 'diff') {
+        setWorkspaceMode('diff');
+      } else {
+        startFlipbook();
+      }
+
+      if (paramScan === '1') {
+        toggleAutoScan();
+      }
     });
   </script>
 </body>

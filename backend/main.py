@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from backend.services.cutout_engine import (
     fetch_real_cutout,
     get_102_band_spectrum,
+    run_automated_source_discovery,
     BENCHMARKS
 )
 
@@ -50,10 +51,14 @@ DISCOVERIES_FILE = os.path.join(os.path.dirname(__file__), "..", "07 - Team Memo
 class DiscoveryCandidate(BaseModel):
     ra: float
     dec: float
-    object_type: str
-    user_handle: str = "@citizen_scientist"
+    candidate_name: Optional[str] = None
+    motion_type: Optional[str] = None
+    proper_motion_mas: Optional[float] = 0.0
+    astronomer: Optional[str] = "@citizen_scientist"
+    object_type: Optional[str] = None
+    user_handle: Optional[str] = None
     notes: Optional[str] = ""
-    target_name: Optional[str] = "Unknown"
+    target_name: Optional[str] = None
 
 @app.get("/")
 def root():
@@ -155,6 +160,22 @@ def get_spectrum(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/source_discovery")
+def source_discovery(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    fov: float = Query(3.0, description="Field of View in arcminutes"),
+    target: Optional[str] = Query(None, description="Benchmark target key")
+):
+    """Runs Caltech-IPAC Source Discovery + CSA NEOSSat Line Segment Detector (LSD) streaklet analysis."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return run_automated_source_discovery(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/download_fits")
 def download_fits(
     target: Optional[str] = Query(None, description="Benchmark target key"),
@@ -220,6 +241,7 @@ def get_discoveries():
 @app.post("/api/flag")
 def flag_candidate(candidate: DiscoveryCandidate):
     """Logs a new candidate into the community discovery list."""
+    from datetime import datetime, timezone
     discoveries = []
     if os.path.exists(DISCOVERIES_FILE):
         try:
@@ -228,8 +250,16 @@ def flag_candidate(candidate: DiscoveryCandidate):
         except Exception:
             discoveries = []
             
-    entry = candidate.model_dump()
-    entry["timestamp"] = "2026-11-12T20:50:00Z"
+    entry = {
+        "candidate_name": candidate.candidate_name or candidate.target_name or f"Candidate ({candidate.ra:.4f}, {candidate.dec:.4f})",
+        "ra": candidate.ra,
+        "dec": candidate.dec,
+        "motion_type": candidate.motion_type or candidate.object_type or "high_pm",
+        "proper_motion_mas": candidate.proper_motion_mas or 0.0,
+        "astronomer": candidate.astronomer or candidate.user_handle or "@citizen_scientist",
+        "notes": candidate.notes or "",
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    }
     discoveries.insert(0, entry)
     
     with open(DISCOVERIES_FILE, "w", encoding="utf-8") as f:
