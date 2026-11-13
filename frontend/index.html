@@ -717,18 +717,129 @@
     }
 
     // =========================================================================
-    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Continuous World-Space Optical Zoom)
+    // SPATIAL TILE CACHE & VIEWPORT FOCUS NEAR-IMAGE STREAMER
     // =========================================================================
-    function drawImageFit(img, w, h) {
-      if (!img || !img.complete) return;
-      const fov = (img && img.fov) ? img.fov : (activeCutoutData && activeCutoutData.coordinates ? activeCutoutData.coordinates.fov_arcmin : 3.0);
-      const basePx = Math.min(w, h) * 0.90;
-      const pixelsPerArcmin = basePx / 3.0; // standard 3.0' fills 90% at 1.0x zoom
-      const rw = fov * pixelsPerArcmin;
-      const rh = fov * pixelsPerArcmin;
-      ctx.drawImage(img, -rw / 2, -rh / 2, rw, rh);
+    const spatialTileMap = new Map();
+    const activeNearFetches = new Set();
+    let nearTileStreamTimer = null;
+
+    function getTileKey(col, row, lod) {
+      return `tile_${lod}_${col}_${row}`;
     }
 
+    function registerTile(col, row, lod, fov, ra, dec, img1, img2, imgDiff) {
+      const key = getTileKey(col, row, lod);
+      spatialTileMap.set(key, {
+        col, row, lod, fov, ra, dec,
+        img1, img2, imgDiff,
+        timestamp: Date.now()
+      });
+      // Limit cache size to 36 tiles to manage GPU texture memory
+      if (spatialTileMap.size > 36) {
+        let oldestKey = null;
+        let oldestTime = Infinity;
+        for (const [k, v] of spatialTileMap.entries()) {
+          if (v.col === 0 && v.row === 0) continue; // Keep primary anchor
+          if (v.timestamp < oldestTime) {
+            oldestTime = v.timestamp;
+            oldestKey = k;
+          }
+        }
+        if (oldestKey) spatialTileMap.delete(oldestKey);
+      }
+    }
+
+    function checkAndTriggerNearTileStreaming() {
+      if (nearTileStreamTimer) clearTimeout(nearTileStreamTimer);
+      nearTileStreamTimer = setTimeout(() => {
+        streamVisibleNearTiles();
+      }, 120);
+    }
+
+    async function streamVisibleNearTiles() {
+      const w = canvas.width;
+      const h = canvas.height;
+      if (!w || !h) return;
+
+      const basePx = Math.min(w, h) * 0.90;
+      const pixelsPerArcmin = basePx / 3.0;
+      const tileFov = (currentLOD === 2) ? 8.0 : ((currentLOD === 0) ? 1.5 : 3.0);
+      const tilePx = tileFov * pixelsPerArcmin;
+
+      // Visible frustum in world space relative to camera anchor (0, 0)
+      const halfVisW = (w / (2 * camera.zoom));
+      const halfVisH = (h / (2 * camera.zoom));
+
+      const minX = -halfVisW - camera.panX;
+      const maxX = halfVisW - camera.panX;
+      const minY = -halfVisH - camera.panY;
+      const maxY = halfVisH - camera.panY;
+
+      // Determine required grid range to envelope the entire visible screen + 1 buffer ring
+      const colMin = Math.max(-3, Math.floor((minX - tilePx / 2) / tilePx));
+      const colMax = Math.min(3, Math.ceil((maxX + tilePx / 2) / tilePx));
+      const rowMin = Math.max(-3, Math.floor((-maxY - tilePx / 2) / tilePx));
+      const rowMax = Math.min(3, Math.ceil((-minY + tilePx / 2) / tilePx));
+
+      const mosaicEl = document.getElementById('vpMosaicBadge');
+      if (mosaicEl) {
+        mosaicEl.classList.remove('hidden');
+        mosaicEl.innerText = `Continuous Sky Grid (${spatialTileMap.size} Tiles)`;
+      }
+
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+
+      for (let c = colMin; c <= colMax; c++) {
+        for (let r = rowMin; r <= rowMax; r++) {
+          const key = getTileKey(c, r, currentLOD);
+          if (spatialTileMap.has(key) || activeNearFetches.has(key)) continue;
+
+          // Calculate celestial coordinates for this near tile
+          const tileRA = camera.ra - (c * tileFov / (60.0 * cosDec));
+          const tileDec = camera.dec + (r * tileFov / 60.0);
+
+          fetchSingleNearTile(c, r, currentLOD, tileFov, tileRA, tileDec);
+        }
+      }
+    }
+
+    async function fetchSingleNearTile(col, row, lod, fov, tileRA, tileDec) {
+      const key = getTileKey(col, row, lod);
+      activeNearFetches.add(key);
+
+      try {
+        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(tileRA)}&dec=${encodeURIComponent(tileDec)}&fov=${fov}&lod=${lod}`;
+        if (currentTargetKey) url += `&target=${currentTargetKey}`;
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        const [img1, img2, imgDiff] = await Promise.all([
+          preloadImage(data.epochs[0].image_data),
+          preloadImage(data.epochs[1].image_data),
+          preloadImage(data.difference_image.image_data)
+        ]);
+
+        if (img1 && img2) {
+          const actFov = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : fov;
+          img1.fov = actFov;
+          img2.fov = actFov;
+          if (imgDiff) imgDiff.fov = actFov;
+
+          registerTile(col, row, lod, actFov, tileRA, tileDec, img1, img2, imgDiff);
+          drawFrame();
+        }
+      } catch (err) {
+        // Silently tolerate edge survey boundaries
+      } finally {
+        activeNearFetches.delete(key);
+      }
+    }
+
+    // =========================================================================
+    // DRAW REAL ASTRONOMICAL FITS IMAGERY (Continuous Multi-Tile Canvas Engine)
+    // =========================================================================
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
@@ -741,30 +852,34 @@
       // Continuous camera transform (Pan & Zoom)
       ctx.translate(w / 2 + camera.panX, h / 2 + camera.panY);
       ctx.scale(camera.zoom, camera.zoom);
-      ctx.imageSmoothingEnabled = true; // Bilinear filtering for smooth camera zoom
+      ctx.imageSmoothingEnabled = true;
 
-      if (diffMode) {
-        // Difference Image Mode (Authentic numerical subtraction I2 - I1)
-        if (prevDiffImg && crossFadeAlpha < 1.0) {
-          ctx.globalAlpha = Math.max(0, 1.0 - crossFadeAlpha);
-          drawImageFit(prevDiffImg, w, h);
-        }
-        if (realDiffImg && realDiffImg.complete) {
-          ctx.globalAlpha = crossFadeAlpha;
-          drawImageFit(realDiffImg, w, h);
+      const basePx = Math.min(w, h) * 0.90;
+      const pixelsPerArcmin = basePx / 3.0;
+
+      // Render all spatial near tiles covering the viewport
+      if (spatialTileMap.size > 0) {
+        for (const [key, tile] of spatialTileMap.entries()) {
+          const fov = tile.fov || 3.0;
+          const rw = fov * pixelsPerArcmin;
+          const rh = fov * pixelsPerArcmin;
+          const tilePx = fov * pixelsPerArcmin;
+          const cx = tile.col * tilePx;
+          const cy = -tile.row * tilePx;
+
+          const activeImg = diffMode ? tile.imgDiff : (currentFrame === 1 ? tile.img1 : tile.img2);
+          if (activeImg && activeImg.complete) {
+            ctx.drawImage(activeImg, cx - rw / 2, cy - rh / 2, rw, rh);
+          }
         }
       } else {
-        // Flipbook Blink Mode (Epoch 1 <-> Epoch 2)
-        const activePrev = (currentFrame === 1) ? prevEpoch1Img : prevEpoch2Img;
-        const activeImg = (currentFrame === 1) ? realEpoch1Img : realEpoch2Img;
-
-        if (activePrev && crossFadeAlpha < 1.0) {
-          ctx.globalAlpha = Math.max(0, 1.0 - crossFadeAlpha);
-          drawImageFit(activePrev, w, h);
-        }
+        // Fallback for initial load before near tiles populate
+        const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
         if (activeImg && activeImg.complete) {
-          ctx.globalAlpha = crossFadeAlpha;
-          drawImageFit(activeImg, w, h);
+          const fov = activeImg.fov || 3.0;
+          const rw = fov * pixelsPerArcmin;
+          const rh = fov * pixelsPerArcmin;
+          ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
         }
       }
 
@@ -795,17 +910,8 @@
       if (document.activeElement !== inputRA) inputRA.value = coords.ra.toFixed(5);
       if (document.activeElement !== inputDec) inputDec.value = coords.dec.toFixed(5);
 
-      const mosaicEl = document.getElementById('vpMosaicBadge');
-      if (mosaicEl) {
-        if (camera.zoom < 0.75) {
-          mosaicEl.classList.remove('hidden');
-          mosaicEl.innerText = "Broad Sky Context (10')";
-        } else {
-          mosaicEl.classList.add('hidden');
-        }
-      }
-
       checkAndTriggerLODUpdate();
+      checkAndTriggerNearTileStreaming();
     }
 
     // =========================================================================
@@ -934,8 +1040,10 @@
           realDiffImg = newImgDiff;
           currentLOD = reqLOD;
 
+          registerTile(0, 0, reqLOD, fovArcmin, camera.ra, camera.dec, newImg1, newImg2, newImgDiff);
           updateLODBadge(currentLOD);
           startLODCrossFade();
+          checkAndTriggerNearTileStreaming();
         }
       } catch (err) {
         console.warn("LOD streaming background notice:", err);
@@ -996,6 +1104,9 @@
         if (img1) { img1.fov = initFov; realEpoch1Img = img1; }
         if (img2) { img2.fov = initFov; realEpoch2Img = img2; }
         if (imgDiff) { imgDiff.fov = initFov; realDiffImg = imgDiff; }
+
+        registerTile(0, 0, currentLOD, initFov, camera.ra, camera.dec, img1, img2, imgDiff);
+        checkAndTriggerNearTileStreaming();
 
         const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
         document.getElementById('vpTargetName').innerText = title;
@@ -1198,6 +1309,8 @@
     });
 
     function selectTarget(key) {
+      spatialTileMap.clear();
+      activeNearFetches.clear();
       currentTargetKey = key;
       const t = TARGETS[key];
       camera.ra = t.raDeg;
@@ -1231,6 +1344,8 @@
     }
 
     function slewToTypedCoordinates() {
+      spatialTileMap.clear();
+      activeNearFetches.clear();
       const raInput = document.getElementById('inputRA').value.trim();
       const decInput = document.getElementById('inputDec').value.trim();
       const fovVal = parseFloat(document.getElementById('selectFOV').value) || 3.0;

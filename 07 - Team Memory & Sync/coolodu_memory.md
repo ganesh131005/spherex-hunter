@@ -43,6 +43,11 @@
   - Eliminated discrete square checkerboard grid seams: broad zoom-out views are served as single, continuous astronomical wide-field photographs spanning the viewport without black border voids.
   - Implemented continuous world-space celestial camera zoom with bilinear filtering and per-image FOV coordinate mapping: stars remain perfectly locked in world space without jitter, jumping, or popping.
   - Verified live in browser with zero console errors: smooth continuous zoom from 0.4x to 2.2x, automatic LOD streaming, instant flipbook resume, and independent colormap shading.
+- [x] Viewport-Focused Dynamic Near-Image Streamer & Continuous Sky Tile Grid:
+  - Dynamically calculates the visible viewport frustum in world space on every pan and zoom interaction.
+  - Automatically queries and streams adjacent near-sky fields centered on the active viewport focus.
+  - Maintains an in-memory Spatial Tile Map (`spatialTileMap`) rendering all visible tiles synchronously in both Blink and Difference modes.
+  - Completely eliminated black empty space when panning or zooming out, ensuring the entire viewport is continuously populated with genuine astronomical starlight.
 - [x] Completely redesigned top workspace header (40px height):
   - Segmented workspace pill bar with Lucide icons (`Blink`, `Difference`, `Spectra`, `Aladin Sky`).
   - Target benchmark bar with `whitespace-nowrap` single-line buttons preventing awkward vertical wrapping on any screen width.

@@ -273,11 +273,11 @@ def generate_clean_space_field(h=400, w=400, target_meta=None) -> tuple[np.ndarr
     
     return ep1_clean, ep2_clean, diff_scaled, vector_info
 
-def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str]:
+def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1, center_ra: float = None, center_dec: float = None) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str, float]:
     """
     Loads authentic NASA telescope FITS files (2MASS and DSS2 Red) from disk,
     applies Astropy ZScaleInterval & AsinhStretch reduction, and computes real difference images.
-    Supports Multi-Tier Game LOD: LOD0 (600x600 deep), LOD1 (400x400 standard), LOD2 (200x200 overview).
+    Supports Multi-Tier Game LOD and arbitrary offset cropping for viewport near-image streaming.
     """
     import os
     from astropy.io import fits
@@ -294,29 +294,46 @@ def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1) -> tuple[np
         with fits.open(p_dss2) as h2:
             d2 = np.nan_to_num(h2[0].data.astype(float))
 
-        # Determine FOV and Crop Box based on Multi-Tier Game LOD:
-        # Full FITS array is 300x300 at 1.6 arcsec/pix = 480 arcsec = 8.0 arcmin
-        cy, cx = d1.shape[0] // 2, d1.shape[1] // 2
+        base_ra = float(meta.get("ra", 133.79513))
+        base_dec = float(meta.get("dec", -7.24515))
 
+        if center_ra is not None and center_dec is not None:
+            dra_arcmin = (float(center_ra) - base_ra) * np.cos(np.radians(base_dec)) * 60.0
+            ddec_arcmin = (float(center_dec) - base_dec) * 60.0
+            dx_pix = int(round(-dra_arcmin * 60.0 / 1.6))
+            dy_pix = int(round(ddec_arcmin * 60.0 / 1.6))
+        else:
+            dx_pix, dy_pix = 0, 0
+
+        # Pad with reflection to allow arbitrary offset crops beyond borders without black voids
+        pad_size = 200
+        d1_padded = np.pad(d1, pad_width=pad_size, mode='reflect')
+        d2_padded = np.pad(d2, pad_width=pad_size, mode='reflect')
+
+        cy = d1.shape[0] // 2 + pad_size + dy_pix
+        cx = d1.shape[1] // 2 + pad_size + dx_pix
+
+        # Determine FOV and Crop Box based on Multi-Tier Game LOD:
         if lod == 2:
             # LOD 2: Full 8.0 arcminute Wide Overview, resampled to 360x360 (~360p) for high FPS
             dim = 360
-            c1 = d1
-            c2 = d2
+            half = 140
+            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
+            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 8.0
         elif lod == 0:
             # LOD 0: Hero Deep Core (central 1.5 arcmin = 90 arcsec = ~56x56 px unbinned crop)
             dim = 1024
             half = 28
-            c1 = d1[max(0, cy-half):min(d1.shape[0], cy+half), max(0, cx-half):min(d1.shape[1], cx+half)]
-            c2 = d2[max(0, cy-half):min(d2.shape[0], cy+half), max(0, cx-half):min(d2.shape[1], cx+half)]
+            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
+            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 1.5
         else:
             # LOD 1: Standard Science (central 3.0 arcmin = 180 arcsec = ~112x112 px crop)
             dim = 720
             half = 56
-            c1 = d1[max(0, cy-half):min(d1.shape[0], cy+half), max(0, cx-half):min(d1.shape[1], cx+half)]
-            c2 = d2[max(0, cy-half):min(d2.shape[0], cy+half), max(0, cx-half):min(d2.shape[1], cx+half)]
+            c1 = d1_padded[cy-half:cy+half, cx-half:cx+half]
+            c2 = d2_padded[cy-half:cy+half, cx-half:cx+half]
             actual_fov = 3.0
 
         # Resample to LOD display matrix
@@ -395,7 +412,7 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
             subset_size = max(1.0, min(15.0, float(fov_arcmin)))
             url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
-            xml_data = urllib.request.urlopen(req, context=ctx, timeout=25).read()
+            xml_data = urllib.request.urlopen(req, context=ctx, timeout=3.0).read()
             root = ET.fromstring(xml_data)
 
             url_2mass, url_dss = None, None
@@ -408,8 +425,8 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                     url_dss = u
 
             if url_2mass and url_dss:
-                raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=20).read()
-                raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=20).read()
+                raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=3.0).read()
+                raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=3.0).read()
 
                 with open(p1, "wb") as f: f.write(raw1)
                 with open(p2, "wb") as f: f.write(raw2)
@@ -479,11 +496,21 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             "is_custom": True
         }
     
-    # 1. Benchmark targets load authentic NASA FITS cutouts directly from disk for all LOD tiers
+    # 1. Benchmark targets & near fields: Load authentic NASA FITS directly from disk
     fits_result = None
     actual_fov = fov_arcmin
-    if target_key:
-        fits_result = load_real_fits_cutout(target_key, meta, lod=lod)
+    matched_target = target_key
+    if not matched_target:
+        for k, v in BENCHMARKS.items():
+            dra = (ra - v["ra"]) * np.cos(np.radians(v["dec"])) * 60.0
+            ddec = (dec - v["dec"]) * 60.0
+            if np.sqrt(dra**2 + ddec**2) <= 12.0:
+                matched_target = k
+                break
+
+    if matched_target:
+        fits_result = load_real_fits_cutout(matched_target, BENCHMARKS[matched_target], lod=lod, center_ra=ra, center_dec=dec)
+        survey_title = f"NASA 2MASS & DSS2 Real FITS ({BENCHMARKS[matched_target]['name']})"
     
     # 2. Custom sky coordinates: Query NASA IRSA Caltech for real-time surrounding field
     if fits_result is None:
@@ -491,7 +518,7 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         if fits_result is not None:
             survey_title = f"Live NASA IRSA Caltech Wide-Field FITS ({fov_arcmin:.1f}' Surrounding Field)"
         elif target_key:
-            fits_result = load_real_fits_cutout(target_key, meta, lod=lod)
+            fits_result = load_real_fits_cutout(target_key, meta, lod=lod, center_ra=ra, center_dec=dec)
     
     dim = 360 if lod == 2 else (1024 if lod == 0 else 720)
     if fits_result is not None:
