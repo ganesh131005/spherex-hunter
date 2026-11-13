@@ -30,6 +30,7 @@ from backend.services.cutout_engine import (
     get_cache_stats
 )
 from backend.services.gaia_service import query_gaia_dr3
+from backend.services.csa_neossat_service import query_csa_neossat
 from backend.services.catalog_engine import (
     query_2mass_psc,
     query_simbad_metadata,
@@ -259,6 +260,26 @@ def get_wiseview_url(
             "wiseview_url": wiseview_url,
             "description": "NASA Backyard Worlds: Planet 9 unbinned multi-epoch WISE coadd viewer"
         }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/csa/neossat")
+def get_csa_neossat(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes (0.5 to 15.0)")
+):
+    """
+    Task 4: CSA NEOSSat & CADC Asteroid Tracking Integration.
+    Queries Canadian Astronomy Data Centre (CADC) for Canadian Space Agency NEOSSat
+    observations and computes Near-Earth Object / asteroid vs Planet X discrimination.
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        rad = float(radius) if isinstance(radius, (int, float, str)) else 3.0
+        return query_csa_neossat(ra=ra_deg, dec=dec_deg, radius_arcmin=rad)
     except HTTPException:
         raise
     except Exception as e:
