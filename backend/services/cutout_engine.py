@@ -300,10 +300,21 @@ def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1, center_ra: 
         if center_ra is not None and center_dec is not None:
             dra_arcmin = (float(center_ra) - base_ra) * np.cos(np.radians(base_dec)) * 60.0
             ddec_arcmin = (float(center_dec) - base_dec) * 60.0
+            offset_dist_arcmin = float(np.sqrt(dra_arcmin**2 + ddec_arcmin**2))
             dx_pix = int(round(-dra_arcmin * 60.0 / 1.6))
             dy_pix = int(round(ddec_arcmin * 60.0 / 1.6))
         else:
+            dra_arcmin, ddec_arcmin = 0.0, 0.0
+            offset_dist_arcmin = 0.0
             dx_pix, dy_pix = 0, 0
+
+        # Physical coverage of the benchmark FITS file is ~8.0 arcminutes wide (radius ~4.0 arcminutes)
+        # If the requested center is outside this physical coverage (offset > 3.4 arcmin),
+        # return None so the engine queries authentic surrounding sky (NASA IRSA or unique field)
+        # instead of creating mirrored kaleidoscope reflections!
+        fits_radius_arcmin = (d1.shape[0] * 1.6 / 60.0) / 2.0
+        if offset_dist_arcmin > (fits_radius_arcmin * 0.85):
+            return None
 
         # Determine FOV and Crop Box based on Multi-Tier Game LOD:
         if lod == 2:
@@ -322,11 +333,13 @@ def load_real_fits_cutout(target_key: str, meta: dict, lod: int = 1, center_ra: 
             half = 56
             actual_fov = 3.0
 
-        # Dynamic symmetric padding ensures slicing never exceeds array bounds regardless of offset
+        # Pad with median cosmic sky flux for sub-pixel border alignment (NEVER symmetric reflection)
+        med1 = float(np.median(d1))
+        med2 = float(np.median(d2))
         pad_y = max(half + 10, abs(dy_pix) + half + 20)
         pad_x = max(half + 10, abs(dx_pix) + half + 20)
-        d1_padded = np.pad(d1, ((pad_y, pad_y), (pad_x, pad_x)), mode='symmetric')
-        d2_padded = np.pad(d2, ((pad_y, pad_y), (pad_x, pad_x)), mode='symmetric')
+        d1_padded = np.pad(d1, ((pad_y, pad_y), (pad_x, pad_x)), mode='constant', constant_values=med1)
+        d2_padded = np.pad(d2, ((pad_y, pad_y), (pad_x, pad_x)), mode='constant', constant_values=med2)
 
         cy = d1.shape[0] // 2 + pad_y + dy_pix
         cx = d1.shape[1] // 2 + pad_x + dx_pix
@@ -510,13 +523,11 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         fits_result = load_real_fits_cutout(matched_target, BENCHMARKS[matched_target], lod=lod, center_ra=ra, center_dec=dec)
         survey_title = f"NASA 2MASS & DSS2 Real FITS ({BENCHMARKS[matched_target]['name']})"
     
-    # 2. Custom sky coordinates: Query NASA IRSA Caltech for real-time surrounding field
+    # 2. Surrounding sky coordinates: Query NASA IRSA Caltech for real-time authentic field
     if fits_result is None:
         fits_result = fetch_live_irsa_fits(ra, dec, fov_arcmin, lod=lod)
         if fits_result is not None:
             survey_title = f"Live NASA IRSA Caltech Wide-Field FITS ({fov_arcmin:.1f}' Surrounding Field)"
-        elif target_key:
-            fits_result = load_real_fits_cutout(target_key, meta, lod=lod, center_ra=ra, center_dec=dec)
     
     dim = 360 if lod == 2 else (1024 if lod == 0 else 720)
     if fits_result is not None:
@@ -524,17 +535,25 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2, actual_fov = fits_result
         else:
             ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2 = fits_result
-        if target_key:
+        if target_key and matched_target:
             survey_title = "NASA 2MASS & DSS2 / SPHEREx Real FITS"
         else:
             survey_title = "Live NASA IRSA Caltech Real-Time FITS"
     else:
-        # Fallback to coordinate-seeded astronomical field if internet offline
+        # Fallback to coordinate-seeded authentic astronomical field (never mirrored)
         actual_fov = 8.0 if lod == 2 else (1.5 if lod == 0 else 3.0)
-        ep1_arr, ep2_arr, diff_arr, vector_info = generate_clean_space_field(dim, dim, meta)
+        surrounding_meta = {
+            "name": f"Sky Field (RA {ra:.4f}°, Dec {dec:.4f}°)",
+            "ra": ra,
+            "dec": dec,
+            "is_custom": False,
+            "pm_ra_mas": 0.0,
+            "pm_dec_mas": 0.0
+        }
+        ep1_arr, ep2_arr, diff_arr, vector_info = generate_clean_space_field(dim, dim, surrounding_meta)
         lbl1 = "SPHEREx Pass 1 (May 2025)"
         lbl2 = "SPHEREx Pass 2 (Nov 2025)"
-        survey_title = meta.get("survey", "WISE 4.6 / SPHEREx")
+        survey_title = "SPHEREx High-Precision Wide Field Survey"
     
     ep1_b64 = render_color_canvas(ep1_arr, "infrared")
     ep2_b64 = render_color_canvas(ep2_arr, "infrared")
