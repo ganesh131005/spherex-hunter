@@ -1,6 +1,6 @@
 # 📋 Team RIP: Master Task Forwarding Board
 > **Live Task Forwarding Ledger** | Synced via Git across all branches  
-> **Last Updated:** 2026-11-13 15:18:51 | **Active Tasks:** 1
+> **Last Updated:** 2026-11-13 15:51:58 | **Active Tasks:** 1
 
 ---
 
@@ -8,7 +8,10 @@
 
 | Task ID | Title | Requester | Assigned Worker | Type | Priority | Status | Branch / Output |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TASK-002** | Render Gaia DR3 and 2MASS Catalog Overlays on Blender Canvas | `@darkodu` | `@coolodu` | `hybrid` | `HIGH` | 🟡 PENDING | `coolodu/web-frontend` |
+| **TASK-005** | Seamless Near-Image Viewport Streaming & Zero Black Space | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟡 PENDING | `darkodu/astro-backend` |
+| **TASK-004** | Analyze & Fix Mirrored Sky Reflection: Fetch Real Astronomical Surrounding Fields | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟢 COMPLETED | `backend/services/cutout_engine.py` |
+| **TASK-003** | Fix Backend Near-Tile Offset Extraction & Robust Boundary Padding | `@jokerodu` | `@darkodu` | `compute_heavy` | `URGENT` | 🟢 COMPLETED | `backend/services/cutout_engine.py` |
+| **TASK-002** | Fix Viewport Crash & Optimize Near-Tile LOD Camera Streaming | `@jokerodu` | `@coolodu` | `hybrid` | `URGENT` | 🟢 COMPLETED | `frontend/index.html` |
 | **TASK-001** | Generate Spectral SED Unit Tests | `@iceodu` | `@coolodu` | `token_heavy` | `NORMAL` | 🟢 COMPLETED | `tests/test_sed.py` |
 
 ---
