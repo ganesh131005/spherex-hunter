@@ -147,4 +147,4 @@ if __name__ == "__main__":
     test_wiseview_verification_bridge()
     test_neossat_and_cadc_tracking()
     test_resources_codex()
-    print("ALL GOLDEN SUITE TESTS PASSED!")
+    print("ALL 11 GOLDEN SUITE TESTS PASSED!")

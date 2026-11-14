@@ -11,7 +11,7 @@ confirmation:
   1. Motion signature  - Alard-Lupton difference-map dipole at the field (2MASS -> SPHEREx/DSS2)
   2. Gaia DR3          - optical counterpart? (track-aware match over 2000-2026 epochs)
   3. Known SSO         - IMCCE SkyBoT: is it a catalogued asteroid / comet?
-  4. Infrared colour   - W1-W2 (cold sub-stellar objects and brown dwarfs are very red, W1-W2 > +1.5 mag)
+  4. Infrared colour   - W1-W2 (cold brown dwarfs / Planet X are very red, W1-W2 > +1.5 mag)
   5. WiseView          - human visual confirmation in unWISE (deep link generated here)
 """
 
@@ -89,9 +89,9 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
         ttype = motion.get("transient_type", "STATIONARY_SKY")
         if ttype == "PROPER_MOTION_DIPOLE":
             status, evidence = "pass", (f"Paired +/- dipole in the Alard-Lupton difference map "
-                                        f"(shift {motion.get('shift_arcsec')}\", confidence {motion.get('confidence')}).")
+                                        f"(shift {motion.get('shift_arcsec')}\", peak {motion.get('peak_significance_sigma')} sigma; unconfirmed - 2MASS J vs DSS2 Red).")
         elif ttype == "VARIABLE_FLARE":
-            status, evidence = "warn", f"Isolated monopole residual (variable flux, not motion), confidence {motion.get('confidence')}."
+            status, evidence = "warn", f"Isolated monopole residual (variable flux, not motion), peak {motion.get('peak_significance_sigma')} sigma."
         else:
             status, evidence = "fail", "No significant residual in the difference map (stationary field)."
     except Exception as err:
@@ -149,7 +149,7 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
     w1w2 = _parse_w1w2(w1w2_text)
     if w1w2 is None:
         checklist.append({"id": "color", "label": "W1−W2 infrared colour (cold substellar > +1.5 mag)",
-                          "status": "na", "evidence": "No catalogued W1−W2 colour for this position — measure it in WiseView."})
+                          "status": "na", "evidence": "W1−W2 is not measured by this app — check AllWISE / WiseView."})
     else:
         checklist.append({"id": "color", "label": "W1−W2 infrared colour (cold substellar > +1.5 mag)",
                           "status": "pass" if w1w2 >= 1.5 else "fail", "evidence": f"W1−W2 = {w1w2_text}."})
@@ -160,41 +160,31 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
                       "status": "pending",
                       "evidence": "Open WiseView, blink W1+W2, and confirm the source moves consistently across all epochs."})
 
-    # ---------------------------------------------------------------- Verdict & Evidence Tier
+    # ---------------------------------------------------------------- Verdict
     is_dipole = motion.get("transient_type") == "PROPER_MOTION_DIPOLE"
     # Benchmark targets or infrared-only candidates (like WISE 0855) without optical counterparts
     is_infrared_exclusive_benchmark = target_key == "wise0855" or (isinstance(target_key, str) and "wise" in target_key.lower())
     if sso_match:
-        evidence_tier = "KNOWN_SOLAR_SYSTEM_OBJECT"
-        verdict_text = f"Catalogued Solar System body ({sso_match['name']}). Tagged as KNOWN_SOLAR_SYSTEM_OBJECT."
+        verdict, verdict_text = "KNOWN_ASTEROID", f"Known Solar System object ({sso_match['name']}). Not Planet X."
     elif gaia_match and (gaia_match.get("total_pm_mas_yr") or 0) >= 100:
-        evidence_tier = "KNOWN_STELLAR_OR_BROWN_DWARF"
-        verdict_text = f"Catalogued high proper-motion star (Gaia DR3 {gaia_match['source_id']})."
+        verdict, verdict_text = "KNOWN_HIGH_PM_STAR", f"Catalogued high proper-motion star (Gaia DR3 {gaia_match['source_id']})."
     elif gaia_match:
         verdict, verdict_text = "STATIC_OPTICAL_STAR", "Static optical star with a Gaia DR3 counterpart."
     elif is_dipole or is_infrared_exclusive_benchmark or (w1w2 is not None and w1w2 >= 1.5):
         verdict, verdict_text = "PLANET_X_CANDIDATE", ("Infrared-only object with no Gaia DR3 counterpart and no known "
                                                          "asteroid match. Confirm motion in WiseView, then flag it!")
     else:
-        evidence_tier = "INCONCLUSIVE"
-        verdict_text = "No optical counterpart, but no confirmed motion dipole. Inconclusive observational evidence."
+        verdict, verdict_text = "INCONCLUSIVE", "No optical counterpart, but no motion signature yet. Inspect in WiseView."
 
-    passed_checks = [c["id"] for c in checklist if c["status"] == "pass"]
-    failed_checks = [c["id"] for c in checklist if c["status"] == "fail"]
-    pending_checks = [c["id"] for c in checklist if c["status"] in ("pending", "warn", "na")]
+    passed = sum(1 for c in checklist if c["status"] == "pass")
+    scored = sum(1 for c in checklist if c["status"] in ("pass", "fail", "warn"))
 
     return {
         "status": "success",
         "coordinates": {"ra_deg": round(ra, 6), "dec_deg": round(dec, 6), "fov_arcmin": fov_arcmin},
-        "evidence_tier": evidence_tier,
-        "verdict": "PLANET_X_CANDIDATE" if evidence_tier in ("UNKNOWN_RAPID_MOVER", "SLOW_INFRARED_EXCESS") else evidence_tier,
-        "evidence_summary": verdict_text,
-        "candidate_status": "Candidate, not confirmed" if evidence_tier in ("UNKNOWN_RAPID_MOVER", "SLOW_INFRARED_EXCESS") else "CATALOG_VERIFIED",
-        "checklist_summary": {
-            "passed": passed_checks,
-            "failed": failed_checks,
-            "pending": pending_checks,
-        },
+        "verdict": verdict,
+        "verdict_text": verdict_text,
+        "score": {"passed": passed, "scored": scored},
         "checklist": checklist,
         "gaia_match": gaia_match,
         "sso_match": sso_match,

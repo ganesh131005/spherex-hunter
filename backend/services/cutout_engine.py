@@ -11,7 +11,6 @@ Applies professional astronomical image reduction:
 
 import base64
 import io
-import math
 import os
 import time
 from typing import Optional
@@ -286,7 +285,6 @@ def clear_all_caches() -> dict:
         "message": "All celestial caches successfully flushed."
     }
 
-
 def get_cache_stats() -> dict:
     """Returns current cache telemetry (L1 RAM entries, spatial bins, L2 disk files, disk usage in MB)."""
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
@@ -305,91 +303,6 @@ def get_cache_stats() -> dict:
         "spatial_bins_indexed": len(_SPATIAL_HASH_MAP),
         "l2_disk_files": file_count,
         "disk_usage_mb": round(disk_bytes / (1024 * 1024), 2)
-    }
-
-
-def auto_prune_disk_cache(
-    max_mb: float = 500.0,
-    target_mb: float = 350.0,
-    cache_dirs: Optional[List[str]] = None
-) -> Dict[str, Any]:
-    """
-    Smart disk auto-pruning daemon for persistent FITS caches.
-    Pins core NASA benchmark targets (wise0855, barnard, epsindi, rwaur, rdraconis)
-    so they are never evicted, and evicts oldest unpinned .fits files by atime
-    when total disk usage exceeds max_mb until <= target_mb.
-    """
-    if cache_dirs is None:
-        base = os.path.dirname(__file__)
-        cache_dirs = [
-            os.path.join(base, "..", "cache", "dynamic_fits"),
-            os.path.join(base, "..", "data", "fits"),
-            os.path.join(base, "..", "cache", "fits"),
-        ]
-
-    pinned_keys = ("wise0855", "barnard", "epsindi", "rwaur", "rdraconis")
-    files = []
-    total_bytes = 0
-    pinned_count = 0
-
-    for cdir in cache_dirs:
-        if not os.path.exists(cdir):
-            continue
-        for fname in os.listdir(cdir):
-            if not fname.lower().endswith(".fits"):
-                continue
-            fpath = os.path.join(cdir, fname)
-            if not os.path.isfile(fpath):
-                continue
-            try:
-                sz = os.path.getsize(fpath)
-                atime = os.path.getatime(fpath)
-            except OSError:
-                continue
-            total_bytes += sz
-
-            low = fname.lower()
-            is_pinned = any(k in low for k in pinned_keys)
-            if not is_pinned and low.startswith("sky_"):
-                parts = low.replace("sky_", "").split("_")
-                if len(parts) >= 2:
-                    try:
-                        f_ra = float(parts[0])
-                        f_dec = float(parts[1].replace("m", "-"))
-                        for bm in BENCHMARKS.values():
-                            if abs(f_ra - bm["ra"]) < 0.002 and abs(f_dec - bm["dec"]) < 0.002:
-                                is_pinned = True
-                                break
-                    except Exception:
-                        pass
-
-            if is_pinned:
-                pinned_count += 1
-            else:
-                files.append((atime, fpath, sz))
-
-    pruned_count = 0
-    max_bytes = max_mb * 1024.0 * 1024.0
-    target_bytes = target_mb * 1024.0 * 1024.0
-
-    if total_bytes > max_bytes:
-        files.sort(key=lambda item: item[0])
-        for _, fpath, sz in files:
-            if total_bytes <= target_bytes:
-                break
-            try:
-                os.remove(fpath)
-                total_bytes -= sz
-                pruned_count += 1
-            except OSError:
-                pass
-
-    return {
-        "status": "ok",
-        "total_bytes": int(total_bytes),
-        "total_mb": round(total_bytes / (1024.0 * 1024.0), 3),
-        "pinned_count": pinned_count,
-        "pruned_count": pruned_count,
     }
 
 # =========================================================================
@@ -488,22 +401,16 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
     p2 = os.path.join(cache_dir, f"{cache_id}_dss2.fits")
 
     d1, d2 = None, None
-    hdr1, hdr2 = None, None
     cache_tier = "LIVE_IRSA_FETCH"
 
     # L2 Exact Cache Check
     if not force_refresh and os.path.exists(p1) and os.path.exists(p2):
         try:
-            with fits.open(p1) as h1:
-                d1 = np.nan_to_num(h1[0].data.astype(float))
-                hdr1 = h1[0].header.copy()
-            with fits.open(p2) as h2:
-                d2 = np.nan_to_num(h2[0].data.astype(float))
-                hdr2 = h2[0].header.copy()
+            with fits.open(p1) as h1: d1 = np.nan_to_num(h1[0].data.astype(float))
+            with fits.open(p2) as h2: d2 = np.nan_to_num(h2[0].data.astype(float))
             cache_tier = "L2_SPATIAL_DISK"
         except Exception:
             d1, d2 = None, None
-            hdr1, hdr2 = None, None
 
     # L2 Spatial Overlap Check: Search for an existing master FITS covering this field
     if (d1 is None or d2 is None) and not force_refresh:
@@ -524,10 +431,8 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                             if os.path.exists(companion_p2):
                                 with fits.open(os.path.join(cache_dir, fname)) as h1:
                                     d1 = np.nan_to_num(h1[0].data.astype(float))
-                                    hdr1 = h1[0].header.copy()
                                 with fits.open(companion_p2) as h2:
                                     d2 = np.nan_to_num(h2[0].data.astype(float))
-                                    hdr2 = h2[0].header.copy()
                                 cache_tier = "L2_SPATIAL_OVERLAP"
                                 break
                     except Exception:
@@ -548,45 +453,38 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                     bp2 = os.path.join(fits_dir, f"{bm_k}_dss2.fits")
                     if os.path.exists(bp1) and os.path.exists(bp2):
                         try:
-                            with fits.open(bp1) as h1:
-                                d1 = np.nan_to_num(h1[0].data.astype(float))
-                                hdr1 = h1[0].header.copy()
-                            with fits.open(bp2) as h2:
-                                d2 = np.nan_to_num(h2[0].data.astype(float))
-                                hdr2 = h2[0].header.copy()
+                            with fits.open(bp1) as h1: d1 = np.nan_to_num(h1[0].data.astype(float))
+                            with fits.open(bp2) as h2: d2 = np.nan_to_num(h2[0].data.astype(float))
                             cache_tier = "L2_BENCHMARK_DISK"
                             break
                         except Exception:
                             d1, d2 = None, None
-                            hdr1, hdr2 = None, None
 
-    # If not in cache, query NASA IRSA Caltech FinderChart API (up to 3 attempts)
+    # If not in cache, query NASA IRSA Caltech FinderChart API
     if d1 is None or d2 is None:
-        last_err = None
-        for attempt in range(3):
-            try:
-                ctx = ssl._create_unverified_context()
-                subset_size = max(1.0, min(15.0, float(fov_arcmin)))
-                url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
-                xml_data = urllib.request.urlopen(req, context=ctx, timeout=25.0).read()
-                root = ET.fromstring(xml_data)
+        try:
+            ctx = ssl._create_unverified_context()
+            subset_size = max(1.0, min(15.0, float(fov_arcmin)))
+            url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
+            xml_data = urllib.request.urlopen(req, context=ctx, timeout=15.0).read()
+            root = ET.fromstring(xml_data)
 
-                url_2mass, url_dss = None, None
-                for elem in root.iter('fitsurl'):
-                    u = elem.text
-                    if not u: continue
-                    if 'survey=2mass' in u and 'twomass_bands=j' in u and not url_2mass:
-                        url_2mass = u
-                    if 'survey=dss' in u and ('poss2ukstu_red' in u or 'poss1_red' in u) and not url_dss:
-                        url_dss = u
+            url_2mass, url_dss = None, None
+            for elem in root.iter('fitsurl'):
+                u = elem.text
+                if not u: continue
+                if 'survey=2mass' in u and 'twomass_bands=j' in u and not url_2mass:
+                    url_2mass = u
+                if 'survey=dss' in u and ('poss2ukstu_red' in u or 'poss1_red' in u) and not url_dss:
+                    url_dss = u
 
-                if url_2mass and url_dss:
-                    raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=25.0).read()
-                    raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=25.0).read()
+            if url_2mass and url_dss:
+                raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=20.0).read()
+                raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=20.0).read()
 
-                    with open(p1, "wb") as f: f.write(raw1)
-                    with open(p2, "wb") as f: f.write(raw2)
+                with open(p1, "wb") as f: f.write(raw1)
+                with open(p2, "wb") as f: f.write(raw2)
 
                 d1 = np.nan_to_num(fits.open(io.BytesIO(raw1))[0].data.astype(float))
                 d2 = np.nan_to_num(fits.open(io.BytesIO(raw2))[0].data.astype(float))
@@ -691,16 +589,6 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
     vector_info["zogy_scorr_max"] = zogy_scorr_max
     vector_info["zogy_scorr_min"] = zogy_scorr_min
 
-    # Extract real observation timestamps from FITS headers (with archival survey baseline fallback)
-    ep1_date_obs, ep1_mjd = _extract_fits_obs_time(hdr1, "1999-02-14T08:24:19Z", 51223.35)
-    ep2_date_obs, ep2_mjd = _extract_fits_obs_time(hdr2, "1992-04-12T00:00:00Z", 48724.0)
-    vector_info["obs_timestamps"] = {
-        "ep1_date_obs": ep1_date_obs,
-        "ep1_mjd": ep1_mjd,
-        "ep2_date_obs": ep2_date_obs,
-        "ep2_mjd": ep2_mjd,
-    }
-
     lod_tag = "LOD 0 (Hero Deep 1024px)" if lod == 0 else ("LOD 2 (Wide Overview 360px)" if lod == 2 else "LOD 1 (Standard Science 720px)")
     lbl1 = f"NASA 2MASS FITS [{lod_tag}] (J-Band 1.25 μm, survey 1997-2001)"
     lbl2 = f"NASA DSS2 Red FITS [{lod_tag}] (photographic plates, ~1980s-1990s; not SPHEREx data)"
@@ -762,8 +650,6 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
             "measured_photometry_points": sed_points,
             "wise_counterpart": wise_cp,
             "spherex_coverage": spherex_cov,
-            "observation_dates": [],
-            "simultaneity_notice": "Spectra assembled from different dates across the 6 arrays are not simultaneous for variable stars.",
         }
 
     if matched_key:
@@ -881,16 +767,6 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
     else:
         expected = [("CO bandhead", 2.30), ("H2O", 1.40), ("OH/H2O", 3.05)]
 
-    band_dates = [
-        "2025-04-20 (MJD 60789.8)",  # Array 1 (0.75 - 1.11 μm)
-        "2025-04-25 (MJD 60795.1)",  # Array 2 (1.11 - 1.64 μm)
-        "2025-05-01 (MJD 60800.7)",  # Array 3 (1.64 - 2.42 μm)
-        "2025-05-12 (MJD 60812.4)",  # Array 4 (2.42 - 3.82 μm)
-        "2025-05-26 (MJD 60825.8)",  # Array 5 (3.82 - 4.42 μm)
-        "2025-06-09 (MJD 60840.2)",  # Array 6 (4.42 - 5.00 μm)
-    ]
-    obs_dates = [band_dates[min(5, i // 17)] for i in range(102)]
-
     return {
         "available": True,
         "data_type": data_type,
@@ -905,8 +781,6 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
         "estimated_temp_k": temp,
         "temperature_k": temp,
         "detector_arrays": detector_arrays,
-        "observation_dates": obs_dates,
-        "simultaneity_notice": "Spectra assembled from different dates across the 6 arrays are not simultaneous for variable stars.",
         "expected_features": [
             {"molecule": m, "wavelength_um": w, "status": "expected for this temperature class (not detected here)"}
             for m, w in expected
@@ -932,20 +806,15 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     """
     t0 = time.time()
 
-    cell_id = get_spatial_cell_id(ra, dec)
     cache_key = f"{round(ra, 4)}_{round(dec, 4)}_{round(fov_arcmin, 1)}_{lod}"
     spatial_bin = compute_spatial_hash(ra, dec, fov_arcmin)
 
     # L1 In-Memory RAM Cache Check (< 2ms)
     if not force_refresh and cache_key in _L1_MEMORY_CACHE:
-        _L1_MEMORY_CACHE.move_to_end(cache_key)
         cached_entry = dict(_L1_MEMORY_CACHE[cache_key])
-        cached_entry["cache_tier"] = "L1_RAM"
-        cached_entry["spatial_cell_id"] = cell_id
         cached_entry["telemetry"] = dict(cached_entry.get("telemetry", {}))
         cached_entry["telemetry"]["cache_tier"] = "L1_RAM"
-        cached_entry["telemetry"]["spatial_cell_id"] = cell_id
-        cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 3)
+        cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 2)
         return cached_entry
 
     # L1 Spatial-Hash Cache Check (< 3ms) for proximity pan hits
@@ -1030,19 +899,11 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         pm_mas = None
         pm_arcsec = None
 
-    obs_ts = vector_info.pop("obs_timestamps", {})
-    ep1_date_obs = obs_ts.get("ep1_date_obs", "1999-02-14T08:24:19Z")
-    ep1_mjd = obs_ts.get("ep1_mjd", 51223.35)
-    ep2_date_obs = obs_ts.get("ep2_date_obs", "1992-04-12T00:00:00Z")
-    ep2_mjd = obs_ts.get("ep2_mjd", 48724.0)
-
     response = {
         "status": "success",
         "target": display_name,
         "lod_tier": lod,
         "lod_label": "LOD 0 (Hero Deep 1024px Full-Res)" if lod == 0 else ("LOD 2 (Wide Overview 360px)" if lod == 2 else "LOD 1 (Standard Science 720px HD)"),
-        "cache_tier": cache_tier,
-        "spatial_cell_id": cell_id,
         "coordinates": {
             "ra_deg": ra,
             "dec_deg": dec,
@@ -1052,23 +913,15 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         "is_authentic_fits": True,
         "epochs": [
             {
-                "index": 1,
                 "frame": 1,
-                "survey": "2MASS",
                 "label": lbl1,
-                "date": f"{ep1_date_obs[:10]} (2MASS J)",
-                "date_obs": ep1_date_obs,
-                "mjd": ep1_mjd,
+                "date": "1997-2001 (2MASS survey; per-tile date not retrieved)",
                 "image_data": ep1_b64
             },
             {
-                "index": 2,
                 "frame": 2,
-                "survey": "DSS2",
                 "label": lbl2,
-                "date": f"{ep2_date_obs[:10]} (DSS2 Red)",
-                "date_obs": ep2_date_obs,
-                "mjd": ep2_mjd,
+                "date": "~1980s-1990s (DSS2 plates; per-plate date not retrieved)",
                 "image_data": ep2_b64
             }
         ],
@@ -1103,7 +956,6 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             "estimated_temp_k": spec_data.get("estimated_temp_k"),
             "data_provenance": "2MASS J-band and DSS2 Red archival FITS. No SPHEREx, WISE, Gaia or CADC values are embedded in this response.",
             "cache_tier": cache_tier,
-            "spatial_cell_id": cell_id,
             "fetch_time_ms": elapsed_ms,
             "noise_filter": "Astropy ZScale & AsinhStretch (Authentic NASA FITS Data)"
         },
@@ -1145,133 +997,7 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     except Exception:
         pass
 
-    for skey in (spatial_key, spatial_key_generic):
-        if skey in _SPATIAL_HASH_CACHE:
-            _SPATIAL_HASH_CACHE.move_to_end(skey)
-        while len(_SPATIAL_HASH_CACHE) >= _MAX_SPATIAL_HASH_ENTRIES:
-            _SPATIAL_HASH_CACHE.popitem(last=False)
-        _SPATIAL_HASH_CACHE[skey] = response
-
     return response
-
-
-def crop_submatrix_from_master_fits(
-    ra: float,
-    dec: float,
-    fov_arcmin: float = 1.5,
-    target_key: Optional[str] = None,
-    dim: int = 360
-) -> Dict[str, Any]:
-    """
-    Extracts an ASTROPY WCS-aligned NumPy sub-matrix crop from a wider cached master FITS
-    tile on disk without querying external NASA archives.
-    """
-    from astropy.io import fits
-    from astropy.wcs import WCS
-    from astropy.wcs.utils import proj_plane_pixel_scales
-    from scipy.ndimage import zoom
-
-    base_dir = os.path.dirname(__file__)
-    search_dirs = [
-        os.path.join(base_dir, "..", "cache", "dynamic_fits"),
-        os.path.join(base_dir, "..", "data", "fits"),
-        os.path.join(base_dir, "..", "cache", "fits"),
-    ]
-
-    best_path = None
-    best_score = -1.0
-    best_master_fov = 3.0
-
-    for sdir in search_dirs:
-        if not os.path.exists(sdir):
-            continue
-        for fname in os.listdir(sdir):
-            if not fname.lower().endswith(".fits") or "dss2" in fname.lower():
-                continue
-            fpath = os.path.join(sdir, fname)
-            if target_key and target_key.lower() in fname.lower():
-                best_path = fpath
-                best_master_fov = 3.0
-                break
-            if fname.startswith("sky_") and "_2mass.fits" in fname:
-                parts = fname.replace("sky_", "").replace("_2mass.fits", "").split("_")
-                if len(parts) >= 3:
-                    try:
-                        c_ra = float(parts[0])
-                        c_dec = float(parts[1].replace("m", "-"))
-                        c_fov = float(parts[2])
-                        dra = (float(ra) - c_ra) * math.cos(math.radians(float(dec))) * 60.0
-                        ddec = (float(dec) - c_dec) * 60.0
-                        dist = math.hypot(dra, ddec)
-                        if c_fov >= float(fov_arcmin) and dist <= max(1.0, c_fov * 0.45):
-                            score = c_fov - dist
-                            if score > best_score:
-                                best_score = score
-                                best_path = fpath
-                                best_master_fov = c_fov
-                    except Exception:
-                        pass
-        if best_path and target_key and target_key.lower() in os.path.basename(best_path).lower():
-            break
-
-    if not best_path or not os.path.exists(best_path):
-        return {
-            "status": "unavailable",
-            "ra_deg": float(ra),
-            "dec_deg": float(dec),
-            "fov_arcmin": float(fov_arcmin),
-            "shape": [],
-            "spatial_cell_id": get_spatial_cell_id(ra, dec),
-            "peak_pixel": None,
-            "message": "No cached master FITS file covers these coordinates on disk."
-        }
-
-    with fits.open(best_path) as hdul:
-        data = np.nan_to_num(hdul[0].data.astype(float))
-        header = hdul[0].header
-
-    h, w = data.shape
-    cx, cy = w / 2.0, h / 2.0
-    arcmin_per_px = best_master_fov / max(1, w)
-
-    try:
-        wcs = WCS(header)
-        if wcs.has_celestial:
-            px_val, py_val = wcs.world_to_pixel_values(float(ra), float(dec))
-            if np.isfinite(px_val) and np.isfinite(py_val):
-                if -w * 0.25 <= px_val <= w * 1.25 and -h * 0.25 <= py_val <= h * 1.25:
-                    cx, cy = float(px_val), float(py_val)
-            scales_deg = proj_plane_pixel_scales(wcs)
-            if len(scales_deg) >= 2 and scales_deg[0] > 0:
-                arcmin_per_px = float(scales_deg[0]) * 60.0
-    except Exception:
-        pass
-
-    half_px = max(8, int(round((float(fov_arcmin) / max(1e-5, arcmin_per_px)) / 2.0)))
-    x0 = max(0, int(round(cx)) - half_px)
-    x1 = min(w, int(round(cx)) + half_px)
-    y0 = max(0, int(round(cy)) - half_px)
-    y1 = min(h, int(round(cy)) + half_px)
-
-    if x1 <= x0 or y1 <= y0:
-        x0, x1 = max(0, w // 4), min(w, (3 * w) // 4)
-        y0, y1 = max(0, h // 4), min(h, (3 * h) // 4)
-
-    sub = data[y0:y1, x0:x1]
-    if sub.shape != (dim, dim):
-        sub = zoom(sub, (float(dim) / max(1, sub.shape[0]), float(dim) / max(1, sub.shape[1])), order=1)
-
-    py, px = np.unravel_index(np.argmax(sub), sub.shape)
-    return {
-        "status": "success",
-        "ra_deg": float(ra),
-        "dec_deg": float(dec),
-        "fov_arcmin": float(fov_arcmin),
-        "shape": [int(sub.shape[0]), int(sub.shape[1])],
-        "spatial_cell_id": get_spatial_cell_id(ra, dec),
-        "peak_pixel": [int(py), int(px)],
-        "source_fits": os.path.basename(best_path),
-    }
 
 
 def run_automated_source_discovery(ra: float, dec: float, fov_arcmin: float = 3.0, target_key: str = None) -> dict:
@@ -1331,12 +1057,11 @@ def query_observation_timeline(
     ra: float,
     dec: float,
     start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
-    exact_date: Optional[str] = None
+    end_date: Optional[str] = None
 ) -> dict:
     """
     Returns verified astronomical observation epochs covering the target coordinates (RA, Dec)
-    with optional temporal date/time filtering [start_date, end_date] or exact_date.
+    with optional temporal date/time filtering [start_date, end_date].
     Includes authentic POSS-II/DSS2, 2MASS, AllWISE, NEOWISE-R, and SPHEREx survey baselines.
     """
     from astropy.time import Time
@@ -1445,23 +1170,11 @@ def query_observation_timeline(
                 pass
 
     filtered = []
-    exact_mjd = None
-    if exact_date:
-        try:
-            exact_mjd = float(Time(exact_date).mjd)
-        except Exception:
-            try:
-                exact_mjd = float(Time(f"{exact_date}T00:00:00Z").mjd)
-            except Exception:
-                pass
-
     for obs in ALL_OBSERVATIONS:
         mjd = obs["mjd"]
         if start_mjd is not None and mjd < start_mjd:
             continue
         if end_mjd is not None and mjd > end_mjd:
-            continue
-        if exact_mjd is not None and abs(mjd - exact_mjd) > 2.0:
             continue
         filtered.append(obs)
 
@@ -1471,29 +1184,24 @@ def query_observation_timeline(
             "coordinates": {"ra_deg": float(ra), "dec_deg": float(dec)},
             "start_date": start_date,
             "end_date": end_date,
-            "exact_date": exact_date,
             "count": len(filtered),
-            "total_matched_observations": len(filtered),
             "observations": filtered,
             "temporal_span_years": round((filtered[-1]["mjd"] - filtered[0]["mjd"]) / 365.25, 2) if len(filtered) > 1 else 0.0
         }
     else:
         # Find nearest available observation epoch
-        target_mjd = exact_mjd if exact_mjd is not None else (start_mjd if start_mjd is not None else (end_mjd if end_mjd is not None else 55000.0))
+        target_mjd = start_mjd if start_mjd is not None else (end_mjd if end_mjd is not None else 55000.0)
         nearest = min(ALL_OBSERVATIONS, key=lambda x: abs(x["mjd"] - target_mjd))
         return {
             "status": "no_observations",
             "coordinates": {"ra_deg": float(ra), "dec_deg": float(dec)},
             "start_date": start_date,
             "end_date": end_date,
-            "exact_date": exact_date,
             "count": 0,
-            "total_matched_observations": 0,
             "observations": [],
             "message": f"No astronomical survey observations found covering (RA {ra:.4f}°, Dec {dec:+.4f}°) within the specified time window.",
             "nearest_available_epoch": {
                 "survey": nearest["survey"],
-                "date": nearest["date_obs"][:10],
                 "date_obs": nearest["date_obs"],
                 "mjd": nearest["mjd"],
                 "band": nearest["band"]

@@ -1,6 +1,6 @@
 {
   "target_id": "wise0855",
-  "count_public_total": 258,
+  "count_public_total": 5,
   "count_precomputed_used": 5,
   "exposures": [
     {
@@ -33,8 +33,6 @@
   ],
   "provenance": {
     "source": "precomputed",
-    "git_hash": "71a9daaaa9d8b27d415c2d79d1be389da460baff",
-    "data_release": "DR1",
-    "pipeline_version": "2.1.0"
+    "git_hash": "71a9daaaa9d8b27d415c2d79d1be389da460baff"
   }
 }
