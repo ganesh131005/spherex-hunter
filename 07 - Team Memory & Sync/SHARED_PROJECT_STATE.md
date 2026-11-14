@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #5 Created & Assigned to @astrodu: App Brand/Logo, Onboarding Tour & Mission Explainer]**
+  - **Issue #5 Link:** https://github.com/joker0210G/spherex-hunter/issues/5
+  - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu`) | **Resource:** `resource:standard`
+  - **Scope:** Replaces placeholder orange 'S' box with custom SPHEREx infrared telescope SVG logo; adds engaging application tagline and scientific mission explainer; introduces an interactive 5-step Citizen Science welcome tour with persistent header re-trigger `[❓ Mission Guide]`.
 - **[Batch Scripts Streamlined: Reduced from 8 to 2 Clean Entry Points]**
   - Validated and incorporated coolodu's `cmd.exe` bug fix into `run_spherex_hunter.bat` (resolving syntax crash during port 8000 cleanup).
   - Consolidated 8 scattered batch scripts (`setup_teammate.bat`, `start_backend.bat`, `stop_server.bat`, `sync_all.bat`, `sync_my_work.bat`, `update_from_team.bat`, `test_run.bat`) into **2** clean, dedicated scripts:
