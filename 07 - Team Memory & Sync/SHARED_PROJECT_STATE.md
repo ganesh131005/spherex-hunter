@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #23 Created — Scientific Cache Lifecycle: Validity Checks, Force Refresh, Storage Quotas, and Truthful Provenance]**
+  - **Issue #23 Link:** https://github.com/joker0210G/spherex-hunter/issues/23
+  - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`
+  - **Scope:** Enforces scientific cache validity: checks for stale data, adds `refresh=true` force-fetch parameter, manages storage limits and LRU eviction, and guarantees outdated cached data is never presented as newly retrieved observations.
 - **[GitHub Native Issue #22 Created — Add 'Save Analysis' Button with Session Naming, CRUD Management, and Toast Confirmations]**
   - **Issue #22 Link:** https://github.com/joker0210G/spherex-hunter/issues/22
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
