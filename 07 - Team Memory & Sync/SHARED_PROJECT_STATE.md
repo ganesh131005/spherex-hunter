@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #10 Created — Continuous Raytracing-like Sky Tiling & Continuous Adaptive LOD Zoom Engine]**
+  - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10
+  - **Track:** `web-frontend` | **Role:** `@coolodu` (Collaborating with `@darkodu` on backend tile streaming) | **Resource:** `resource:compute-heavy`
+  - **Scope:** Solves the single isolated square image problem by introducing continuous camera frustum sky ray-casting/tile streaming, eliminating black voids when panning or zooming out, and replacing discrete integer LOD steps (0, 1, 2) with a smooth continuous LOD scale and seamless sub-patch cross-fading.
 - **[GitHub Issues #8 & #9 — Command Palette Decision & Implementation COMPLETE on `main`]**
   - **Decision Issue #8:** https://github.com/joker0210G/spherex-hunter/issues/8
   - **Implementation Issue #9:** https://github.com/joker0210G/spherex-hunter/issues/9
