@@ -19,9 +19,9 @@ The humans on this team (except jokerodu) are **complete beginners** who do not 
    - If `jokerodu` -> Read `07 - Team Memory & Sync/jokerodu_memory.md`
 3. **Check the shared state:** Read `07 - Team Memory & Sync/SHARED_PROJECT_STATE.md`.
 4. **Check for assigned teammate tasks:**
-   - Run `python tools/task_forwarder.py check --worker <name>`.
-   - If pending tasks are found in `07 - Team Memory & Sync/TASK_DISPATCH/inbox/`, immediately alert the human teammate:
-     > *"🔔 You have a task forwarded to you from @<requester>: '<title>'! Would you like me to execute this now?"*
+   - Run `python tools/github_bridge.py check --worker <name>`.
+   - If an open issue is found on GitHub (or legacy inbox), immediately alert the human teammate:
+     > *"🔔 You have a task assigned to you on GitHub Issues: '[#<number>] <title>'! (URL: <html_url>) Would you like me to execute this now?"*
 5. **Be their Hands and Brain:**
    - Never tell them: *"Run this bash script in your terminal"*. **Run the tool commands yourself!**
    - Never tell them: *"Edit line 42 in app.py"*. **Use the file edit/write tools yourself!**
@@ -46,20 +46,19 @@ When a teammate hits token limits or hardware bottlenecks, or when the user says
    - `darkodu` -> `darkodu/astro-backend` (Nonpaid Pro: FastAPI, Astropy cutouts, TAP/IRSA queries)
    - `astrodu` -> `astrodu/ui-story-pitch` (Free Tier: slides, pitch script, citizen science docs)
    - `jokerodu` -> `main` (Nonpaid Pro: system lead, architecture & merge review)
-2. **Dispatch via CLI tool:**
-   `python tools/task_forwarder.py dispatch --from <current_name> --to <target_name> --type <token_heavy|compute_heavy|hybrid> --priority <NORMAL|HIGH|URGENT> --branch <target_branch> --title "<title>" --brief "<brief>"`
+2. **Dispatch via GitHub Bridge:**
+   `python tools/github_bridge.py create --title "<title>" --track <feature-backend|web-frontend|uiux-pitch|image-math> --role <target_name> --resource <token-heavy|compute-heavy|standard> --body "<brief>"`
 3. **Update Shared State:**
-   Append an announcement in `07 - Team Memory & Sync/SHARED_PROJECT_STATE.md`.
-4. **Commit & Push to Git:**
-   - Commit the ticket to `main` and merge into `<target_branch>`.
-   - Push both branches to GitHub (`origin main` and `origin <target_branch>`).
-5. **Verify Inbox:**
-   Run `python tools/task_forwarder.py check --worker <target_name>`.
+   Append an announcement in `07 - Team Memory & Sync/SHARED_PROJECT_STATE.md` with link to the GitHub issue.
+4. **Push any dependency branches:**
+   Push latest changes to GitHub (`origin main` or base branch).
+5. **Verify Inbox/Issue:**
+   Run `python tools/github_bridge.py check --worker <target_name>`.
 6. **Provide Formatted Teammate Message:**
-   Give the user a ready-to-copy chat message to send to that teammate.
+   Give the user a ready-to-copy chat message linking to the GitHub Issue.
 7. 🛑 **STRICT GUARDRAIL — DO NOT AUTO-CLAIM:**
    **NEVER claim, code, or execute a task you just assigned to another teammate!**
-   Your turn is complete once the ticket is dispatched and pushed. Only the target teammate can claim and work on it, unless the user explicitly commands: *"Act as <name> now and execute this on my machine."*
+   Your turn is complete once the issue is created and pushed. Only the target teammate can claim and work on it, unless the user explicitly commands: *"Act as <name> now and execute this on my machine."*
 
 ---
 

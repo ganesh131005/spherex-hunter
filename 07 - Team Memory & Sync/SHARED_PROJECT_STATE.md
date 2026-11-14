@@ -26,9 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-- **[Task Assigned to @coolodu: TASK-006 (URGENT Token Heavy)]** Assigned Tasks 3, 4, 5 of `nasa_csa_resources_integration_plan.md` to `coolodu` (`coolodu/web-frontend`) due to lead token constraints:
-  - Task 1 (Gaia TAP Backend) and Task 2 (Viewport Reticles, Proper Motion Vectors, and Dipole Cross-Check) have been fully completed, tested, and verified on `main`.
-  - `coolodu` will execute: Task 3 (WiseView 1-Click Verification Bridge), Task 4 (CSA NEOSSat & CADC Asteroid Tracking Integration), and Task 5 (Official NASA & CSA Resources Codex Modal).
+- **[GitHub Native Issues Live: Issue #1 Assigned to @coolodu]** Migrated task management to official GitHub Native Issues:
+  - **Live Issues Board:** https://github.com/joker0210G/spherex-hunter/issues
+  - **Issue #1 ([WEB] Tasks 3, 4, 5: WiseView Bridge, CSA NEOSSat Tracking & Resources Codex):** https://github.com/joker0210G/spherex-hunter/issues/1
+  - Labels: `track:web-frontend`, `role:coolodu`, `resource:token-heavy`, `status:needs-refinement`.
+  - Replaces legacy local `TASK-006.md` workflow.
 - **[Task 2 Complete: Viewport Gaia DR3 Astrometry Overlay & Dipole Cross-Check Verified]**
   - Added `[✨ Gaia DR3]` toggle in viewport controls.
   - Rendered authentic Gaia DR3 target reticles, 50-year proper motion vector arrows $(\mu_\alpha \cos\delta, \mu_\delta)$, and $G$-band magnitude tags on HTML5 Canvas.
