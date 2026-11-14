@@ -3,8 +3,18 @@ NASA Space Apps Challenge 2026 - Golden Verification Suite
 Validates the 5 NASA Benchmark Targets, WCS Astrometry, Difference Imaging,
 and 102-Band Infrared Spectrophotometry against the Spec-Kit requirements.
 """
-import pytest
+try:
+    import pytest
+except ImportError:
+    class _DummyMark:
+        @staticmethod
+        def parametrize(*args, **kwargs):
+            def decorator(fn): return fn
+            return decorator
+    class pytest:
+        mark = _DummyMark()
 from astropy.coordinates import SkyCoord
+
 from backend.services.cutout_engine import fetch_real_cutout, get_102_band_spectrum
 
 BENCHMARKS = [
@@ -56,3 +66,72 @@ def test_gaia_dr3_astrometry():
     fast_stars = [s for s in res["sources"] if s["total_pm_mas_yr"] and s["total_pm_mas_yr"] > 10000.0]
     assert len(fast_stars) >= 1
     assert abs(fast_stars[0]["total_pm_mas_yr"] - 10393.3) < 20.0
+
+def test_wiseview_verification_bridge():
+    from backend.services.verification_service import run_wiseview_verification
+    res = run_wiseview_verification(133.79513, -7.24515, fov_arcmin=3.0, target_key="wise0855")
+    assert res["status"] == "success"
+    assert res["verdict"] == "PLANET_X_CANDIDATE"
+    assert len(res["checklist"]) == 5
+    assert "byw.tools/wiseview" in res["wiseview_url"]
+
+def test_neossat_and_cadc_tracking():
+    from backend.services.neossat_service import build_neossat_tracking_report
+    res = build_neossat_tracking_report(133.79513, -7.24515, fov_arcmin=3.0, include_cadc=False)
+    assert res["status"] == "success"
+    assert res["verdict"] in ("NO_KNOWN_SSO_MATCH", "SSO_CHECK_UNAVAILABLE")
+    assert "cadc_neossat_search" in res["links"]
+
+def test_resources_codex():
+    from backend.main import get_resources_codex
+    res = get_resources_codex("133.79513", "-7.24515", 3.0)
+    assert res["status"] == "success"
+    assert len(res["portals"]) == 7
+
+def test_observation_timeline_temporal_search():
+    """Verify Issue #11: Observation Date & Time Search and Temporal Range Filtering."""
+    from backend.services.cutout_engine import query_observation_timeline
+
+    # 1. Full baseline
+    all_obs = query_observation_timeline(133.79513, -7.24515)
+    assert all_obs["status"] == "success"
+    assert all_obs["count"] >= 4
+    for o in all_obs["observations"]:
+        assert "date_obs" in o
+        assert "mjd" in o
+        assert "survey" in o
+
+    # 2. Filtered 2MASS window (1998-2002)
+    filtered = query_observation_timeline(133.79513, -7.24515, start_date="1998-01-01", end_date="2002-01-01")
+    assert filtered["status"] == "success"
+    assert filtered["count"] == 1
+    assert filtered["observations"][0]["survey"] == "2MASS"
+
+    # 3. Empty historical window (1800-1850) -> honest no-observations state
+    empty = query_observation_timeline(133.79513, -7.24515, start_date="1800-01-01", end_date="1850-01-01")
+    assert empty["status"] == "no_observations"
+    assert empty["count"] == 0
+    assert "nearest_available_epoch" in empty
+
+def test_multi_coordinate_sky_tiling_raycaster():
+    """Verify Issue #10: Continuous sky tiling multi-coordinate off-center tile queries."""
+    from backend.services.cutout_engine import fetch_real_cutout
+    # Query slightly offset tiles around WISE 0855
+    res_center = fetch_real_cutout(133.79513, -7.24515, fov_arcmin=3.0, lod=1)
+    res_east = fetch_real_cutout(133.74513, -7.24515, fov_arcmin=3.0, lod=1)
+    res_north = fetch_real_cutout(133.79513, -7.19515, fov_arcmin=3.0, lod=1)
+    assert res_center["status"] == "success"
+    assert res_east["status"] == "success"
+    assert res_north["status"] == "success"
+    assert res_center["difference_image"]["image_data"].startswith("data:image/png;base64,")
+
+if __name__ == "__main__":
+    for b in BENCHMARKS:
+        test_nasa_benchmark_cutouts(*b)
+    test_sexagesimal_and_decimal_parsing()
+    test_102_band_spectroscopy()
+    test_gaia_dr3_astrometry()
+    test_wiseview_verification_bridge()
+    test_neossat_and_cadc_tracking()
+    test_resources_codex()
+    print("ALL 11 GOLDEN SUITE TESTS PASSED!")

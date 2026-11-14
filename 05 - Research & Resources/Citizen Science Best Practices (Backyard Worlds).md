@@ -19,3 +19,9 @@ The Zooniverse project **Backyard Worlds: Planet 9** launched in 2017 using infr
   - **Real Object:** Moves consistently between epochs, appears in multiple infrared bands.
   - **Cosmic Ray:** Appears in only 1 epoch and exactly 1 pixel channel; sharp, unblurred edges.
   - **Optical Ghost / Reflection:** Large diffuse circular haze caused by bright off-axis stars.
+
+---
+
+## 🔗 Technical Tools & Deep-Linking Architecture
+- **[[WISEVIEW_BYW_TOOLS_SITEMAP]]** — Complete architectural site map and 30+ parameter URL hash specification for Dan Caselden's WiseView (`byw.tools/wiseview`), including difference imaging, Asinh stretch parameters, and synthetic source injection.
+- **[[NASA_AND_PARTNER_DATA_PORTALS]]** — Cross-survey integration protocols with NASA IRSA, MAST, and CADC.

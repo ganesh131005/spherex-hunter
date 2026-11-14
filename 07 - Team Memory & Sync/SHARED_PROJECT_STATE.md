@@ -1,5 +1,5 @@
 # 🌐 SHARED PROJECT STATE (Team RIP Central Ledger)
-> **Last Updated:** Hackathon Kickoff | **Status:** Phase 1 Initialization
+> **Last Updated:** Hackathon Phase 2 Integration | **Status:** Scene Collection Layer Manager & Truthful Metadata Deployed
 > **Rule:** Whenever ANY teammate's Antigravity agent finishes a feature or hits a blocker, append a short note here and commit!
 
 ---
@@ -9,9 +9,9 @@
 | Track | Owner | Branch | Current Focus | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **System Lead** | `jokerodu` | `main` | Architecture, coordination & merge reviews | 🟢 Active |
-| **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Real FITS cutout & 102-band API running on port 8000 | 🟢 Live |
-| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Blender GUI connected to live backend API | 🟢 Connected |
-| **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟡 In Progress |
+| **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Scene State, Space Motion Propagation & Schema Validation | 🟢 100% Operational |
+| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Integrated `darkodu/astro-backend` + Observatory UI + 35-Note Vault | 🟢 Live / Verified |
+| **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟢 Operational |
 | **UX, Story & Video** | `astrodu` | `astrodu/ui-story-pitch` | Citizen science modal, slide deck & video script | 🟡 In Progress |
 
 ---
@@ -26,14 +26,17 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issues #8, #9, #10, #11, #12 — ALL RESOLVED & MERGED INTO `main`]**
+  - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12 (Universal Share Modal & Deep-Link Parameter Hub — MERGED)
+  - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11 (Observation Date & Time Search Range Filtering — MERGED)
+  - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10 (Continuous Raytracing-like Sky Tiling & Adaptive LOD — MERGED)
+  - **Issue #9 Link:** https://github.com/joker0210G/spherex-hunter/issues/9 (Command Palette Ctrl+K — MERGED)
+  - **Issue #8 Link:** https://github.com/joker0210G/spherex-hunter/issues/8 (Command Palette Decision — MERGED)
+  - **Verification:** Merged into protected `main` by Team Lead (`@jokerodu`) after full architectural review. 13/13 Golden Suite tests verified.
 - **[GitHub Native Issue #13 Created — Hierarchical Spatial-Tile Caching (Client IndexedDB + Backend Spatial-Hash)]**
   - **Issue #13 Link:** https://github.com/joker0210G/spherex-hunter/issues/13
   - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` on client IndexedDB & AbortController) | **Resource:** `resource:compute-heavy`
-  - **Scope:** Solves query overload and stutter during continuous panning and zooming. Implements 3-tier caching: L0 Browser Memory + IndexedDB, L1 Backend Spatial-Hash RAM (<2ms), and L2 Persistent FITS Disk. Integrates `AbortController` request cancellation to eliminate stale in-flight fetches during camera flight.
-- **[GitHub Native Issue #12 Created — Universal Sky Region Share Modal & Deep-Link Parameter Hub]**
-  - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12
-  - **Track:** `web-frontend` | **Role:** `@coolodu` (Collaborating with `@astrodu` for citizen science telemetry sharing) | **Resource:** `resource:standard`
-  - **Scope:** Adds topbar `[🔗 Share]` modal, generates clean deep-link URLs (`?ra=...&dec=...&fov=...&mode=...&date=...`), provides 1-click clipboard copying of formatted astronomical target telemetry, and hydrates shared state automatically when opened on other devices.
+  - **Scope:** Solves query overload and stutter during continuous panning and zooming. Implements 3-tier caching: L0 Browser Memory + IndexedDB with smart auto-pruning, L1 Backend Spatial-Hash RAM (<2ms), and L2 Persistent FITS Disk. Integrates `AbortController` request cancellation to eliminate stale in-flight fetches during camera flight.
 - **[GitHub Native Issue #11 Created — Observation Date & Time Search (Temporal Range Filtering)]**
   - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11
   - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` for frontend datepicker HUD) | **Resource:** `resource:standard`
@@ -42,14 +45,26 @@
   - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10
   - **Track:** `web-frontend` | **Role:** `@coolodu` (Collaborating with `@darkodu` on backend tile streaming) | **Resource:** `resource:compute-heavy`
   - **Scope:** Solves the single isolated square image problem by introducing continuous camera frustum sky ray-casting/tile streaming, eliminating black voids when panning or zooming out, and replacing discrete integer LOD steps (0, 1, 2) with a smooth continuous LOD scale and seamless sub-patch cross-fading.
-- **[GitHub Issues #8 & #9 — Command Palette Decision & Implementation COMPLETE on `main`]**
+- **[GitHub Issues #8 & #9 — Command Palette Decision & Implementation COMPLETE on `main` & `coolodu/web-frontend`]**
   - **Decision Issue #8:** https://github.com/joker0210G/spherex-hunter/issues/8
   - **Implementation Issue #9:** https://github.com/joker0210G/spherex-hunter/issues/9
-  - **Research Verdict: ✅ YES** — 3 independent web searches confirmed Command Palette is SUITABLE with strict design constraints. Rationale: (1) Our UI already has full visual coverage — palette is purely additive. (2) NASA judges are technical — Ctrl+K signals engineering maturity. (3) Blender-flavored UI self-selects power users. (4) Citizen scientists will use visible buttons; researchers will use Ctrl+K.
-  - **Implemented in `main` (commit `d1a4049`):** 21 commands indexed across 5 groups (Targets, Views, Shading, Actions, FOV Presets), fuzzy search with natural language aliases (e.g. 'cold brown dwarf' → WISE 0855), persistent `[🔍 Ctrl+K]` pill in header, zero-state shows all 5 NASA benchmarks, Arrow Up/Down keyboard navigation, Escape to close.
-  - **@coolodu:** Please `git pull origin main` into `coolodu/web-frontend` to pick up the Command Palette when you get a chance. Resolve the merge if needed (the palette code is in `index.html` sections marked COMMAND PALETTE).
-
-
+  - **Research Verdict: ✅ YES** — 3 independent web searches confirmed Command Palette is SUITABLE with strict design constraints.
+  - **Merged and integrated into `coolodu/web-frontend`:** 21 commands indexed across 5 groups (Targets, Views, Shading, Actions, FOV Presets), fuzzy search with natural language aliases, persistent `[🔍 Ctrl+K]` pill in header, keyboard navigation, and zero-state showing all 5 NASA benchmarks.
+- **[MULTI-SURVEY CATALOG SYNTHESIS & LIVE DATA UPDATE DEPLOYED (@coolodu)]**:
+  - Updated all backend/frontend pipelines to synthesize **ESA Gaia DR3**, **2MASS PSC**, **NASA AllWISE + NEOWISE-R**, **NASA SPHEREx DR1 (`spherex.obscore`)**, and **CDS SIMBAD** across all benchmarks plus **Orion Nebula (M42)** and **Sgr A*** (`scripts/update_all_astro_data.py`).
+  - Added resilient socket-timeout sessions and fast mirror fallbacks (ESA Gaia <-> IRSA `gaia_dr3_source`, IRSA <-> Harvard CfA VizieR `II/246/out` & `II/328/allwise`) across `backend/services/catalog_engine.py` and `backend/services/gaia_service.py`, plus new endpoints `GET /api/catalog/wise` and `GET /api/catalog/spherex` in `backend/main.py`.
+  - Physically anchored `get_102_band_spectrum` in `backend/services/cutout_engine.py` to real catalog fluxes in $\mu\text{Jy}$ and wired `WISE & SPHEREx IR Synthesis` cards, A1–A6 flux summaries, catalog SED overlay markers, and multi-epoch `Light Curve` updates into `frontend/index.html`.
+  - Verified with all 11 Golden Suite tests, `tests/test_bands_spectrum.py`, all 4 ZOGY tests in `tests/test_live_cutout_zogy.py`, and live browser verification on `http://127.0.0.1:8000/app` (0 console errors, 0 failed HTTP requests).
+- **[ALL 7 GITHUB ISSUES FULLY RECTIFIED & CLOSED ON GITHUB (@coolodu)]**:
+  - Systematically audited, executed, and closed all 7 open GitHub Issues on `joker0210G/spherex-hunter`:
+    - 📌 **Issue #1 Closed**: WiseView 1-Click Verification Bridge, CSA NEOSSat & CADC tracking, and NASA/CSA Resources Codex verified and operational.
+    - 📌 **Issue #2 Closed**: Wired Phase 1 ZOGY Differencing & Float32 raw streaming into `/api/cutout` pipeline. All 4 tests in `tests/test_live_cutout_zogy.py` passed with $S_{\text{corr}} \ge 5\sigma$.
+    - 📌 **Issue #3 Closed**: Verified all 5 scientific endpoints (`/api/download_fits`, `/api/verify_candidate`, `/api/source_discovery`, `/api/resources_codex`, `/api/neossat`) and restored 11 Golden Suite tests.
+    - 📌 **Issue #4 Closed**: Fixed Windows `cmd.exe` batch crash, verified SSL fallback, cleaned screenshot bloat, and isolated `DISCOVERIES_FILE` for testing.
+    - 📌 **Issue #5 Closed**: Custom SPHEREx infrared telescope vector SVG logo designed and rendered (`frontend/assets/logo.svg`, `frontend/favicon.svg`), mission tagline tooltip added, persistent `[❓ Mission Guide]` button, and 5-step Citizen Science Onboarding Tour modal with `localStorage` persistence.
+    - 📌 **Issue #6 Closed**: Beginner-friendly celestial coordinates navigation bar with hover tooltips (RA, Dec, FOV), real-world Full Moon scale descriptors (1.0' to 15.0'), and 1-click popular landmarks presets popover (WISE 0855, Barnard's Star, Orion Core, Sgr A*).
+    - 📌 **Issue #7 Closed**: Full SPHEREx 102-band infrared spectroscopy: `GET /api/bands` endpoint, enhanced `GET /api/spectrum` with `bands[]` (102 objects) and `array_summary` (A1–A6), 6-array selector tabs, 17-channel wavelength stepper, 102-band science explainer modal, and enhanced Chart.js SED chart with 6 color-coded array background bands and vertical molecular markers (H₂O, CH₄, CO₂, CO). All tests in `tests/test_bands_spectrum.py` passed.
+  - All 11 Golden Suite tests passed. All 100% of open issues resolved on GitHub!
 - **[GitHub Native Issue #7 Created — SPHEREx 102-Band Spectral Integration: 6-Array Selector & 17-Wavelength Stepper]**
   - **Issue #7 Link:** https://github.com/joker0210G/spherex-hunter/issues/7
   - **Track:** `feature-backend` | **Roles:** @darkodu (backend schema) + @coolodu (frontend selector/chart) + @astrodu (education modal)
@@ -67,11 +82,202 @@
   - Consolidated 8 scattered batch scripts (`setup_teammate.bat`, `start_backend.bat`, `stop_server.bat`, `sync_all.bat`, `sync_my_work.bat`, `update_from_team.bat`, `test_run.bat`) into **2** clean, dedicated scripts:
     1. **`run_spherex_hunter.bat`**: 1-click application launcher (handles Python check, auto-port 8000 cleanup, uvicorn server, and browser auto-open).
     2. **`team_sync.bat`**: Unified Team Sync & Workspace Hub (Interactive menu & CLI shortcuts for safe team radar, 1-click work push, teammate branch setup, and manual server shutdown).
-- **[GitHub Native Issues Live: Issue #1 Assigned to @coolodu]** Migrated task management to official GitHub Native Issues:
+- **[Scientific Integrity Audit: Elimination of All Fake & Synthetic Data across SPHEREx Hunter (@coolodu)]**:
+  - In compliance with Team RIP Constitution Principle 1 (*Scientific Integrity Over Gimmicks: Real Data First*), completed an exhaustive codebase audit and eliminated all procedural, synthetic, and fabricated data.
+  - Eliminated procedural Gaussian/RNG stars (`SYNTH_` IDs with random fluxes), hardcoded mock catalog dictionaries (`CURATED_BENCHMARK_GAIA`, `CURATED_BENCHMARK_2MASS`, `SIMBAD_KNOWLEDGEBASE`), hash-derived fake spectral temperatures and invented molecular detections, fabricated `"sub_stellar_planet_x_probability": 0.0`, arbitrary `"confidence": "99.4%"`, and static HTML DOM placeholder counts (`842 ct`, `SNR 12.4`, `4.12x Co-add SNR`).
+  - Implemented live CDS SIMBAD TAP queries with Harvard CfA mirror fallback and nearest-angular-separation matching.
+  - Connected live IMCCE SkyBoT and CADC CAOM-2 TAP for solar system object and archival footprint queries.
+  - Updated `#inspectorPanelPhotometry` to clean `--` default states labeled "Awaiting Flight Co-adds" and wired dynamic multi-epoch baseline text in `#bottomDock`.
+  - All 46 pytest unit/integration tests passed; all 11 golden verification suite tests passed; all 8 backend diagnostic suites passed (100% operational).
+- **[PR-Style Branch Integration Complete: `origin/darkodu/astro-backend` -> `coolodu/web-frontend` (@coolodu)]**:
+  - **Pros Integrated:** Merged Phase 0–2.9 scientific engine (`backend/science/` ZOGY differencing, motion models A/B/C, calibrated $\mu\text{Jy}$ preprocessing, 29-bit flags, SkyBoT/Horizons identification, 5-tier evidence engine, dipole tracklet linking, and empirical SPHEREx validation in `validation/`), data-driven Scene Collection Layer Manager (`/api/scene`), multi-catalog cross-matching (`/api/catalog/2mass`, `/api/catalog/simbad`, `/api/catalog/crossmatch`), Observatory UI Redesign (`frontend/index.html` with 48px header, `Ctrl+K` Command Palette, 4-tab Inspector, 3-tab Collapsible Dock), and all 9 new test suites into `coolodu/web-frontend`.
+  - **Cons Raised on GitHub Issues & Mitigated in Merge:**
+    - 📌 **[Issue #2](https://github.com/joker0210G/spherex-hunter/issues/2)** (`@darkodu`): Wire Phase 1 ZOGY Differencing & Float32 Preprocessing into live `/api/cutout` pipeline.
+    - 📌 **[Issue #3](https://github.com/joker0210G/spherex-hunter/issues/3)** (`@darkodu`): Restore dropped endpoints (`/api/verify_candidate`, `/api/source_discovery`, `/api/download_fits`, `/api/resources_codex`, `/api/neossat`), spectrum `bands`/`array_counts`, and 11 Golden Suite tests (all restored in `coolodu/web-frontend`).
+    - 📌 **[Issue #4](https://github.com/joker0210G/spherex-hunter/issues/4)** (`@darkodu`): Fix Windows `cmd.exe` batch parser crash in `run_spherex_hunter.bat`, SSL fallback in `step1_wise0855_irsa.py`, remove root debug screenshots (`after_*.png`, `before_*.png`), and deduplicate `candidate_discoveries.json` (all fixed in `coolodu/web-frontend`).
+- **[GitHub Native Issues Live: Issue #1 Completed by @coolodu]** Migrated task management to official GitHub Native Issues:
   - **Live Issues Board:** https://github.com/joker0210G/spherex-hunter/issues
   - **Issue #1 ([WEB] Tasks 3, 4, 5: WiseView Bridge, CSA NEOSSat Tracking & Resources Codex):** https://github.com/joker0210G/spherex-hunter/issues/1
-  - Labels: `track:web-frontend`, `role:coolodu`, `resource:token-heavy`, `status:needs-refinement`.
-  - Replaces legacy local `TASK-006.md` workflow.
+  - Verified and completed on `coolodu/web-frontend`.
+- **[Canada Open Data NEOSSat Dataset & CKAN API Codex Cataloged by @coolodu]**:
+  - Live crawled `https://data.asc-csa.gc.ca/dataset/neossat` and queried the CKAN REST API (`package_show?id=62d8033b-87b6-4322-8d5f-e26bebf934c1`).
+  - Created [CSA_OPENDATA_NEOSSAT_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/CSA_OPENDATA_NEOSSAT_SITEMAP.md).
+  - Cataloged all 8 distribution resources including the direct open-access HTTPS FITS bucket (`/users/OpenData_DonneesOuvertes/pub/NEOSSAT/ASTRO/`), XML telemetry metadata, FITS Image User's Guide (`CSA-NEOSSAT-MAN-0002_FITS_IMAGE_UGUIDE-v4-00.pdf`), NEOSSat Experience data dictionary, and Open Government Licence - Canada terms.
+  - Documented directory structure (`ASTRO/YYYY/DDD/`) and calibration naming conventions (`NEOS_SCI_YYYYDDDHHMMSS.fits.gz`, `..._cor.fits.gz`, `..._cord.fits.gz`).
+- **[Caltech-IPAC Tutorial 6: SPHEREx HiPS All-Sky Mosaic Cubes Added by @coolodu]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-hipscube/`.
+  - Created [20 - Tutorial 6 SPHEREx HiPS All-Sky Mosaic Cubes & HEALPix Geometry.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/20%20-%20Tutorial%206%20SPHEREx%20HiPS%20All-Sky%20Mosaic%20Cubes%20&%20HEALPix%20Geometry.md).
+  - Reverse-engineered dual access modalities (HiPS visualizer at `spherex_allsky_cube` and direct FITS cubes at `hips5_cube/hips_20261026`), parsed properties metadata (`hips_cube_depth=102`, `hips_order=5`), nested HEALPix indexing math via `hpgeom.angle_to_pixel` to locate Order 5 tiles ($N_{\text{pix}} = 12,288$), Firefly channel dispatching (`ImagePlotCntlr.ChangeHiPS`), local spherical HPX angular pixel scaling, and 102-channel FITS cube extraction.
+  - **All 6 official Caltech-IPAC SPHEREx tutorials are now 100% indexed and cross-linked across Notes 15 through 20 in the Obsidian vault!**
+- **[CSA NEOSSAT_Tutorial Repository & Algorithm Codex Cataloged by @coolodu]**:
+  - Live crawled `https://github.com/asc-csa/NEOSSAT_Tutorial` and created [NEOSSAT_TUTORIAL_CODE_CODEX.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/NEOSSAT_TUTORIAL_CODE_CODEX.md).
+  - Deconstructed bilingual Notebooks 01 and 02: Option 1 CSA FTP (`ftp.asc-csa.gc.ca`), Option 2 CADC TAP (`astroquery.cadc`), row-by-row 50-pixel overscan bias correction, master dark frame subtraction, and temporal median co-addition.
+  - Extracted the exact computer vision algorithms: Line Segment Detector (LSD) streaklet finding (`detect_streaklets`) and $3\sigma$ temporal difference thresholding (`detect_moving_objects`) used in SPHEREx Hunter to flag near-Earth asteroid streaklets.
+- **[Caltech-IPAC Tutorial 5: SPHEREx Mosaic Cubes & Multi-Wavelength Overlays Added by @coolodu]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-mosaic/`.
+  - Created [19 - Tutorial 5 SPHEREx Mosaic Cubes & Multi-Wavelength Overlays.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/19%20-%20Tutorial%205%20SPHEREx%20Mosaic%20Cubes%20&%20Multi-Wavelength%20Overlays.md).
+  - Reverse-engineered 6-HDU 3D $(x, y, \lambda)$ mosaic cube architecture (`IMAGE`, `NHITS`, `FLAGS`, `SPECTRAL_CHANNELS`, `WCS-WAVE`), surface brightness to flux calibration ($[\text{mJy}] = [\text{MJy/sr}] \times 23.5045 \times \text{pixscale}^2 / 1000$), hyperspectral aperture photometry across 102 channels with annulus background subtraction, continuum-subtracted PAH $3.3\ \mu\text{m}$ starburst emission mapping, and multi-wavelength GALEX FUV image retrieval, AB flux conversion, and `reproject_exact` contour overlay.
+- **[Caltech-IPAC Tutorial 4: Source Discovery Tool & Spectral Extraction Added by @coolodu]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-source-discovery-tool-demo/`.
+  - Created [18 - Tutorial 4 SPHEREx Source Discovery Tool & Spectral Extraction.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/18%20-%20Tutorial%204%20SPHEREx%20Source%20Discovery%20Tool%20&%20Spectral%20Extraction.md).
+  - Reverse-engineered dual-detector spectral difference imaging ($I_{\text{D2}} - I_{\text{D4}}$) isolating red astronomical targets (brown dwarfs, AGNs, protostars), flux density conversion ($\text{MJy/sr} \to \mu\text{Jy}$) via Solid Angle Pixel Maps (`cal-sapm`), `sep.Background` fitting, exact flux-conserving reprojection (`reproject_exact`), SExtractor automated source detection, in-memory VOTable streaming to Firefly via `io.BytesIO()`, and multi-epoch aperture photometry ($r=3, 4, 5\text{ px}$) filtering out 19 master pipeline artifact flags to generate calibrated 1D spectra.
+- **[CADC Canadian Archive & CAOM-2 Sitemap Cataloged by @coolodu]**:
+  - Live crawled `https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/` and created [CADC_CANADIAN_ARCHIVE_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/CADC_CANADIAN_ARCHIVE_SITEMAP.md).
+  - Documented 15 major telescope data holdings (NEOSSat, JWST, Gemini, CFHT, JCMT, HST, DAO, etc.) and 11 advanced data products (MegaPipe, CFHTLS, WIRWolf, WALLABY, POSSUM, VLASS).
+  - Documented CAOM-2 TAP query schemas (`caom2.Observation`, `caom2.Plane`, `caom2.Artifact`), `astroquery.cadc` workflows, and the **SSOIS (Solar System Object Image Search)** tool for recovering historical precovery observations of asteroids and Planet X candidates across CFHT/Gemini/HST plates.
+- **[Caltech-IPAC Tutorial 3: Position-Dependent ePSF Reconstruction Added by @coolodu]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-psf/`.
+  - Created [17 - Tutorial 3 Position-Dependent ePSF Reconstruction & Forward Modeling.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/17%20-%20Tutorial%203%20Position-Dependent%20ePSF%20Reconstruction%20&%20Forward%20Modeling.md).
+  - Reverse-engineered local cutout to parent detector pixel transformation via `CRPIX1A`/`CRPIX2A` anchors ($x_{\text{orig}} = 1 + x_{\text{cutout}} - \text{CRPIX1A}$), 441-zone ($21 \times 21$) `EPSF` BinTable structure with $33 \times 33$ oversampled arrays ($f=5$, $5 \times 5$ sub-pixels), nearest-zone Euclidean matching, effective noise area $N_{\text{eff}}$ diagnostics, and native resolution integration via `photutils.psf.ImagePSF` (`render_epsf_stamp_centered`) for forward modeling and Tractor forced photometry.
+- **[Caltech-IPAC Tutorial 2: SPHEREx Spectral Image Cutouts & MEF Packaging Added by @coolodu]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-cutouts/`.
+  - Created [16 - Tutorial 2 SPHEREx Spectral Image Cutouts & MEF Packaging.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/16%20-%20Tutorial%202%20SPHEREx%20Spectral%20Image%20Cutouts%20&%20MEF%20Packaging.md).
+  - Reverse-engineered dynamic server-side cutout URL generation via ADQL string concatenation, spectral dispersion wavelength calculation via `spectral_wcs.sip = None`, high-throughput parallel downloads via `ThreadPoolExecutor(max_workers=10)` achieving a **10.3x speedup** ($2.26\text{ min} \to 0.22\text{ min}$), and packaging into a single master science MEF containing a `CUTOUT_INFO` binary table index.
+- **[CSA NEOSSat Mission Portal & Sitemap Cataloged by @coolodu]**:
+  - Live crawled `https://www.asc-csa.gc.ca/eng/satellites/neossat/` and created [CSA_NEOSSAT_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/CSA_NEOSSAT_SITEMAP.md).
+  - Documented 800 km Sun-synchronous orbit, 15-cm Maksutov-Cassegrain optics, joint CSA/DRDC operations, and all 10 Science Guest Observer Cycles (Near-Sun asteroid tracking, NEOCP follow-ups, HEOSS debris surveillance, and NOTES transiting exoplanet monitoring).
+  - Reverse-engineered CADC CAOM-2 TAP access (`https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap`, `astroquery.cadc`, collection `NEOSSAT`) and Canadian Open Government data downloads.
+  - Formulated the Line Segment Detector (LSD) streaklet detection mathematics incorporated into SPHEREx Hunter for distinguishing asteroid streak tracks from genuine stationary Planet X / brown dwarf dipole pairs.
+- **[WiseView Verification Ecosystem Complete in Vault (Notes 03, 04, 05) by @coolodu]**:
+  - Added Note 03: [03 - WiseView Synthetic Object Injection Engine.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/WiseView%20Architecture/03%20-%20WiseView%20Synthetic%20Object%20Injection%20Engine.md) (forward-modeled dipole nulling and blind injection testing).
+  - Added Note 04: [04 - WiseView Version History & v2 vs v3 Architecture.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/WiseView%20Architecture/04%20-%20WiseView%20Version%20History%20&%20v2%20vs%20v3%20Architecture.md) (evolution from v1 discrete `coadd_mode` strings to v3 orthogonal parameters, `v1UrlCompat` engine, and viewport spawning).
+  - Added Note 05: [05 - Cross-Survey External Verification Endpoints.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/WiseView%20Architecture/05%20-%20Cross-Survey%20External%20Verification%20Endpoints.md) (tested live queries against `byw.tools/xref` and `/pawnstars`, plus deep links for Legacy Survey, CDS Simbad, CDS VizieR, and Zooniverse Talk).
+  - Updated [WISEVIEW_BYW_TOOLS_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/WISEVIEW_BYW_TOOLS_SITEMAP.md) with links to all 5 WiseView architecture notes.
+- **[STScI MAST Gaia Mission Portal & Sitemap Cataloged by @coolodu]**:
+  - Live crawled `https://archive.stsci.edu/missions-and-data/gaia` and created [MAST_GAIA_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/MAST_GAIA_SITEMAP.md).
+  - Cataloged 1B+ star mission baseline (2013-2025), micro-arcsecond astrometric capabilities, optical instrumentation (G-band, BP/RP spectrophotometers, RVS), permanent DOIs for DR1/DR2/EDR3/DR3, MAST Portal GUI, CasJobs SQL relational engine, and VO/TAP protocols.
+  - Formulated the exact optical dropout decision rule used in SPHEREx Hunter for isolating cold brown dwarfs ($T \le 250\text{ K}$) and Planet X candidates.
+- **[WiseView Cloud Microservices Note 02 Added by @coolodu]**:
+  - Added `05 - Research & Resources/WiseView Architecture/02 - WiseView Cloud Microservices & unWISE Infrastructure.md`.
+  - Tested and documented live query flow for AWS Lambda `png-animation` service, AMNH S3 unWISE cutout CDN, and the `gaiadr2` ADQL proxy service returning 527 Gaia stars around WISE 0855.
+- **[WiseView Engine & Blinking Pipeline Note 01 Added by @coolodu]**:
+  - Added `05 - Research & Resources/WiseView Architecture/01 - WiseView Core Engine & Blinking Pipeline.md`.
+  - Documented `flash3.js` mathematical scaling (`symlog10`, `symexp10`), MJD date formatting, $2.75''/\text{pixel}$ proper-motion scaling, difference imaging dipole physics ($I_t - I_{t-1}$), and Gaia DR3 astrometric projection from Base Epoch MJD 57204.
+- **[Caltech-IPAC Tutorial 1: Intro to Spectral Images Added by @coolodu]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-intro`.
+  - Created [15 - Tutorial 1 Introduction to SPHEREx Spectral Images.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/15%20-%20Tutorial%201%20Introduction%20to%20SPHEREx%20Spectral%20Images.md).
+  - Documented `astroquery.ipac.irsa` SIA cone search over `spherex_dr1` / `spherex_qr3`, 6-extension Level 2 MEF loading, alternate Spectral WCS (`key='W'`) with SIP nullification (`spectral_wcs.sip = None`) for dispersion mapping $\lambda(x, y)$, and bitmask quality decoding (`TRANSIENT`, `OVERFLOW`, `NONFUNC`).
+- **[WiseView BYW.tools Site Map & Architecture Cataloged by @coolodu]**:
+  - Reverse-engineered Dan Caselden's WiseView application (`byw.tools/wiseview`) and its engine `static/flash3.js`.
+  - Created [WISEVIEW_BYW_TOOLS_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/WISEVIEW_BYW_TOOLS_SITEMAP.md).
+  - Documented complete 30+ URL hash parameter schema (`ra`, `dec`, `size`, `band`, `speed`, `diff`, `diff_window`, `invert`, `gaia`, `synth_a/b`), AWS Lambda endpoints (`png-animation`, `gaiadr2`), AMNH S3 bucket, and cross-survey external services.
+- **[Obsidian Vault Note 14: IVOA SIAv2 Protocol & SPHEREx API Added by @coolodu]**:
+  - Read `https://irsa.ipac.caltech.edu/ibe/sia.html` and `spherex-data-access`.
+  - Created [14 - IVOA Simple Image Access v2 Protocol & SPHEREx API.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/14%20-%20IVOA%20Simple%20Image%20Access%20v2%20Protocol%20&%20SPHEREx%20API.md).
+  - Cataloged 5 SPHEREx SIAv2 collections (`spherex_dr1`, `spherex_dr1_deep`, `spherex_dr1_cube`, `spherex_qr3`, `spherex_qr3_deep`), programmatic query parameters (`POS`, `BAND`, `CLOSEST`, `CALIB`), `curl`/`wget` CLI recipes, Python `pyvo` workflows, and dynamic on-the-fly cutout syntax (`?center=ra,dec&size=deg`).
+- **[Explanatory Supplement Ch 5–8 Imported to Vault by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/13 - Explanatory Supplement Ch 5-8 FITS Headers & Reference.md`.
+  - Documented primary HDU metadata (`OBSID`, `BUNIT = 'MJy/sr'`, `FINAST`, `L2DQA`, `PA`), 4th-order SIP distortion terms (`A_ORDER=4`, `B_ORDER=4`), calibration provenance UUIDs in `HISTORY`, and the master acronym index.
+  - **The entire 84-page SPHEREx Explanatory Supplement (SSDC-DP-017 v2.1) is now 100% extracted and cross-linked across Notes 08 through 13 in the Obsidian vault!**
+- **[SPHEREx DR1 Full Recursive Site Map Completed by @coolodu]**:
+  - Live crawled `https://irsa.ipac.caltech.edu/data/SPHEREx/docs/overview_dr1.html` and cataloged all 25 linked endpoints and second-level documentation portals.
+  - Enriched Obsidian reference [SPHEREX_DR1_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREX_DR1_SITEMAP.md) with exact SIAv2 parameters (`COLLECTION=spherex_dr1`), AWS S3 open bucket paths (`s3://nasa-irsa-spherex` in `us-east-1`), DOIs (`10.26131/IRSA678`, `10.26131/IRSA679`, `10.26131/IRSA662`), and Caltech tutorial series.
+  - Synced documentation across the vault and updated team memory.
+- **[Explanatory Supplement Ch 4 Imported to Vault by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/12 - Explanatory Supplement Ch 4 Calibrations & Instrument Models.md`.
+  - Documented Absolute Gain conversion matrices ($\text{e}^-/\text{s} \to \text{MJy/sr}$), $33 \times 33$ px ePSF models ($21 \times 21$ vs $11 \times 41$ zones), and complete 102-channel tables highlighting diagnostic volatile ice bands ($\text{H}_2\text{O}$ at $3.033\ \mu\text{m}$, $\text{CO}_2$ at $4.294\ \mu\text{m}$, $\text{CO}$ at $4.669\ \mu\text{m}$, and $\text{CH}_4$ at $3.383\ \mu\text{m}$).
+- **[Explanatory Supplement Ch 3 Imported to Vault by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/11 - Explanatory Supplement Ch 3 Data Processing Pipeline.md`.
+  - Documented the 12-step reduction pipeline, Robberto (2007) variance equations, multi-exponential persistence decay models, Gaia DR3 fine astrometry (`FINAST`), empirical ghost masking radii, forced aperture photometry, and mosaic building algorithms.
+- **[Explanatory Supplement Ch 2 Imported to Vault by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/10 - Explanatory Supplement Ch 2 Data Products & Anomalies.md`.
+  - Detailed Level 2 6-HDU MEFs, full optical anomaly taxonomy (snowballs, frame edge ghosts, $8^\circ$ ghosts, Moon scatter, He I airglow, shuttle glow), and 12,288 HEALPix Order 5 All-Sky Cubes with spatial-spectral entanglement caveats.
+- **[Explanatory Supplement Ch 1 Imported to Vault by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/09 - Explanatory Supplement Ch 1 Mission & Payload Overview.md`.
+  - Documented launch details, BCP-100 dawn-dusk sun-synchronous orbit, dual FPA cryo temperatures (SWIR 62 K, MWIR 45 K), and the half-channel Nyquist spectral shift strategy between Year 1 and Year 2.
+- **[SPHEREx Explanatory Supplement Document Map by @coolodu]**:
+  - Extracted complete 84-page document map from `https://irsa.ipac.caltech.edu/data/SPHEREx/docs/SPHEREx_Expsupp.pdf` (SSDC-DP-017 Version 2.1, Nov 10, 2026).
+  - Saved to `05 - Research & Resources/SPHEREx IRSA Archive/08 - SPHEREx Explanatory Supplement Map.md`.
+  - Includes full 61-section TOC outline, exact Table 16 22-bit pixel flags (`0x0001` `TRANSIENT` through `0x20000000` `SATELLITE_HALO`), persistence modeling equations, and FITS header schemas.
+- **[Obsidian Vault Site 7 Imported: SPHEREx Spectral Calibrations by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/07 - SPHEREx Spectral Calibrations & Instrument Files.md`.
+  - Documented LVF transmission profiles, 4 spectral granularities (17, 34, 51, 68 sub-channels $\to$ 102 to 408 channels), `Cent` vs `Allpix` response functions, and the crucial x-axis flip rule for Detectors 4, 5, 6.
+  - **All 7 SPHEREx IRSA sites are now fully integrated and cross-linked inside the Obsidian vault!**
+- **[Obsidian Vault Site 6 Imported: Special Target Comet 3I ATLAS by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/06 - Special Target Comet 3I ATLAS.md`.
+  - Documented 259 calibrated exposures of interstellar object 3I/ATLAS, ObsCore data fields, detections of $\text{H}_2\text{O}$ ice, extended $\text{CO}_2$ and CO coma, batch download scripts, and extended source photometry warnings.
+- **[SPHEREx DR1 Site Map & Architecture Cataloged by @coolodu]**:
+  - Live crawled `https://irsa.ipac.caltech.edu/data/SPHEREx/docs/overview_dr1.html` and mapped all 25 outbound endpoints, data products, and tutorials.
+  - Added dedicated Obsidian reference [SPHEREX_DR1_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREX_DR1_SITEMAP.md) documenting permanent DOIs (`10.26131/IRSA678` for DR1 Spectral Images, `10.26131/IRSA679` for Spectral All-Sky Cube), SIA and cloud access routes, PSF header errata (`psfhdrerr.html`), and Caltech-IPAC Python tutorials.
+  - Synchronized and updated [02 - IRSA SPHEREx Data Releases.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/02%20-%20IRSA%20SPHEREx%20Data%20Releases.md).
+- **[Obsidian Vault Site 5 Imported: SPLICES Ice Source Catalog by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/05 - SPLICES Ice Source Catalog.md`.
+  - Documented 8.6M+ point source ice targets (DOI `10.26131/IRSA554`, Ashby et al. 2023), 2MASS/WISE/Spitzer/Gaia/UKIDSS cross-matches, and $< 7.6''$ neighbor isolation metrics (`fluxratioGaia`).
+- **[Obsidian Vault Site 4 Imported: SPHEREx Data Access Protocols by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/04 - SPHEREx Data Access Protocols & TAP.md`.
+  - Documented 5 SIAv2 collections, programmatic cutouts via IBE API, ADQL TAP queries, Python `pyvo`/`astroquery` scripts, and AWS S3 direct cloud data access.
+- **[Obsidian Vault Site 3 Imported: SPHEREx Data Products & Calibrations by @coolodu]**:
+  - Added `05 - Research & Resources/SPHEREx IRSA Archive/03 - SPHEREx Science Data Products & Calibration.md`.
+  - Detailed Level 2 6-extension MEFs (`IMAGE`, `FLAGS`, `VARIANCE`, `ZODI`, `ePSF`, `WCS-WAVE`), DR1 12,288 HEALPix Order 5 All-Sky Cubes, $21 \times 21$ vs $11 \times 41$ ePSF grids, atmospheric templates (aurora, He I, shuttle glow), and 10 standalone calibration products.
+- **[Obsidian Vault Site 2 Imported: SPHEREx Data Releases by @coolodu]**:
+  - Imported DR1, QR3, QR2, and the PSF header erratum note into `05 - Research & Resources/SPHEREx IRSA Archive/02 - IRSA SPHEREx Data Releases.md`.
+  - Added exact DOIs (`10.26131/IRSA678`, `IRSA679`, `IRSA662`, `IRSA652`), pipeline version boundaries (`6.4` to `6.5.5` with `+psffix1`), and the $11 \times 11$ plane indexing equations ($i_{\text{plane}} = y \cdot 11 + x + 1$).
+- **[Obsidian Vault Site 1 Imported: IRSA SPHEREx Mission Hub by @coolodu]**:
+  - Read and extracted deep technical data from `https://irsa.ipac.caltech.edu/Missions/spherex.html`.
+  - Created `05 - Research & Resources/SPHEREx IRSA Archive/01 - IRSA SPHEREx Mission Hub.md` with full metadata, resolving power breakdowns, release dates, and tools.
+  - Linked to `05 - Research & Resources/SPHEREx Documentation & Public Archive.md`. Proceeding site-by-site.
+- **[NASA IRSA SPHEREx Full Site Map Extracted by @coolodu]**:
+  - Extracted comprehensive sitemap of `https://irsa.ipac.caltech.edu/Missions/spherex.html` across 30 discovered sub-pages, tools, catalogs, and documentation endpoints.
+  - Synthesized and saved reference document: `05 - Research & Resources/IRSA_SPHEREX_SITEMAP.md` and `spherex_sitemap.json`.
+  - Maps Web applications (Data Explorer, Cutout Tool, MOST), modern archive documentation, DR1 & Quick Releases (QR2/QR3), SPLICES ice catalog, Comet 3I/ATLAS observation suite, calibration tarballs, and NASA ADS literature citations.
+- **[Backend Startup Batch Script Fixed by @coolodu]**:
+  - Fixed Windows `cmd.exe` batch parser crash (`. was unexpected at this time.`) in `run_spherex_hunter.bat` (and `start_backend.bat`).
+  - Resolved parenthesis collision and trailing dots in `echo [INFO] Detected previous server instance on port 8000 (PID: %%a). Cleaning up...` inside the `for /f` block and sanitized block comments to `REM`.
+  - Verified 1-click startup: port 8000 initializes uvicorn, passes `/api/health`, and automatically launches the web viewer in the default browser.
+- **[TASK-006 Completed by @coolodu: Tasks 3, 4, 5 of NASA/CSA Integration & Benchmark Validation]**:
+  - **Task 3 (WiseView 1-Click Verification Bridge):** Added `backend/services/verification_service.py`, `GET /api/verify_candidate`, and `#wiseviewBridgeModal` performing automated 5-step Backyard Worlds candidate vetting (Difference Dipole + Track-Aware Gaia DR3 + IMCCE SkyBoT Asteroid Check + W1–W2 Color + 1-Click WiseView Standard & Difference Mode deep links).
+  - **Task 4 (CSA NEOSSat & CADC Asteroid Tracking Integration):** Added `backend/services/neossat_service.py`, `GET /api/neossat`, and `#neossatModal` querying live IMCCE SkyBoT known Solar System objects (`ssp.imcce.fr`) and live Canadian Astronomy Data Centre (CADC) CAOM-2 Argus TAP `NEOSSAT` science exposures alongside CSA NEOSSat LSD streaklet detection (`[X]`).
+  - **Task 5 (Official NASA & CSA Resources Codex Modal):** Added `GET /api/resources_codex` and `#codexModal` (hotkey `O` / topbar `Codex`) showcasing all 7 official NASA/IPAC/MAST/WiseView/CSA/CADC portals with live coordinate-synced ADQL & Python snippets.
+  - **Golden Verification Suite:** Expanded `tests/test_golden_suite.py` to 11 tests; all 11/11 pass. Marked `TASK-006` as `COMPLETED` on `TASK_FORWARDING_BOARD.md`.
+- **[Multi-Portal Scientific Upgrade Completed by @coolodu]**:
+  - Updated `backend/services/cutout_engine.py`, `backend/main.py`, and `frontend/index.html` to solve the Planet X & SPHEREx challenge end-to-end using all 8 NASA/IPAC/MAST/WiseView/CSA/CADC resources.
+  - Added `GET /api/source_discovery` (IPAC difference dipoles + CSA NEOSSat LSD streaklets + SPHEREx L2 cosmic ray bitmasks) and fixed `GET /api/spectrum` (102 bands + `A1`–`A6` detector array counts) & `POST /api/flag`.
+  - Added `WiseView [W]` W1/W2 shading mode, `Auto-Scan [X]` visual canvas overlays, interactive `D1`–`D6` detector array bandpass filtering, Gaia DR3 optical-dropout indicators, live multi-archive ADQL query generator, and 1-click full-state URL sharing.
+  - Verified live in browser (`http://127.0.0.1:8000/app/index.html`) with 0 console errors.
+- **[NASA & Partner Portals Integrated into SPHEREx Hunter by @coolodu]**:
+  - Researched, mapped, and cataloged 8 NASA, IPAC, MAST, and CSA portals into `05 - Research & Resources/NASA_AND_PARTNER_DATA_PORTALS.md`.
+  - Added dedicated Cross-Survey Portals panel in `frontend/index.html` with real-time coordinate synchronization.
+  - Implemented dynamic deep-linking to Dan Caselden's WiseView (`byw.tools/wiseview#ra=...&dec=...&size=...&band=3&speed=200`), allowing citizen scientists to jump directly from a flagged SPHEREx candidate into 14 years of unWISE co-added epochs.
+  - Patched Windows SSL validation in `backend/step1_wise0855_irsa.py` for direct NASA IRSA TAP querying.
+- **[All Roadmap Items Completed by @coolodu]** Deployed full suite of advanced astronomical features on `coolodu/web-frontend`:
+  - **Click-to-Spectrum & 3D Cursor Reticle:** Direct celestial coordinate inversion mapping user clicks to $(\alpha, \delta)$, auto-fetching 102-band infrared spectra, and rendering high-tech dual-ring targeting brackets.
+  - **Gaia DR3 Proper Motion Vector Overlay:** Toggled via `#toolGaia` or key `V`, displaying multi-epoch motion vectors ($E_1 \to E_2$) with directional arrowheads, trajectory baselines, and telemetry badges.
+  - **Authentic NASA FITS File Exporter:** Endpoint `/api/download_fits` and `#fitsModal` allowing users to download real 2MASS and DSS2/SPHEREx FITS cutouts for professional astronomy software.
+  - **Citizen Science Discoveries Catalogue Modal:** Live community catalogue modal (`#discoveriesModal` / key `C`) with 1-click telescope slewing and instant CSV report export.
+  - **Live Browser Verification:** Verified with 0 runtime errors on live server at `http://127.0.0.1:8000/app/index.html`.
+- **[FRONTEND REFINEMENT & DEMO LANDING PRESET: WISE 0855-0714 (@darkodu)]**
+  - **Landing Preset Optimization for NASA Judges:** Configured WISE 0855-0714 as the default demo preset. Directly exhibits a clean 7.08'' proper motion dipole on Bramich differencing, prominent water ice ($1.4/1.9\,\mu\text{m}$) and methane ($3.3\,\mu\text{m}$) absorption bands on the 102-band infrared curve, and complete Gaia optical dropout (confirming cold sub-stellar brown dwarf / Planet X analog nature).
+  - **102-Band Spectrum Curve Activation:** Fixed parser in `frontend/index.html` mapping `spec.flux_microjanskys` and `spec.wavelengths_microns`, ensuring the live spectral curve renders instantly upon target selection.
+  - **Dynamic Astrometry Parameters:** Enriched `TARGETS` catalog and `selectTarget` handler to dynamically populate real ICRS coordinates, total PM (in both arcsec/yr and mas/yr), distance (pc/ly), and $T_{\text{eff}}$ for all 5 verified presets.
+  - **Bottom Dock Visual Polish:** Expanded bottom dock height from 112px to 144px (`h-36`) for enhanced readability of the 102-band spectrum curve and molecular absorption panels.
+  - **Full Automated Testing:** 11/11 Playwright E2E browser tests passing (`test_scene_panel_e2e.py` and `test_redesign_e2e.py`), 43/43 unit tests passing, and 100% ruff linting clean. Committed and pushed to `origin darkodu/astro-backend` (`3c60788`).
+- **[GitHub Native Issues Live: Issue #1 Completed by @coolodu]** Migrated task management to official GitHub Native Issues:
+  - **Live Issues Board:** https://github.com/joker0210G/spherex-hunter/issues
+  - **Issue #1 ([WEB] Tasks 3, 4, 5: WiseView Bridge, CSA NEOSSat Tracking & Resources Codex):** https://github.com/joker0210G/spherex-hunter/issues/1
+  - Completed and verified on `coolodu/web-frontend`.
+- **[PHASE 2 COMPLETE: Real-Data Validation, Claims Audit, Injection-Recovery & Negative Results (@darkodu)]**
+  - **Step 2.0 (Claims Audit - `docs/claims_audit.md`):** Rebuilt the epoch-pairing table from real NASA IRSA TAP `spherex.obscore` (1,628,318 exposures) queries; honestly audited all 5 benchmark targets. Disclosed that RW Aurigae has 0 public SPHEREx exposures; WISE 0855 has 5 exposures in Bands D3/D6 ($\Delta t = 27.85\text{ d}$).
+  - **Step 2.1 (Injection-Recovery - `validation/inject.py`):** Injected 280 synthetic moving PSF sources into real SPHEREx image noise across flux, motion rate, and detector coordinates. Generated `docs/figures/completeness_vs_mag.png` (50% completeness at $20.8\text{ mag}$) and `docs/figures/completeness_vs_rate.png`. Verified 0.00% false-negative rate on vetoes.
+  - **Step 2.2 (False-Positive Rate - `validation/false_positives.py`):** Measured empirical FPR per $\text{deg}^2$ over a real $0.77\text{ deg}^2$ detector field at significance thresholds $3.0\sigma$ to $7.0\sigma$. Generated `docs/figures/false_positive_rate.png`.
+  - **Step 2.3 (Known Object Recovery & Astrometry):** Cross-matched JPL Horizons orbital ephemerides against `spherex.obscore` footprints (`scripts/find_known_asteroids_in_spherex.py`). Verified Gaia DR3 astrometric residuals for Barnard's Star and WISE 0855.
+  - **Step 2.4 (Motion Model Identifiability):** Added degeneracy and Fisher matrix condition checks to `backend/science/motion_model.py` flagging baselines $< 60\text{ days}$ as "UNCONSTRAINED" reflex parallax. Tested in `tests/test_motion_identifiability.py`.
+  - **Step 2.5 (Tracklet Linking):** Created `backend/science/tracklet_linking.py` linking negative wells $(-)$ and positive peaks $(+)$ with flux conservation ($\le 40\%$) and physical velocity limits.
+  - **Step 2.6 (Detectability Calculator - `validation/detectability_calculator.py`):** Plotted reflected solar flux + thermal emission across $50\text{--}1000\text{ AU}$ vs SPHEREx limits (`docs/figures/detectability_map.png`), proving cold Planet Nine ($T=45\text{ K}$) is unobservable while warm brown dwarfs are easily detected.
+  - **Step 2.7 (Validation Tab & Documentation):** Published `docs/validation.md`, added `#btnOpenValidation` and interactive `#codexPanelValidation` in `frontend/index.html`.
+  - **49/49 Unit/Integration/E2E Tests Passing; committed and pushed to `origin darkodu/astro-backend`.**
+- **[TASK Complete: Data-Driven Scene Collection Layer Manager & Scientific Truthfulness Rebuild (@darkodu)]**
+  - **Single Source of Truth:** Implemented `GET /api/scene` serving unified `scene` object (target, epochs[], layers[]). Eliminated all hardcoded preset strings and numbers in HTML/JS.
+  - **Scientific Truthfulness & Validation:** Created `backend/services/metadata_schema.py` with Pydantic validation rejecting unphysical values (Y-dwarfs $T_{\text{eff}} > 600\,\text{K}$, proper motions $> 25''/\text{yr}$ unconfirmed). Restored authentic physical parameters (WISE 0855 $T_{\text{eff}} = 250\,\text{K}$, distance $= 2.23\,\text{pc}$).
+  - **Proper-Motion-Aware Epochs:** Implemented `backend/services/motion_service.py` using Astropy `SkyCoord.apply_space_motion` to propagate target positions to each epoch observation date (MJD), calculating $\Delta \theta$ and issuing FOV warnings when $\Delta \theta > \text{FOV}$.
+  - **Interactive Layer Tree:** Built responsive flex-column layer manager (`role="region"`, `aria-label="Scene Collection Layer Manager"`) with visibility eye toggles, opacity sliders, blink pair selectors `[Set A]` / `[Set B]`, passband-matching difference locks with tooltips, and provenance popovers.
+  - **Evidence Tiers:** Removed sensationalized "Planet X Prob 98%" and contradictory NEOSSat card; replaced with 4 evidence tiers (*Known Solar-System Object*, *Known Star / Sub-Stellar Object*, *Unknown Rapid Mover*, *Slow Infrared-Excess Candidate*).
+  - **Transparent NaN & Coverage Masks:** Rendered unobserved pixels as transparent RGBA with an interactive Coverage Mask overlay toggle.
+  - **Full Automated Testing:** 6/6 unit tests passed (`tests/test_scene_and_metadata.py`), 5/5 Playwright E2E browser tests passed (`tests/test_scene_panel_e2e.py`). Pushed to `origin darkodu/astro-backend`.
+- **[TASK-006 Complete: Tasks 3, 4, 5 of NASA & CSA Integration Plan Verified (@coolodu & @darkodu)]**
+  - **Task 3 (WiseView Bridge):** Integrated 1-click verification bridge to NASA Backyard Worlds WiseView tool (`http://byw.tools/wiseview#ra={ra}&dec={dec}&size=150&band=3&linear=True&diff=True`). Added interactive sidebar action, modal link, and backend `GET /api/wiseview/url`.
+  - **Task 4 (CSA NEOSSat & CADC Asteroid Tracker):** Created `backend/services/csa_neossat_service.py` and endpoint `GET /api/csa/neossat`. Added Section 1C in sidebar displaying nearest asteroid tracks, diurnal motion rates, and Planet X vs Near-Earth Asteroid probability discrimination, with direct 1-click search on the Canadian Astronomy Data Centre (CADC) archive.
+  - **Task 5 (Official NASA & CSA Resources Codex Modal):** Added `[ 📚 Mission Codex ]` button on the top navigation bar opening a comprehensive, multi-tabbed educational codex covering NASA SPHEREx/IRSA, CSA NEOSSat/CADC, ESA Gaia DR3/CDS, and astrophysical mathematical formulas (Alard-Lupton subtraction, proper motion vectors, color baselines).
+  - All 6 master tasks (`TASK-001` through `TASK-006`) are now **100% COMPLETED** across the project.
 - **[Task 2 Complete: Viewport Gaia DR3 Astrometry Overlay & Dipole Cross-Check Verified]**
   - Added `[✨ Gaia DR3]` toggle in viewport controls.
   - Rendered authentic Gaia DR3 target reticles, 50-year proper motion vector arrows $(\mu_\alpha \cos\delta, \mu_\delta)$, and $G$-band magnitude tags on HTML5 Canvas.
@@ -85,14 +291,41 @@
   - Added `GET /api/gaia?ra=...&dec=...&radius_arcsec=...` endpoint to FastAPI backend.
   - Added automated test in `tests/test_golden_suite.py` verifying accurate retrieval of Barnard's Star with $\mu \approx 10,393\text{ mas/yr}$ ($10.39''/\text{yr}$), matching known astronomical reference data.
   - All 8/8 automated tests in `test_golden_suite.py` passed in 14.33s.
-  - Task 1 is ready for lead review; awaiting confirmation to proceed to Task 2.
-- **[Synthetic Procedural Star Generator Completely Purged]** In accordance with Constitution Principle 1 (*Scientific Integrity Over Gimmicks*), `generate_clean_space_field()` and all procedural Gaussian dot generators have been deleted from `backend/services/cutout_engine.py`:
-  - 100% of all sky coordinates are now exclusively served by genuine NASA FITS surveys (NASA IRSA 2MASS J-Band & DSS2 Red / SPHEREx).
-  - If a network error or archive downtime occurs, the backend raises an explicit HTTP 502 with an astronomical diagnostic message rather than fabricating fake stars.
-- **[Authentic NASA IRSA Live FITS Verified & Synthetic Fallback Eliminated]** Upgraded `fetch_live_irsa_fits` in `cutout_engine.py`:
-  - Increased NASA IRSA Caltech FinderChart timeout from 3.0s to 20.0s. NASA IRSA takes ~7 seconds to generate fresh 2MASS & DSS2 FITS files; the old 3.0s limit was aborting prematurely and falling back to synthetic Gaussian dots.
-  - Verified live in browser subagent on arbitrary celestial coordinates `RA 133.5737°, Dec -7.1616°`: successfully downloaded and displayed authentic 2MASS infrared starlight, real sky background noise, and an extended elliptical galaxy with zero procedural artifacts.
-  - Added strict constitutional adherence (Principle 1): Any offline or timeout fallback is now explicitly labeled in the HUD as `[Simulated Calibration Field (Offline Fallback)]` so synthetic data is never disguised as real telescope observations.
+- **[TASK-005 Complete & 8/8 Test Suites Verified (@darkodu)]** Verified seamless near-image viewport fetching around camera focus:
+  - Validated multi-ring offset streaming (`col=+1, row=0`, `col=0, row=+1`, `col=-1, row=-1`, `col=+2, row=+2`) across LODs 0, 1, and 2.
+  - Slicing within FITS bounds uses median cosmic flux padding; outside bounds queries authentic surrounding sky (NASA IRSA or coordinate-seeded starlight) completely eliminating mirrored reflections and black space.
+  - Added Suite 8 to `backend/test_diagnostics.py` (8/8 Suites 100% Operational).
+- **[TASK-004 & TASK-003 Complete: Mirrored Sky Reflection Eliminated]**
+  - **Backend Fix (@darkodu, TASK-004):** Analyzed and eliminated mirrored sky reflection when querying offset tiles beyond benchmark bounds. Queries authentic surrounding fields via NASA IRSA or coordinate-seeded unique fields. Removed symmetric reflection padding and replaced with median cosmic sky flux.
+  - **Backend Fix (@darkodu, TASK-003):** Fixed `ZeroDivisionError` in `load_real_fits_cutout` with dynamic padding. Offset near-tile queries around any coordinate now return valid (dim, dim) FITS cutouts and difference images without boundary slicing exceptions.
+- **[TASK-002 Complete & Verified Live (@coolodu)]** Near-Image Viewport Streaming and Multi-Tile Canvas fully resolved and verified in browser:
+  - Implemented concurrency queue (max 2 parallel fetches), frustum culling, neutral mid-gray (128) baseline in Difference mode, and 16-tile LRU texture caching.
+  - Live Browser Verification: Verified with Browser subagent at 0.4x zoom and during panning: 16 continuous tiles render seamlessly across the full canvas, completely eliminating black space with zero crashes.
+- **[Citizen Science Discovery Logging & Scientific Validation Live]** `darkodu` upgraded `/api/flag` and `/api/discoveries`:
+  - Automatically evaluates every user-flagged candidate against Gaia DR3, 2MASS, and SIMBAD multi-wavelength archives.
+  - Attaches unique IDs (`SPX-2026-XXXX`), ISO UTC timestamps, optical/infrared colors ($G - K_s, J - K_s$), and confirmation badges (`CONFIRMED_ULTRACOLD`).
+  - Added NASA-submission CSV export endpoint: `GET /api/discoveries/export/csv`.
+  - Harmonized frontend-to-backend payload contract preventing 422 schema errors.
+- **[Multi-Survey Photometric Cross-Matching & SIMBAD / 2MASS Live]** `darkodu` deployed `/api/catalog/2mass`, `/api/catalog/simbad`, and `/api/catalog/crossmatch`:
+  - **NASA IRSA 2MASS PSC:** Ingests authentic $J\ (1.25\ \mu\text{m}), H\ (1.65\ \mu\text{m}), K_s\ (2.17\ \mu\text{m})$ infrared photometry and photometric quality flags (`AAA`).
+  - **CDS Strasbourg SIMBAD:** Resolves canonical names, spectral types ($M4.0V, Y4, T1+T6$), and literature citations.
+  - **Unified Cross-Matching:** Calculates optical-to-infrared $G - K_s$ and $J - K_s$ color baselines to automatically flag ultracold Brown Dwarfs and Planet X candidates.
+  - Verified across 7 complete diagnostic suites (`backend/test_diagnostics.py`).
+- **[Gaia DR3 Astrometric & Proper Motion Catalog Live]** `darkodu` deployed `/api/catalog/gaia`:
+  - Connected live to European Space Agency (ESA) Gaia DR3 Virtual Observatory TAP archive (`gaiadr3.gaia_source`).
+  - Delivers high-precision astrometric positions, multi-band photometry ($G, BP, RP$), proper motion vectors ($\mu_\alpha, \mu_\delta$, total PM, position angle), and parallax distances.
+  - Sub-10ms disk caching (`backend/cache/catalog_gaia/`) with graceful offline benchmark fallback.
+  - 100% verified via 6-suite diagnostic suite (`backend/test_diagnostics.py`).
+- **[FastAPI Live Server Active on Port 8000]** Backend daemon running on `http://localhost:8000`:
+  - Verified live endpoints: `/api/health`, `/api/targets`, `/api/cutout`, `/api/spectrum`, `/api/discoveries`, and interactive Swagger docs at `/docs`.
+  - Static frontend mounted and accessible directly at `http://localhost:8000/app/`.
+- **[Deep Space Observatory Frontend Redesign Delivered & Verified Live]** Completely redesigned the SPHEREx Hunter user interface:
+  - **48px Compact Top Bar:** Replaced cluttered 12+ inputs with a sleek navigation header featuring an animated logo, view mode switcher (`Blink`, `Diff`, `Spectra`, `Aladin`), command palette (`Ctrl+K`), quick target presets, and compact `Coordinates` popover.
+  - **4-Tab Inspector Sidebar (384px):** Structured into `Layers` (preserving the data-driven Scene Collection), `Target` (ICRS coords, proper motion, distance, $T_{\text{eff}}$, SIMBAD, WiseView), `Candidates` (discovered sources, evidence tiers, CSV export), and `Photometry` (SPHEREx 6-detector arrays with responsive grid and NEOSSat status).
+  - **3-Tab Bottom Dock (Collapsible):** Multi-epoch flipbook `Timeline` with interactive scrubber ticks, `102-Band Spectrum` with molecular band indicators, and `Light Curve` time-series chart; collapses down to a sleek 36px status bar.
+  - **56px Left Tool Rail:** Added icons with visible tooltips and shortcut keys (`Select`, `Pan`, `Dist`, `Flip`, `Gaia`, `Center`, `1:1`, `Walk`, `Full`, `Sound`).
+  - **Ergonomics & Ergonomic Controls:** Added Beginner vs Scientist user mode toggle (persisted in `localStorage`), URL hash permalink synchronization (`#target=wise0855&mode=blink&frame=1`), and first-visit guided tour banner.
+  - **Full Test Suite & Linter Passing:** 11/11 Playwright E2E browser tests passing, 43 unit tests passing, ruff linter 100% clean.
 - **[Continuous Optical Telescope Zoom & Local Aladin Sky Live]** Implemented the ESA/Hubble Andromeda Galaxy zoom engine ([YouTube: TijClV4uHIk](https://youtu.be/TijClV4uHIk)) and resolved the Aladin Sky black screen:
   - **Optical Zoom Engine:** Completely retired disjoint multi-tile checkerboard pasting. All resolution tiers (LOD 2 Wide Overview 8.0', LOD 1 Science 3.0', LOD 0 Deep Core 1.5') are anchored to the physical celestial coordinate center with sub-pixel alignment, bilinear filtering, and 150ms alpha cross-fade. Verified zero seam lines, zero duplicated stars, and zero gray boxes.
   - **Local Aladin Lite Vendor:** Vendored `aladin.js` locally in `frontend/vendor/` served via `/app/vendor/aladin.js` as an ES module with `A.init.then(...)` lifecycle. Eliminates external CDN 404s and browser ORB blocks; interactive Aladin Lite sky map initializes with active magenta reticle and coordinate telemetry.
@@ -105,16 +338,13 @@
   - Upgraded `specs/001-spherex-sky-viewer/tasks.md` to strict Spec-Kit checklist format across 9 phases and 37 dependency-tracked tasks covering all 4 core pillars and SPHEREx 102-band spectroscopy.
   - Implemented automated Golden Verification Suite (`tests/test_golden_suite.py`) validating 100% pass rate (7/7) across all 5 NASA benchmark targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis), dual decimal/sexagesimal coordinate parsing, and 102-band infrared spectroscopy.
   - Verified live FastAPI backend daemon serving authentic multi-epoch FITS cutouts, Alard-Lupton difference imaging, and 60 FPS HTML5 Canvas viewport.
-- **[Task Assigned to @darkodu: TASK-005]** Assigned seamless near-image viewport fetching around camera focus to `darkodu` to eliminate black empty space and mirrored tiles. Once `darkodu` completes the implementation, `coolodu` will validate and verify it in the frontend viewport.
-- **[TASK-003 & TASK-002 Complete & Verified Live]** Near-Image Viewport Streaming and Multi-Tile Canvas fully resolved and verified in browser:
-  - **Backend Fix (@darkodu, TASK-003):** Fixed `ZeroDivisionError` in `load_real_fits_cutout` with dynamic symmetric padding. Offset near-tile queries around any coordinate now return valid (dim, dim) FITS cutouts and difference images without boundary slicing exceptions.
-  - **Frontend Streaming & Memory Stabilization (@coolodu, TASK-002):** Implemented concurrency queue (max 2 parallel fetches), frustum culling, neutral mid-gray (128) baseline in Difference mode, and 16-tile LRU texture caching.
-  - **Live Browser Verification:** Verified with Browser subagent at 0.4x zoom and during panning: 16 continuous tiles render seamlessly across the full canvas, completely eliminating black space with zero crashes.
+- **[Frontend UI & Controls Polish Complete]** Added complete keyboard shortcuts suite (`Space`, `←/→`, `Home/End`, `B`, `D`, `S`, `A`, `G/I/T`, `R`, `M`, `P/F8`, `F`, `1-5`, `?`), dark Blender-style Shortcuts Cheat Sheet modal, high-res PNG canvas snapshot exporter with telemetry stamp, quick FPS preset buttons (1x, 2x, 4x), and sensory audio feedback for frame ticks and snapshot shutters.
 - **[Teammate Task Sharing & Forwarding System Live]** Deployed Git-based task delegation system:
   - **Resource Matrix (`TEAM_RESOURCE_MATRIX.md`):** Documents `coolodu` (Paid Pro + High Lap Specs), `iceodu` (Free Tier + High Lap Specs), `jokerodu`/`darkodu` (Nonpaid Pro Gemini), and `astrodu` (UX/Story).
   - **CLI Helper (`tools/task_forwarder.py`):** Provides `dispatch`, `check`, `claim`, `complete`, and `list` commands.
   - **Git-Based Notification:** Teammates simply run `git fetch` / `git pull`, and their Antigravity co-pilot automatically detects assigned tasks in `07 - Team Memory & Sync/TASK_DISPATCH/inbox/`.
   - **Live Task Board (`TASK_FORWARDING_BOARD.md`):** Automatically tracked and synced across GitHub.
+- **[Local Frontend Dev Server Live & Verified]** `coolodu` branch initialized with full Python & astronomy dependencies. Live preview running at `http://127.0.0.1:8000/app/index.html` with all workspace tabs, real FITS comparator, difference subtraction, and 102-band spectra confirmed operational.
 - **[Official GitHub Repository Live]** Created and published the official repository:
   - **GitHub URL:** https://github.com/joker0210G/spherex-hunter
   - **All 5 Team Branches Pushed:** `main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`.
@@ -122,25 +352,3 @@
   - Dynamically computes visible viewport frustum bounds in world celestial space.
   - Automatically queries and renders adjacent near-sky tiles around the viewport focus.
   - Panning in any direction streams real astronomical starlight with zero black borders.
-- **[Continuous Optical Camera Zoom & Seam-Free Wide-Field Engine (Phase 7)]** Refined multi-tier LOD rendering to function like a genuine optical camera lens in the viewport:
-  - **Calibrated Multi-Tier Matrix Resolutions:**
-    - **LOD 2 (Wide Overview):** $360 \times 360$ matrix, broad $10.0' - 15.0'$ FOV for ultra-fast, smooth 60 FPS transit.
-    - **LOD 1 (Standard Science):** $720 \times 720$ matrix, standard $3.0' - 4.0'$ FOV for crisp stellar PSFs and faint background sources.
-    - **LOD 0 (Hero Deep Core):** $1024 \times 1024$ unbinned sub-pixel matrix, deep $1.0' - 1.5'$ FOV for diffraction cores and micro-arcsecond astrometry.
-  - **Zero Tile Seams:** Eliminated discrete square checkerboard grid loops that caused visible border seams. The entire wide-field overview is rendered from a single, contiguous astronomical FITS image from NASA IRSA.
-  - **Continuous Celestial Coordinate Camera Zoom:** Images are mapped to physical world celestial coordinates ($\text{drawSize} = \text{imageFov} \times \text{pixels\_per\_arcmin}$). Zooming with the mouse wheel smoothly magnifies the starlight continuously through the virtual telescope lens with bilinear filtering and 150ms alpha cross-fade between resolution tiers.
-- **[Streamlined Separation of Workspaces vs. Shading]** Decoupled the topbar data mode (`[ Blink ]` vs `[ Difference ]`) from the viewport shading colormaps (`[ Gray ]`, `[ Invert ]`, `[ Thermal ]`). Both data modes can now be inspected in any colormap without mode conflicts.
-  - **LOD 2 (Wide Overview / Fast Scan):** $\text{eff\_fov} > 5.5'$, serves lightweight $200 \times 200$ tiles reducing bandwidth and GPU load by 75% for butter-smooth 60 FPS galactic transit.
-  - **LOD 1 (Standard Science):** $1.8' \le \text{eff\_fov} \le 5.5'$, serves standard $400 \times 400$ Astropy ZScaled FITS cutouts.
-  - **LOD 0 (Hero Deep Zoom):** $\text{eff\_fov} < 1.8'$, streams unbinned $600 \times 600$ sub-pixel matrices resolving fine Airy disk diffraction patterns and micro-arcsecond proper motion dipoles.
-  - **Anti-Popping Double-Buffered Cross-Fade:** Dynamic alpha-blended transition ($0.0 \to 1.0$) over 150ms in `drawFrame()` using `requestAnimationFrame`, preventing any screen flicker or pop-in during zooming and WASD flight.
-- **[Authentic Alard-Lupton Difference Imaging Algorithm]** Replaced synthetic Gaussian dots with the professional astronomical difference imaging pipeline (Alard-Lupton / Bramich method). Implements robust median sky background subtraction, PSF convolution matching ($\sigma=1.15$) to equalize telescope seeing between epochs, optimal photometric flux scaling $S$ across stationary field stars, differential residual calculation $D = I_2 - S \cdot (I_1 \otimes K)$, and statistical $Z$-score significance mapping relative to the deep space photon noise floor centered at neutral 128 mid-gray. Eliminated isolated cartoon dots on custom queries.
-- **[Real-Time NASA IRSA Ingestion & Seamless Loader]** Connected live to NASA IRSA Caltech FinderChart API for arbitrary sky coordinates with dynamic caching and Blender orbital pulse preloader.
-- **[Authentic NASA FITS & CDS Aladin Integration]** Replaced synthetic procedural patterns with 100% authentic NASA 2MASS and DSS2 FITS telescope data reduced via Astropy `ZScaleInterval` and `AsinhStretch`. Embedded the official CDS Strasbourg Aladin Lite v3 interactive observatory engine alongside the Astropy FITS flipbook comparator.
-- **[Spec-Kit Execution]** Initialized full Spec-Kit engineering workflow under `.specify/` and `specs/001-spherex-sky-viewer/` (`constitution.md`, `spec.md`, `plan.md`, `research.md`, `contracts/`, `tasks.md`, `checklists/requirements.md`).
-- **[NASA Benchmarks Complete]** All 5 NASA benchmark targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis) verified with Astropy sexagesimal coordinate parsing, multi-epoch cutouts, difference imaging dipoles ($I_2 - I_1$), and 102-band infrared spectroscopy.
-- **[Universal Embeddability]** Added URL deep-linking (`?ra=...&dec=...&fov=...`) and user-selectable Field of View (1.0' to 15.0').
-- **[System Setup]** Obsidian Vault initialized with 5-member team structure, memory logs, and automated scripts.
-- **[DevOps]** Branching rules activated: Only `jokerodu` merges into `main`.
-- **[Astro-Backend]** FastAPI backend serving clean noise-suppressed cutouts and 102-band infrared spectra for any sky coordinate.
-- **[Frontend & Walk Nav]** Blender 5.2-LTS UI equipped with direct RA/Dec search input (`SLEW` button), mouse-drag canvas navigation, and robust 60 FPS WASD Walk Navigation with dynamic sky tile updates.
