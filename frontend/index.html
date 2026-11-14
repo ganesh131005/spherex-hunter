@@ -2317,6 +2317,7 @@
     // CONTINUOUS VIEWPORT RENDERING & EPOCH BLEND STATE
     let epochBlend = 0.0;          // 0.0 = 100% Epoch 1, 1.0 = 100% Epoch 2
     let targetEpochBlend = 0.0;    // Target for continuous smooth blend
+    let morphPhase = 0.0;          // Continuous sinusoidal epoch phase
     let blinkMorphMode = 'morph';  // 'morph' (continuous crossfade) or 'snap' (discrete hard cut)
     let ambientStars = null;       // Precomputed continuous background starfield
 
