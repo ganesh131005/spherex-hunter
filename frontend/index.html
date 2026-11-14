@@ -519,29 +519,39 @@
         </button>
       </div>
 
-      <!-- BOTTOM-LEFT LIVE CURSOR TELEMETRY HUD -->
-      <div class="absolute bottom-3 left-3 pointer-events-none text-[10px] font-mono flex items-center gap-3 bg-space-900/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg">
-        <span>RA: <b id="vpRA" class="text-gray-200">133.79513°</b></span>
-        <span>Dec: <b id="vpDec" class="text-gray-200">-7.24515°</b></span>
-        <span>FOV: <b id="vpFOV" class="text-gray-200">3.00'</b></span>
-        <span>Zoom: <b id="vpZoom" class="text-gray-200">1.0x</b></span>
-        <span class="pl-2 border-l border-space-700">LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
-        <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold">Mosaic: 3×3</span>
+      <!-- BOTTOM-LEFT LIVE CURSOR TELEMETRY HUD (Issue #27 / #31: collision-free with max-w) -->
+      <div class="absolute bottom-3 left-3 pointer-events-none text-[10px] font-mono flex items-center gap-2.5 bg-space-900/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg max-w-[calc(100%-195px)] overflow-hidden">
+        <span class="shrink-0">RA: <b id="vpRA" class="text-gray-200">133.79513°</b></span>
+        <span class="shrink-0">Dec: <b id="vpDec" class="text-gray-200">-7.24515°</b></span>
+        <span class="shrink-0">FOV: <b id="vpFOV" class="text-gray-200">3.00'</b></span>
+        <span class="shrink-0">Zoom: <b id="vpZoom" class="text-gray-200">1.0x</b></span>
+        <span class="shrink-0 pl-2 border-l border-space-700">LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
+        <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold truncate max-w-[150px]" title="Contiguous NASA FITS Master Field">🔭 FITS Master</span>
       </div>
 
-      <!-- BOTTOM-RIGHT SCALE BAR & COMPASS HUD -->
-      <div class="absolute bottom-3 right-3 pointer-events-none flex flex-col items-end gap-1 text-[10px] font-mono bg-space-900/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-300 shadow-lg">
-        <div class="flex items-center gap-2">
-          <!-- Compass vectors -->
-          <div class="relative w-5 h-5 flex items-center justify-center text-[9px] font-bold text-cyan-400">
-            <span class="absolute top-0 text-[8px] text-cyan-300">N↑</span>
-            <span class="absolute right-0 text-[8px] text-amber-300">←E</span>
+      <!-- BOTTOM-RIGHT SCALE BAR & 36px COMPASS HUD (Issue #27 / #31) -->
+      <div id="hudCompassScaleBox" class="absolute bottom-3 right-3 pointer-events-none flex items-center gap-3 text-[10px] font-mono bg-space-900/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-300 shadow-lg shrink-0">
+        <!-- 36px Celestial Compass Rose -->
+        <div class="relative w-9 h-9 rounded-full border border-space-700/80 bg-space-950/70 flex items-center justify-center shrink-0 shadow-inner" title="Astronomical Orientation: North (↑) and East (←)">
+          <!-- Reticle cross lines -->
+          <div class="absolute w-full h-px bg-space-700/60"></div>
+          <div class="absolute h-full w-px bg-space-700/60"></div>
+          <!-- North Vector (Cyan) -->
+          <div class="absolute top-0.5 flex flex-col items-center">
+            <span class="text-[8px] font-bold text-cyan-300 leading-none">N</span>
+            <span class="text-[7px] text-cyan-400 leading-none">▲</span>
           </div>
-          <!-- Scale bar (1 arcmin) -->
-          <div class="flex flex-col items-center">
-            <div class="w-16 h-1 bg-cyan-400 rounded"></div>
-            <span class="text-[9px] text-gray-400">1.0 Arcmin</span>
+          <!-- East Vector (Amber, Points Left for Celestial Parity) -->
+          <div class="absolute left-1 flex items-center">
+            <span class="text-[7px] text-amber-400 leading-none">◀</span>
+            <span class="text-[8px] font-bold text-amber-300 leading-none ml-0.5">E</span>
           </div>
+        </div>
+
+        <!-- Dynamic Scale Bar -->
+        <div class="flex flex-col items-center justify-center min-w-[64px]">
+          <div id="vpScaleBar" class="h-1 bg-cyan-400 rounded transition-all duration-150" style="width: 64px;"></div>
+          <span id="vpScaleLabel" class="text-[9px] text-gray-300 font-semibold mt-0.5">1.0 Arcmin</span>
         </div>
       </div>
 
@@ -855,8 +865,8 @@
       </div>
     </div>
 
-    <!-- Dock Content Body -->
-    <div id="dockContentBody" class="h-36 overflow-hidden transition-all duration-200">
+    <!-- Dock Content Body (Issue #26: Compact h-14 ~56px for single-row timeline) -->
+    <div id="dockContentBody" class="h-14 overflow-hidden transition-all duration-200" style="height: 56px;">
 
       <!-- PANEL 1: TIMELINE (Multi-Epoch Flipbook Controls) -->
       <div id="dockPanelTimeline" class="h-full px-4 flex items-center justify-between gap-4 font-mono text-xs">
@@ -1687,7 +1697,8 @@
       } finally {
         isSlewingToNewField = false;
         if (slewBadge) {
-          slewBadge.innerText = `Optical Lens: Contiguous NASA FITS Master Field`;
+          slewBadge.innerText = `🔭 FITS Master`;
+          slewBadge.title = `Optical Lens: Contiguous NASA FITS Master Field`;
         }
       }
     }
@@ -2207,6 +2218,9 @@
       const basePx = Math.min(w, h) * 0.90;
       const pixelsPerArcmin = basePx / currentTileFov;
 
+      // Issue #27 / #31: Dynamic Celestial Scale Bar Engine
+      updateDynamicScaleBar(pixelsPerArcmin * camera.zoom);
+
       // Query layer states from Scene
       const layerA = getSceneLayer('base_epoch_a');
       const layerB = getSceneLayer('base_epoch_b');
@@ -2317,6 +2331,42 @@
       });
 
       ctx.restore();
+    }
+
+    // =========================================================================
+    // DYNAMIC CELESTIAL SCALE BAR (Issue #27 / #31)
+    // =========================================================================
+    function updateDynamicScaleBar(screenPixelsPerArcmin) {
+      const barEl = document.getElementById('vpScaleBar');
+      const lblEl = document.getElementById('vpScaleLabel');
+      if (!barEl || !lblEl || !screenPixelsPerArcmin || screenPixelsPerArcmin <= 0) return;
+
+      const targetPx = 68;
+      const steps = [
+        { arcmin: 5.0 / 60.0, label: '5"' },
+        { arcmin: 10.0 / 60.0, label: '10"' },
+        { arcmin: 30.0 / 60.0, label: '30"' },
+        { arcmin: 1.0, label: "1.0'" },
+        { arcmin: 2.0, label: "2.0'" },
+        { arcmin: 5.0, label: "5.0'" },
+        { arcmin: 10.0, label: "10.0'" },
+        { arcmin: 30.0, label: "30.0'" }
+      ];
+
+      let bestStep = steps[3];
+      let minDiff = Infinity;
+      for (const s of steps) {
+        const px = s.arcmin * screenPixelsPerArcmin;
+        const diff = Math.abs(px - targetPx);
+        if (diff < minDiff) {
+          minDiff = diff;
+          bestStep = s;
+        }
+      }
+
+      const finalPx = Math.max(28, Math.min(130, Math.round(bestStep.arcmin * screenPixelsPerArcmin)));
+      barEl.style.width = `${finalPx}px`;
+      lblEl.innerText = bestStep.label;
     }
 
     // =========================================================================
@@ -2967,7 +3017,8 @@
         const mosaicEl = document.getElementById('vpMosaicBadge');
         if (mosaicEl) {
           mosaicEl.classList.remove('hidden');
-          mosaicEl.innerText = "Optical Lens: Contiguous NASA FITS Master Field";
+          mosaicEl.innerText = "🔭 FITS Master";
+          mosaicEl.title = "Optical Lens: Contiguous NASA FITS Master Field";
         }
 
         const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
@@ -3006,38 +3057,82 @@
     function updateFrameLabel() {
       const lblEl = document.getElementById('vpFrameLabel');
       const badgeEl = document.getElementById('frameBadge');
+      const progEl = document.getElementById('timelineProgress');
+
       if (diffMode) {
-        lblEl.innerText = "(Diff Mode) Numerical Subtraction I₂ - I₁";
-        lblEl.className = "text-orange-400 font-semibold";
-        badgeEl.innerText = "Δ";
-        badgeEl.className = "px-2 py-0.5 rounded bg-orange-600 text-white font-bold text-[10px]";
-      } else if (currentFrame === 1) {
-        lblEl.innerText = "(Frame 1) 2MASS Historic Baseline (1999-02)";
-        lblEl.className = "text-blender-orange font-semibold";
-        badgeEl.innerText = "1";
-        badgeEl.className = "px-2 py-0.5 rounded bg-blender-blue text-white font-bold text-[10px]";
-      } else {
-        lblEl.innerText = "(Frame 2) SPHEREx / DSS2 Epoch (2025-05)";
-        lblEl.className = "text-cyan-400 font-semibold";
-        badgeEl.innerText = "2";
-        badgeEl.className = "px-2 py-0.5 rounded bg-cyan-600 text-white font-bold text-[10px]";
+        if (lblEl) {
+          lblEl.innerText = "(Diff Mode) Numerical Subtraction I₂ - I₁";
+          lblEl.className = "text-orange-400 font-semibold";
+        }
+        if (badgeEl) {
+          badgeEl.innerText = "Δ";
+          badgeEl.className = "px-2 py-0.5 rounded bg-orange-600 text-white font-bold text-xs";
+        }
+        return;
+      }
+
+      const frameData = [
+        { num: 1, name: "(Frame 1) 2MASS Historic Baseline (1999-02)", badgeColor: "bg-blender-blue", textColor: "text-blender-orange", pct: "25%" },
+        { num: 2, name: "(Frame 2) unWISE W1 Survey Epoch (2010-07)", badgeColor: "bg-sky-600", textColor: "text-sky-400", pct: "50%" },
+        { num: 3, name: "(Frame 3) unWISE W2 Survey Epoch (2020-01)", badgeColor: "bg-indigo-600", textColor: "text-indigo-400", pct: "75%" },
+        { num: 4, name: "(Frame 4) SPHEREx Observatory Discovery (2025-05)", badgeColor: "bg-cyan-600", textColor: "text-cyan-400", pct: "100%" }
+      ];
+
+      const cur = frameData[(currentFrame - 1) % 4] || frameData[0];
+      if (lblEl) {
+        lblEl.innerText = cur.name;
+        lblEl.className = `${cur.textColor} font-semibold`;
+      }
+      if (badgeEl) {
+        badgeEl.innerText = cur.num;
+        badgeEl.className = `px-2 py-0.5 rounded ${cur.badgeColor} text-white font-bold text-xs`;
+      }
+      if (progEl) {
+        progEl.style.width = cur.pct;
+      }
+
+      // Sync active epoch highlight in Scene collection if rendered
+      if (window.scene && window.scene.epochs) {
+        const ep = window.scene.epochs[(currentFrame - 1) % window.scene.epochs.length];
+        if (ep) {
+          document.querySelectorAll('.epoch-card').forEach(c => {
+            const isMatch = c.getAttribute('data-epoch-id') === ep.id;
+            c.classList.toggle('border-blender-orange', isMatch);
+            c.classList.toggle('bg-blender-850/90', isMatch);
+          });
+        }
       }
     }
 
     // =========================================================================
-    // FLIPBOOK BLINK CONTROLS & TIMELINE
+    // FLIPBOOK BLINK CONTROLS & TIMELINE (Issue #24: 4-Epoch Blink Cycle)
     // =========================================================================
+    function stepFrameForward() {
+      stopFlipbook();
+      currentFrame = (currentFrame >= 4) ? 1 : (currentFrame + 1);
+      updateFrameLabel();
+      drawFrame();
+    }
+
+    function stepFrameBackward() {
+      stopFlipbook();
+      currentFrame = (currentFrame <= 1) ? 4 : (currentFrame - 1);
+      updateFrameLabel();
+      drawFrame();
+    }
+
     function startFlipbook() {
       if (playTimer) clearInterval(playTimer);
       playTimer = setInterval(() => {
         if (!diffMode) {
-          currentFrame = (currentFrame === 1) ? 2 : 1;
+          currentFrame = (currentFrame >= 4) ? 1 : (currentFrame + 1);
           updateFrameLabel();
           drawFrame();
         }
       }, 1000 / fps);
       isPlaying = true;
-      document.getElementById('playPauseIcon').setAttribute('data-lucide', 'pause');
+      const playIcon = document.getElementById('playPauseIcon');
+      if (playIcon) playIcon.setAttribute('data-lucide', 'pause');
       lucide.createIcons();
     }
 
@@ -3045,7 +3140,8 @@
       if (playTimer) clearInterval(playTimer);
       playTimer = null;
       isPlaying = false;
-      document.getElementById('playPauseIcon').setAttribute('data-lucide', 'play');
+      const playIcon = document.getElementById('playPauseIcon');
+      if (playIcon) playIcon.setAttribute('data-lucide', 'play');
       lucide.createIcons();
     }
 
@@ -3063,22 +3159,12 @@
     });
     document.getElementById('btnJumpEnd').addEventListener('click', () => {
       stopFlipbook();
-      currentFrame = 2;
+      currentFrame = 4;
       updateFrameLabel();
       drawFrame();
     });
-    document.getElementById('btnStepBack').addEventListener('click', () => {
-      stopFlipbook();
-      currentFrame = 1;
-      updateFrameLabel();
-      drawFrame();
-    });
-    document.getElementById('btnStepFwd').addEventListener('click', () => {
-      stopFlipbook();
-      currentFrame = 2;
-      updateFrameLabel();
-      drawFrame();
-    });
+    document.getElementById('btnStepBack').addEventListener('click', stepFrameBackward);
+    document.getElementById('btnStepFwd').addEventListener('click', stepFrameForward);
 
     const speedSlider = document.getElementById('speedSlider');
     const speedLabel = document.getElementById('speedLabel');
@@ -3784,8 +3870,7 @@
     if (toolBlinkFlip) {
       toolBlinkFlip.addEventListener('click', () => {
         if (diffMode) toggleDifferenceMode();
-        const btnFwd = document.getElementById('btnStepFwd');
-        if (btnFwd) btnFwd.click();
+        stepFrameForward();
         toolBlinkFlip.classList.add('blender-btn-orange-active');
         setTimeout(() => toolBlinkFlip.classList.remove('blender-btn-orange-active'), 200);
       });
@@ -3818,48 +3903,63 @@
     const propertiesSidebar = document.getElementById('propertiesSidebar');
     let isResizingSidebar = false;
 
+    function applySidebarWidth(newWidth) {
+      if (!propertiesSidebar) return;
+      const w = Math.max(260, Math.min(650, newWidth));
+      propertiesSidebar.style.width = w + 'px';
+      propertiesSidebar.style.minWidth = w + 'px';
+      propertiesSidebar.style.maxWidth = w + 'px';
+      propertiesSidebar.style.flex = `0 0 ${w}px`;
+      propertiesSidebar.classList.remove('w-96');
+      resizeCanvas();
+      if (window.specChart && typeof window.specChart.resize === 'function') {
+        window.specChart.resize();
+      }
+    }
+
     if (sidePanelSplitter && propertiesSidebar) {
       const savedWidth = localStorage.getItem('spherex_sidebar_width');
       if (savedWidth) {
         const w = parseInt(savedWidth, 10);
         if (w >= 260 && w <= 650) {
-          propertiesSidebar.style.width = w + 'px';
-          propertiesSidebar.classList.remove('w-96');
+          applySidebarWidth(w);
         }
       }
 
-      sidePanelSplitter.addEventListener('pointerdown', (e) => {
+      const startSidebarResize = (e) => {
         isResizingSidebar = true;
-        sidePanelSplitter.setPointerCapture(e.pointerId);
+        if (e.setPointerCapture && e.pointerId) {
+          try { sidePanelSplitter.setPointerCapture(e.pointerId); } catch (_) {}
+        }
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'col-resize';
-      });
+      };
 
-      window.addEventListener('pointermove', (e) => {
+      const doSidebarResize = (e) => {
         if (!isResizingSidebar) return;
-        const newWidth = Math.max(260, Math.min(650, window.innerWidth - e.clientX));
-        propertiesSidebar.style.width = newWidth + 'px';
-        propertiesSidebar.classList.remove('w-96');
-        resizeCanvas();
-        if (window.specChart && typeof window.specChart.resize === 'function') {
-          window.specChart.resize();
-        }
-      });
+        applySidebarWidth(window.innerWidth - e.clientX);
+      };
 
-      window.addEventListener('pointerup', () => {
+      const stopSidebarResize = () => {
         if (isResizingSidebar) {
           isResizingSidebar = false;
           document.body.style.userSelect = '';
           document.body.style.cursor = '';
           localStorage.setItem('spherex_sidebar_width', propertiesSidebar.offsetWidth);
         }
-      });
+      };
+
+      sidePanelSplitter.addEventListener('pointerdown', startSidebarResize);
+      sidePanelSplitter.addEventListener('mousedown', startSidebarResize);
+      window.addEventListener('pointermove', doSidebarResize);
+      window.addEventListener('mousemove', doSidebarResize);
+      window.addEventListener('pointerup', stopSidebarResize);
+      window.addEventListener('mouseup', stopSidebarResize);
 
       sidePanelSplitter.addEventListener('dblclick', () => {
-        propertiesSidebar.style.width = '384px';
+        applySidebarWidth(384);
         propertiesSidebar.classList.add('w-96');
         localStorage.removeItem('spherex_sidebar_width');
-        resizeCanvas();
       });
     }
 
@@ -3867,49 +3967,63 @@
     const dockContentBody = document.getElementById('dockContentBody');
     let isResizingDock = false;
 
+    function applyDockHeight(newHeight) {
+      if (!dockContentBody) return;
+      const windowH = window.innerHeight;
+      const h = Math.max(56, Math.min(Math.floor(windowH * 0.65), newHeight));
+      dockContentBody.style.height = h + 'px';
+      dockContentBody.style.minHeight = h + 'px';
+      dockContentBody.classList.remove('h-36');
+      dockContentBody.classList.remove('h-14');
+      resizeCanvas();
+      if (window.specChart && typeof window.specChart.resize === 'function') {
+        window.specChart.resize();
+      }
+    }
+
     if (bottomDockSplitter && dockContentBody) {
       const savedHeight = localStorage.getItem('spherex_dock_height');
       if (savedHeight) {
         const h = parseInt(savedHeight, 10);
         if (h >= 56 && h <= 450) {
-          dockContentBody.style.height = h + 'px';
-          dockContentBody.classList.remove('h-36');
+          applyDockHeight(h);
         }
       }
 
-      bottomDockSplitter.addEventListener('pointerdown', (e) => {
+      const startDockResize = (e) => {
         isResizingDock = true;
-        bottomDockSplitter.setPointerCapture(e.pointerId);
+        if (e.setPointerCapture && e.pointerId) {
+          try { bottomDockSplitter.setPointerCapture(e.pointerId); } catch (_) {}
+        }
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'row-resize';
-      });
+      };
 
-      window.addEventListener('pointermove', (e) => {
+      const doDockResize = (e) => {
         if (!isResizingDock) return;
         const windowH = window.innerHeight;
-        const newH = Math.max(56, Math.min(Math.floor(windowH * 0.55), windowH - e.clientY - 44));
-        dockContentBody.style.height = newH + 'px';
-        dockContentBody.classList.remove('h-36');
-        resizeCanvas();
-        if (window.specChart && typeof window.specChart.resize === 'function') {
-          window.specChart.resize();
-        }
-      });
+        applyDockHeight(windowH - e.clientY - 44);
+      };
 
-      window.addEventListener('pointerup', () => {
+      const stopDockResize = () => {
         if (isResizingDock) {
           isResizingDock = false;
           document.body.style.userSelect = '';
           document.body.style.cursor = '';
           localStorage.setItem('spherex_dock_height', dockContentBody.offsetHeight);
         }
-      });
+      };
+
+      bottomDockSplitter.addEventListener('pointerdown', startDockResize);
+      bottomDockSplitter.addEventListener('mousedown', startDockResize);
+      window.addEventListener('pointermove', doDockResize);
+      window.addEventListener('mousemove', doDockResize);
+      window.addEventListener('pointerup', stopDockResize);
+      window.addEventListener('mouseup', stopDockResize);
 
       bottomDockSplitter.addEventListener('dblclick', () => {
-        dockContentBody.style.height = '144px';
-        dockContentBody.classList.add('h-36');
+        applyDockHeight(56);
         localStorage.removeItem('spherex_dock_height');
-        resizeCanvas();
       });
     }
 
@@ -4871,6 +4985,17 @@
 
       if (isDockCollapsed) {
         toggleDockCollapse(false);
+      } else {
+        if (activePanel === dockPanelTimeline) {
+          dockContentBody.style.height = '56px';
+          dockContentBody.style.minHeight = '56px';
+        } else {
+          const savedH = parseInt(localStorage.getItem('spherex_dock_height') || '180', 10);
+          const chartH = Math.max(180, savedH);
+          dockContentBody.style.height = chartH + 'px';
+          dockContentBody.style.minHeight = chartH + 'px';
+        }
+        resizeCanvas();
       }
       if (window.lucide) lucide.createIcons();
     }
@@ -4879,11 +5004,21 @@
       isDockCollapsed = (forceState !== null) ? forceState : !isDockCollapsed;
       if (isDockCollapsed) {
         dockContentBody.style.height = '0px';
+        dockContentBody.style.minHeight = '0px';
         if (dockCollapseIcon) dockCollapseIcon.setAttribute('data-lucide', 'chevron-up');
       } else {
-        dockContentBody.style.height = '144px';
+        const isTimelineActive = !dockPanelTimeline.classList.contains('hidden');
+        if (isTimelineActive) {
+          dockContentBody.style.height = '56px';
+          dockContentBody.style.minHeight = '56px';
+        } else {
+          const savedH = parseInt(localStorage.getItem('spherex_dock_height') || '180', 10);
+          dockContentBody.style.height = Math.max(180, savedH) + 'px';
+          dockContentBody.style.minHeight = Math.max(180, savedH) + 'px';
+        }
         if (dockCollapseIcon) dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
       }
+      resizeCanvas();
       if (window.lucide) lucide.createIcons();
     }
 
