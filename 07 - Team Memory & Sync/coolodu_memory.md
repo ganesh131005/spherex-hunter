@@ -3,11 +3,165 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** All Assigned Roadmap Tasks & Tickets Complete! Viewport, kinematics, LOD engine, Gaia overlay, FITS export, and discoveries catalogue operational.
-- **Next Task:** Ready for team review or next assigned sprint backlog items.
+- **Current Task:** Completed the comprehensive site map and FITS architecture analysis of the Government of Canada Open Data NEOSSat dataset into the Obsidian vault: [[CSA_OPENDATA_NEOSSAT_SITEMAP]].
+- **Next Task:** Awaiting next site or pipeline direction from jokerodu / user.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Obsidian Vault Site Import: Government of Canada Open Data NEOSSat Dataset (`data.asc-csa.gc.ca/dataset/neossat`)]**:
+  - Live crawled `https://data.asc-csa.gc.ca/dataset/neossat` and queried the CKAN REST API (`package_show?id=62d8033b-87b6-4322-8d5f-e26bebf934c1`).
+  - Documented Open Government Licence - Canada terms and open-access data governance.
+  - Cataloged all 8 core resources: CADC mirror, direct public HTTPS FITS data bucket (`/users/OpenData_DonneesOuvertes/pub/NEOSSAT/ASTRO/`), XML telemetry directories, official FITS User's Guide (`CSA-NEOSSAT-MAN-0002_FITS_IMAGE_UGUIDE-v4-00.pdf`), NEOSSat Experience data dictionary, English/French supporting documents, and the NEOSSAT_Tutorial repository.
+  - Reverse-engineered the directory structure (`ASTRO/YYYY/DDD/`) and calibration naming conventions (`NEOS_SCI_YYYYDDDHHMMSS.fits.gz`, `..._cor.fits.gz`, `..._cord.fits.gz`).
+  - Created master Obsidian reference [CSA_OPENDATA_NEOSSAT_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/CSA_OPENDATA_NEOSSAT_SITEMAP.md).
+- [x] **[Obsidian Vault Site 20 Import Complete: Caltech-IPAC Tutorial 6 SPHEREx HiPS Cubes & HEALPix Geometry]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-hipscube/`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/20 - Tutorial 6 SPHEREx HiPS All-Sky Mosaic Cubes & HEALPix Geometry.md`.
+  - Reverse-engineered dual access modalities (HiPS visualizer at `spherex_allsky_cube` and direct FITS cubes at `hips5_cube/hips_20261026`), parsed properties metadata (`hips_cube_depth=102`, `hips_order=5`), nested HEALPix indexing math via `hpgeom.angle_to_pixel` to locate Order 5 tiles ($N_{\text{pix}} = 12,288$), Firefly channel dispatching (`ImagePlotCntlr.ChangeHiPS`), local spherical HPX angular pixel scaling, and 102-channel FITS cube extraction.
+  - **All 6 official Caltech-IPAC SPHEREx tutorials are now 100% indexed and cross-linked across Notes 15 through 20 in the Obsidian vault!**
+- [x] **[Obsidian Vault Site Import: CSA NEOSSAT_Tutorial Repository (`github.com/asc-csa/NEOSSAT_Tutorial`)]**:
+  - Live crawled `https://github.com/asc-csa/NEOSSAT_Tutorial` and deconstructed both bilingual Jupyter notebooks (Notebook 01 and Notebook 02).
+  - Reverse-engineered Option 1 CSA FTP client (`ftp.asc-csa.gc.ca`) and Option 2 CADC TAP interface (`astroquery.cadc`).
+  - Documented complete mathematical calibration algorithms: row-by-row 50-pixel overscan median bias correction, master dark frame generation, and multi-epoch temporal median stacking.
+  - Extracted exact computer vision algorithms: Line Segment Detector (LSD) streaklet extraction (`detect_streaklets`) for asteroid trail finding and $3\sigma$ temporal difference thresholding (`detect_moving_objects`).
+  - Mapped integration directly into SPHEREx Hunter's `/api/source_discovery` automated pipeline.
+  - Created master Obsidian reference [NEOSSAT_TUTORIAL_CODE_CODEX.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/NEOSSAT_TUTORIAL_CODE_CODEX.md).
+- [x] **[Obsidian Vault Site 19 Import Complete: Caltech-IPAC Tutorial 5 SPHEREx Mosaic Cubes & Multi-Wavelength Overlays]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-mosaic/`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/19 - Tutorial 5 SPHEREx Mosaic Cubes & Multi-Wavelength Overlays.md`.
+  - Documented 6-HDU 3D $(x, y, \lambda)$ mosaic cube architecture (`IMAGE`, `NHITS`, `FLAGS`, `SPECTRAL_CHANNELS`, `WCS-WAVE`), surface brightness to flux calibration ($[\text{mJy}] = [\text{MJy/sr}] \times 23.5045 \times \text{pixscale}^2 / 1000$), hyperspectral aperture photometry across 102 channels with annulus background subtraction, continuum-subtracted PAH $3.3\ \mu\text{m}$ starburst emission mapping, and multi-wavelength GALEX FUV image retrieval, AB flux conversion, and `reproject_exact` contour overlay.
+- [x] **[Obsidian Vault Site 18 Import Complete: Caltech-IPAC Tutorial 4 Source Discovery Tool & Spectral Extraction]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-source-discovery-tool-demo/`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/18 - Tutorial 4 SPHEREx Source Discovery Tool & Spectral Extraction.md`.
+  - Reverse-engineered dual-detector spectral difference imaging ($I_{\text{D2}} - I_{\text{D4}}$) isolating red astronomical targets (brown dwarfs, AGNs, protostars), flux density conversion ($\text{MJy/sr} \to \mu\text{Jy}$) via Solid Angle Pixel Maps (`cal-sapm`), `sep.Background` fitting, exact flux-conserving reprojection (`reproject_exact`), SExtractor automated source detection, in-memory VOTable streaming to Firefly via `io.BytesIO()`, and multi-epoch aperture photometry ($r=3, 4, 5\text{ px}$) filtering out 19 master pipeline artifact flags to generate calibrated 1D spectra.
+- [x] **[Obsidian Vault Site Import: Canadian Astronomy Data Centre (`cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/`)]**:
+  - Live crawled `https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/` and mapped all 84 links across 4 operational branches.
+  - Documented CADC history (established 1986 by NRC & CSA in Victoria, BC), CoreTrustSeal certification, and 2.4+ PB annual delivery throughput.
+  - Cataloged 15 major telescope data holdings (NEOSSat, JWST, Gemini, CFHT, JCMT, HST, DAO, DRAO, OMM, BRITE, MOST, MACHO, BLAST, FUSE, UKIRT).
+  - Cataloged 11 advanced data products (MegaPipe, CFHTLS, WIRWolf, SCLA, WALLABY, POSSUM, VLASS, HLA, SCUBA-LC, IRIS, CGPS).
+  - Documented CAOM-2 (Common Archive Observation Model) TAP architecture (`caom2.Observation`, `caom2.Plane`, `caom2.Artifact`) and Python `astroquery.cadc` workflows.
+  - Documented **SSOIS (Solar System Object Image Search)** for locating minor planets, comets, and Planet X candidates across historical archive exposures.
+  - Created master Obsidian reference [CADC_CANADIAN_ARCHIVE_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/CADC_CANADIAN_ARCHIVE_SITEMAP.md).
+- [x] **[Obsidian Vault Site 17 Import Complete: Caltech-IPAC Tutorial 3 Position-Dependent ePSF Reconstruction]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-psf/`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/17 - Tutorial 3 Position-Dependent ePSF Reconstruction & Forward Modeling.md`.
+  - Reverse-engineered local cutout to parent detector pixel transformation via `CRPIX1A`/`CRPIX2A` anchors ($x_{\text{orig}} = 1 + x_{\text{cutout}} - \text{CRPIX1A}$), 441-zone ($21 \times 21$) `EPSF` BinTable structure with $33 \times 33$ oversampled arrays ($f=5$, $5 \times 5$ sub-pixels), nearest-zone Euclidean matching, effective noise area $N_{\text{eff}}$ diagnostics, and native resolution integration via `photutils.psf.ImagePSF` (`render_epsf_stamp_centered`) for forward modeling and Tractor forced photometry.
+- [x] **[Obsidian Vault Site 16 Import Complete: Caltech-IPAC Tutorial 2 SPHEREx Cutouts & MEF Packaging]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-cutouts/`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/16 - Tutorial 2 SPHEREx Spectral Image Cutouts & MEF Packaging.md`.
+  - Documented SQL TAP dynamic URL generation (`SELECT 'https://irsa.ipac.caltech.edu/' || a.uri || '?center=...'`), spectral dispersion wavelength extraction with SIP nullification (`spectral_wcs.sip = None`), benchmark parallel downloading with `concurrent.futures.ThreadPoolExecutor(max_workers=10)` achieving a **10.3x speedup** ($2.26\text{ min} \to 0.22\text{ min}$), and packaging multi-epoch visits into a self-describing master MEF with a binary catalog index `CUTOUT_INFO`.
+- [x] **[Obsidian Vault Site Import: CSA NEOSSat Mission Portal (`asc-csa.gc.ca/eng/satellites/neossat/`)]**:
+  - Live crawled `https://www.asc-csa.gc.ca/eng/satellites/neossat/` and extracted all technical and scientific data across 4 branches.
+  - Documented spacecraft infrastructure: 800 km Sun-synchronous orbit (100 min period, 24/7 day/night unhindered operations), 15-cm Maksutov telescope, MOST heritage reaction wheels, joint CSA/DRDC funding.
+  - Cataloged all 10 Science Guest Observer Cycles: Near-Sun Asteroid astrometry near perihelion (e.g. 3200 Phaethon), NEOCP follow-ups, HEOSS space domain debris tracking, NOTES transiting exoplanet survey (TESS follow-ups), ultracool dwarf rotation periods, and T CrB pre-eruption monitoring.
+  - Documented CADC CAOM-2 TAP access (`https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/tap`, `astroquery.cadc`, collection `NEOSSAT`) and Canada's Open Government data portal.
+  - Formulated the **Line Segment Detector (LSD) Streaklet Algorithm** used in SPHEREx Hunter (`/api/source_discovery`) to distinguish fast-moving solar system asteroids (extended linear streaks) from stationary time-domain dipoles (cold brown dwarfs / Planet X candidates).
+  - Created master Obsidian reference [CSA_NEOSSAT_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/CSA_NEOSSAT_SITEMAP.md).
+- [x] **[Obsidian Vault WiseView Site 5 Import Complete: Cross-Survey External Verification Endpoints]**:
+  - Investigated `flash3.js` lines 410–463 and reverse-engineered all 5 external verification systems.
+  - Tested live queries against `byw.tools/xref` (returned Zooniverse subject IDs for WISE 0855) and `byw.tools/pawnstars` (generated STScI Pan-STARRS RGB composite cutouts).
+  - Created Obsidian note `05 - Research & Resources/WiseView Architecture/05 - Cross-Survey External Verification Endpoints.md`.
+  - Documented deep-link syntax for DESI Legacy Survey (`unwise-neo11`), CDS Simbad (`list.pmsel=on`), CDS VizieR (`-sort=_r`), STScI Pan-STARRS1 3π survey, and Zooniverse Talk.
+- [x] **[Obsidian Vault WiseView Site 4 Import Complete: Version History & v2 vs v3 Architecture]**:
+  - Analyzed `flash3.js` lines 540–580 and lines 885–915.
+  - Created Obsidian note `05 - Research & Resources/WiseView Architecture/04 - WiseView Version History & v2 vs v3 Architecture.md`.
+  - Documented the architectural evolution from v1 discrete `coadd_mode` strings to v3 orthogonal parametric space (`window`, `scandir`, `diff`, `shift`), the `v1UrlCompat(map)` automatic URL backward translation engine, and child viewport spawning rules (`open_fov`).
+- [x] **[Obsidian Vault WiseView Site 3 Import Complete: Synthetic Object Injection Engine]**:
+  - Analyzed `flash3.js` lines 270–370 and lines 720–810.
+  - Created Obsidian note `05 - Research & Resources/WiseView Architecture/03 - WiseView Synthetic Object Injection Engine.md`.
+  - Documented dual synthetic models (`#synthAInput` / `#synthBInput`), dipole forward-modeled cancellation/nulling (`synth_a_sub=1`), Vega magnitude-to-flux conversion, and blind recovery testing.
+- [x] **[Obsidian Vault WiseView Site 2 Import Complete: Cloud Microservices & unWISE Infrastructure]**:
+  - Tested and verified live queries against `png-animation` and `gaiadr2` AWS Lambda services.
+  - Created Obsidian note `05 - Research & Resources/WiseView Architecture/02 - WiseView Cloud Microservices & unWISE Infrastructure.md`.
+  - Documented serverless AWS Lambda architecture, JSONP request parameters, output metadata JSON schema (`ims`, `all_mjds`, `mjds`, `epochs`, `min`, `max`, `CRPIX1/2`, `CRVAL1/2`), direct streaming from AMNH S3 bucket (`amnh-citsci-public.s3-us-west-2.amazonaws.com`), Gaia DR3 ADQL proxy, and Lang (2014) / Meisner (2017) unWISE co-adds.
+- [x] **[Obsidian Vault WiseView Site 1 Import Complete: Core Engine & Blinking Pipeline]**:
+  - Read `http://byw.tools/static/flash3.js`.
+  - Created Obsidian note `05 - Research & Resources/WiseView Architecture/01 - WiseView Core Engine & Blinking Pipeline.md`.
+  - Documented serverless architecture, mathematical transforms (`symlog10`/`symexp10`, `mjd_to_aarondate`), proper motion scaling ($\mu / (1000 \times 2.75'')$), difference imaging dipole physics ($I_t - I_{t-1}$), and Gaia DR3 Base Epoch MJD 57204 proper motion projections.
+- [x] **[Obsidian Vault Site 15 Import Complete: Tutorial 1 Intro to SPHEREx Spectral Images]**:
+  - Read `https://caltech-ipac.github.io/irsa-tutorials/spherex-intro`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/15 - Tutorial 1 Introduction to SPHEREx Spectral Images.md`.
+  - Documented `Irsa.query_sia` multi-collection cone search (`spherex_dr1`, `spherex_qr3`), 6-extension Level 2 MEF loading, alternate Spectral WCS (`key='W'`) with SIP nullification (`spectral_wcs.sip = None`) for dispersion mapping $\lambda(x, y)$, and bitmask quality decoding (`TRANSIENT`, `OVERFLOW`, `NONFUNC`).
+- [x] **[Obsidian Vault WiseView Site Map & Architecture (`byw.tools/wiseview`)]**:
+  - Analyzed `byw.tools/wiseview` single-page web app and its core JavaScript engine `static/flash3.js` (43.6 KB).
+  - Reverse-engineered the complete 30+ URL hash parameter schema (`ra`, `dec`, `size`, `band`, `speed`, `minbright`, `maxbright`, `diff`, `diff_window`, `invert`, `gaia`, `synth_a/b` synthetic planet injection).
+  - Mapped external AWS Lambda microservices (`png-animation`, `gaiadr2`), AMNH S3 unWISE bucket, ESA Gaia TAP server, and survey deep-links (Legacy Survey, Pan-STARRS, Simbad, VizieR, Zooniverse Talk).
+  - Documented WISE 0855 target parameter optimization and SPHEREx Hunter deep-linking integration in `05 - Research & Resources/WISEVIEW_BYW_TOOLS_SITEMAP.md`.
+- [x] **[Obsidian Vault Site 14 Import Complete: IVOA SIAv2 Protocol & SPHEREx API]**:
+  - Read `https://irsa.ipac.caltech.edu/ibe/sia.html` and `https://irsa.ipac.caltech.edu/spherex-archive-documentation/spherex-data-access`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/14 - IVOA Simple Image Access v2 Protocol & SPHEREx API.md`.
+  - Documented 5 SIAv2 collections (`spherex_dr1`, `spherex_dr1_deep`, `spherex_dr1_cube`, `spherex_qr3`, `spherex_qr3_deep`), REST query syntax (`POS=circle+ra+dec+radius`, `BAND`, `RESPONSEFORMAT`, `CLOSEST`), CLI `curl`/`wget` scripts, `pyvo` integration, and dynamic sub-image cutout syntax (`?center=ra,dec&size=deg`).
+- [x] **[Obsidian Vault Chapters 5-8 Import Complete: FITS Headers & Acronyms]**:
+  - Read Pages 73–84 of `SPHEREx_Expsupp.pdf`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/13 - Explanatory Supplement Ch 5-8 FITS Headers & Reference.md`.
+  - Documented primary HDU metadata (`OBSID`, `BUNIT = 'MJy/sr'`, `FINAST`, `L2DQA`, `PA`), 4th-order SIP distortion terms (`A_ORDER=4`, `B_ORDER=4`), calibration provenance UUIDs in `HISTORY`, and the master 30+ acronym index.
+  - **The entire 84-page SPHEREx Explanatory Supplement is now fully indexed across Notes 08 through 13 in the Obsidian vault!**
+- [x] **[Obsidian Vault DR1 Hub & Sitemap Integration: `overview_dr1.html`]**:
+  - Live crawled `https://irsa.ipac.caltech.edu/data/SPHEREx/docs/overview_dr1.html` and verified all internal and sibling URLs (`overview_qr.html`, `psfhdrerr.html`, `spherex-archive-documentation/`).
+  - Extracted all official DOIs (`10.26131/IRSA678` for DR1 Spectral Images, `10.26131/IRSA679` for Spectral All-Sky Cube, `10.26131/IRSA662` for QR3).
+  - Cataloged complete recursive architecture: Applications (Data Explorer, Mission Hub), Science Products, Direct Data Access (SIAv2 collections, Astroquery, AWS S3 Open Data bucket `s3://nasa-irsa-spherex` in `us-east-1`, IBE directories), Technical Advisories (PSF cube $11 \times 11$ indexing fix), and all 6 Caltech-IPAC Python tutorials.
+  - Documented complete guide in [SPHEREX_DR1_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREX_DR1_SITEMAP.md) and updated [02 - IRSA SPHEREx Data Releases.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/02%20-%20IRSA%20SPHEREx%20Data%20Releases.md).
+- [x] **[Obsidian Vault Chapter 4 Import Complete: Calibrations & Instrument Models]**:
+  - Read Pages 52–72 of `SPHEREx_Expsupp.pdf`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/12 - Explanatory Supplement Ch 4 Calibrations & Instrument Models.md`.
+  - Documented Absolute Gain conversion ($\text{e}^-/\text{s} \to \text{MJy/sr}$), $33 \times 33$ px ePSF models ($21 \times 21$ zones for Detectors 1, 2, 4, 5, 6; $11 \times 41$ zones for Detector 3), dark current derivations, and full 102-channel tables highlighting diagnostic volatile ice bands ($\text{H}_2\text{O}$ at $3.033\ \mu\text{m}$, $\text{CO}_2$ at $4.294\ \mu\text{m}$, $\text{CO}$ at $4.669\ \mu\text{m}$, and $\text{CH}_4$ at $3.383\ \mu\text{m}$).
+- [x] **[Obsidian Vault Chapter 3 Import Complete: Data Processing Pipeline & Algorithms]**:
+  - Read Pages 23–51 of `SPHEREx_Expsupp.pdf`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/11 - Explanatory Supplement Ch 3 Data Processing Pipeline.md`.
+  - Documented 12-step Level 2 pipeline flow, Robberto (2007) variance model $\text{Var}(F) = \frac{1}{T_{\text{int}}^2} [\sigma_{\text{det}}^2 + \frac{6}{5}\frac{N^2+1}{N^2-1} F T_{\text{int}}]$, multi-exponential persistence equations ($I_p(t) = \sum A_n C_n e^{-t/\tau_n}$), fine astrometry (`FINAST`), source ghost masking equations, forced aperture photometry pixel exclusion bitmasks, and mosaic reprojection.
+- [x] **[Obsidian Vault Chapter 2 Import Complete: Science Data Products & Anomalies]**:
+  - Read Pages 11–22 of `SPHEREx_Expsupp.pdf`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/10 - Explanatory Supplement Ch 2 Data Products & Anomalies.md`.
+  - Documented 6-HDU Level 2 MEF architecture, full taxonomy of optical anomalies (frame edge ghosts, linear bright source ghosts, DBS ghosts, $8^\circ$ baffle scatter, Moon glints, snowball cosmic rays, $\text{He}\ \text{I}$ airglow, shuttle glow), and 12,288 HEALPix Order 5 All-Sky Cubes with blank channels 51/52 and spatial-spectral entanglement caveats.
+- [x] **[Obsidian Vault Chapter 1 Import Complete: Mission Overview & Payload (SSDC-DP-017)]**:
+  - Read Pages 4–10 of `SPHEREx_Expsupp.pdf`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/09 - Explanatory Supplement Ch 1 Mission & Payload Overview.md`.
+  - Documented launch (12 March 2025 aboard Falcon 9), dawn-dusk 98-minute sun-synchronous orbit ($97.951^\circ$, MLTAN 6:00 AM), $20\text{ cm}$ $f/3$ telescope with dual FPAs (SWIR 62 K, MWIR 45 K), and the half-channel Nyquist spectral shift between Survey 1/2 and Survey 3/4.
+- [x] **[Obsidian Vault Document Map: SPHEREx Explanatory Supplement (SSDC-DP-017 v2.1)]**:
+  - Downloaded and analyzed 30 MB 84-page PDF `https://irsa.ipac.caltech.edu/data/SPHEREx/docs/SPHEREx_Expsupp.pdf` using PyMuPDF (`fitz`).
+  - Extracted full 61-item Table of Contents hierarchy across 8 major chapters and technical appendices.
+  - Extracted verbatim **Table 16: Level 2 Image Pixel Flags** (22 bitmasks from Bit 0 `TRANSIENT` to Bit 29 `SATELLITE_HALO`).
+  - Documented persistence decay models ($I_p(t) = \sum A_n C_n e^{-t/\tau_n}$), mosaic reprojection steps, and FITS header specifications into `05 - Research & Resources/SPHEREx IRSA Archive/08 - SPHEREx Explanatory Supplement Map.md`.
+- [x] **[Obsidian Vault Site 7 Import Complete: SPHEREx Spectral Calibrations & Instrument Files]**:
+  - Read `https://irsa.ipac.caltech.edu/data/SPHEREx/docs/spherex_spectral_calibrations.html`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/07 - SPHEREx Spectral Calibrations & Instrument Files.md`.
+  - Documented LVF laboratory spectral response functions at 4 granularities (17, 34, 51, 68 sub-channels $\to$ 102, 204, 306, 408 all-sky channels), tarball structure (`SPHERExSpectralFiles_202607.tar`), `Cent` (middle pixel) vs `Allpix` (mean channel) transmission models, and the critical coordinate warning indicating that Detectors 4, 5, 6 are flipped along the x-axis relative to on-sky Level 2 images.
+- [x] **[Obsidian Vault Site 6 Import Complete: Special Target Comet 3I ATLAS]**:
+  - Read `https://irsa.ipac.caltech.edu/data/SPHEREx/docs/comet3iatlas/index.html` and parsed `obscore_3I_Atlas.vot`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/06 - Special Target Comet 3I ATLAS.md`.
+  - Documented 259 calibrated exposures of interstellar object 3I/ATLAS (August & December 2025), ObsCore data fields, detections of $\text{H}_2\text{O}$ ice ($3.05\ \mu\text{m}$), extended $\text{CO}_2$ ($4.27\ \mu\text{m}$) coma, and CO ($4.67\ \mu\text{m}$), batch `curl`/`wget` scripts, and the crucial warning prohibiting point-source Spectrophotometry Tool aperture fitting on extended comae.
+- [x] **[Obsidian Vault DR1 Hub & Sitemap Integration: `overview_dr1.html`]**:
+  - Live crawled `https://irsa.ipac.caltech.edu/data/SPHEREx/docs/overview_dr1.html` and verified all internal and sibling URLs (`overview_qr.html`, `psfhdrerr.html`).
+  - Cataloged 5 distinct branches: 2 Interactive applications (Data Explorer, Caltech Mission hub), 4 Science products with official DOIs (`10.26131/IRSA678`, `10.26131/IRSA679`, `10.26131/IRSA662`), 5 Direct data access endpoints (SIA, Astroquery, Cloud, IBE), 3 Documentation and technical errata (PSF cube $11 \times 11$ indexing fix), and all 6 Caltech-IPAC Python tutorials.
+  - Created dedicated Obsidian sitemap [SPHEREX_DR1_SITEMAP.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREX_DR1_SITEMAP.md) and updated [02 - IRSA SPHEREx Data Releases.md](file:///d:/Nasa_space_apps/05%20-%20Research%20&%20Resources/SPHEREx%20IRSA%20Archive/02%20-%20IRSA%20SPHEREx%20Data%20Releases.md).
+- [x] **[Obsidian Vault Site 5 Import Complete: SPLICES Ice Source Catalog]**:
+  - Read `https://irsa.ipac.caltech.edu/data/SPHEREx/SPLICES/` and column descriptions.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/05 - SPLICES Ice Source Catalog.md`.
+  - Documented 8.6M+ point source catalog (`20241107_SPLICESv8.6.fits.gz`, 3.1 GB), dataset DOI `10.26131/IRSA554`, biogenic ice vibrational modes ($\text{H}_2\text{O}$ $3.05\ \mu\text{m}$, $\text{CH}_4$ $3.32/3.53\ \mu\text{m}$, $\text{CO}_2$ $4.27\ \mu\text{m}$, $\text{CO}$ $4.67\ \mu\text{m}$), and $< 7.6''$ neighbor isolation metrics (`fluxratioGaia`, `fluxratioI1/I2`).
+- [x] **[Obsidian Vault Site 4 Import Complete: SPHEREx Data Access Protocols & TAP]**:
+  - Read `https://irsa.ipac.caltech.edu/spherex-archive-documentation/spherex-data-access`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/04 - SPHEREx Data Access Protocols & TAP.md`.
+  - Documented 5 SIAv2 collections (`spherex_dr1`, `spherex_dr1_deep`, `spherex_dr1_cube`, `spherex_qr3`, `spherex_qr3_deep`), dynamic cutout API (`?center=RA,Dec&size=Deg`), TAP ADQL queries on `spherex.plane`, `astroquery.ipac.irsa` & `pyvo` snippets, IBE directory tree, and AWS S3 open data bucket (`s3://nasa-irsa-spherex/`).
+- [x] **[Obsidian Vault Site 3 Import Complete: SPHEREx Data Products & Calibrations]**:
+  - Read `https://irsa.ipac.caltech.edu/spherex-archive-documentation/spherex-data-products`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/03 - SPHEREx Science Data Products & Calibration.md`.
+  - Documented 6 extensions of Level 2 Spectral Image MEFs (`IMAGE`, `FLAGS`, `VARIANCE`, `ZODI`, `ePSF`, `WCS-WAVE`), 5 HDU extensions of DR1 All-Sky Cubes (12,288 HEALPix Order 5 tiles, $12.9''/\text{px}$, channels 51 & 52 `BLANKCH` caveat), ePSF grids ($21 \times 21$ vs $11 \times 41$ for D3), calibration deliverables, and atmospheric emission templates (auroral $N_2$, He I $1.083\ \mu\text{m}$, shuttle glow).
+- [x] **[Obsidian Vault Site 2 Import Complete: IRSA SPHEREx Data Releases]**:
+  - Read `overview_dr1.html`, `overview_qr.html`, `psfhdrerr.html`, and `spherex-data-releases`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/02 - IRSA SPHEREx Data Releases.md`.
+  - Detailed release timeline (QR1 retired $\to$ QR2 deprecated $\to$ QR3 weekly $\to$ DR1 Nov 2026), DOIs (`10.26131/IRSA678`, `IRSA679`, `IRSA662`, `IRSA652`, `IRSA629`), and the mathematical derivation of the $11 \times 11$ PSF grid transposed indexing bug ($i_{\text{plane}} = y \times 11 + x + 1$) and `+psffix1` pipeline tag.
+- [x] **[Obsidian Vault Site 1 Import Complete: IRSA SPHEREx Mission Hub]**:
+  - Read and extracted all structured technical data from `https://irsa.ipac.caltech.edu/Missions/spherex.html`.
+  - Created Obsidian note `05 - Research & Resources/SPHEREx IRSA Archive/01 - IRSA SPHEREx Mission Hub.md` with full YAML metadata, 6 detector array resolving power tables ($R=35\text{--}128$), canonical ADS papers, tools, release timeline, and cross-vault wikilinks.
+  - Linked note in `05 - Research & Resources/SPHEREx Documentation & Public Archive.md`.
+- [x] **[NASA IRSA SPHEREx Full Site Map Extraction]**:
+  - Crawled and mapped `https://irsa.ipac.caltech.edu/Missions/spherex.html` across 30 discovered sub-pages, tools, documents, FITS products, and calibration deliverables.
+  - Documented full architectural sitemap in `05 - Research & Resources/IRSA_SPHEREX_SITEMAP.md` categorizing web applications (Data Explorer, Cutout Tool, MOST), modern archive documentation, DR1 & Quick Releases (QR2/QR3), SPLICES ice catalog, Comet 3I/ATLAS observations, and spectral response calibrations.
+  - Preserved raw crawl output in `spherex_sitemap.json`.
+- [x] **[Fixed Backend Startup Batch Scripts]**:
+  - Identified Windows `cmd.exe` parser crash (`. was unexpected at this time.`) inside `run_spherex_hunter.bat` caused by unescaped parentheses combined with trailing ellipsis `(PID: %%a). Cleaning up...` inside the `for /f` block.
+  - Replaced double-colon `::` comments inside compound code blocks with standard `REM` comments.
+  - Tested and validated 1-click execution for both [start_backend.bat](file:///d:/Nasa_space_apps/start_backend.bat) and [run_spherex_hunter.bat](file:///d:/Nasa_space_apps/run_spherex_hunter.bat). The server launches cleanly on port 8000 and the browser automatically opens the web app.
 - [x] **[TASK-006 Complete: Tasks 3, 4, 5 of NASA/CSA Integration & Benchmark Validation]**:
   - **Task 3 — WiseView 1-Click Verification Bridge (`backend/services/verification_service.py` + `#wiseviewBridgeModal`):** Built `GET /api/verify_candidate` executing a live 5-step Backyard Worlds candidate vetting checklist (Alard-Lupton difference dipole, track-aware Gaia DR3 proper-motion check over 2000–2026, IMCCE SkyBoT known asteroid rejection, W1–W2 color threshold, and 1-click WiseView standard & `diff=1` deep-linking).
   - **Task 4 — CSA NEOSSat & CADC Asteroid Tracking Integration (`backend/services/neossat_service.py` + `#neossatModal`):** Built `GET /api/neossat` combining live IMCCE SkyBoT cone searches (`ssp.imcce.fr`) for known asteroids/NEOs with live Canadian Astronomy Data Centre (CADC) CAOM-2 Argus TAP queries (`collection='NEOSSAT'`), plus CSA NEOSSat Line Segment Detector (LSD) streaklet overlay (`[X]`).

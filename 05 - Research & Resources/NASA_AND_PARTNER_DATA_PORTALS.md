@@ -87,7 +87,7 @@
 
 ## 5. 🛰️ Canadian Space Agency (CSA) NEOSSat Mission
 - **Mission Overview:** [https://www.asc-csa.gc.ca/eng/satellites/neossat/](https://www.asc-csa.gc.ca/eng/satellites/neossat/)
-- **Dataset:** [https://data.asc-csa.gc.ca/dataset/neossat](https://data.asc-csa.gc.ca/dataset/neossat)
+- **Dataset:** [https://data.asc-csa.gc.ca/dataset/neossat](https://data.asc-csa.gc.ca/dataset/neossat) — [[CSA_OPENDATA_NEOSSAT_SITEMAP]]. Open HTTP bucket architecture (`ASTRO/YYYY/DDD/`), CKAN REST API, and `_cord.fits.gz` calibration pipeline.
 - **Spacecraft:** Near-Earth Object Surveillance Satellite (NEOSSat)
 - **Instrument:** 15 cm ($f/5.88$) Maksutov optical telescope orbiting in sun-synchronous low Earth orbit.
 - **Primary Science:** Monitoring Near-Earth Asteroids (NEOs), comets, space debris tracking, and exoplanet transit photometry without atmospheric turbulence.

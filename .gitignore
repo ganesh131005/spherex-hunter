@@ -45,6 +45,7 @@ dist-ssr/
 *.tar.gz
 *.h5
 *.hdf5
+*.pdf
 cache/
 downloads/
 raw_data/
