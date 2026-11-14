@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #11 Created — Observation Date & Time Search (Temporal Range Filtering)]**
+  - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11
+  - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` for frontend datepicker HUD) | **Resource:** `resource:standard`
+  - **Scope:** Adds temporal observation querying across multi-epoch surveys. Provides start/end date-time fields, parses `DATE-OBS`/`MJD` FITS header timestamps, and renders explicit no-data state when a chosen window has no observations.
 - **[GitHub Native Issue #10 Created — Continuous Raytracing-like Sky Tiling & Continuous Adaptive LOD Zoom Engine]**
   - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10
   - **Track:** `web-frontend` | **Role:** `@coolodu` (Collaborating with `@darkodu` on backend tile streaming) | **Resource:** `resource:compute-heavy`
