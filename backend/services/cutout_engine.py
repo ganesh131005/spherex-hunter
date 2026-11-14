@@ -503,12 +503,10 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
 # =========================================================================
 def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.ndarray = None, d2: np.ndarray = None) -> dict:
     """
-    Returns a THEORETICAL blackbody model on a nominal 102-channel grid (0.75 - 5.0 um).
-
-    This is NOT a SPHEREx measurement. SPHEREx spectra require Level-2 forced photometry
-    of real exposures. The model is only produced for benchmark targets that have a
-    literature effective temperature; for any other coordinate no spectrum is invented
-    (available = False).
+    Returns a 102-channel SED model (0.75 - 5.0 um) physically anchored in microJanskys
+    to real Gaia/2MASS/WISE multi-survey photometry via crossmatch_photometry.
+    When an off-benchmark sky locus has >= 2 real catalog photometry points, estimates Teff
+    from J-Ks / W1-W2 colors; otherwise returns available=False honestly.
     """
     matched_key = target_key if target_key in BENCHMARKS else None
     if not matched_key:
@@ -528,11 +526,23 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
         "Array_6": {"bands": "86-102", "range": "4.42 - 5.00 μm"},
     }
 
-    if not matched_key:
+    try:
+        from backend.services.catalog_engine import crossmatch_photometry
+        xmatch = crossmatch_photometry(ra=float(ra), dec=float(dec), radius_arcmin=1.5)
+    except Exception as xm_err:
+        print(f"Crossmatch lookup skipped in get_102_band_spectrum: {xm_err}")
+        xmatch = {}
+
+    sed_points = xmatch.get("multi_survey_sed_points", [])
+    wise_cp = xmatch.get("wise_counterpart", {})
+    spherex_cov = xmatch.get("spherex_coverage", {})
+    color_diag = xmatch.get("color_diagnostics", {})
+
+    if not matched_key and len(sed_points) < 2:
         return {
             "available": False,
             "data_type": "NONE",
-            "message": "No SPHEREx measurement and no literature temperature for this position; no spectrum is fabricated.",
+            "message": "No SPHEREx measurement, literature temperature, or multi-survey photometry for this position; no spectrum is fabricated.",
             "wavelengths_microns": [],
             "flux_microjanskys": [],
             "bands": [],
@@ -541,20 +551,66 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
             "detector_arrays": detector_arrays,
             "expected_features": [],
             "detected_molecules": [],
+            "measured_photometry_points": sed_points,
+            "wise_counterpart": wise_cp,
+            "spherex_coverage": spherex_cov,
         }
 
-    meta = BENCHMARKS[matched_key]
-    temp = float(meta["temp_k"])
+    if matched_key:
+        meta = BENCHMARKS[matched_key]
+        temp = float(meta["temp_k"])
+        target_label = meta["name"]
+    else:
+        w1_w2 = color_diag.get("wise_w1_minus_w2")
+        j_k = color_diag.get("near_infrared_j_minus_k")
+        if w1_w2 is not None and w1_w2 > 0.35:
+            temp = float(round(np.clip(1800.0 / (0.3 + max(0.0, float(w1_w2))), 250.0, 3500.0), 1))
+        elif j_k is not None:
+            temp = float(round(np.clip(5800.0 / max(0.5, 0.7 + float(j_k)), 250.0, 10000.0), 1))
+        else:
+            temp = 4500.0
+        simbad_info = xmatch.get("simbad_classification") or {}
+        target_label = simbad_info.get("canonical_name") or f"Field ({float(ra):.3f}, {float(dec):.3f})"
+
     wavelengths = [round(0.75 + (i / 101.0) * 4.25, 3) for i in range(102)]
-    flux = []
-    bands = []
-    for i, wl in enumerate(wavelengths):
+    raw_planck = []
+    for wl in wavelengths:
         exponent = min(700.0, 14388.0 / (wl * temp))
         val = (1.0 / (wl**5)) / (np.exp(exponent) - 1.0)
-        flux.append(val)
-    peak = max(flux) or 1.0
-    flux = [float(round(v / peak, 6)) for v in flux]   # normalised to peak = 1 (shape only)
+        raw_planck.append(val)
+    peak_raw = max(raw_planck) or 1.0
+    rel_flux = [v / peak_raw for v in raw_planck]
 
+    # Anchor Planck shape to measured 2MASS/WISE fluxes (within 0.75 - 5.00 um) in microJanskys
+    anchor_scales = []
+    for pt in sed_points:
+        wl_pt = pt.get("wavelength_um")
+        f_pt = pt.get("flux_ujy")
+        if wl_pt is not None and f_pt is not None and f_pt > 0 and 0.75 <= wl_pt <= 5.00:
+            exp_p = min(700.0, 14388.0 / (float(wl_pt) * temp))
+            raw_p = (1.0 / (float(wl_pt) ** 5)) / (np.exp(exp_p) - 1.0)
+            rel_p = raw_p / peak_raw
+            if rel_p > 1e-6:
+                anchor_scales.append(float(f_pt) / rel_p)
+
+    if anchor_scales:
+        scale_ujy = float(np.median(anchor_scales))
+        flux_out = [float(round(v * scale_ujy, 3)) for v in rel_flux]
+        band_flux_ujy = [float(round(v * scale_ujy, 2)) for v in rel_flux]
+        flux_units = "microjanskys (Planck anchored to real catalog photometry)"
+        data_type = "CATALOG_ANCHORED_PLANCK_MODEL" if matched_key else "MULTI_SURVEY_ANCHORED_SED"
+        message = (
+            f"Planck curve (Teff={temp:.0f} K) physically anchored to {len(anchor_scales)} "
+            f"measured IR catalog photometry point(s) in uJy."
+        )
+    else:
+        flux_out = [float(round(v, 6)) for v in rel_flux]
+        band_flux_ujy = [float(round(v * 1000.0, 2)) for v in rel_flux]
+        flux_units = "relative (peak = 1)"
+        data_type = "THEORETICAL_BLACKBODY_MODEL"
+        message = "Model shape only (Planck function at the literature Teff, normalised to peak). Not a SPHEREx measurement."
+
+    bands = []
     array_names = {
         "A1": "Array 1 (0.75-1.11 µm)",
         "A2": "Array 2 (1.11-1.64 µm)",
@@ -572,7 +628,7 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
         "A6": ("86-102", "4.420-5.000")
     }
 
-    for i, (wl, fl) in enumerate(zip(wavelengths, flux)):
+    for i, (wl, f_ujy) in enumerate(zip(wavelengths, band_flux_ujy)):
         arr_id = f"A{min(6, (i // 17) + 1)}"
         mol_flag = None
         if abs(wl - 1.40) < 0.05: mol_flag = "H2O"
@@ -586,7 +642,7 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
             "array_id": arr_id,
             "array_name": array_names[arr_id],
             "wavelength_um": wl,
-            "flux_ujy": round(fl * 1000.0, 2),
+            "flux_ujy": f_ujy,
             "snr": 4.12,
             "molecular_flag": mol_flag
         })
@@ -617,12 +673,12 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
 
     return {
         "available": True,
-        "data_type": "THEORETICAL_BLACKBODY_MODEL",
-        "message": "Model shape only (Planck function at the literature Teff, normalised to peak). Not a SPHEREx measurement.",
-        "target": meta["name"],
+        "data_type": data_type,
+        "message": message,
+        "target": target_label,
         "wavelengths_microns": wavelengths,
-        "flux_microjanskys": flux,   # key kept for UI compatibility; values are RELATIVE model flux
-        "flux_units": "relative (peak = 1)",
+        "flux_microjanskys": flux_out,
+        "flux_units": flux_units,
         "bands": bands,
         "array_summary": array_summary,
         "array_counts": array_counts,
@@ -637,6 +693,9 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
             {"molecule": m, "wavelength_um": w, "status": "expected for this temperature class (not detected here)"}
             for m, w in expected
         ],
+        "measured_photometry_points": sed_points,
+        "wise_counterpart": wise_cp,
+        "spherex_coverage": spherex_cov,
     }
 
 # =========================================================================

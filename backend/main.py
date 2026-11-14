@@ -23,7 +23,13 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from backend.services.catalog_engine import crossmatch_photometry, query_2mass_psc, query_simbad_metadata
+from backend.services.catalog_engine import (
+    crossmatch_photometry,
+    query_2mass_psc,
+    query_simbad_metadata,
+    query_spherex_archive,
+    query_wise_catalog,
+)
 from backend.services.csa_neossat_service import query_csa_neossat
 from backend.services.cutout_engine import (
     BENCHMARKS,
@@ -649,7 +655,8 @@ def get_crossmatched_photometry(
 ):
     """
     Performs unified optical-to-infrared photometric cross-matching across Gaia DR3, 2MASS,
-    and SIMBAD. Computes diagnostic color baselines (G - Ks, J - Ks) to flag Brown Dwarfs and Planet X candidates.
+    WISE/NEOWISE, SPHEREx DR1, and SIMBAD. Computes diagnostic color baselines (G - Ks, J - Ks, W1 - W2)
+    to flag Brown Dwarfs and Planet X candidates.
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
@@ -658,6 +665,42 @@ def get_crossmatched_photometry(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def _run_catalog_cone(fn, ra: str, dec: str, radius: float):
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return fn(ra=ra_deg, dec=dec_deg, radius_arcmin=radius)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/catalog/wise")
+def get_wise_catalog(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes")
+):
+    """
+    Queries NASA AllWISE (`allwise_p3as_psd`, fallback Harvard CfA VizieR `II/328/allwise`)
+    and NEOWISE-R (`neowiser_p1bs_psd`) for W1-W4 magnitudes, microJansky fluxes, and epochs.
+    """
+    return _run_catalog_cone(query_wise_catalog, ra, dec, radius)
+
+
+@app.get("/api/catalog/spherex")
+def get_spherex_archive(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(15.0, description="Search radius in arcminutes")
+):
+    """
+    Queries NASA IRSA SPHEREx DR1 (`spherex.obscore`) for spectral coverage planes
+    (0.75 - 5.00 um) with calibrated DR1 reference plane fallback when 0 cone hits exist.
+    """
+    return _run_catalog_cone(query_spherex_archive, ra, dec, radius)
 
 @app.get("/api/discoveries")
 def get_discoveries(

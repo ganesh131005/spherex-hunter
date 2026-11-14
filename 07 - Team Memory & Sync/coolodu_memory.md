@@ -3,11 +3,18 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** 100% of open GitHub Issues (#1, #2, #3, #4, #5, #6, #7) have been systematically rectified, verified with unit/golden test suites, and officially closed on GitHub.
-- **Next Task:** Maintain clean codebase, verify continuous green test passes, and support teammates (`@astrodu`, `@darkodu`, `@iceodu`, `@jokerodu`).
-- **Blockers:** None.
+- **Current Task:** Integrated live multi-survey astronomical data (Gaia DR3, 2MASS, NASA AllWISE + NEOWISE-R, NASA SPHEREx DR1 `spherex.obscore`, and CDS SIMBAD), pre-fetched multi-survey caches across all 7 showcase targets, anchored 102-band SEDs to real IR photometry in $\mu\text{Jy}$, and verified live end-to-end on `http://127.0.0.1:8000/app`.
+- **Next Task:** Monitor SPHEREx ObsCore availability on IRSA TAP (once `irsa.ipac.caltech.edu/TAP` recovers from 502/timeout to populate `spherex_dr1_reference_planes.json`) and coordinate with `@jokerodu` for final `main` integration review.
+- **Blockers:** None locally (`irsa.ipac.caltech.edu/TAP` returned 502/timeouts during testing; mitigated seamlessly via ESA Gaia TAP, Harvard CfA VizieR mirrors, local disk caches, and a 120s SPHEREx outage cooldown).
 
 ## Completed Tasks:
+- [x] **[Multi-Survey Catalog Integration, Cache Refresh & Live Workspace Run (`Gaia + 2MASS + WISE + SPHEREx`)]**:
+  - **`backend/services/catalog_engine.py` & `backend/services/gaia_service.py`:** Added `_TimeoutSession` HTTP socket timeout enforcement, ESA Gaia TAP + IRSA `gaia_dr3_source` cross-fallback + L2 disk cache (`backend/cache/gaia_service`), `g_flux_ujy` / 2MASS `j/h/k_flux_ujy` conversions, Harvard CfA VizieR (`II/246/out`, `II/328/allwise`) fallbacks, `query_wise_catalog` (AllWISE + NEOWISE-R), `query_spherex_archive` (`spherex.obscore` cone + reference fallback + 120s outage cooldown), and unified `crossmatch_photometry` (including Luhman 2014 / Wright et al. 2014 moving-target photometry for WISE 0855-0714).
+  - **`backend/main.py`:** Exposed `GET /api/catalog/wise` and `GET /api/catalog/spherex`.
+  - **`backend/services/cutout_engine.py`:** Enhanced `get_102_band_spectrum` to anchor 102-band Planck fluxes in $\mu\text{Jy}$ to measured 2MASS/WISE catalog photometry and support `MULTI_SURVEY_ANCHORED_SED` on off-benchmark targets (e.g., Orion M42, Sgr A*).
+  - **`scripts/update_all_astro_data.py`:** Created and ran multi-survey cache updater across all 7 targets (`wise0855`, `barnard`, `epsindi`, `rwaur`, `rdraconis`, `orion`, `sgra`), generating `backend/cache/MULTI_SURVEY_SUMMARY.json` while keeping existing cached FITS files (`force_refresh=False`).
+  - **`frontend/index.html`:** Added the `WISE & SPHEREx IR Synthesis` card in `#inspectorPanelTarget`, wired `loadMultiSurveyCrossmatch(ra, dec)` into `loadSkyCutout`, updated `#coaddA1`–`#coaddA6` array co-add cards from `spec.array_summary`, overlaid `measured_photometry_points` on `specChart`, and connected `multi_epoch_lightcurve` to `lightCurveChart`.
+  - **Verification:** `tests/test_golden_suite.py` (11 tests passed), `tests/test_bands_spectrum.py` (passed including `test_wise_and_spherex_catalog_endpoints`), `tests/test_live_cutout_zogy.py` (4 ZOGY tests passed), and live `http://127.0.0.1:8000/app` browser verification passed with 0 console errors and 0 HTTP errors (`>=400`).
 - [x] **[GitHub Issues #1, #2, #3, #4, #5, #6, #7 Rectified & Closed]**:
   - **Issue #1 (Tasks 3, 4, 5: WiseView Bridge, CSA NEOSSat Tracking & Resources Codex):** Verified that WiseView 1-click verification, NEOSSat/CADC telemetry, and NASA/CSA Resources Codex are live and passing. Closed on GitHub.
   - **Issue #2 (Wire Phase 1 ZOGY Differencing into Live /api/cutout):** Wired `zogy_subtraction` and `construct_gaussian_psf` into `cutout_engine.py` serving authentic $S_{\text{corr}}$ significance maps (`units: sigma`). Added `GET /api/cutout/raw` and `GET /api/cutout/raw/header` Float32 ArrayBuffer streaming. All 4 tests in `tests/test_live_cutout_zogy.py` passed with $S_{\text{corr}} \ge 5\sigma$. Closed on GitHub.

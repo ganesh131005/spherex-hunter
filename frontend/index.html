@@ -653,6 +653,18 @@
           <div class="flex justify-between"><span class="text-gray-400">Optical Counterpart:</span><span id="gaiaMatchStatus" class="text-rose-400 font-bold">No Match (IR-Only)</span></div>
         </div>
 
+        <!-- WISE, 2MASS & SPHEREx Multi-Survey IR Synthesis Card -->
+        <div class="bg-space-950/70 p-3 rounded-lg border border-space-700 space-y-1.5 text-[11px]">
+          <div class="text-amber-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1">
+            <i data-lucide="radar" class="w-3 h-3"></i>
+            <span>WISE &amp; SPHEREx IR Synthesis</span>
+          </div>
+          <div class="flex justify-between"><span class="text-gray-400">WISE W1 / W2:</span><span id="wiseW1W2Mag" class="text-amber-300 font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">W1 &minus; W2 Color:</span><span id="wiseColorIndex" class="text-white font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">2MASS J / Ks:</span><span id="twomassJKMag" class="text-emerald-300 font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">SPHEREx DR1:</span><span id="spherexObsBadge" class="text-cyan-300 font-bold text-right">--</span></div>
+        </div>
+
         <!-- External Archival Bridges -->
         <div class="space-y-2 pt-1 font-sans">
           <a id="btnWiseView" href="http://byw.tools/wiseview#ra=133.79513&dec=-7.24515&size=150&band=3&linear=True&diff=True" target="_blank" rel="noopener noreferrer"
@@ -2517,6 +2529,9 @@
           performAstroCrossCheck();
         }
 
+        // Unified Gaia DR3 + 2MASS + WISE/NEOWISE + SPHEREx DR1 Synthesis
+        loadMultiSurveyCrossmatch(camera.ra, camera.dec);
+
         // Live CSA NEOSSat Asteroid Tracking Cross-Match (Task 4)
         loadCSANeossatData(camera.ra, camera.dec, camera.fov);
       } catch (err) {
@@ -2942,21 +2957,40 @@
         }
       };
 
+      let spectrumPointMeta = {};
+      window._setSpectrumPointMeta = (m) => { spectrumPointMeta = m || {}; };
+
       specChart = new Chart(ctxChart, {
         type: 'line',
         data: {
           labels: wlLabels,
-          datasets: [{
-            data: [],
-            borderColor: '#ea7600',
-            backgroundColor: 'rgba(234, 118, 0, 0.15)',
-            fill: true,
-            borderWidth: 2,
-            pointRadius: 0,
-            pointHoverRadius: 4,
-            pointHoverBackgroundColor: '#ffffff',
-            tension: 0.25
-          }]
+          datasets: [
+            {
+              label: '102-Band SED (µJy)',
+              data: [],
+              borderColor: '#ea7600',
+              backgroundColor: 'rgba(234, 118, 0, 0.15)',
+              fill: true,
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 4,
+              pointHoverBackgroundColor: '#ffffff',
+              tension: 0.25
+            },
+            {
+              label: 'Catalog Photometry (µJy)',
+              data: [],
+              borderColor: '#ffffff',
+              backgroundColor: '#22d3ee',
+              fill: false,
+              showLine: false,
+              borderWidth: 1.5,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              pointStyle: 'rectRot',
+              spanGaps: false
+            }
+          ]
         },
         plugins: [spherexArrayPlugin],
         options: {
@@ -2997,7 +3031,13 @@
             tooltip: {
               callbacks: {
                 title: (items) => `λ = ${items[0].label} µm`,
-                label: (item) => `Flux: ${item.raw}`
+                label: (item) => {
+                  if (item.datasetIndex === 1) {
+                    const meta = spectrumPointMeta[item.dataIndex];
+                    return meta ? `${meta.band}: ${meta.flux_ujy} µJy (${meta.mag} mag)` : `Catalog Flux: ${item.raw} µJy`;
+                  }
+                  return `SED Flux: ${item.raw} µJy`;
+                }
               }
             }
           }
@@ -3060,6 +3100,55 @@
       updateChannelUI();
     }
 
+    function updateArraySummaryCards(spec) {
+      const statusEl = document.getElementById('coaddArrayStatus');
+      const arrIds = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'];
+      if (!spec || !spec.available || !spec.array_summary) {
+        if (statusEl) {
+          statusEl.innerText = 'No Catalog SED At Locus';
+          statusEl.className = 'text-gray-400 text-[10px]';
+        }
+        arrIds.forEach(id => {
+          const valEl = document.getElementById(`coadd${id}`);
+          const snrEl = document.getElementById(`snr${id}`);
+          if (valEl) {
+            valEl.innerText = '--';
+            valEl.className = 'text-gray-400 font-bold text-sm my-1';
+          }
+          if (snrEl) snrEl.innerText = 'SNR --';
+        });
+        return;
+      }
+
+      const spx = spec.spherex_coverage || {};
+      const pts = spec.measured_photometry_points || [];
+      if (statusEl) {
+        if (spx.coverage_type === 'DIRECT_FIELD_HIT') {
+          statusEl.innerText = `DR1 Direct Hits (${spx.count})`;
+          statusEl.className = 'text-emerald-400 text-[10px] font-bold';
+        } else if (spec.data_type === 'CATALOG_ANCHORED_PLANCK_MODEL' || spec.data_type === 'MULTI_SURVEY_ANCHORED_SED') {
+          statusEl.innerText = `Anchored (${pts.length} Catalog pts)`;
+          statusEl.className = 'text-cyan-400 text-[10px] font-bold';
+        } else {
+          statusEl.innerText = `Model Shape (${spec.temperature_k || '?'} K)`;
+          statusEl.className = 'text-amber-400 text-[10px] font-bold';
+        }
+      }
+
+      arrIds.forEach(id => {
+        const entry = spec.array_summary[id];
+        const valEl = document.getElementById(`coadd${id}`);
+        const snrEl = document.getElementById(`snr${id}`);
+        if (valEl && entry) {
+          valEl.innerText = `${entry.avg_flux_ujy} µJy`;
+          valEl.className = 'text-cyan-300 font-bold text-sm my-1';
+        }
+        if (snrEl && entry) {
+          snrEl.innerText = `Bands ${entry.band_range} (${entry.range_um} µm)`;
+        }
+      });
+    }
+
     async function loadSpectrumData(ra, dec, targetKey = null) {
       try {
         let url = `${BACKEND_URL}/spectrum?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}`;
@@ -3068,6 +3157,8 @@
         if (res.ok) {
           const spec = await res.json();
           currentSpectrumData = spec;
+          updateArraySummaryCards(spec);
+
           if (specChart) {
             let fluxes = [];
             let labels = [];
@@ -3078,11 +3169,28 @@
               fluxes = spec.bands.map(b => b.flux_ujy);
               labels = spec.bands.map(b => typeof b.wavelength === 'number' ? b.wavelength.toFixed(2) : (b.wavelength_um || b.wavelength));
             }
+
+            const scatterOverlay = new Array(Math.max(102, fluxes.length)).fill(null);
+            const ptMeta = {};
+            const measured = spec.measured_photometry_points || [];
+            measured.forEach(pt => {
+              if (pt.wavelength_um >= 0.75 && pt.wavelength_um <= 5.00 && pt.flux_ujy !== null && pt.flux_ujy !== undefined) {
+                const idx = Math.max(0, Math.min(101, Math.round(((pt.wavelength_um - 0.75) / 4.25) * 101)));
+                scatterOverlay[idx] = pt.flux_ujy;
+                ptMeta[idx] = pt;
+              }
+            });
+            if (window._setSpectrumPointMeta) window._setSpectrumPointMeta(ptMeta);
+
             if (fluxes.length > 0) {
               specChart.data.labels = labels;
               specChart.data.datasets[0].data = fluxes;
-              specChart.update();
+              if (specChart.data.datasets[1]) specChart.data.datasets[1].data = scatterOverlay;
+            } else {
+              specChart.data.datasets[0].data = [];
+              if (specChart.data.datasets[1]) specChart.data.datasets[1].data = [];
             }
+            specChart.update();
           }
           updateChannelUI();
         }
@@ -3825,8 +3933,24 @@
       }, 3000);
     }
 
-    // LIGHT CURVE CHART (Chart.js)
+    // LIGHT CURVE CHART (Chart.js) & MULTI-SURVEY CROSS-MATCH SYNTHESIS
     let lightCurveChart = null;
+    let latestMultiEpochLC = null;
+
+    function updateLightCurveChart(lcPoints) {
+      latestMultiEpochLC = Array.isArray(lcPoints) ? lcPoints : [];
+      if (!lightCurveChart) return;
+      const numericPts = latestMultiEpochLC.filter(p => p && p.mag !== null && p.mag !== undefined);
+      if (numericPts.length > 0) {
+        lightCurveChart.data.labels = numericPts.map(p => p.epoch_label);
+        lightCurveChart.data.datasets[0].data = numericPts.map(p => p.mag);
+      } else {
+        lightCurveChart.data.labels = ['Awaiting IR Epoch Photometry'];
+        lightCurveChart.data.datasets[0].data = [];
+      }
+      lightCurveChart.update();
+    }
+
     function initLightCurveChart() {
       const canvasLC = document.getElementById('lightCurveChart');
       if (!canvasLC || lightCurveChart) return;
@@ -3834,10 +3958,10 @@
       lightCurveChart = new Chart(ctxLC, {
         type: 'line',
         data: {
-          labels: ['1999 (2MASS)', '2010 (WISE W1)', '2014 (unWISE)', '2025 (SPHEREx)'],
+          labels: ['Loading Epochs...'],
           datasets: [{
-            label: 'Band Flux (μJy)',
-            data: [1420, 1510, 1490, 1530],
+            label: 'Infrared Magnitude (mag)',
+            data: [],
             borderColor: '#38bdf8',
             backgroundColor: 'rgba(56, 189, 248, 0.15)',
             fill: true,
@@ -3851,13 +3975,97 @@
           maintainAspectRatio: false,
           scales: {
             x: { ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } } },
-            y: { ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } } }
+            y: {
+              reverse: true,
+              title: { display: true, text: 'Mag (Brighter ↑)', color: '#94a3b8', font: { size: 9 } },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+            }
           },
           plugins: {
             legend: { display: false }
           }
         }
       });
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+
+    async function loadMultiSurveyCrossmatch(ra, dec) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/catalog/crossmatch?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&radius=3.0`);
+        if (!res.ok) return;
+        const xmatch = await res.json();
+
+        const wise = xmatch.wise_counterpart || {};
+        const tm = xmatch.infrared_counterpart || {};
+        const opt = xmatch.optical_counterpart || {};
+        const spx = xmatch.spherex_coverage || {};
+        const planes = spx.planes || [];
+        const diag = xmatch.color_diagnostics || {};
+
+        const wiseMagEl = document.getElementById('wiseW1W2Mag');
+        if (wiseMagEl) {
+          const w1Str = wise.w1_mag !== null && wise.w1_mag !== undefined ? wise.w1_mag.toFixed(2) : '--';
+          const w2Str = wise.w2_mag !== null && wise.w2_mag !== undefined ? wise.w2_mag.toFixed(2) : '--';
+          wiseMagEl.innerText = `${w1Str} / ${w2Str} mag`;
+        }
+
+        const wiseColEl = document.getElementById('wiseColorIndex');
+        if (wiseColEl) {
+          const c = diag.wise_w1_minus_w2 ?? wise.w1_w2_color;
+          if (c !== null && c !== undefined) {
+            const flag = c > 1.5 ? ' (Cold BD)' : '';
+            wiseColEl.innerText = `${c >= 0 ? '+' : ''}${c.toFixed(2)} mag${flag}`;
+            wiseColEl.className = c > 1.5 ? 'text-amber-300 font-bold' : 'text-white font-bold';
+          } else {
+            wiseColEl.innerText = '--';
+            wiseColEl.className = 'text-gray-400 font-bold';
+          }
+        }
+
+        const tmEl = document.getElementById('twomassJKMag');
+        if (tmEl) {
+          if (tm.j_mag !== null && tm.j_mag !== undefined) {
+            const jStr = tm.j_mag.toFixed(2);
+            const kStr = tm.k_mag !== null && tm.k_mag !== undefined ? tm.k_mag.toFixed(2) : '--';
+            tmEl.innerText = `${jStr} / ${kStr} mag`;
+            tmEl.className = 'text-emerald-300 font-bold';
+          } else if (wise.w2_mag !== null && wise.w2_mag !== undefined) {
+            tmEl.innerText = 'J/Ks Dropout (IR-Only)';
+            tmEl.className = 'text-amber-300 font-bold';
+          } else {
+            tmEl.innerText = 'No Match';
+            tmEl.className = 'text-gray-400 font-bold';
+          }
+        }
+
+        const spxEl = document.getElementById('spherexObsBadge');
+        if (spxEl) {
+          if (spx.coverage_type === 'DIRECT_FIELD_HIT' && planes.length > 0) {
+            spxEl.innerText = `Direct Hit (${planes.length}: ${planes[0].energy_bandpassname || 'DR1'})`;
+            spxEl.className = 'text-emerald-400 font-bold text-right';
+          } else if (spx.coverage_type === 'DR1_REFERENCE_PLANES' && planes.length > 0) {
+            spxEl.innerText = `DR1 Calibrated (${planes.length} ref planes)`;
+            spxEl.className = 'text-cyan-300 font-bold text-right';
+          } else {
+            spxEl.innerText = 'Archive Unavailable';
+            spxEl.className = 'text-gray-400 font-bold text-right';
+          }
+        }
+
+        // Fill Gaia summary fallback if overlay disabled or star count unset
+        const countEl = document.getElementById('gaiaStarCount');
+        if (countEl && (!gaiaOverlayEnabled || countEl.innerText === '--')) {
+          countEl.innerText = `${xmatch.all_gaia_sources_count || 0} Stars`;
+        }
+        const nearestEl = document.getElementById('gaiaNearestID');
+        if (nearestEl && (!gaiaOverlayEnabled || nearestEl.innerText === '--') && opt.source_id) {
+          nearestEl.innerText = `...${String(opt.source_id).slice(-8)}`;
+        }
+
+        updateLightCurveChart(xmatch.multi_epoch_lightcurve || []);
+      } catch (err) {
+        console.warn("Multi-survey crossmatch fetch notice:", err);
+      }
     }
 
     // CANDIDATES DISCOVERY FETCHER
