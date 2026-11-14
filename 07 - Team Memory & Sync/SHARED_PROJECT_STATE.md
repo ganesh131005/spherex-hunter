@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #25 Created — Clarify 'Δt Baseline' Time Gap for Beginners and Disambiguate from Dock Collapse Button]**
+  - **Issue #25 Link:** https://github.com/joker0210G/spherex-hunter/issues/25
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Replaces cryptic mathematical `Δt:` with plain-language 'Time Gap: 26.3 Years', adds an educational tooltip explaining proper motion time baselines for Planet X / brown dwarf hunting, and separates the text from the dock collapse chevron button.
 - **[GitHub Native Issue #24 Created — Fix Flipbook Blink Animation Clamped to 2 Frames Instead of All 4 Observation Epochs]**
   - **Issue #24 Link:** https://github.com/joker0210G/spherex-hunter/issues/24
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
