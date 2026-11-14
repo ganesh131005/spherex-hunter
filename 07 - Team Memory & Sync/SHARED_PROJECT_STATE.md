@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #20 Created — Replace Cryptic Technical Diagnostics with Actionable User-Friendly Error Messages and Retry Controls]**
+  - **Issue #20 Link:** https://github.com/joker0210G/spherex-hunter/issues/20
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Replaces raw technical stack traces and HTTP errors with clear plain-language explanations, actionable instructions, 1-click Retry buttons, graceful fallbacks for bad coordinates/offline network/unobserved sky regions, and crash-proof UI boundaries.
 - **[GitHub Native Issue #19 Created — Add Dark and Light Theme Switching with LocalStorage Persistence and FITS Invariance]**
   - **Issue #19 Link:** https://github.com/joker0210G/spherex-hunter/issues/19
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
