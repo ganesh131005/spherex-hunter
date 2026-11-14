@@ -17,11 +17,14 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+from backend.api_v1 import make_request_id, router as api_v1_router
+from backend.models_v1 import ProblemDetails
 
 from backend.services.catalog_engine import crossmatch_photometry, query_2mass_psc, query_simbad_metadata
 from backend.services.csa_neossat_service import query_csa_neossat
@@ -54,6 +57,31 @@ app.add_middleware(
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 if os.path.exists(FRONTEND_DIR):
     app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+
+# Mount Versioned API v1 Router
+app.include_router(api_v1_router)
+
+# Global RFC 7807 Exception Handler
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    req_id = request.headers.get("x-request-id", make_request_id())
+    code = getattr(exc, "code", f"HTTP_{exc.status_code}")
+    title = getattr(exc, "title", "HTTP Error")
+    problem = ProblemDetails(
+        type=f"https://spherex-hunter.space/errors/{str(code).lower().replace('_', '-')}",
+        title=title,
+        status=exc.status_code,
+        detail=str(exc.detail),
+        instance=str(request.url),
+        request_id=req_id,
+        code=str(code)
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=problem.model_dump(),
+        media_type="application/problem+json",
+        headers={"X-Request-Id": req_id, "Cache-Control": "no-store"}
+    )
 
 # In-memory discovery ledger (persisted to JSON)
 DISCOVERIES_FILE = os.path.join(os.path.dirname(__file__), "..", "07 - Team Memory & Sync", "candidate_discoveries.json")

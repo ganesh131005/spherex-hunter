@@ -1,0 +1,9 @@
+{
+  "valid": false,
+  "code": "BAND_MISMATCH",
+  "reason": "No wavelength-matched pair available for Epsilon Indi B (requires identical optical filters).",
+  "provenance": {
+    "source": "precomputed",
+    "git_hash": "71a9daaaa9d8b27d415c2d79d1be389da460baff"
+  }
+}

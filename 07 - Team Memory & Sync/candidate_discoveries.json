@@ -299,5 +299,17 @@
     "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
     "target_name": "WISE 0855 Test Flag",
     "timestamp": "2026-11-12T20:50:00Z"
+  },
+  {
+    "candidate_id": "SPX-2026-6A23DC",
+    "target_id": "sample_leo",
+    "target_name": "Technical Validation Field (SPHEREx D6 Flight Pair)",
+    "ra": 160.605,
+    "dec": 30.702,
+    "object_type": "mover",
+    "category": "mover",
+    "user_handle": "@pytest_runner",
+    "notes": "Fast-moving candidate tracklet test",
+    "timestamp": "2026-11-14T10:38:53.092291+00:00"
   }
 ]

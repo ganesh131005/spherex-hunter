@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[STAGE B & C COMPLETE: Contract-First API v1 & Precomputed Demo Cache (@darkodu)]**
+  - **Contract-First Architecture:** Implemented typed Pydantic v2 schemas in `backend/models_v1.py` and versioned APIRouter in `backend/api_v1.py` mounted under `/api/v1`.
+  - **RFC 7807 Standard Error Handling:** All errors return `application/problem+json` with unique `request_id`, status code, title, and machine-readable error `code` (`BAND_MISMATCH`, `NO_PUBLIC_DATA`, `TARGET_NOT_FOUND`).
+  - **Strict Science Consistency:** `/api/v1/difference` strictly enforces like-wavelength pairs and returns 422 `BAND_MISMATCH` if wavelengths differ. Exposures for 0-public exposure targets (`rwaur`) return an honest `no_public_data` status with structured archive explanation.
+  - **Precomputed Demo Cache (`demo_cache/`):** Built 144 KB lightweight cache with `manifest.json`, small cutouts, forced photometry, like-wavelength light curves, and ZOGY difference products to guarantee sub-300ms latency.
+  - **Exports:** Added multi-format candidate exports in `/api/v1/export/csv`, `/api/v1/export/votable` (IVOA XML), and `/api/v1/export/fits` (multi-extension binary table).
+  - **Comprehensive Automated Testing:** 22/22 contract tests passing (`tests/test_api_v1_contract.py`), 81/81 total repository tests passing. OpenAPI documentation exported to `docs/openapi.json` and documented in `docs/API_CONTRACT.md`.
 - **[FRONTEND REFINEMENT & DEMO LANDING PRESET: WISE 0855-0714 (@darkodu)]**
   - **Landing Preset Optimization for NASA Judges:** Configured WISE 0855-0714 as the default demo preset. Directly exhibits a clean 7.08'' proper motion dipole on Bramich differencing, prominent water ice ($1.4/1.9\,\mu\text{m}$) and methane ($3.3\,\mu\text{m}$) absorption bands on the 102-band infrared curve, and complete Gaia optical dropout (confirming cold sub-stellar brown dwarf / Planet X analog nature).
   - **102-Band Spectrum Curve Activation:** Fixed parser in `frontend/index.html` mapping `spec.flux_microjanskys` and `spec.wavelengths_microns`, ensuring the live spectral curve renders instantly upon target selection.

@@ -3,11 +3,21 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Completed demo landing screen refinement for WISE 0855 demo preset, dynamic astrometry parameters for all presets, and live 102-band spectrum chart integration. Pushed to `darkodu/astro-backend`.
-- **Next Task:** Phase 3 (Forced Spectrophotometry & Sonora Atmosphere SED fitting).
+- **Current Task:** Completed Backend-Frontend Alignment, Contract First API v1 Architecture, and Precomputed Demo Cache (`darkodu/astro-backend`).
+- **Next Task:** Frontend client migration to use versioned `/api/v1` routes and live demo cache.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Delivered Backend Alignment and Contract-First API v1 Architecture:
+  - Contract Audit (`docs/API_CONTRACT_AUDIT.md`): Full mapping of all frontend network calls, parameters, and consumed fields.
+  - Frontend Honesty Fixes: Corrected CADC domain typo (`.gc.jp` -> `.gc.ca`), replaced hardcoded array photometry with empty waiting state, removed synthetic mock light curves, and marked static validation numbers as under review.
+  - Merged Code Review & Sanitization: Cleaned `backend/services/neossat_service.py` and `verification_service.py` to remove probability and "Planet X" heuristics; added evidence tiers; fixed IMCCE SkyBoT HTTP 403 by configuring custom User-Agent and JSON headers (`tests/test_neossat_verification.py` 5/5 passing).
+  - Research Vault Hygiene: Gitignored `05 - Research & Resources/` (35 documents) and summarized external databases in `docs/references.md`.
+  - Precompute Architecture (`scripts/build_demo_cache.py`): Built lightweight (144 KB total) precomputed cache in `demo_cache/` with `manifest.json`, small cutouts, forced aperture photometry, like-wavelength light curves, and ZOGY difference products.
+  - Pydantic v2 Models (`backend/models_v1.py`): RFC 7807 problem details, physical quantities with units/uncertainties, space motion models, scene graphs, exposures, difference products, and validation metrics.
+  - API v1 APIRouter (`backend/api_v1.py`): Versioned endpoints under `/api/v1` with standard headers (`ETag`, `Cache-Control`, `X-Request-Id`, `X-Data-Source`), strict like-wavelength differencing (`BAND_MISMATCH` 422), honest empty states for 0-public exposure fields (`rwaur`), and multi-format exports (CSV, IVOA VOTable XML, binary FITS table).
+  - Contract Tests (`tests/test_api_v1_contract.py`): 22/22 contract tests passing covering all models, endpoints, proper motion propagation, and RFC 7807 errors. Full repository suite 81/81 tests passing.
+  - OpenAPI Specification (`docs/openapi.json`) and Contract Documentation (`docs/API_CONTRACT.md`).
 - [x] Refined First-Screen Demo Preset Visuals for NASA Judges:
   - Validated WISE 0855-0714 as the premier landing preset: shows a clean 7.08'' proper motion dipole on Bramich differencing, prominent water ice and methane infrared absorption dips on the 102-band spectrum, and complete Gaia optical dropout (confirming cold sub-stellar brown dwarf / Planet X analog nature).
   - Resolved `loadSpectrumData` parser bug in `frontend/index.html` to correctly map `spec.flux_microjanskys` and `spec.wavelengths_microns`, instantly rendering the live 102-band infrared curve.
