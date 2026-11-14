@@ -10,7 +10,6 @@ parallax, and optical G-band magnitudes for astronomical cross-matching.
 import time
 import pyvo as vo
 import numpy as np
-from backend.services.catalog_engine import BENCHMARK_GAIA_CATALOG
 
 # Official NASA IRSA TAP Service URL hosting Gaia DR3 catalog
 IRSA_TAP_URL = "https://irsa.ipac.caltech.edu/TAP"
