@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[FRONTEND REFINEMENT & DEMO LANDING PRESET: WISE 0855-0714 (@darkodu)]**
+  - **Landing Preset Optimization for NASA Judges:** Configured WISE 0855-0714 as the default demo preset. Directly exhibits a clean 7.08'' proper motion dipole on Bramich differencing, prominent water ice ($1.4/1.9\,\mu\text{m}$) and methane ($3.3\,\mu\text{m}$) absorption bands on the 102-band infrared curve, and complete Gaia optical dropout (confirming cold sub-stellar brown dwarf / Planet X analog nature).
+  - **102-Band Spectrum Curve Activation:** Fixed parser in `frontend/index.html` mapping `spec.flux_microjanskys` and `spec.wavelengths_microns`, ensuring the live spectral curve renders instantly upon target selection.
+  - **Dynamic Astrometry Parameters:** Enriched `TARGETS` catalog and `selectTarget` handler to dynamically populate real ICRS coordinates, total PM (in both arcsec/yr and mas/yr), distance (pc/ly), and $T_{\text{eff}}$ for all 5 verified presets.
+  - **Bottom Dock Visual Polish:** Expanded bottom dock height from 112px to 144px (`h-36`) for enhanced readability of the 102-band spectrum curve and molecular absorption panels.
+  - **Full Automated Testing:** 11/11 Playwright E2E browser tests passing (`test_scene_panel_e2e.py` and `test_redesign_e2e.py`), 43/43 unit tests passing, and 100% ruff linting clean. Committed and pushed to `origin darkodu/astro-backend` (`3c60788`).
 - **[GitHub Native Issues Live: Issue #1 Completed by @coolodu]** Migrated task management to official GitHub Native Issues:
   - **Live Issues Board:** https://github.com/joker0210G/spherex-hunter/issues
   - **Issue #1 ([WEB] Tasks 3, 4, 5: WiseView Bridge, CSA NEOSSat Tracking & Resources Codex):** https://github.com/joker0210G/spherex-hunter/issues/1

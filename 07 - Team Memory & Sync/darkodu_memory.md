@@ -3,11 +3,17 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Completed Phase 2 (Real Data Validation, Claims Audit, Injection-Recovery, FPR, Tracklet Linking, Detectability Map, and UI Validation Tab). Pushed to `darkodu/astro-backend`.
+- **Current Task:** Completed demo landing screen refinement for WISE 0855 demo preset, dynamic astrometry parameters for all presets, and live 102-band spectrum chart integration. Pushed to `darkodu/astro-backend`.
 - **Next Task:** Phase 3 (Forced Spectrophotometry & Sonora Atmosphere SED fitting).
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Refined First-Screen Demo Preset Visuals for NASA Judges:
+  - Validated WISE 0855-0714 as the premier landing preset: shows a clean 7.08'' proper motion dipole on Bramich differencing, prominent water ice and methane infrared absorption dips on the 102-band spectrum, and complete Gaia optical dropout (confirming cold sub-stellar brown dwarf / Planet X analog nature).
+  - Resolved `loadSpectrumData` parser bug in `frontend/index.html` to correctly map `spec.flux_microjanskys` and `spec.wavelengths_microns`, instantly rendering the live 102-band infrared curve.
+  - Implemented dynamic astrometry metadata in `selectTarget` across all 5 verified presets (updating RA, Dec, Total PM in arcsec/yr and mas/yr, distance in pc/ly, and Teff).
+  - Expanded bottom dock body height from 112px to 144px (`h-36`) for improved visual clarity of the 102-band curve and molecular markers.
+  - Verified 11/11 Playwright E2E tests (`test_scene_panel_e2e.py` and `test_redesign_e2e.py`) and 43/43 unit tests passing. Pushed to `origin darkodu/astro-backend`.
 - [x] Phase 2: Real Data Validation & Negative Results:
   - Step 2.0 (Claims Audit): Built `docs/claims_audit.md` auditing all quantitative claims against real NASA IRSA TAP `spherex.obscore` (1.6M rows) queries; documented exposure counts and public coverage honestly (RW Aurigae = 0 exposures; WISE 0855 = 5 exposures, $\Delta t = 27.85\text{ d}$).
   - Step 2.1 (Injection-Recovery): Implemented `validation/inject.py` executing 280 synthetic injections with real SPHEREx EPSF into actual image noise. Generated `docs/figures/completeness_vs_mag.png` (50% limit $20.8\text{ mag}$) and `docs/figures/completeness_vs_rate.png`. Verified 0.00% false-negative rate for cosmic-ray and dipole vetoes.
