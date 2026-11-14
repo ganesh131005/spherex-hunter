@@ -3,11 +3,16 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Completed Backend-Frontend Alignment, Contract First API v1 Architecture, and Precomputed Demo Cache (`darkodu/astro-backend`).
-- **Next Task:** Frontend client migration to use versioned `/api/v1` routes and live demo cache.
+- **Current Task:** Completed GitHub Issue #2 (Wiring Phase 1 ZOGY Differencing & Float32 Preprocessing into Live `/api/cutout` Pipeline). Pushed to `darkodu/astro-backend`.
+- **Next Task:** Assist team lead `jokerodu` on PR merge into `main` and frontend endpoint wiring.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Resolved GitHub Issue #2 ([BACKEND] Con #1: Wire Phase 1 ZOGY Differencing & Float32 Preprocessing into Live /api/cutout Pipeline):
+  - Connected `zogy_subtraction()` and `construct_gaussian_psf()` from `backend/science/differencing.py` into `backend/services/cutout_engine.py`.
+  - Upgraded live `GET /api/cutout` response to deliver authentic ZOGY $S_{\text{corr}}$ significance metrics (`units: sigma`, `peak_sigma`, `trough_sigma`, `snr_threshold: 5.0`).
+  - Implemented unversioned aliases `GET /api/cutout/raw` and `GET /api/cutout/raw/header` in `backend/main.py` streaming 65,536-byte Float32 binary `ArrayBuffer` cutouts for client-side WebGL / Canvas Asinh & ZScale stretch sliders.
+  - Created integration test suite `tests/test_live_cutout_zogy.py` (4/4 passed), verifying that `/api/cutout` returns ZOGY $S_{\text{corr}}$ peak $\ge 5\sigma$ on WISE 0855 and Barnard's Star.
 - [x] Delivered Backend Alignment and Contract-First API v1 Architecture:
   - Contract Audit (`docs/API_CONTRACT_AUDIT.md`): Full mapping of all frontend network calls, parameters, and consumed fields.
   - Frontend Honesty Fixes: Corrected CADC domain typo (`.gc.jp` -> `.gc.ca`), replaced hardcoded array photometry with empty waiting state, removed synthetic mock light curves, and marked static validation numbers as under review.

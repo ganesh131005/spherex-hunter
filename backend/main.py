@@ -211,6 +211,25 @@ def get_cutout(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/cutout/raw")
+def get_cutout_raw_compat(
+    request: Request,
+    target: str = Query(..., description="Target slug e.g. 'sample_leo' or 'wise0855'"),
+    format: Optional[str] = Query("binary", description="'binary' or 'header'")
+):
+    """Exposes Float32 ArrayBuffer cutout streaming for dynamic client-side stretch sliders."""
+    from backend.api_v1 import get_cutout_raw
+    return get_cutout_raw(request=request, target=target, format=format)
+
+@app.get("/api/cutout/raw/header")
+def get_cutout_raw_header_compat(
+    request: Request,
+    target: str = Query(..., description="Target slug e.g. 'sample_leo' or 'wise0855'")
+):
+    """Exposes JSON WCS header for raw float32 cutout."""
+    from backend.api_v1 import get_cutout_raw_header
+    return get_cutout_raw_header(request=request, target=target)
+
 @app.get("/api/gaia")
 def get_gaia_astrometry(
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),

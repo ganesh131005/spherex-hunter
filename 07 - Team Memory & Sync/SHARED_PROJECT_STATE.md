@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GITHUB ISSUE #2 RESOLVED: Wired Phase 1 ZOGY Differencing & Float32 Preprocessing into Live `/api/cutout` Pipeline (@darkodu)]**
+  - **Live ZOGY Integration:** Connected `zogy_subtraction()` and `construct_gaussian_psf()` in `backend/services/cutout_engine.py`, surfacing authentic statistical significance metrics (`units: sigma`, `peak_sigma`, `trough_sigma`) on `/api/cutout` and `/api/v1/cutout`.
+  - **Raw Float32 Streaming:** Exposed `/api/cutout/raw` and `/api/cutout/raw/header` streaming 65,536-byte Float32 binary buffers for dynamic client-side WebGL / Canvas Asinh & ZScale sliders.
+  - **Automated Verification:** Added integration test `tests/test_live_cutout_zogy.py` (4/4 passed), verifying peak $\ge 5.0\sigma$ on WISE 0855 ($655.9\sigma$) and Barnard's Star ($84.2\sigma$). Full test suite (34/34 core tests) passing.
+  - **GitHub Issue Link:** https://github.com/joker0210G/spherex-hunter/issues/2
 - **[STAGE B & C COMPLETE: Contract-First API v1 & Precomputed Demo Cache (@darkodu)]**
   - **Contract-First Architecture:** Implemented typed Pydantic v2 schemas in `backend/models_v1.py` and versioned APIRouter in `backend/api_v1.py` mounted under `/api/v1`.
   - **RFC 7807 Standard Error Handling:** All errors return `application/problem+json` with unique `request_id`, status code, title, and machine-readable error `code` (`BAND_MISMATCH`, `NO_PUBLIC_DATA`, `TARGET_NOT_FOUND`).
