@@ -56,9 +56,15 @@ When a teammate hits token limits or hardware bottlenecks, or when the user says
    Run `python tools/github_bridge.py check --worker <target_name>`.
 6. **Provide Formatted Teammate Message:**
    Give the user a ready-to-copy chat message linking to the GitHub Issue.
-7. 🛑 **STRICT GUARDRAIL — DO NOT AUTO-CLAIM:**
-   **NEVER claim, code, or execute a task you just assigned to another teammate!**
-   Your turn is complete once the issue is created and pushed. Only the target teammate can claim and work on it, unless the user explicitly commands: *"Act as <name> now and execute this on my machine."*
+7. 🛑 **STRICT GUARDRAIL — HARD STOP AFTER ASSIGN — NO EXCEPTIONS:**
+   **NEVER claim, code, suggest fixing, or implement any part of a task you just assigned to another teammate.**
+   - This applies REGARDLESS of: the research verdict, the urgency, your capability, or efficiency arguments.
+   - This applies EVEN IF: the task seems "quick", you have all the context, or the answer is "yes, implement."
+   - Your turn ends the moment the GitHub issue is created and pushed.
+   - Your only allowed output after a dispatch is: the formatted teammate message + the GitHub issue link.
+   - DO NOT write any implementation code, edits, or suggestions for the assigned task in the same turn.
+   - Only the target teammate can claim and work on it.
+   - The ONLY exception is an explicit user command in the SAME message: *"Act as <name> now and execute this on my machine."*
 
 ---
 

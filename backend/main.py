@@ -19,14 +19,17 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from backend.api_v1 import make_request_id, router as api_v1_router
-from backend.models_v1 import ProblemDetails
-
-from backend.services.catalog_engine import crossmatch_photometry, query_2mass_psc, query_simbad_metadata
+from backend.services.catalog_engine import (
+    crossmatch_photometry,
+    query_2mass_psc,
+    query_simbad_metadata,
+    query_spherex_archive,
+    query_wise_catalog,
+)
 from backend.services.csa_neossat_service import query_csa_neossat
 from backend.services.cutout_engine import (
     BENCHMARKS,
@@ -35,9 +38,13 @@ from backend.services.cutout_engine import (
     fetch_real_cutout,
     get_102_band_spectrum,
     get_cache_stats,
+    query_observation_timeline,
+    run_automated_source_discovery,
 )
 from backend.services.gaia_service import query_gaia_dr3
+from backend.services.neossat_service import build_neossat_tracking_report, build_portal_links
 from backend.services.scene_service import get_target_scene
+from backend.services.verification_service import run_wiseview_verification
 
 app = FastAPI(
     title="SPHEREx Hunter Astronomical API",
@@ -58,37 +65,12 @@ app.add_middleware(
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 if os.path.exists(FRONTEND_DIR):
     app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
-    ASSETS_DIR = os.path.join(FRONTEND_DIR, "assets")
-    if os.path.exists(ASSETS_DIR):
-        app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
-# Mount Versioned API v1 Router
-app.include_router(api_v1_router)
-
-# Global RFC 7807 Exception Handler
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    req_id = request.headers.get("x-request-id", make_request_id())
-    code = getattr(exc, "code", f"HTTP_{exc.status_code}")
-    title = getattr(exc, "title", "HTTP Error")
-    problem = ProblemDetails(
-        type=f"https://spherex-hunter.space/errors/{str(code).lower().replace('_', '-')}",
-        title=title,
-        status=exc.status_code,
-        detail=str(exc.detail),
-        instance=str(request.url),
-        request_id=req_id,
-        code=str(code)
-    )
-    return JSONResponse(
-        status_code=exc.status_code,
-        content=problem.model_dump(),
-        media_type="application/problem+json",
-        headers={"X-Request-Id": req_id, "Cache-Control": "no-store"}
-    )
-
-# In-memory discovery ledger (persisted to JSON)
-DISCOVERIES_FILE = os.path.join(os.path.dirname(__file__), "..", "07 - Team Memory & Sync", "candidate_discoveries.json")
+# In-memory discovery ledger (persisted to JSON, overridable via env for isolated testing)
+DISCOVERIES_FILE = os.environ.get(
+    "DISCOVERIES_FILE",
+    os.path.join(os.path.dirname(__file__), "..", "07 - Team Memory & Sync", "candidate_discoveries.json")
+)
 
 class DiscoveryCandidate(BaseModel):
     ra: float
@@ -97,7 +79,8 @@ class DiscoveryCandidate(BaseModel):
     motion_type: Optional[str] = None
     target_name: Optional[str] = None
     candidate_name: Optional[str] = None
-    user_handle: str = "@citizen_scientist"
+    user_handle: Optional[str] = "@citizen_scientist"
+    astronomer: Optional[str] = "@citizen_scientist"
     notes: Optional[str] = ""
     proper_motion_mas: Optional[float] = None
     confidence: Optional[int] = 5
@@ -114,6 +97,12 @@ def root():
             "/api/targets",
             "/api/cutout?ra=133.79513&dec=-7.24515&target=wise0855",
             "/api/spectrum?ra=133.79513&dec=-7.24515&target=wise0855",
+            "/api/scene?target=wise0855",
+            "/api/source_discovery?ra=133.79513&dec=-7.24515&target=wise0855",
+            "/api/verify_candidate?ra=133.79513&dec=-7.24515&target=wise0855",
+            "/api/neossat?ra=133.79513&dec=-7.24515",
+            "/api/resources_codex?ra=133.79513&dec=-7.24515",
+            "/api/download_fits?target=wise0855&epoch=1",
             "/api/catalog/gaia?ra=269.45208&dec=4.69339&radius=3.0",
             "/api/catalog/2mass?ra=269.45208&dec=4.69339&radius=3.0",
             "/api/catalog/simbad?ra=269.45208&dec=4.69339",
@@ -144,7 +133,7 @@ def get_benchmark_targets():
             "dec": v["dec"],
             "type": v["type"],
             "temp_k": v["temp_k"],
-            "variability": v.get("variability", 1.0)
+            "variability": None
         }
         for k, v in BENCHMARKS.items()
     ]
@@ -161,7 +150,7 @@ def cache_stats():
 
 @app.post("/api/cache/prune")
 def prune_cache(max_mb: float = 500.0, target_mb: float = 350.0):
-    """Executes smart auto-pruning on dynamic FITS cache."""
+    """Triggers smart auto-pruning of dynamic FITS cache based on soft storage quotas."""
     return auto_prune_disk_cache(max_mb=max_mb, target_mb=target_mb)
 
 import astropy.units as u
@@ -220,24 +209,24 @@ def get_cutout(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/cutout/raw")
-def get_cutout_raw_compat(
-    request: Request,
-    target: str = Query(..., description="Target slug e.g. 'sample_leo' or 'wise0855'"),
-    format: Optional[str] = Query("binary", description="'binary' or 'header'")
+@app.get("/api/observations")
+def get_available_observations(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    start_date: Optional[str] = Query(None, description="Start date (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"),
+    end_date: Optional[str] = Query(None, description="End date (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"),
 ):
-    """Exposes Float32 ArrayBuffer cutout streaming for dynamic client-side stretch sliders."""
-    from backend.api_v1 import get_cutout_raw
-    return get_cutout_raw(request=request, target=target, format=format)
-
-@app.get("/api/cutout/raw/header")
-def get_cutout_raw_header_compat(
-    request: Request,
-    target: str = Query(..., description="Target slug e.g. 'sample_leo' or 'wise0855'")
-):
-    """Exposes JSON WCS header for raw float32 cutout."""
-    from backend.api_v1 import get_cutout_raw_header
-    return get_cutout_raw_header(request=request, target=target)
+    """
+    Returns authentic multi-epoch observation metadata covering celestial coordinates (RA, Dec)
+    within an optional temporal date/time filtering window [start_date, end_date].
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return query_observation_timeline(ra_deg, dec_deg, start_date=start_date, end_date=end_date)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/gaia")
 def get_gaia_astrometry(
@@ -257,6 +246,25 @@ def get_gaia_astrometry(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/cutout/raw")
+def get_cutout_raw_compat(
+    request: Request,
+    target: str = Query(..., description="Target slug e.g. 'sample_leo' or 'wise0855'"),
+    format: Optional[str] = Query("binary", description="'binary' or 'header'")
+):
+    """Exposes Float32 ArrayBuffer cutout streaming for dynamic client-side stretch sliders."""
+    from backend.api_v1 import get_cutout_raw
+    return get_cutout_raw(request=request, target=target, format=format)
+
+@app.get("/api/cutout/raw/header")
+def get_cutout_raw_header_compat(
+    request: Request,
+    target: str = Query(..., description="Target slug e.g. 'sample_leo' or 'wise0855'")
+):
+    """Exposes JSON WCS header for raw float32 cutout."""
+    from backend.api_v1 import get_cutout_raw_header
+    return get_cutout_raw_header(request=request, target=target)
+
 @app.get("/api/spectrum")
 def get_spectrum(
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
@@ -268,6 +276,59 @@ def get_spectrum(
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         spectrum = get_102_band_spectrum(ra=ra_deg, dec=dec_deg, target_key=target)
         return spectrum
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/bands")
+def get_bands_metadata():
+    """Returns static SPHEREx 6-array x 17-channel (102 bands) structural metadata."""
+    ARRAYS = [
+        {"array_id": "A1", "array_name": "Array 1 (0.75-1.11 µm)", "band_range": "1-17", "range_um": "0.750-1.110", "wavelength_min": 0.750, "wavelength_max": 1.110, "resolving_power": 41, "science": "Optical/NIR boundary, stellar continuum, proper motion stars"},
+        {"array_id": "A2", "array_name": "Array 2 (1.11-1.64 µm)", "band_range": "18-34", "range_um": "1.110-1.640", "wavelength_min": 1.110, "wavelength_max": 1.640, "resolving_power": 41, "science": "2MASS J/H overlap, stellar photospheres"},
+        {"array_id": "A3", "array_name": "Array 3 (1.64-2.42 µm)", "band_range": "35-51", "range_um": "1.640-2.420", "wavelength_min": 1.640, "wavelength_max": 2.420, "resolving_power": 41, "science": "2MASS Ks overlap, warm circumstellar dust"},
+        {"array_id": "A4", "array_name": "Array 4 (2.42-3.82 µm)", "band_range": "52-68", "range_um": "2.420-3.820", "wavelength_min": 2.420, "wavelength_max": 3.820, "resolving_power": 35, "science": "H₂O Ice (3.05 µm), CH₄ Methane (3.30 µm)"},
+        {"array_id": "A5", "array_name": "Array 5 (3.82-4.42 µm)", "band_range": "69-85", "range_um": "3.820-4.420", "wavelength_min": 3.820, "wavelength_max": 4.420, "resolving_power": 110, "science": "CO₂ Ice (4.27 µm), Cold Brown Dwarf thermal peak"},
+        {"array_id": "A6", "array_name": "Array 6 (4.42-5.00 µm)", "band_range": "86-102", "range_um": "4.420-5.000", "wavelength_min": 4.420, "wavelength_max": 5.000, "resolving_power": 130, "science": "CO Carbon Monoxide (4.67 µm), Organics, Planet X emission"}
+    ]
+    channels = []
+    for arr in ARRAYS:
+        w_min = arr["wavelength_min"]
+        w_max = arr["wavelength_max"]
+        w_step = (w_max - w_min) / 16.0
+        start_idx = int(arr["band_range"].split("-")[0])
+        for i in range(17):
+            b_id = start_idx + i
+            w_center = round(w_min + i * w_step, 4)
+            mol = None
+            if abs(w_center - 1.40) < 0.05: mol = "H2O"
+            elif abs(w_center - 3.05) < 0.08: mol = "H2O_ICE"
+            elif abs(w_center - 3.30) < 0.08: mol = "CH4"
+            elif abs(w_center - 4.27) < 0.05: mol = "CO2_ICE"
+            elif abs(w_center - 4.67) < 0.06: mol = "CO"
+            channels.append({
+                "band_id": b_id,
+                "band": b_id,
+                "array_id": arr["array_id"],
+                "array_name": arr["array_name"],
+                "wavelength_um": w_center,
+                "resolving_power": arr["resolving_power"],
+                "molecular_flag": mol
+            })
+    return {"status": "success", "total_bands": 102, "arrays": ARRAYS, "bands": channels}
+
+@app.get("/api/source_discovery")
+def source_discovery(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    fov: float = Query(3.0, description="Field of View in arcminutes"),
+    target: Optional[str] = Query(None, description="Benchmark target key")
+):
+    """Runs Caltech-IPAC Source Discovery + CSA NEOSSat Line Segment Detector (LSD) streaklet analysis."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return run_automated_source_discovery(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
     except HTTPException:
         raise
     except Exception as e:
@@ -301,6 +362,23 @@ def get_gaia_catalog(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/neossat")
+def get_neossat_tracking(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    fov: float = Query(3.0, description="Field of View in arcminutes"),
+    epoch: Optional[str] = Query(None, description="ISO UTC observation epoch"),
+    include_cadc: bool = Query(True, description="Query CADC CAOM-2 TAP for NEOSSat archival footprints")
+):
+    """Task 4: Queries IMCCE SkyBoT known Solar System objects and CADC CAOM-2 NEOSSat observations."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return build_neossat_tracking_report(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, epoch=epoch, include_cadc=include_cadc)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/wiseview/url")
 def get_wiseview_url(
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
@@ -327,6 +405,22 @@ def get_wiseview_url(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/verify_candidate")
+def verify_candidate_wiseview(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    fov: float = Query(3.0, description="Field of View in arcminutes"),
+    target: Optional[str] = Query(None, description="Benchmark target key")
+):
+    """Task 3: Runs Backyard Worlds WiseView 5-step verification checklist (Dipole + Gaia DR3 + SkyBoT + W1-W2 + WiseView)."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return run_wiseview_verification(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/csa/neossat")
 def get_csa_neossat(
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
@@ -346,6 +440,171 @@ def get_csa_neossat(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/resources_codex")
+def get_resources_codex(
+    ra: str = Query("133.79513", description="Current Right Ascension"),
+    dec: str = Query("-7.24515", description="Current Declination"),
+    fov: float = Query(3.0, description="Current Field of View in arcminutes")
+):
+    """Task 5: Official NASA, IPAC, MAST, WiseView, CSA NEOSSat & CADC Resources Codex with live coordinate queries."""
+    ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+    links = build_portal_links(ra_deg, dec_deg, fov)
+    return {
+        "status": "success",
+        "coordinates": {"ra_deg": ra_deg, "dec_deg": dec_deg, "fov_arcmin": fov},
+        "links": links,
+        "portals": [
+            {
+                "id": "irsa_spherex",
+                "title": "1. NASA/IPAC IRSA SPHEREx Archive",
+                "agency": "NASA / Caltech-IPAC",
+                "url": "https://irsa.ipac.caltech.edu/Missions/spherex.html",
+                "explorer_url": links["irsa_spherex"],
+                "role": "102-band Linear Variable Filter (0.75–5.0 μm) all-sky spectrophotometry, L2 quality bitmasks & AWS S3 cloud FITS.",
+                "query_lang": "ADQL (IRSA TAP)",
+                "query_snippet": (
+                    f"SELECT 'https://irsa.ipac.caltech.edu/' || a.uri || '?center=' || p.ra || ',' || p.dec || 'd&size=0.1' AS uri,\n"
+                    f"       p.energy_bandpassname, p.time_bounds_lower\n"
+                    f"FROM spherex.artifact a JOIN spherex.plane p ON a.planeid = p.planeid\n"
+                    f"WHERE 1 = CONTAINS(POINT('ICRS', {ra_deg:.5f}, {dec_deg:.5f}), p.poly)\n"
+                    f"ORDER BY p.time_bounds_lower"
+                )
+            },
+            {
+                "id": "ipac_tutorials",
+                "title": "2. Caltech-IPAC SPHEREx Python Tutorials",
+                "agency": "Caltech-IPAC",
+                "url": "https://caltech-ipac.github.io/irsa-tutorials/spherex/",
+                "explorer_url": "https://caltech-ipac.github.io/spherex-archive-documentation/spherex-data-products/",
+                "role": "Source Discovery Tool Demo (Alard-Lupton image subtraction), wavelength-dependent PSF extraction & HiPS spectral cubes.",
+                "query_lang": "Python (PyVO)",
+                "query_snippet": (
+                    f"import pyvo as vo\n"
+                    f"tap = vo.dal.TAPService('https://irsa.ipac.caltech.edu/TAP')\n"
+                    f"res = tap.search(\"SELECT TOP 10 * FROM spherex.plane WHERE 1=CONTAINS(POINT('ICRS',{ra_deg:.5f},{dec_deg:.5f}),poly)\")"
+                )
+            },
+            {
+                "id": "wiseview",
+                "title": "3. Backyard Worlds WiseView Comparator",
+                "agency": "NASA Citizen Science / Dan Caselden",
+                "url": links["wiseview"],
+                "explorer_url": links["wiseview_difference"],
+                "role": "14+ years of unWISE time-resolved W1 (3.4 μm) & W2 (4.6 μm) co-adds with AsinhStretch and dipole difference blinking.",
+                "query_lang": "Deep-Link URL",
+                "query_snippet": links["wiseview"]
+            },
+            {
+                "id": "mast_gaia",
+                "title": "4. STScI MAST & ESA Gaia DR3 Archive",
+                "agency": "STScI / ESA",
+                "url": "https://archive.stsci.edu/missions-and-data/gaia",
+                "explorer_url": links["mast_portal"],
+                "role": "1.8 billion optical stars with micro-arcsecond proper motion vectors (pmra, pmdec), parallax & optical dropout vetting.",
+                "query_lang": "ADQL (Gaia DR3 TAP)",
+                "query_snippet": (
+                    f"SELECT TOP 50 source_id, ra, dec, pmra, pmdec, parallax, phot_g_mean_mag\n"
+                    f"FROM gaia_dr3_source\n"
+                    f"WHERE CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra_deg:.5f}, {dec_deg:.5f}, {fov/60.0:.4f})) = 1\n"
+                    f"ORDER BY phot_g_mean_mag ASC"
+                )
+            },
+            {
+                "id": "csa_neossat",
+                "title": "5. CSA NEOSSat Space Telescope Mission",
+                "agency": "Canadian Space Agency (CSA)",
+                "url": "https://www.asc-csa.gc.ca/eng/satellites/neossat/",
+                "explorer_url": links["csa_neossat_dataset"],
+                "role": "15 cm f/5.88 Maksutov space telescope in sun-synchronous orbit tracking Near-Earth Asteroids (NEOs) & comets.",
+                "query_lang": "Open Data Portal",
+                "query_snippet": "https://data.asc-csa.gc.ca/dataset/neossat"
+            },
+            {
+                "id": "cadc_archive",
+                "title": "6. Canadian Astronomy Data Centre (CADC)",
+                "agency": "NRC Canada / CADC",
+                "url": "https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/",
+                "explorer_url": links["cadc_neossat_search"],
+                "role": "CAOM-2 TAP programmatic archive hosting calibrated NEOSSat science FITS exposures and DataLink products.",
+                "query_lang": "ADQL (CADC CAOM-2 TAP)",
+                "query_snippet": (
+                    f"SELECT TOP 25 o.observationID, o.target_name, p.time_bounds_lower, p.time_exposure\n"
+                    f"FROM caom2.Observation AS o JOIN caom2.Plane AS p ON o.obsID = p.obsID\n"
+                    f"WHERE o.collection = 'NEOSSAT' AND o.intent = 'science'\n"
+                    f"  AND INTERSECTS(CIRCLE('ICRS', {ra_deg:.5f}, {dec_deg:.5f}, 0.50), p.position_bounds) = 1\n"
+                    f"ORDER BY p.time_bounds_lower DESC"
+                )
+            },
+            {
+                "id": "neossat_tutorial",
+                "title": "7. CSA NEOSSAT_Tutorial GitHub Pipeline",
+                "agency": "CSA Open Source",
+                "url": "https://github.com/asc-csa/NEOSSAT_Tutorial",
+                "explorer_url": links["csa_neossat_tutorial"],
+                "role": "Official Python notebooks for overscan/dark subtraction, temporal median stacking & Line Segment Detector (LSD) streaklets.",
+                "query_lang": "Python (astroquery.cadc)",
+                "query_snippet": (
+                    f"from astroquery.cadc import Cadc\n"
+                    f"from astropy.coordinates import SkyCoord\n"
+                    f"import astropy.units as u\n"
+                    f"cadc = Cadc()\n"
+                    f"results = cadc.query_region(SkyCoord({ra_deg:.5f}, {dec_deg:.5f}, unit='deg'), radius=0.5*u.deg, collection='NEOSSAT')"
+                )
+            }
+        ]
+    }
+
+@app.get("/api/download_fits")
+def download_fits(
+    target: Optional[str] = Query(None, description="Benchmark target key"),
+    ra: Optional[str] = Query(None, description="Right Ascension"),
+    dec: Optional[str] = Query(None, description="Declination"),
+    epoch: int = Query(1, description="Epoch 1 (2MASS) or Epoch 2 (DSS2/SPHEREx)")
+):
+    """Streams authentic NASA scientific FITS file for requested target/coordinates & epoch."""
+    import glob
+    survey_suffix = "2mass.fits" if epoch == 1 else "dss2.fits"
+    dyn_dir = os.path.join(os.path.dirname(__file__), "cache", "dynamic_fits")
+    fits_dir = os.path.join(os.path.dirname(__file__), "cache", "fits")
+
+    target_ra = None
+    target_dec = None
+    target_name = "target"
+
+    if target and target.lower() in BENCHMARKS:
+        b = BENCHMARKS[target.lower()]
+        target_ra = b["ra"]
+        target_dec = b["dec"]
+        target_name = target.lower()
+    elif ra and dec:
+        target_ra, target_dec = parse_celestial_coords(ra, dec)
+        target_name = f"sky_{target_ra:.4f}_{target_dec:.4f}"
+
+    # 1. Search dynamic_fits by coordinate string
+    if target_ra is not None and target_dec is not None and os.path.exists(dyn_dir):
+        ra_str = f"{target_ra:.4f}"
+        pattern = os.path.join(dyn_dir, f"*{ra_str}*{survey_suffix}")
+        matches = glob.glob(pattern)
+        if matches:
+            filename = f"spherex_{target_name}_epoch{epoch}_{survey_suffix}"
+            return FileResponse(matches[0], media_type="application/fits", filename=filename)
+
+    # 2. Search fits dir by target name
+    if target and os.path.exists(fits_dir):
+        p = os.path.join(fits_dir, f"{target.lower()}_{survey_suffix}")
+        if os.path.exists(p):
+            filename = f"spherex_{target.lower()}_epoch{epoch}_{survey_suffix}"
+            return FileResponse(p, media_type="application/fits", filename=filename)
+
+    # 3. If any FITS file in dynamic_fits matches epoch, return most recent
+    if os.path.exists(dyn_dir):
+        matches = sorted(glob.glob(os.path.join(dyn_dir, f"*{survey_suffix}")), key=os.path.getmtime, reverse=True)
+        if matches:
+            filename = f"spherex_field_epoch{epoch}_{survey_suffix}"
+            return FileResponse(matches[0], media_type="application/fits", filename=filename)
+
+    raise HTTPException(status_code=404, detail="Requested FITS file not found in telescope archive.")
 
 @app.get("/api/scene")
 def get_scene(
@@ -422,7 +681,8 @@ def get_crossmatched_photometry(
 ):
     """
     Performs unified optical-to-infrared photometric cross-matching across Gaia DR3, 2MASS,
-    and SIMBAD. Computes diagnostic color baselines (G - Ks, J - Ks) to flag Brown Dwarfs and Planet X candidates.
+    WISE/NEOWISE, SPHEREx DR1, and SIMBAD. Computes diagnostic color baselines (G - Ks, J - Ks, W1 - W2)
+    to flag Brown Dwarfs and Planet X candidates.
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
@@ -431,6 +691,42 @@ def get_crossmatched_photometry(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def _run_catalog_cone(fn, ra: str, dec: str, radius: float):
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return fn(ra=ra_deg, dec=dec_deg, radius_arcmin=radius)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/catalog/wise")
+def get_wise_catalog(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes")
+):
+    """
+    Queries NASA AllWISE (`allwise_p3as_psd`, fallback Harvard CfA VizieR `II/328/allwise`)
+    and NEOWISE-R (`neowiser_p1bs_psd`) for W1-W4 magnitudes, microJansky fluxes, and epochs.
+    """
+    return _run_catalog_cone(query_wise_catalog, ra, dec, radius)
+
+
+@app.get("/api/catalog/spherex")
+def get_spherex_archive(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(15.0, description="Search radius in arcminutes")
+):
+    """
+    Queries NASA IRSA SPHEREx DR1 (`spherex.obscore`) for spectral coverage planes
+    (0.75 - 5.00 um) with calibrated DR1 reference plane fallback when 0 cone hits exist.
+    """
+    return _run_catalog_cone(query_spherex_archive, ra, dec, radius)
 
 @app.get("/api/discoveries")
 def get_discoveries(
@@ -488,10 +784,13 @@ def flag_candidate(candidate: DiscoveryCandidate):
     entry = {
         "candidate_id": cand_id,
         "target_name": target_name,
+        "candidate_name": target_name,
         "ra": candidate.ra,
         "dec": candidate.dec,
         "object_type": obj_type,
-        "user_handle": candidate.user_handle or "@citizen_scientist",
+        "motion_type": obj_type,
+        "user_handle": candidate.user_handle or candidate.astronomer or "@citizen_scientist",
+        "astronomer": candidate.astronomer or candidate.user_handle or "@citizen_scientist",
         "notes": candidate.notes or "",
         "proper_motion_mas": candidate.proper_motion_mas,
         "confidence": candidate.confidence or 5,

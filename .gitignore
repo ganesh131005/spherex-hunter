@@ -45,12 +45,10 @@ dist-ssr/
 *.tar.gz
 *.h5
 *.hdf5
+*.pdf
 cache/
 downloads/
 raw_data/
-
-# Third-party Research Vault (manuals, third-party tutorials, sitemaps - see docs/references.md)
-05 - Research & Resources/
 *.bundle
 scratch/
 .env
@@ -63,8 +61,10 @@ data_samples/*.json
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 
-# IDEs
+# IDEs & Temporary Debug Screenshots
 .idea/
 .vscode/
 *.swp
 *.swo
+*_screenshot.png
+*_sidebar.png

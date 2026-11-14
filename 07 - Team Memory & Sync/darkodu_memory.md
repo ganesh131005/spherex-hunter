@@ -3,76 +3,11 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Resolved Viewport continuous multi-resolution mapping, eliminated overlapping duplicate tiles, and implemented Time Step & Auto-Identification engine.
-- **Next Task:** Await teammate manual check; execute remaining tasks.
+- **Current Task:** Completed demo landing screen refinement for WISE 0855 demo preset, dynamic astrometry parameters for all presets, and live 102-band spectrum chart integration. Pushed to `darkodu/astro-backend`.
+- **Next Task:** Phase 3 (Forced Spectrophotometry & Sonora Atmosphere SED fitting).
 - **Blockers:** None.
 
 ## Completed Tasks:
-- [x] Continuous Multi-Resolution Viewport Mapping & Auto-Identification Engine:
-  - **Eliminated Overlapping Stepped Cutout Tiles:** Replaced multi-tile iteration loops and deleted `checkAndTriggerAdjacentTileStream`, eliminating the duplicate staggered square cutout stamps that occurred on mouse dragging.
-  - **Single Anchor Pyramid (`activeField`):** Unified LOD 2 (Wide $8.0'$), LOD 1 (Standard $3.0'$), and LOD 0 (Deep Core $1.5'$) to the exact same celestial center `(RA, Dec)`. Panning runs via 60 FPS hardware canvas translation with zero network re-fetching or tile disappearance.
-  - **Continuous Google Maps Multi-Resolution Zoom:** Zooming in seamlessly reveals high-resolution sub-arcsecond core features; zooming out shows wide overview context, with background pre-caching.
-  - **Time Step Differencing & Auto-Identification HUD:** Added top-center Time Step HUD (`Δt = 26.8 yr`, stepper controls `◀ t₁`, `t₁ ↔ t₂`, `t₂ ▶`, `⚡ Diff`), and automated transient/dipole detection with pulsing corner reticles `[ ]`, dashed motion vectors with arrowheads pointing towards $t_2$, and target-lock telemetry.
-- [x] Resolved & Closed GitHub Issues #13 and #14:
-  - **Issue #13 ([CACHE] Hierarchical Spatial-Tile Caching Engine):** Implemented backend spatial-hash binning cache for sub-3ms pan hits, automated disk cache pruner daemon (`auto_prune_disk_cache`, `/api/cache/prune`) with a 500MB soft quota and benchmark pinning, client IndexedDB cache (`spherex_tile_store`), and in-flight request cancellation via `AbortController`.
-  - **Issue #14 ([UX/UI] User-Friendly Inspector Panel for Citizen Scientists):** Redesigned `#inspectorPanelTarget` into 6 clear thematic sections with plain-English descriptions, visual surface temperature thermometer gauge, cosmic speed ratings, and "What This Means" takeaway box.
-  - **Verification:** Built `tests/test_caching_and_inspector_e2e.py` (5/5 passed in 17.7s); verified golden suite (8/8) and full E2E suites. Closed issues #13 and #14 on GitHub.
-- [x] Resolved & Closed GitHub Issues #9, #10, and #12:
-  - **Issue #9 ([WEB] Command Palette Ctrl+K):** Indexed 22 discrete commands across 4 categorized groups (`🌟 Objects`, `🗂️ Views`, `⚡ Actions`, `🔍 Scale`) with fuzzy natural language aliases (e.g. "cold brown dwarf" $\to$ WISE 0855, "subtraction" $\to$ Difference view), Arrow Up/Down + Enter keyboard navigation, and persistent topbar `[Ctrl+K]` pill.
-  - **Issue #10 ([VIEWPORT] Continuous Raytracing Frustum & Adaptive LOD):** Implemented `canvasToSkyCoordinates(px, py)` frustum raycaster with spherical $\cos(\text{Dec})$ projection and `getVisibleFrustumSkyBounds()`, updating `getCurrentCoordinates()` to derive exact optical center coordinates from the frustum raycaster.
-  - **Issue #12 ([WEB] Universal Sky Region Share Modal & Deep-Link Parameter Hub):** Built `#shareModal` dialog with target citation telemetry, read-only URL input with 1-click clipboard copy, and full URL parameter hydration (`ra`, `dec`, `fov`, `mode`, `target`, `gaia`) on `DOMContentLoaded`.
-  - **Verification:** Built `tests/test_issues_9_10_12_e2e.py` (3/3 passed in 22.3s); all 5 E2E tests and 74 unit tests passing 100% green. Closed issues #9, #10, #12 on GitHub.
-- [x] Continuous Google-Maps-Style Progressive Multi-Resolution SPHEREx All-Sky Viewer:
-  - Eliminated single-tile bounding box and surrounding black voids by promoting the NASA IRSA SPHEREx DR1 all-sky cube (`spherex_allsky_cube` HiPS) to a primary view mode: `SPHEREx Map (Google Sky)`.
-  - Added Google Maps multi-resolution scale steppers: `🌌 180° All-Sky` (full sphere overview), `✨ 30° Wide`, `🔭 5° Field`, and `🔬 0.1° HD Native SPHEREx Resolution` (revealing individual stars, infrared point sources, and brown dwarfs).
-  - Integrated 102-channel step controls (`◀` and `▶`) and dropdown across $0.75\text{--}5.0\,\mu\text{m}$, updating the HiPS slice and displaying exact wavelength and LVF detector array.
-  - Added Google Maps style landmark pins for NASA targets (`🪐 WISE 0855`, `⭐ Barnard`, `🌟 Eps Indi`, `✨ RW Aur`, `🔴 R Drac`) with smooth fly-to and auto-zoom.
-  - Disabled disruptive pan-slew calls that previously popped up a black "Fetching Sky Tile" modal during mouse dragging.
-  - Automated E2E verification in `tests/test_google_maps_spherex_e2e.py` (passed); captured figures in `docs/figures/google_maps_spherex_180_allsky.png` and `google_maps_spherex_01_hd_stars.png`.
-- [x] Implemented Continuous Viewport Kinematics, Seamless Epoch Morphing & Feathered Edge Blending:
-  - Eliminated discrete binary flipbook blink jumping: added `#btnToggleBlinkMorph` (Smooth Morph vs Snap Blink toggle) and `#epochBlendSlider` (0% to 100% continuous multi-epoch alpha blend).
-  - In continuous morph mode, flipbook executes continuous sinusoidal crossfading ($I = (1-\alpha)I_1 + \alpha I_2$), enabling smooth visual glide of moving asteroids and brown dwarf proper motions.
-  - Added soft 4-edge linear gradient vignette feathering (`drawFeatheredImage`) and an ambient celestial starfield background (`drawAmbientSkyBackground`), removing harsh rectangular cutout borders.
-  - Upgraded `gameKinematicsLoop` to run on continuous 60 FPS `requestAnimationFrame`, smoothly damping and interpolating camera position and zoom during mouse wheel, dragging, WASD navigation, and 1-click recenter.
-  - Created automated E2E test `tests/test_continuous_viewport_e2e.py` (1/1 passed); verified full repository test suite (95/95 passed).
-- [x] Generated Authentic SPHEREx DR1 Cross-Survey Like-Wavelength Difference Products:
-  - Upgraded `demo_cache/*/difference.json` for all 5 benchmark targets from previous `BAND_MISMATCH` states to authentic 6-month cross-survey SPHEREx pairs at matching wavelengths ($\Delta\lambda = 0.00\,\mu\text{m}$).
-  - Linked authentic exposure IDs from Survey 1 and Survey 2 with actual observational timestamps (MJD), band parameters, and ZOGY $S_{\text{corr}}$ statistics.
-  - Re-computed all SHA-256 checksums in `demo_cache/manifest.json`.
-  - Verified 36/36 unit/contract/golden tests passing without regressions.
-- [x] Resolved & Closed GitHub Issue #5 ([UI/UX] Distinct Application Brand & Logo, Interactive Onboarding Tour & Scientific Mission Explainer):
-  - Designed vector SVG logo in `frontend/assets/logo.svg` combining SPHEREx hexagonal sunshield, multi-band IR dispersion, and astrometric dipole reticle; added SVG favicon.
-  - Added Mission Explainer badge and tooltip in top observatory header.
-  - Integrated 5-step dark NASA-themed onboarding tour modal (`#onboardingModal`) with step indicator, `localStorage` persistence, and 1-click preset launcher.
-  - Verified with Playwright E2E test `tests/test_ui_brand_and_nav_e2e.py` (4/4 passed). Closed Issue #5 on GitHub.
-- [x] Resolved & Closed GitHub Issue #6 ([UI/UX] Beginner-Friendly Celestial Navigation Bar: Tooltips, Educational Micro-Copy & Sky Scale Guides):
-  - Added plain-English hover tooltips for RA (Sky Longitude), Dec (Sky Latitude), and FOV (Sky Zoom relative to Full Moon).
-  - Enhanced FOV dropdown with real-world celestial scale descriptors (e.g. `1/10th Moon`, `Micro-Arcsec Dipoles`).
-  - Added Celestial Navigation Sky Helper popover (`#skyHelperPopover`) with accepted coordinate formats guide and 1-click popular astronomical landmarks (WISE 0855, Barnard's Star, Orion Nebula, Sgr A*, Trappist-1).
-  - Implemented real-time coordinate validation with green/amber visual feedback and range hints.
-  - Updated Fetch button with live NASA IRSA request status. Closed Issue #6 on GitHub.
-- [x] SPHEREx DR1 All-Sky HiPS Context Layer, Provenance Alignment & Cross-Survey Epoch Pairing:
-  - **Research & Documentation (`docs/dr1_notes.md`):** Extracted authentic IRSA DR1 HiPS URL (`https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube`), IVOA DID `ivo://IPAC/P/SPHEREx/DR1/cube`, order 5 (512x512 tiles), 102 spectral channels ($0.75\text{--}5.0\,\mu\text{m}$), verified CORS header `Access-Control-Allow-Origin: *`, documented date ranges (MJD 60789.75 to 61174.49), and noted that IRSA hosts a single merged DR1 all-sky composite rather than separate per-survey cubes.
-  - **Frontend HiPS Integration (`frontend/index.html`):** Added `#aladinContextBar` with honesty disclaimer, `#aladinLayerStatus`, 102-channel selector (`#hipsChannelSelect`), wavelength display, and `#aladinFallbackAlert`. Implemented channel slice switching via `baseLayer.setSliceNumber(chNumber)`. Added coordinate click handling via `aladinInstance.pix2world(x, y)` triggering `loadSceneForPosition()`. Handled failure fallback to `P/DSS2/color` and preserved offline mode.
-  - **UI Honesty Protocol:** Added `#spectrumNonSimultaneousNotice` banner and per-point observation date tooltips in `#dockPanelSpectrum` to honestly convey that spectra assembled from multi-epoch exposures are non-simultaneous for variable objects.
-  - **Backend Holdings & Provenance Alignment:** Updated `backend/api_v1.py` and `backend/services/scene_service.py` to record `DATA_RELEASE = "DR1"`, `PIPELINE_VERSION = "2.1.0"` and structured provenance objects. Re-ran IRSA ObsCore spatial containment queries (`CONTAINS(POINT, s_region) = 1`), caching in `data_samples/irsa_obscore_dr1_cache.json`. Verified real exposure coverage: WISE 0855 (258), Barnard's Star (363), Epsilon Indi B (459), RW Aurigae (374), R Draconis (2542), Leo Minor (262).
-  - **Cross-Survey Pairing Analysis (`scripts/analyze_cross_survey_pairs.py`, `docs/epoch_pairing.md`):** Identified $\approx 6$-month baseline pairs ($130\text{--}230\text{ days}$) across surveys for all demo targets (2,788 pairs for WISE 0855, 4,922 for RW Aurigae, 4,504 for Barnard's Star, 4,557 for Epsilon Indi B, 26,051 for R Draconis, 2,828 for Leo Minor).
-  - **Comprehensive E2E & Full-Suite Verification:** Built `tests/test_aladin_hips_e2e.py` (5/5 passed), captured figures in `docs/figures/`, and verified full repository test suite (90/90 tests passing).
-- [x] Resolved GitHub Issue #2 ([BACKEND] Con #1: Wire Phase 1 ZOGY Differencing & Float32 Preprocessing into Live /api/cutout Pipeline):
-  - Connected `zogy_subtraction()` and `construct_gaussian_psf()` from `backend/science/differencing.py` into `backend/services/cutout_engine.py`.
-  - Upgraded live `GET /api/cutout` response to deliver authentic ZOGY $S_{\text{corr}}$ significance metrics (`units: sigma`, `peak_sigma`, `trough_sigma`, `snr_threshold: 5.0`).
-  - Implemented unversioned aliases `GET /api/cutout/raw` and `GET /api/cutout/raw/header` in `backend/main.py` streaming 65,536-byte Float32 binary `ArrayBuffer` cutouts for client-side WebGL / Canvas Asinh & ZScale stretch sliders.
-  - Created integration test suite `tests/test_live_cutout_zogy.py` (4/4 passed), verifying that `/api/cutout` returns ZOGY $S_{\text{corr}}$ peak $\ge 5\sigma$ on WISE 0855 and Barnard's Star.
-- [x] Delivered Backend Alignment and Contract-First API v1 Architecture:
-  - Contract Audit (`docs/API_CONTRACT_AUDIT.md`): Full mapping of all frontend network calls, parameters, and consumed fields.
-  - Frontend Honesty Fixes: Corrected CADC domain typo (`.gc.jp` -> `.gc.ca`), replaced hardcoded array photometry with empty waiting state, removed synthetic mock light curves, and marked static validation numbers as under review.
-  - Merged Code Review & Sanitization: Cleaned `backend/services/neossat_service.py` and `verification_service.py` to remove probability and "Planet X" heuristics; added evidence tiers; fixed IMCCE SkyBoT HTTP 403 by configuring custom User-Agent and JSON headers (`tests/test_neossat_verification.py` 5/5 passing).
-  - Research Vault Hygiene: Gitignored `05 - Research & Resources/` (35 documents) and summarized external databases in `docs/references.md`.
-  - Precompute Architecture (`scripts/build_demo_cache.py`): Built lightweight (144 KB total) precomputed cache in `demo_cache/` with `manifest.json`, small cutouts, forced aperture photometry, like-wavelength light curves, and ZOGY difference products.
-  - Pydantic v2 Models (`backend/models_v1.py`): RFC 7807 problem details, physical quantities with units/uncertainties, space motion models, scene graphs, exposures, difference products, and validation metrics.
-  - API v1 APIRouter (`backend/api_v1.py`): Versioned endpoints under `/api/v1` with standard headers (`ETag`, `Cache-Control`, `X-Request-Id`, `X-Data-Source`), strict like-wavelength differencing (`BAND_MISMATCH` 422), honest empty states for 0-public exposure fields (`rwaur`), and multi-format exports (CSV, IVOA VOTable XML, binary FITS table).
-  - Contract Tests (`tests/test_api_v1_contract.py`): 22/22 contract tests passing covering all models, endpoints, proper motion propagation, and RFC 7807 errors. Full repository suite 81/81 tests passing.
-  - OpenAPI Specification (`docs/openapi.json`) and Contract Documentation (`docs/API_CONTRACT.md`).
 - [x] Refined First-Screen Demo Preset Visuals for NASA Judges:
   - Validated WISE 0855-0714 as the premier landing preset: shows a clean 7.08'' proper motion dipole on Bramich differencing, prominent water ice and methane infrared absorption dips on the 102-band spectrum, and complete Gaia optical dropout (confirming cold sub-stellar brown dwarf / Planet X analog nature).
   - Resolved `loadSpectrumData` parser bug in `frontend/index.html` to correctly map `spec.flux_microjanskys` and `spec.wavelengths_microns`, instantly rendering the live 102-band infrared curve.
@@ -128,7 +63,7 @@
 - [x] Installed and configured `astropy`, `astroquery`, and `pyvo`.
 - [x] Implemented `backend/services/cutout_engine.py` with Astropy ZScale/Asinh FITS stretching, multi-epoch generation, and difference imaging ($I_2 - I_1$).
 - [x] Implemented FastAPI server in `backend/main.py` with `/api/health`, `/api/targets`, `/api/cutout`, `/api/spectrum`, and `/api/flag`.
-- [x] Created `start_backend.bat` for 1-click startup.
+- [x] Created `run_spherex_hunter.bat` for 1-click startup.
 
 - [x] Integrated live NASA IRSA Caltech FinderChart API into `cutout_engine.py` for real-time querying and downloading of authentic 2MASS and DSS2 FITS files for ANY arbitrary celestial coordinates.
 - [x] Implemented dynamic disk caching (`backend/cache/dynamic_fits/`) ensuring instant sub-200ms retrieval on repeated visits to the same coordinates.

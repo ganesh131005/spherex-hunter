@@ -7,6 +7,7 @@ E2E Playwright test suite for Issues #9, #10, and #12:
 
 import os
 import time
+
 from playwright.sync_api import sync_playwright
 
 BASE_URL = os.environ.get("SPHEREX_BASE_URL", "http://127.0.0.1:8000/app/index.html")

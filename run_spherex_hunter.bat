@@ -10,11 +10,16 @@ echo                 NASA Space Apps Challenge 2026 - Team RIP
 echo ==============================================================================
 echo.
 
-REM 1. Verify Python availability
-python --version >nul 2>&1
+REM 1. Verify Python availability (.venv preferred)
+if exist .venv\Scripts\python.exe (
+    set PYTHON_CMD=.venv\Scripts\python.exe
+) else (
+    set PYTHON_CMD=python
+)
+%PYTHON_CMD% --version >nul 2>&1
 if %errorlevel% neq 0 (
     color 0C
-    echo [ERROR] Python was not found in your system PATH!
+    echo [ERROR] Python was not found in your system PATH or .venv!
     echo Please install Python 3.10+ from https://www.python.org/ and check "Add to PATH".
     echo.
     pause
@@ -44,7 +49,7 @@ REM Launch browser in background after 2 seconds
 start "" cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:8000/app/index.html"
 
 REM Run FastAPI uvicorn server
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+%PYTHON_CMD% -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 
 echo.
 echo Server stopped.
