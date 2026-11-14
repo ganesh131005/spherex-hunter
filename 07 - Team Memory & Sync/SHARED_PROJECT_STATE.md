@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #18 Created — Wire Dead Viewport Buttons (Fullscreen & Blink Flip) and Fix Clipped Toolbar Tooltips]**
+  - **Issue #18 Link:** https://github.com/joker0210G/spherex-hunter/issues/18
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Solves non-functional toolbar action buttons: wires `#toolFullscreen` to the Web Fullscreen API, wires `#toolBlinkFlip` to advance/alternate blink frames (`#btnStepFwd`), and resolves visual tooltip clipping/truncation overflowing the left tool rail.
+- **[GitHub Native Issue #17 Created — Implement Interactive Toolbar Modes: Select, Pan, and Arcsecond Measurement Ruler (Dist)]**
+  - **Issue #17 Link:** https://github.com/joker0210G/spherex-hunter/issues/17
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Replaces static DOM buttons with an active tool state machine (`select`, `pan`, `measure`). Implements real astronomical distance measuring (`Dist` tool) calculating angular separation in arcseconds/arcminutes using calibrated FOV with live dashed caliper HUD overlays on canvas.
 - **[Architectural Alignment & Viewport Tile / Astrometry Fix Deployed into `main`]**
   - **Closed Issues Reconciled:** Issue #10 (Continuous Viewport Frustum Raycaster & Ambient Skyfield) & Issue #15 (Gaia DR3 Astrometry Alignment & FOV Scale Discrepancy).
   - **Merged Components:**
