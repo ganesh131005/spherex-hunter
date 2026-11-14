@@ -3,11 +3,20 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed PR-style branch integration of `origin/darkodu/astro-backend` (`4be20b7`) into `coolodu/web-frontend`, adopting all Phase 0–2.9 scientific Pros and Observatory UI redesign while mitigating regressions and raising GitHub Issues [#2](https://github.com/joker0210G/spherex-hunter/issues/2), [#3](https://github.com/joker0210G/spherex-hunter/issues/3), and [#4](https://github.com/joker0210G/spherex-hunter/issues/4) for `@darkodu`.
-- **Next Task:** Ready for final merge into `main` or Phase 4/5 feature execution.
+- **Current Task:** Completed comprehensive fake and synthetic data audit across the entire repository in accordance with Team RIP Constitution Principle 1 (*Scientific Integrity Over Gimmicks: Real Data First*). Cleaned all procedural Gaussian/RNG stars, hardcoded mock catalogues, fabricated molecular detections, static DOM cards, and invented probabilities across frontend and backend.
+- **Next Task:** Final verification, commit, and push to `origin/coolodu/web-frontend`.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Comprehensive Repository Fake & Synthetic Data Audit & Removal]**:
+  - **`backend/services/cutout_engine.py`:** Removed fabricated fields (`w1_w2_color`, `gaia_dr3`, `contamination_flags`, `cadc_neossat`) from `BENCHMARKS`. Replaced arbitrary `"confidence": "99.4%"` with measured `peak_significance_sigma`. Honest image labels (2MASS J vs DSS2 Red plates). Rewrote `get_102_band_spectrum()` to eliminate hash-derived fake temperatures and invented molecular detections; replaced with labeled theoretical Planck models for known benchmarks and `available: False` for uncatalogued coords. Removed fake `"coadd_snr_boost": "4.12x"`. Rewrote `run_automated_source_discovery()` to compute real Bramich difference residuals rather than spawning RNG candidates.
+  - **`backend/services/catalog_engine.py`:** Removed `CURATED_BENCHMARK_GAIA` and `CURATED_BENCHMARK_2MASS` mock fallbacks. Removed procedural Gaia star generation (`SYNTH_` IDs with RNG). Replaced hardcoded `SIMBAD_KNOWLEDGEBASE` mock dictionary with live CDS SIMBAD cone searches with Harvard CfA mirror fallback and nearest-angular-separation matching.
+  - **`backend/services/csa_neossat_service.py`:** Replaced hardcoded asteroid tracks, fabricated observation counts, and `"sub_stellar_planet_x_probability": 0.0` with delegation to live IMCCE SkyBoT and CADC CAOM-2 TAP.
+  - **`backend/services/gaia_service.py`:** Returns honest `"status": "unavailable"` on query failure rather than masking with an empty source list.
+  - **`backend/services/verification_service.py`:** Removed dependencies on fabricated `w1_w2_color` and hardcoded `confidence` strings.
+  - **`backend/step1_wise0855_irsa.py`:** Removed mock epoch array fallback.
+  - **`frontend/index.html` & `scripts/build_frontend.py`:** Replaced static fake numbers in `#inspectorPanelPhotometry` (`842 ct`, `SNR 12.4`, `4.12x Co-add SNR`) with clean initial `--` states and labeled "Awaiting Flight Co-adds". Dynamic temporal baseline text in `#bottomDock` (`Δt: {years} Years ({survey1} → {survey2})`).
+  - **Verification:** All 46 pytest unit/integration tests passed; all 11 golden verification suite tests passed; all 8 backend diagnostic suites passed.
 - [x] **[PR-Style Branch Integration: `origin/darkodu/astro-backend` -> `coolodu/web-frontend`]**:
   - Merged `origin/darkodu/astro-backend` (`4be20b7`) into `coolodu/web-frontend`, integrating Phase 0–2.9 scientific modules (`backend/science/` ZOGY differencing, motion models A/B/C, calibrated $\mu\text{Jy}$ preprocessing, 29-bit flags, SkyBoT/Horizons identification, 5-tier evidence engine, tracklet linking, and `validation/`), data-driven Scene Collection Layer Manager (`/api/scene`), multi-catalog cross-matching (`/api/catalog/*`), and the Observatory UI redesign (`frontend/index.html`).
   - Restored all 5 dropped endpoints (`/api/verify_candidate`, `/api/source_discovery`, `/api/download_fits`, `/api/resources_codex`, `/api/neossat`), unified `cutout_engine.py` spectrum & telemetry schemas, restored all 11 tests in `tests/test_golden_suite.py`, preserved Windows `cmd.exe` batch parser & SSL fixes, removed root debug screenshot bloat (`after_*.png`, `before_*.png`), and deduplicated `candidate_discoveries.json`.

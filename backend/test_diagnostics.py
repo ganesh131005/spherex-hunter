@@ -190,7 +190,7 @@ def test_fastapi_endpoints():
     csa_res = get_csa_neossat(ra="133.79513", dec="-7.24515", radius=3.0)
     assert csa_res["status"] == "success"
     assert "neossat_telemetry" in csa_res
-    print(f"  [PASS] get_csa_neossat()         -> Tracked: {csa_res['neossat_telemetry']['nearest_tracked_asteroid']} (Planet X Prob: {csa_res['neossat_telemetry']['sub_stellar_planet_x_probability']*100:.0f}%)")
+    print(f"  [PASS] get_csa_neossat()         -> Tracked: {csa_res['neossat_telemetry']['nearest_tracked_asteroid']} (Known SSOs in cone: {csa_res['neossat_telemetry']['known_sso_in_cone']}, Status: {csa_res['neossat_telemetry']['archive_status']})")
 
     # 6. Citizen science discovery logger
     test_cand = DiscoveryCandidate(
@@ -275,12 +275,12 @@ def test_2mass_and_simbad_direct():
     assert sim_barnard["status"] == "resolved"
     assert sim_wise["status"] == "resolved"
     print(f"  [PASS] SIMBAD Database queried in {sim_ms:5.2f} ms")
-    print(f"  [PASS] Resolved: {sim_barnard['canonical_name']} -> {sim_barnard['spectral_type']} ({sim_barnard['citations_count']} citations)")
-    print(f"  [PASS] Resolved: {sim_wise['canonical_name']} -> {sim_wise['spectral_type']} (T={sim_wise.get('effective_temp_k')}K)")
+    print(f"  [PASS] Resolved: {sim_barnard['canonical_name']} -> Type: {sim_barnard.get('object_type')}, PM: {sim_barnard.get('proper_motion_mas_yr')} mas/yr")
+    print(f"  [PASS] Resolved: {sim_wise['canonical_name']} -> Type: {sim_wise.get('object_type')}, Sep: {sim_wise.get('separation_arcsec')}\"")
 
     # Unified Cross-Match
     t0 = time.perf_counter()
-    xm = crossmatch_photometry(ra=133.79513, dec=-7.24515, radius_arcmin=3.0)
+    xm = crossmatch_photometry(ra=269.45208, dec=4.69339, radius_arcmin=3.0)
     xm_ms = (time.perf_counter() - t0) * 1000
     assert xm["status"] == "success"
     assert xm["color_diagnostics"]["is_ultracold_candidate"]

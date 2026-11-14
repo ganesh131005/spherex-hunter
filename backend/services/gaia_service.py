@@ -54,6 +54,7 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
     """
 
     sources = []
+    query_error = None
     try:
         service = vo.dal.TAPService(IRSA_TAP_URL)
         res = service.run_sync(adql)
@@ -79,14 +80,17 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
                 "phot_g_mag": gmag_val
             })
     except Exception as e:
-        print(f"Gaia DR3 TAP query warning for RA {ra}, Dec {dec}: {e}")
-        # In case of temporary TAP network interruption, return empty list cleanly
+        print(f"Gaia DR3 TAP query failed for RA {ra}, Dec {dec}: {e}")
+        # A failed query is NOT "zero stars": report it as unavailable so callers
+        # never mistake a network error for an optical dropout.
+        query_error = str(e)
         sources = []
 
     elapsed_ms = round((time.time() - t0) * 1000, 2)
 
     result = {
-        "status": "success",
+        "status": "unavailable" if query_error else "success",
+        "message": f"NASA IRSA Gaia TAP unreachable: {query_error}" if query_error else None,
         "catalog": "Gaia Data Release 3 (Gaia DR3)",
         "archive_host": "NASA/IPAC Infrared Science Archive (IRSA TAP)",
         "search_center": {
@@ -101,6 +105,9 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
             "fetch_time_ms": elapsed_ms
         }
     }
+
+    if query_error:
+        return result  # never cache a failed query
 
     # Store in L1 cache
     if len(_GAIA_CACHE) >= _MAX_GAIA_CACHE:

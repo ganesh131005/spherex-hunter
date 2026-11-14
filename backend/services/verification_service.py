@@ -85,13 +85,13 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
         f_dec = field_dec if field_dec is not None else dec
         cut = fetch_real_cutout(f_ra, f_dec, fov_arcmin=fov_arcmin, target_key=target_key, lod=lod)
         motion = cut.get("motion_vector") or motion
-        w1w2_text = (cut.get("telemetry") or {}).get("w1_w2_color")
+        w1w2_text = None  # W1-W2 is not embedded anywhere; verify in WiseView / AllWISE
         ttype = motion.get("transient_type", "STATIONARY_SKY")
         if ttype == "PROPER_MOTION_DIPOLE":
             status, evidence = "pass", (f"Paired +/- dipole in the Alard-Lupton difference map "
-                                        f"(shift {motion.get('shift_arcsec')}\", confidence {motion.get('confidence')}).")
+                                        f"(shift {motion.get('shift_arcsec')}\", peak {motion.get('peak_significance_sigma')} sigma; unconfirmed - 2MASS J vs DSS2 Red).")
         elif ttype == "VARIABLE_FLARE":
-            status, evidence = "warn", f"Isolated monopole residual (variable flux, not motion), confidence {motion.get('confidence')}."
+            status, evidence = "warn", f"Isolated monopole residual (variable flux, not motion), peak {motion.get('peak_significance_sigma')} sigma."
         else:
             status, evidence = "fail", "No significant residual in the difference map (stationary field)."
     except Exception as err:
@@ -149,7 +149,7 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
     w1w2 = _parse_w1w2(w1w2_text)
     if w1w2 is None:
         checklist.append({"id": "color", "label": "W1−W2 infrared colour (cold substellar > +1.5 mag)",
-                          "status": "na", "evidence": "No catalogued W1−W2 colour for this position — measure it in WiseView."})
+                          "status": "na", "evidence": "W1−W2 is not measured by this app — check AllWISE / WiseView."})
     else:
         checklist.append({"id": "color", "label": "W1−W2 infrared colour (cold substellar > +1.5 mag)",
                           "status": "pass" if w1w2 >= 1.5 else "fail", "evidence": f"W1−W2 = {w1w2_text}."})

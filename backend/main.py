@@ -122,7 +122,7 @@ def get_benchmark_targets():
             "dec": v["dec"],
             "type": v["type"],
             "temp_k": v["temp_k"],
-            "variability": v.get("variability", 1.0)
+            "variability": None
         }
         for k, v in BENCHMARKS.items()
     ]

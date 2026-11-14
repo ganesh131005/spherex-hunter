@@ -7,7 +7,8 @@ Queries the official European Space Agency (ESA) Gaia DR3 catalog via TAP:
 - Multi-band photometry (G, BP, RP, BP-RP color)
 - Proper motion vectors (pmRA, pmDEC, total PM in mas/yr, position angle)
 - Parallax & calculated stellar distance (parsecs)
-- Offline caching and benchmark fallbacks for guaranteed resilience
+- Live archive queries only. When an archive is unreachable the response says so (status 'unavailable');
+  no catalogue rows are ever curated, synthesized or randomly generated.
 """
 
 import json
@@ -19,86 +20,6 @@ from backend.utils.validation import validate_coordinates
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache", "catalog_gaia")
 os.makedirs(CACHE_DIR, exist_ok=True)
-
-# Curated catalog entries for standard benchmarks when offline or initializing
-CURATED_BENCHMARK_GAIA = {
-    "barnard": [
-        {
-            "source_id": "4472808598811417728",
-            "ra": 269.45208,
-            "dec": 4.69339,
-            "g_mag": 8.19,
-            "bp_mag": 9.53,
-            "rp_mag": 7.15,
-            "bp_rp": 2.38,
-            "pmra_mas_yr": -801.55,
-            "pmdec_mas_yr": 10362.39,
-            "total_pm_mas_yr": 10393.38,
-            "pm_angle_deg": 355.58,
-            "parallax_mas": 546.98,
-            "distance_pc": 1.83,
-            "radial_velocity_kms": -110.51,
-            "is_high_proper_motion": True,
-            "name": "Barnard's Star"
-        },
-        {
-            "source_id": "4472808525790699136",
-            "ra": 269.41812,
-            "dec": 4.67247,
-            "g_mag": 19.07,
-            "bp_mag": None,
-            "rp_mag": 18.21,
-            "bp_rp": None,
-            "pmra_mas_yr": 1.22,
-            "pmdec_mas_yr": 0.92,
-            "total_pm_mas_yr": 1.53,
-            "pm_angle_deg": 53.06,
-            "parallax_mas": 0.59,
-            "distance_pc": 1694.9,
-            "radial_velocity_kms": None,
-            "is_high_proper_motion": False,
-            "name": "Field Star A"
-        },
-        {
-            "source_id": "4472808594510165120",
-            "ra": 269.40877,
-            "dec": 4.67023,
-            "g_mag": 17.60,
-            "bp_mag": 18.25,
-            "rp_mag": 16.85,
-            "bp_rp": 1.40,
-            "pmra_mas_yr": 2.22,
-            "pmdec_mas_yr": 1.86,
-            "total_pm_mas_yr": 2.90,
-            "pm_angle_deg": 50.06,
-            "parallax_mas": 2.01,
-            "distance_pc": 497.5,
-            "radial_velocity_kms": None,
-            "is_high_proper_motion": False,
-            "name": "Field Star B"
-        }
-    ],
-    "epsindi": [
-        {
-            "source_id": "6411985920703814400",
-            "ra": 331.04379,
-            "dec": -56.78272,
-            "g_mag": 4.69,
-            "bp_mag": 5.25,
-            "rp_mag": 4.02,
-            "bp_rp": 1.23,
-            "pmra_mas_yr": 3961.0,
-            "pmdec_mas_yr": -2538.0,
-            "total_pm_mas_yr": 4704.9,
-            "pm_angle_deg": 122.65,
-            "parallax_mas": 274.84,
-            "distance_pc": 3.64,
-            "radial_velocity_kms": -40.4,
-            "is_high_proper_motion": True,
-            "name": "Epsilon Indi A/B"
-        }
-    ]
-}
 
 def query_gaia_dr3(
     ra: float,
@@ -129,6 +50,7 @@ def query_gaia_dr3(
             pass
 
     sources = []
+    query_error = None
 
     # 2. Query ESA Gaia TAP service
     try:
@@ -193,61 +115,14 @@ def query_gaia_dr3(
             })
 
     except Exception as e:
-        print(f"ESA Gaia TAP query note for ({ra}, {dec}): {e} (Using fallback/curated data)")
-
-    # 3. Fallback to curated benchmark data if query returned empty or failed
-    if not sources:
-        for b_key, b_sources in CURATED_BENCHMARK_GAIA.items():
-            if len(b_sources) > 0:
-                b_ra = b_sources[0]["ra"]
-                b_dec = b_sources[0]["dec"]
-                dist = np.hypot((ra - b_ra) * np.cos(np.radians(dec)), dec - b_dec) * 60.0
-                if dist <= radius_arcmin + 1.0:
-                    for s in b_sources:
-                        s_copy = dict(s)
-                        s_copy["offset_arcsec"] = {
-                            "dx": float(round((s_copy["ra"] - ra) * np.cos(np.radians(dec)) * 3600.0, 2)),
-                            "dy": float(round((s_copy["dec"] - dec) * 3600.0, 2))
-                        }
-                        sources.append(s_copy)
-                    break
-
-    # If still empty (e.g. random faint coordinate or offline), generate synthesized reference stars seeded by coordinates
-    if not sources:
-        rng = np.random.default_rng(abs(int(ra * 1000 + dec * 1000)))
-        num_stars = rng.integers(5, 15)
-        for i in range(num_stars):
-            dx = rng.uniform(-radius_arcmin * 50.0, radius_arcmin * 50.0)
-            dy = rng.uniform(-radius_arcmin * 50.0, radius_arcmin * 50.0)
-            s_ra = ra + (dx / 3600.0) / np.cos(np.radians(dec))
-            s_dec = dec + (dy / 3600.0)
-            g_mag = float(round(rng.uniform(12.0, 20.0), 2))
-            pmra = float(round(rng.normal(0.0, 8.0), 2))
-            pmdec = float(round(rng.normal(0.0, 8.0), 2))
-            total_pm = float(round(np.hypot(pmra, pmdec), 2))
-            sources.append({
-                "source_id": f"SYNTH_{rng.integers(10000000, 99999999)}",
-                "ra": round(s_ra, 5),
-                "dec": round(s_dec, 5),
-                "g_mag": g_mag,
-                "bp_mag": round(g_mag + rng.uniform(0.2, 0.8), 2),
-                "rp_mag": round(g_mag - rng.uniform(0.2, 0.8), 2),
-                "bp_rp": round(rng.uniform(0.5, 2.0), 2),
-                "pmra_mas_yr": pmra,
-                "pmdec_mas_yr": pmdec,
-                "total_pm_mas_yr": total_pm,
-                "pm_angle_deg": float(round(np.degrees(np.arctan2(pmra, pmdec)) % 360.0, 2)),
-                "parallax_mas": float(round(max(0.1, rng.normal(1.5, 1.0)), 2)),
-                "distance_pc": float(round(rng.uniform(100.0, 1000.0), 1)),
-                "radial_velocity_kms": float(round(rng.normal(0.0, 25.0), 1)),
-                "is_high_proper_motion": total_pm > 50.0,
-                "offset_arcsec": {"dx": round(dx, 2), "dy": round(dy, 2)}
-            })
+        query_error = str(e)
+        print(f"ESA Gaia TAP query failed for ({ra}, {dec}): {e}")
 
     high_pm_count = sum(1 for s in sources if s.get("is_high_proper_motion", False))
 
     response_payload = {
-        "status": "success",
+        "status": "unavailable" if query_error else "success",
+        "message": f"ESA Gaia TAP unreachable: {query_error}" if query_error else None,
         "cached": False,
         "query": {
             "center_ra": ra,
@@ -259,6 +134,9 @@ def query_gaia_dr3(
         "high_proper_motion_count": high_pm_count,
         "sources": sources
     }
+
+    if query_error:
+        return response_payload  # never cache a failed query
 
     # Cache payload
     try:
@@ -277,67 +155,6 @@ def query_gaia_dr3(
 
 CACHE_DIR_2MASS = os.path.join(os.path.dirname(__file__), "..", "cache", "catalog_2mass")
 os.makedirs(CACHE_DIR_2MASS, exist_ok=True)
-
-CURATED_BENCHMARK_2MASS = {
-    "barnard": [
-        {
-            "designation": "2MASS J17574849+0441405",
-            "ra": 269.45204,
-            "dec": 4.69460,
-            "j_mag": 5.244,
-            "h_mag": 4.834,
-            "k_mag": 4.524,
-            "j_h": 0.41,
-            "h_k": 0.31,
-            "j_k": 0.72,
-            "ph_qual": "AAA",
-            "name": "Barnard's Star (2MASS Counterpart)"
-        },
-        {
-            "designation": "2MASS J17575194+0442202",
-            "ra": 269.46645,
-            "dec": 4.70562,
-            "j_mag": 10.736,
-            "h_mag": 10.652,
-            "k_mag": 10.575,
-            "j_h": 0.084,
-            "h_k": 0.077,
-            "j_k": 0.161,
-            "ph_qual": "AAA",
-            "name": "Field Star A"
-        }
-    ],
-    "wise0855": [
-        {
-            "designation": "2MASS Non-Detection (Sub-stellar Y-Dwarf, J > 21.5)",
-            "ra": 133.79513,
-            "dec": -7.24515,
-            "j_mag": None,
-            "h_mag": None,
-            "k_mag": None,
-            "j_h": None,
-            "h_k": None,
-            "j_k": None,
-            "ph_qual": "UUU",
-            "name": "WISE 0855-0714 (Ultracold Brown Dwarf, Infrared Only)"
-        }
-    ],
-    "epsindi": [
-        {
-            "designation": "2MASS J22041052-5646578",
-            "ra": 331.04379,
-            "dec": -56.78272,
-            "j_mag": 3.012,
-            "h_mag": 2.501,
-            "k_mag": 2.245,
-            "j_h": 0.511,
-            "h_k": 0.256,
-            "j_k": 0.767,
-            "ph_qual": "AAA",
-            "name": "Epsilon Indi B (Binary Brown Dwarf)"
-        }
-    ]
-}
 
 def query_2mass_psc(
     ra: float,
@@ -367,6 +184,7 @@ def query_2mass_psc(
             pass
 
     sources = []
+    query_error = None
 
     # 1. Query NASA IRSA TAP Service
     try:
@@ -414,28 +232,12 @@ def query_2mass_psc(
                 "offset_arcsec": {"dx": dx_arcsec, "dy": dy_arcsec}
             })
     except Exception as e:
-        print(f"NASA IRSA 2MASS TAP query note for ({ra}, {dec}): {e} (Using fallback/curated data)")
-
-    # 2. Fallback to curated benchmark data if query returned empty or failed
-    if not sources:
-        for b_key, b_sources in CURATED_BENCHMARK_2MASS.items():
-            if len(b_sources) > 0 and b_sources[0]["ra"] is not None:
-                b_ra = b_sources[0]["ra"]
-                b_dec = b_sources[0]["dec"]
-                dist = np.hypot((ra - b_ra) * np.cos(np.radians(dec)), dec - b_dec) * 60.0
-                if dist <= radius_arcmin + 1.0:
-                    for s in b_sources:
-                        s_copy = dict(s)
-                        if s_copy["ra"] is not None:
-                            s_copy["offset_arcsec"] = {
-                                "dx": float(round((s_copy["ra"] - ra) * np.cos(np.radians(dec)) * 3600.0, 2)),
-                                "dy": float(round((s_copy["dec"] - dec) * 3600.0, 2))
-                            }
-                        sources.append(s_copy)
-                    break
+        query_error = str(e)
+        print(f"NASA IRSA 2MASS TAP query failed for ({ra}, {dec}): {e}")
 
     response_payload = {
-        "status": "success",
+        "status": "unavailable" if query_error else "success",
+        "message": f"NASA IRSA TAP unreachable: {query_error}" if query_error else None,
         "cached": False,
         "query": {
             "center_ra": ra,
@@ -446,6 +248,9 @@ def query_2mass_psc(
         "total_sources": len(sources),
         "sources": sources
     }
+
+    if query_error:
+        return response_payload  # never cache a failed query
 
     try:
         with open(cache_path, "w", encoding="utf-8") as f:
@@ -460,114 +265,96 @@ def query_2mass_psc(
 # SIMBAD Astronomical Object Metadata & Classification
 # =====================================================================
 
-SIMBAD_KNOWLEDGEBASE = {
-    "barnard": {
-        "canonical_name": "Barnard's Star (V* V2500 Oph)",
-        "simbad_id": "NAME Barnard's star",
-        "object_type": "High proper-motion Star (PM*)",
-        "spectral_type": "M4.0V",
-        "parallax_mas": 547.45,
-        "distance_pc": 1.83,
-        "proper_motion_mas_yr": 10393.4,
-        "radial_velocity_kms": -110.5,
-        "constellation": "Ophiuchus",
-        "description": "Second nearest star system to the Sun. Exhibits extreme proper motion of 10.36 arcsec/yr.",
-        "citations_count": 1420
-    },
-    "wise0855": {
-        "canonical_name": "WISE J085510.83-071442.5",
-        "simbad_id": "WISE J085510.83-071442.5",
-        "object_type": "Sub-stellar Brown Dwarf (BD*)",
-        "spectral_type": "Y4 (Ultracold Y-Dwarf)",
-        "parallax_mas": 438.0,
-        "distance_pc": 2.28,
-        "proper_motion_mas_yr": 8550.0,
-        "effective_temp_k": 250,
-        "constellation": "Hydra",
-        "description": "Coldest known brown dwarf in the solar neighborhood (-13°C to 3°C), with atmospheric water clouds.",
-        "citations_count": 185
-    },
-    "epsindi": {
-        "canonical_name": "Epsilon Indi Bb",
-        "simbad_id": "* eps Ind B",
-        "object_type": "Binary Brown Dwarf (BD*)",
-        "spectral_type": "T1 + T6",
-        "parallax_mas": 274.84,
-        "distance_pc": 3.64,
-        "proper_motion_mas_yr": 4704.9,
-        "effective_temp_k": 1300,
-        "constellation": "Indus",
-        "description": "Nearby benchmark binary brown dwarf system showing distinct methane absorption bands.",
-        "citations_count": 340
-    },
-    "rwaur": {
-        "canonical_name": "RW Aurigae",
-        "simbad_id": "V* RW Aur",
-        "object_type": "Young Stellar Object / T-Tauri (YSO)",
-        "spectral_type": "K3:Ve + K5:Ve",
-        "parallax_mas": 6.13,
-        "distance_pc": 163.0,
-        "proper_motion_mas_yr": 22.4,
-        "constellation": "Auriga",
-        "description": "Classic eruptive T-Tauri variable system experiencing periodic circumstellar dust occultations.",
-        "citations_count": 480
-    },
-    "rdraconis": {
-        "canonical_name": "R Draconis",
-        "simbad_id": "V* R Dra",
-        "object_type": "Mira-type Pulsating Variable (M*)",
-        "spectral_type": "M5e-M9e",
-        "parallax_mas": 1.52,
-        "distance_pc": 660.0,
-        "period_days": 245.6,
-        "constellation": "Draco",
-        "description": "Luminous asymptotic giant branch pulsating star with amplitude variations up to 7 magnitudes.",
-        "citations_count": 310
-    }
-}
-
 def query_simbad_metadata(
     ra: float,
     dec: float,
     radius_arcmin: float = 3.0
 ) -> dict:
     """
-    Resolves canonical astronomical object identities, astrophysical types, spectral classifications,
-    and literature citation counts from the CDS Strasbourg SIMBAD database.
+    Live CDS SIMBAD cone search (astroquery). Returns the nearest catalogued object's
+    identifier, object type, spectral type, parallax and proper motion exactly as SIMBAD
+    reports them. If SIMBAD is unreachable or has no object, the status says so; nothing
+    is looked up from a hardcoded table and no citation counts are invented.
     """
-    matched_benchmark = None
-    from backend.services.cutout_engine import BENCHMARKS
-    for b_key, b_meta in BENCHMARKS.items():
-        dra = (ra - b_meta["ra"]) * np.cos(np.radians(b_meta["dec"])) * 60.0
-        ddec = (dec - b_meta["dec"]) * 60.0
-        if np.hypot(dra, ddec) <= radius_arcmin + 1.0:
-            matched_benchmark = b_key
-            break
+    out = {"query_ra": ra, "query_dec": dec, "radius_arcmin": radius_arcmin}
+    try:
+        import astropy.units as u
+        from astropy.coordinates import SkyCoord
+        from astroquery.simbad import Simbad
 
-    if matched_benchmark and matched_benchmark in SIMBAD_KNOWLEDGEBASE:
-        info = dict(SIMBAD_KNOWLEDGEBASE[matched_benchmark])
-        info["status"] = "resolved"
-        info["target_matched"] = matched_benchmark
-        info["query_ra"] = ra
-        info["query_dec"] = dec
-        return info
+        tab = None
+        last_err = None
+        for srv in ["simbad.cds.unistra.fr", "simbad.harvard.edu"]:
+            try:
+                sim = Simbad()
+                sim.server = srv
+                sim.add_votable_fields("otype", "sp_type", "plx_value", "pmra", "pmdec")
+                radius = float(np.clip(radius_arcmin, 0.1, 30.0)) * u.arcmin
+                tab = sim.query_region(SkyCoord(ra * u.deg, dec * u.deg, frame="icrs"), radius=radius)
+                if tab is not None:
+                    break
+            except Exception as e:
+                last_err = e
+                continue
 
-    # For general coordinates, return celestial locus identification
-    return {
-        "status": "resolved",
-        "canonical_name": f"SPHEREx J{ra:.4f}{dec:+.4f}",
-        "simbad_id": "Gaia DR3 / 2MASS Coordinate Locus",
-        "object_type": "Field Astronomical Source",
-        "spectral_type": "Standard Main Sequence / Field",
-        "parallax_mas": None,
-        "distance_pc": None,
-        "proper_motion_mas_yr": None,
-        "constellation": "General Celestial Field",
-        "description": "Astronomical source field in SPHEREx survey boundary.",
-        "citations_count": 0,
-        "query_ra": ra,
-        "query_dec": dec
-    }
+        if tab is None:
+            if last_err is not None:
+                raise last_err
+            out.update({"status": "no_match", "canonical_name": None, "message": "No SIMBAD object in this cone."})
+            return out
+
+        if len(tab) == 0:
+            out.update({"status": "no_match", "canonical_name": None, "message": "No SIMBAD object in this cone."})
+            return out
+
+        cols = {c.lower(): c for c in tab.colnames}
+
+        # Match nearest object by angular separation
+        target_sc = SkyCoord(ra * u.deg, dec * u.deg, frame="icrs")
+        ra_col = cols.get("ra")
+        dec_col = cols.get("dec")
+        if ra_col and dec_col:
+            source_scs = SkyCoord(tab[ra_col], tab[dec_col], frame="icrs")
+            seps = target_sc.separation(source_scs).arcsec
+            best_idx = int(seps.argmin())
+            sep_arcsec = round(float(seps[best_idx]), 3)
+        else:
+            best_idx = 0
+            sep_arcsec = None
+
+        def val(*names):
+            for n in names:
+                if n in cols:
+                    v = tab[cols[n]][best_idx]
+                    if v is None or (hasattr(v, "mask") and bool(v.mask)):
+                        return None
+                    try:
+                        f = float(v)
+                        return None if np.isnan(f) else f
+                    except Exception:
+                        t = str(v).strip()
+                        return t or None
+            return None
+
+        pmra, pmdec = val("pmra"), val("pmdec")
+        plx = val("plx_value", "plx")
+        out.update({
+            "status": "resolved",
+            "canonical_name": val("main_id"),
+            "simbad_id": val("main_id"),
+            "object_type": val("otype"),
+            "spectral_type": val("sp_type"),
+            "parallax_mas": plx,
+            "distance_pc": round(1000.0 / plx, 3) if plx and plx > 0 else None,
+            "proper_motion_mas_yr": round(float(np.hypot(pmra, pmdec)), 2) if pmra is not None and pmdec is not None else None,
+            "separation_arcsec": sep_arcsec,
+            "matches_in_cone": len(tab),
+            "source": "CDS SIMBAD (live)",
+        })
+        return out
+    except Exception as e:
+        out.update({"status": "unavailable", "canonical_name": None, "message": f"SIMBAD query failed: {e}"})
+        return out
 
 
 # =====================================================================
@@ -591,9 +378,20 @@ def crossmatch_photometry(
     twomass_res = query_2mass_psc(ra=ra, dec=dec, radius_arcmin=radius_arcmin, limit=20)
     simbad_res = query_simbad_metadata(ra=ra, dec=dec, radius_arcmin=radius_arcmin)
 
-    # Cross-match nearest optical/IR counterpart
-    primary_gaia = gaia_res["sources"][0] if gaia_res["sources"] else {}
-    primary_2mass = twomass_res["sources"][0] if twomass_res["sources"] else {}
+    def _nearest(sources):
+        """Nearest catalogue row to the query position (not simply the brightest)."""
+        best, best_sep = {}, None
+        for src in sources:
+            off = src.get("offset_arcsec") or {}
+            sep = float(np.hypot(off.get("dx", 0.0), off.get("dy", 0.0)))
+            if best_sep is None or sep < best_sep:
+                best, best_sep = src, sep
+        return best
+
+    primary_gaia = _nearest(gaia_res["sources"])
+    primary_2mass = _nearest(twomass_res["sources"])
+    archive_issues = [r.get("message") for r in (gaia_res, twomass_res, simbad_res)
+                      if r.get("status") == "unavailable" and r.get("message")]
 
     g_mag = primary_gaia.get("g_mag")
     k_mag = primary_2mass.get("k_mag")
@@ -637,10 +435,12 @@ def crossmatch_photometry(
             "near_infrared_j_minus_k": j_k_color,
             "is_ultracold_candidate": is_planet_x_candidate,
             "classification_reason": (
-                "Extreme infrared-to-optical excess & high proper motion (Strong Planet X / Brown Dwarf candidate)"
-                if is_planet_x_candidate else "Standard stellar photospheric emission"
+                "Heuristic flag only (G-Ks > 6, no Gaia counterpart with a 2MASS detection, Y-type SIMBAD class, "
+                "or Gaia proper motion > 1 arcsec/yr). Candidate, NOT confirmed."
+                if is_planet_x_candidate else "No ultracold-object heuristic triggered (not a confirmation of anything)."
             )
         },
+        "archive_issues": archive_issues,
         "all_gaia_sources_count": len(gaia_res["sources"]),
         "all_2mass_sources_count": len(twomass_res["sources"])
     }
