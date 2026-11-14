@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🎉 Issues #16, #17, #18, #24, #26, #27/#31 VERIFIED & CLOSED WITH COMMIT PROOF]**
+  - **Verification Commits:** [`219f6c4`](https://github.com/joker0210G/spherex-hunter/commit/219f6c4), [`c654244`](https://github.com/joker0210G/spherex-hunter/commit/c654244), [`ce8e9f8`](https://github.com/joker0210G/spherex-hunter/commit/ce8e9f8), [`8892e20`](https://github.com/joker0210G/spherex-hunter/commit/8892e20)
+  - **Verified Features in Live Browser:**
+    1. **Issue #16 (Draggable Splitters):** `#sidePanelSplitter` dynamically resizes `propertiesSidebar` (tested 384px -> 444px -> 346px). `#bottomDockSplitter` resizes dock (tested 82.7px -> 157.7px).
+    2. **Issue #17 (Interactive Ruler):** `#toolMeasure` activates Dist mode; canvas drag draws cyan caliper with live angular distance readout (tested `2.11' (127")`).
+    3. **Issue #18 & #24 (Flipbook Cycling & Dead Buttons):** `#toolFullscreen` toggles Web Fullscreen; `#toolBlinkFlip` sequentially advances frames ($1 \to 2 \to 3 \to 4 \to 1$) with `#frameBadge` and `#vpFrameLabel` synchronization. Left tool rail updated to `overflow-visible z-30` (zero tooltip clipping).
+    4. **Issue #26 (Compact Bottom Dock):** Single-row timeline flipbook defaults to compact `h-14` (~56px), freeing 100+ pixels of vertical canvas space.
+    5. **Issue #27 / #31 (HUD Collision, Compass Rose, Dynamic Scale Bar):** +29.7px gap eliminates telemetry overlap; compass enlarged to 36px circular reticle with authentic astronomical parity (North $\uparrow$, East $\leftarrow$); dynamic scale bar recalculates physical width in real-time ($30''$ at $1.0\times$, $1.0'$ at $0.5\times$).
 - **[GitHub Native Issue #31 Created — Fix Bottom Telemetry Overlap, Enlarge Compass Reticle to 36px, and Make Arcmin Scale Bar Dynamic]**
   - **Issue #31 Link:** https://github.com/joker0210G/spherex-hunter/issues/31
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
