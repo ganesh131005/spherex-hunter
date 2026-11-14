@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #22 Created — Add 'Save Analysis' Button with Session Naming, CRUD Management, and Toast Confirmations]**
+  - **Issue #22 Link:** https://github.com/joker0210G/spherex-hunter/issues/22
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Adds 'Save Analysis' action to name and snapshot target, coordinates, dates, channels, and stretch settings. Includes rename/update/delete CRUD controls, confirmation toasts, and integration with Issue #21.
 - **[GitHub Native Issue #21 Created — Implement 'Previous Analyses / My Investigations' Session Persistence and Full State Restoration]**
   - **Issue #21 Link:** https://github.com/joker0210G/spherex-hunter/issues/21
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
