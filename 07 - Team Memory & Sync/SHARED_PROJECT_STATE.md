@@ -26,6 +26,23 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #7 Created — SPHEREx 102-Band Spectral Integration: 6-Array Selector & 17-Wavelength Stepper]**
+  - **Issue #7 Link:** https://github.com/joker0210G/spherex-hunter/issues/7
+  - **Track:** `feature-backend` | **Roles:** @darkodu (backend schema) + @coolodu (frontend selector/chart) + @astrodu (education modal)
+  - **Scope:** Delivers the full 6-array × 17-wavelength interactive selector, enhanced SED chart with color-coded A1–A6 regions and molecular absorption markers (H₂O, CH₄, CO₂, CO), `/api/bands` endpoint, and beginner-friendly 102-band science explainer modal.
+- **[GitHub Native Issue #6 Created & Assigned to @astrodu: Beginner-Friendly Celestial Coordinates Bar (RA/Dec/FOV)]**
+  - **Issue #6 Link:** https://github.com/joker0210G/spherex-hunter/issues/6
+  - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu`) | **Resource:** `resource:standard`
+  - **Scope:** Upgrades cryptic celestial navigation bar (`RA`, `Dec`, `FOV`, `Fetch`) with educational tooltips, plain-English analogies (e.g. 3' = 1/10th Full Moon), coordinate format hints, and a quick-jump sky guide for non-astronomers and citizen scientists.
+- **[GitHub Native Issue #5 Created & Assigned to @astrodu: App Brand/Logo, Onboarding Tour & Mission Explainer]**
+  - **Issue #5 Link:** https://github.com/joker0210G/spherex-hunter/issues/5
+  - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu`) | **Resource:** `resource:standard`
+  - **Scope:** Replaces placeholder orange 'S' box with custom SPHEREx infrared telescope SVG logo; adds engaging application tagline and scientific mission explainer; introduces an interactive 5-step Citizen Science welcome tour with persistent header re-trigger `[❓ Mission Guide]`.
+- **[Batch Scripts Streamlined: Reduced from 8 to 2 Clean Entry Points]**
+  - Validated and incorporated coolodu's `cmd.exe` bug fix into `run_spherex_hunter.bat` (resolving syntax crash during port 8000 cleanup).
+  - Consolidated 8 scattered batch scripts (`setup_teammate.bat`, `start_backend.bat`, `stop_server.bat`, `sync_all.bat`, `sync_my_work.bat`, `update_from_team.bat`, `test_run.bat`) into **2** clean, dedicated scripts:
+    1. **`run_spherex_hunter.bat`**: 1-click application launcher (handles Python check, auto-port 8000 cleanup, uvicorn server, and browser auto-open).
+    2. **`team_sync.bat`**: Unified Team Sync & Workspace Hub (Interactive menu & CLI shortcuts for safe team radar, 1-click work push, teammate branch setup, and manual server shutdown).
 - **[Scientific Integrity Audit: Elimination of All Fake & Synthetic Data across SPHEREx Hunter (@coolodu)]**:
   - In compliance with Team RIP Constitution Principle 1 (*Scientific Integrity Over Gimmicks: Real Data First*), completed an exhaustive codebase audit and eliminated all procedural, synthetic, and fabricated data.
   - Eliminated procedural Gaussian/RNG stars (`SYNTH_` IDs with random fluxes), hardcoded mock catalog dictionaries (`CURATED_BENCHMARK_GAIA`, `CURATED_BENCHMARK_2MASS`, `SIMBAD_KNOWLEDGEBASE`), hash-derived fake spectral temperatures and invented molecular detections, fabricated `"sub_stellar_planet_x_probability": 0.0`, arbitrary `"confidence": "99.4%"`, and static HTML DOM placeholder counts (`842 ct`, `SNR 12.4`, `4.12x Co-add SNR`).
