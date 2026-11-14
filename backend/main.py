@@ -19,9 +19,12 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+from backend.api_v1 import make_request_id, router as api_v1_router
+from backend.models_v1 import ProblemDetails
 
 from backend.services.catalog_engine import (
     crossmatch_photometry,
@@ -33,6 +36,7 @@ from backend.services.catalog_engine import (
 from backend.services.csa_neossat_service import query_csa_neossat
 from backend.services.cutout_engine import (
     BENCHMARKS,
+    auto_prune_disk_cache,
     clear_all_caches,
     fetch_real_cutout,
     get_102_band_spectrum,
@@ -64,6 +68,34 @@ app.add_middleware(
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 if os.path.exists(FRONTEND_DIR):
     app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+    ASSETS_DIR = os.path.join(FRONTEND_DIR, "assets")
+    if os.path.exists(ASSETS_DIR):
+        app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
+# Mount Versioned API v1 Router
+app.include_router(api_v1_router)
+
+# Global RFC 7807 Exception Handler
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    req_id = request.headers.get("x-request-id", make_request_id())
+    code = getattr(exc, "code", f"HTTP_{exc.status_code}")
+    title = getattr(exc, "title", "HTTP Error")
+    problem = ProblemDetails(
+        type=f"https://spherex-hunter.space/errors/{str(code).lower().replace('_', '-')}",
+        title=title,
+        status=exc.status_code,
+        detail=str(exc.detail),
+        instance=str(request.url),
+        request_id=req_id,
+        code=str(code)
+    )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=problem.model_dump(),
+        media_type="application/problem+json",
+        headers={"X-Request-Id": req_id, "Cache-Control": "no-store"}
+    )
 
 # In-memory discovery ledger (persisted to JSON, overridable via env for isolated testing)
 DISCOVERIES_FILE = os.environ.get(
@@ -147,6 +179,15 @@ def cache_stats():
     """Returns current cache metrics."""
     return get_cache_stats()
 
+
+@app.get("/api/cache/prune")
+def prune_cache(
+    max_mb: float = Query(500.0, description="Soft disk cache cap in MB before eviction"),
+    target_mb: float = Query(350.0, description="Target disk usage in MB after pruning"),
+):
+    """Triggers smart disk auto-pruning daemon while keeping benchmark targets pinned."""
+    return auto_prune_disk_cache(max_mb=max_mb, target_mb=target_mb)
+
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 
@@ -183,7 +224,10 @@ def get_cutout(
     fov: float = Query(3.0, description="Field of View in arcminutes"),
     target: Optional[str] = Query(None, description="Benchmark target key (wise0855, barnard, etc.)"),
     lod: int = Query(1, description="Game Level of Detail tier: 0 (Hero Deep), 1 (Standard Science), 2 (Wide Overview)"),
-    force_refresh: bool = Query(False, description="Bypass all caches and force fresh NASA query")
+    force_refresh: bool = Query(False, description="Bypass all caches and force fresh NASA query"),
+    start_date: Optional[str] = Query(None, description="Optional temporal start filter (ISO UTC)"),
+    end_date: Optional[str] = Query(None, description="Optional temporal end filter (ISO UTC)"),
+    exact_date: Optional[str] = Query(None, description="Optional exact observation epoch target (ISO UTC)")
 ):
     """
     Universal Astronomical Pipeline:
@@ -197,6 +241,11 @@ def get_cutout(
         is_refresh = bool(force_refresh) if isinstance(force_refresh, bool) else False
         target_sanitized = sanitize_target_name(target) if target else None
         data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target_sanitized, lod=lod_val, force_refresh=is_refresh)
+        if start_date or end_date or exact_date:
+            data = dict(data)
+            data["temporal_filter"] = query_observation_timeline(
+                ra_deg, dec_deg, start_date=start_date, end_date=end_date, exact_date=exact_date
+            )
         return data
     except HTTPException:
         raise
@@ -209,14 +258,15 @@ def get_available_observations(
     dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
     start_date: Optional[str] = Query(None, description="Start date (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"),
     end_date: Optional[str] = Query(None, description="End date (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"),
+    exact_date: Optional[str] = Query(None, description="Optional specific observation epoch date (ISO UTC)"),
 ):
     """
     Returns authentic multi-epoch observation metadata covering celestial coordinates (RA, Dec)
-    within an optional temporal date/time filtering window [start_date, end_date].
+    within an optional temporal date/time filtering window [start_date, end_date] or exact_date.
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
-        return query_observation_timeline(ra_deg, dec_deg, start_date=start_date, end_date=end_date)
+        return query_observation_timeline(ra_deg, dec_deg, start_date=start_date, end_date=end_date, exact_date=exact_date)
     except HTTPException:
         raise
     except Exception as e:

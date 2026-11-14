@@ -431,6 +431,60 @@
       <!-- Interactive CDS Strasbourg Aladin Lite Container -->
       <div id="aladinContainer" class="absolute inset-0 hidden z-10 w-full h-full"></div>
 
+      <!-- SPHEREx DR1 HiPS Context Controls Overlay (Google Maps Style Multi-Resolution Navigator) -->
+      <div id="aladinContextBar"
+        class="absolute top-3 left-1/2 -translate-x-1/2 z-20 hidden flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700/90 shadow-2xl text-xs select-none max-w-[98%]"
+        role="region" aria-label="SPHEREx DR1 HiPS Context Controls">
+        <!-- Google Maps Multi-Resolution Zoom Stepper -->
+        <div class="flex items-center gap-1 bg-space-950/90 px-1.5 py-0.5 rounded border border-space-800">
+          <span class="text-gray-400 text-[10px] uppercase font-mono mr-0.5">Scale:</span>
+          <button id="btnZoomAllSky"
+            class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-[10px] text-gray-200 hover:text-white transition font-mono"
+            title="180° All-Sky Overview (Full Cosmic Sphere)">🌌 180°</button>
+          <button id="btnZoomWide"
+            class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-[10px] text-gray-200 hover:text-white transition font-mono"
+            title="30° Wide Constellation View">✨ 30°</button>
+          <button id="btnZoomField"
+            class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-[10px] text-gray-200 hover:text-white transition font-mono"
+            title="5° Intermediate Sky Field">🔭 5°</button>
+          <button id="btnZoomCore"
+            class="px-1.5 py-0.5 rounded bg-cyan-900/70 hover:bg-cyan-800 border border-cyan-500/50 text-[10px] text-cyan-200 hover:text-white transition font-mono font-semibold"
+            title="0.1° / 6' Native SPHEREx High-Resolution (Order 5 Detail)">🔬 0.1° HD</button>
+        </div>
+        <div class="h-4 w-px bg-space-700"></div>
+        <!-- 102-Channel Selector with Step Controls -->
+        <div class="flex items-center gap-1 text-[11px]">
+          <span class="text-gray-400 text-[10px] uppercase font-mono">λ:</span>
+          <button id="btnHipsPrevCh" class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-300 hover:text-white transition text-[10px] font-mono" title="Previous Spectral Channel (Lower Wavelength)">◀</button>
+          <select id="hipsChannelSelect" class="bg-space-950 text-cyan-300 border border-space-700 rounded px-1.5 py-0.5 text-[11px] font-mono focus:outline-none focus:border-cyan-500 cursor-pointer max-w-[130px]"></select>
+          <button id="btnHipsNextCh" class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-300 hover:text-white transition text-[10px] font-mono" title="Next Spectral Channel (Higher Wavelength)">▶</button>
+          <span id="hipsWavelengthDisplay" class="font-mono text-cyan-400 font-bold text-[10px] whitespace-nowrap">0.753 μm (Band 1)</span>
+        </div>
+        <div class="h-4 w-px bg-space-700"></div>
+        <!-- NASA Landmark Target Pins (Google Maps Style) -->
+        <div class="hidden lg:flex items-center gap-1">
+          <span class="text-gray-400 text-[10px] uppercase font-mono mr-0.5">Pins:</span>
+          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="wise0855" title="WISE 0855-0714 (Coldest Y-Dwarf / Planet X Analog)">🪐 WISE 0855</button>
+          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="barnard" title="Barnard's Star (High Proper Motion Red Dwarf)">⭐ Barnard</button>
+          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">🌟 Eps Indi</button>
+          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="rwaur" title="RW Aurigae (Eruptive Variable Star)">✨ RW Aur</button>
+          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="rdraconis" title="R Draconis (Pulsating Mira Variable)">🔴 R Drac</button>
+        </div>
+        <div class="h-4 w-px bg-space-700"></div>
+        <!-- Label and Honesty Notice -->
+        <div class="flex items-center gap-1 text-amber-400 font-medium">
+          <i data-lucide="info" class="w-3 h-3 text-amber-400 shrink-0"></i>
+          <span id="aladinContextNotice" class="text-[10px] font-semibold text-amber-300 truncate max-w-[200px]" title="DR1 all-sky mosaic: context only, not used for detection">DR1 all-sky mosaic: context only, not used for detection</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span id="aladinLayerStatus" class="px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 font-mono font-bold text-[9px]">DR1 HiPS Ready</span>
+          <div id="aladinFallbackAlert" class="hidden text-[10px] text-amber-200 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-600/60 flex items-center gap-1">
+            <i data-lucide="alert-triangle" class="w-3 h-3 text-amber-400 shrink-0"></i>
+            <span id="aladinFallbackMsg">HiPS unreachable; fallback to local survey active.</span>
+          </div>
+        </div>
+      </div>
+
       <!-- LOADING OVERLAY -->
       <div id="loadingOverlay" class="absolute inset-0 bg-black/70 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 pointer-events-none opacity-0">
         <div class="relative w-12 h-12 flex items-center justify-center">
@@ -899,11 +953,29 @@
           </div>
         </div>
 
-        <!-- Right: Blink Speed Slider -->
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="text-gray-400 text-xs">Speed:</span>
-          <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0" class="w-24 h-1.5 bg-space-700 rounded cursor-pointer">
-          <span id="speedLabel" class="text-gray-200 text-xs w-14 font-mono">2.0 FPS</span>
+        <!-- Right: Continuous Morph Toggle, Blend Slider & Blink Speed Slider -->
+        <div class="flex items-center gap-3 shrink-0 pl-3 border-l border-space-700">
+          <!-- Continuous Morph vs Snap Blink Toggle -->
+          <button id="btnToggleBlinkMorph"
+            class="px-2 py-1 rounded bg-space-800 hover:bg-space-750 border border-cyan-500/50 text-[10px] font-sans font-medium text-cyan-300 flex items-center gap-1 shadow-sm transition"
+            title="Toggle between Continuous Morph (smooth sine crossfade) and Snap Blink (discrete flip)">
+            <i data-lucide="waves" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span id="blinkMorphModeLabel">Smooth Morph</span>
+          </button>
+
+          <!-- Continuous Epoch Blend Slider -->
+          <div class="flex items-center gap-1.5" title="Continuously blend between Epoch 1 (2MASS) and Epoch 2 (SPHEREx)">
+            <span class="text-gray-400 text-[10px]">Blend:</span>
+            <input id="epochBlendSlider" type="range" min="0" max="100" value="0" class="w-20 h-1.5 bg-space-700 rounded cursor-pointer accent-cyan-400">
+            <span id="epochBlendLabel" class="text-gray-200 text-[10px] w-9 font-mono">0%</span>
+          </div>
+
+          <!-- Blink Speed Slider -->
+          <div class="flex items-center gap-1.5">
+            <span class="text-gray-400 text-[10px]">Speed:</span>
+            <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0" class="w-16 h-1.5 bg-space-700 rounded cursor-pointer">
+            <span id="speedLabel" class="text-gray-200 text-[10px] w-12 font-mono">2.0 FPS</span>
+          </div>
         </div>
       </div>
 
@@ -929,6 +1001,13 @@
             <button id="chanNext" class="blender-btn px-1.5 py-0.2 rounded hover:text-white" title="Next Spectral Channel (Right Arrow)">▶</button>
             <input type="range" id="chanSlider" min="1" max="17" value="1" class="w-20 h-1.5 bg-space-700 rounded cursor-pointer accent-amber-500">
             <span id="chanFluxBadge" class="text-amber-400 font-mono text-[9px]">1.00 rel</span>
+          </div>
+
+          <!-- Non-simultaneous observations honesty notice for variable stars -->
+          <div id="spectrumNonSimultaneousNotice"
+            class="text-[10px] text-amber-300/90 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40 flex items-center gap-1.5 shrink-0 select-none">
+            <i data-lucide="info" class="w-3 h-3 shrink-0 text-amber-400"></i>
+            <span>Notice: Spectra assembled from different observation dates across the 6 arrays are not simultaneous for variable stars (e.g. RW Aurigae, R Draconis).</span>
           </div>
 
           <!-- 102-Band Science Explainer Trigger -->
@@ -1556,6 +1635,149 @@
     let crossFadeAlpha = 1.0;
     let crossFadeAnimId = null;
 
+    // CONTINUOUS VIEWPORT RENDERING & EPOCH BLEND STATE
+    let epochBlend = 0.0;          // 0.0 = 100% Epoch 1, 1.0 = 100% Epoch 2
+    let targetEpochBlend = 0.0;    // Target for continuous smooth blend
+    let morphPhase = 0.0;          // Phase angle for continuous sinusoidal blink morph
+    let blinkMorphMode = 'morph';  // 'morph' (continuous crossfade) or 'snap' (discrete hard cut)
+
+    // =========================================================================
+    // ISSUE #13: CLIENT-SIDE L0/L0.5 SPATIAL TILE CACHE & REQUEST CANCELLATION
+    // =========================================================================
+    const clientRamTileCache = new Map();
+    const MAX_RAM_TILES = 128;
+    const IDB_NAME = 'spherex_tile_store';
+    const IDB_STORE = 'tiles';
+    const IDB_MAX_ENTRIES = 256;
+    let activeCutoutAbortController = null;
+
+    function fetchWithCancellation(url) {
+      if (activeCutoutAbortController) {
+        activeCutoutAbortController.abort();
+      }
+      activeCutoutAbortController = new AbortController();
+      return fetch(url, { signal: activeCutoutAbortController.signal });
+    }
+
+    function getClientSpatialKey(ra, dec, fov, lod, targetKey) {
+      const binRa = Math.round(parseFloat(ra) / 0.05) * 0.05;
+      const binDec = Math.round(parseFloat(dec) / 0.05) * 0.05;
+      return `${targetKey || 'sky'}_${binRa.toFixed(2)}_${binDec.toFixed(2)}_fov${Number(fov).toFixed(1)}_lod${lod}`;
+    }
+
+    function openTileIDB() {
+      return new Promise((resolve, reject) => {
+        if (typeof indexedDB === 'undefined') {
+          resolve(null);
+          return;
+        }
+        const req = indexedDB.open(IDB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(IDB_STORE)) {
+            const store = db.createObjectStore(IDB_STORE, { keyPath: 'cache_key' });
+            store.createIndex('last_accessed', 'last_accessed', { unique: false });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function getTileFromClientCache(cacheKey) {
+      if (clientRamTileCache.has(cacheKey)) {
+        const entry = clientRamTileCache.get(cacheKey);
+        // Refresh LRU order
+        clientRamTileCache.delete(cacheKey);
+        clientRamTileCache.set(cacheKey, entry);
+        return entry;
+      }
+      try {
+        const db = await openTileIDB();
+        if (!db) return null;
+        return await new Promise((resolve) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          const store = tx.objectStore(IDB_STORE);
+          const getReq = store.get(cacheKey);
+          getReq.onsuccess = () => {
+            const rec = getReq.result;
+            if (rec && rec.payload) {
+              rec.last_accessed = Date.now();
+              store.put(rec);
+              clientRamTileCache.set(cacheKey, rec.payload);
+              if (clientRamTileCache.size > MAX_RAM_TILES) {
+                const firstKey = clientRamTileCache.keys().next().value;
+                clientRamTileCache.delete(firstKey);
+              }
+              resolve(rec.payload);
+            } else {
+              resolve(null);
+            }
+          };
+          getReq.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function saveTileToClientCache(cacheKey, payload) {
+      clientRamTileCache.set(cacheKey, payload);
+      if (clientRamTileCache.size > MAX_RAM_TILES) {
+        const firstKey = clientRamTileCache.keys().next().value;
+        clientRamTileCache.delete(firstKey);
+      }
+      try {
+        const db = await openTileIDB();
+        if (!db) return;
+        await new Promise((resolve) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).put({
+            cache_key: cacheKey,
+            payload,
+            last_accessed: Date.now()
+          });
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => resolve();
+        });
+        await pruneClientCacheIfNeeded(IDB_MAX_ENTRIES);
+      } catch (e) {}
+    }
+
+    async function pruneClientCacheIfNeeded(maxEntries = IDB_MAX_ENTRIES) {
+      try {
+        const db = await openTileIDB();
+        if (!db) return;
+        await new Promise((resolve) => {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          const store = tx.objectStore(IDB_STORE);
+          const countReq = store.count();
+          countReq.onsuccess = () => {
+            if (countReq.result <= maxEntries) {
+              resolve();
+              return;
+            }
+            const toDelete = Math.max(1, Math.floor(maxEntries * 0.25));
+            let deleted = 0;
+            const idx = store.index('last_accessed');
+            const cursorReq = idx.openCursor();
+            cursorReq.onsuccess = (ev) => {
+              const cursor = ev.target.result;
+              if (cursor && deleted < toDelete) {
+                cursor.delete();
+                deleted++;
+                cursor.continue();
+              } else {
+                resolve();
+              }
+            };
+            cursorReq.onerror = () => resolve();
+          };
+          countReq.onerror = () => resolve();
+        });
+      } catch (e) {}
+    }
+
     // CAMERA VIEWPORT KINEMATICS (Interactive Walk Nav & Slewing)
     const camera = {
       ra: 133.79513,    // degrees
@@ -1672,7 +1894,7 @@
         slewBadge.innerText = `🔭 Slewing to RA ${newRA.toFixed(4)}°, Dec ${newDec.toFixed(4)}°...`;
       }
       try {
-        await loadSkyCutout(newRA, newDec, null, `Sky Field (RA ${newRA.toFixed(4)}°, Dec ${newDec.toFixed(4)}°)`, 3.0);
+        await loadSkyCutout(newRA, newDec, null, `Sky Field (RA ${newRA.toFixed(4)}°, Dec ${newDec.toFixed(4)}°)`, 3.0, true);
         camera.panX = 0;
         camera.panY = 0;
         drawFrame();
@@ -2101,6 +2323,45 @@
     // =========================================================================
     // DRAW REAL ASTRONOMICAL FITS IMAGERY (Single Continuous Optical Telescope Lens)
     // =========================================================================
+    function drawFeatheredImage(ctx, img, x, y, w, h, alpha = 1.0) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0.0, Math.min(1.0, alpha));
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, x, y, w, h);
+
+      // Smooth edge vignette: softly blends rectangular cutout borders into continuous space
+      if (!diffMode) {
+        const feather = Math.max(6, Math.min(24, w * 0.06));
+        const bg = '#06080e';
+
+        const gTop = ctx.createLinearGradient(0, y, 0, y + feather);
+        gTop.addColorStop(0, bg);
+        gTop.addColorStop(1, 'rgba(6, 8, 14, 0)');
+        ctx.fillStyle = gTop;
+        ctx.fillRect(x - 1, y - 1, w + 2, feather);
+
+        const gBot = ctx.createLinearGradient(0, y + h, 0, y + h - feather);
+        gBot.addColorStop(0, bg);
+        gBot.addColorStop(1, 'rgba(6, 8, 14, 0)');
+        ctx.fillStyle = gBot;
+        ctx.fillRect(x - 1, y + h - feather, w + 2, feather + 1);
+
+        const gLeft = ctx.createLinearGradient(x, 0, x + feather, 0);
+        gLeft.addColorStop(0, bg);
+        gLeft.addColorStop(1, 'rgba(6, 8, 14, 0)');
+        ctx.fillStyle = gLeft;
+        ctx.fillRect(x - 1, y - 1, feather, h + 2);
+
+        const gRight = ctx.createLinearGradient(x + w, 0, x + w - feather, 0);
+        gRight.addColorStop(0, bg);
+        gRight.addColorStop(1, 'rgba(6, 8, 14, 0)');
+        ctx.fillStyle = gRight;
+        ctx.fillRect(x + w - feather, y - 1, feather + 1, h + 2);
+      }
+      ctx.restore();
+    }
+
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
@@ -2137,7 +2398,7 @@
           const pfov = prevImg.fov || 3.0;
           const pw = pfov * pixelsPerArcmin;
           const ph = pfov * pixelsPerArcmin;
-          ctx.drawImage(prevImg, -pw / 2, -ph / 2, pw, ph);
+          drawFeatheredImage(ctx, prevImg, -pw / 2, -ph / 2, pw, ph, (1.0 - crossFadeAlpha) * layerAlpha);
         }
       }
 
@@ -2154,15 +2415,28 @@
           ctx.globalAlpha = 1.0;
         }
       } else {
-        const activeImg = currentFrame === 1 ? realEpoch1Img : realEpoch2Img;
-        if (isVisible && activeImg && activeImg.complete) {
-          const afov = activeImg.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
+        const visA = layerA ? layerA.visible : true;
+        const visB = layerB ? layerB.visible : true;
+        const opacityA = layerA ? layerA.opacity : 1.0;
+        const opacityB = layerB ? layerB.opacity : 1.0;
+        const lodFade = (prevEpoch1Img && crossFadeAlpha < 1.0) ? crossFadeAlpha : 1.0;
+
+        // Continuous Epoch Morphing & Blending
+        const alphaA = (1.0 - epochBlend) * opacityA * lodFade;
+        const alphaB = epochBlend * opacityB * lodFade;
+
+        if (visA && realEpoch1Img && realEpoch1Img.complete && alphaA > 0.005) {
+          const afov = realEpoch1Img.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
           const rw = afov * pixelsPerArcmin;
           const rh = afov * pixelsPerArcmin;
-          const effAlpha = (prevEpoch1Img && crossFadeAlpha < 1.0) ? (crossFadeAlpha * layerAlpha) : layerAlpha;
-          ctx.globalAlpha = effAlpha;
-          ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
-          ctx.globalAlpha = 1.0;
+          drawFeatheredImage(ctx, realEpoch1Img, -rw / 2, -rh / 2, rw, rh, alphaA);
+        }
+
+        if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
+          const bfov = realEpoch2Img.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
+          const rw = bfov * pixelsPerArcmin;
+          const rh = bfov * pixelsPerArcmin;
+          drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB);
         }
       }
 
@@ -2618,12 +2892,17 @@
       const reqFov = (reqLOD === 2) ? 8.0 : ((reqLOD === 0) ? 1.5 : 3.0);
 
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${reqFov}&lod=${reqLOD}`;
-        if (currentTargetKey) url += `&target=${currentTargetKey}`;
+        const cacheKey = getClientSpatialKey(camera.ra, camera.dec, reqFov, reqLOD, currentTargetKey);
+        let data = await getTileFromClientCache(cacheKey);
+        if (!data) {
+          let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${reqFov}&lod=${reqLOD}`;
+          if (currentTargetKey) url += `&target=${currentTargetKey}`;
 
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+          const res = await fetchWithCancellation(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          data = await res.json();
+          await saveTileToClientCache(cacheKey, data);
+        }
         activeCutoutData = data;
 
         const fovArcmin = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : reqFov;
@@ -2654,6 +2933,7 @@
           startLODCrossFade();
         }
       } catch (err) {
+        if (err && err.name === 'AbortError') return;
         console.warn("LOD streaming background notice:", err);
       } finally {
         isLODStreaming = false;
@@ -2674,25 +2954,33 @@
     // =========================================================================
     // LOAD REAL NASA FITS SKY CUTOUT FROM BACKEND (Seamless Real-Time Loader)
     // =========================================================================
-    async function loadSkyCutout(ra, dec, targetKey = null, targetName = null, fov = 3.0) {
+    async function loadSkyCutout(ra, dec, targetKey = null, targetName = null, fov = 3.0, silent = false) {
       const isCustom = !targetKey;
       currentLOD = getTargetLODFromZoom();
       updateLODBadge(currentLOD);
 
-      showLoading(
-        isCustom ? `Fetching Sky Tile (RA ${ra}, Dec ${dec})` : `Loading ${targetName || 'Target'} FITS`,
-        isCustom ? "Querying live NASA IRSA multi-epoch FITS servers (2MASS & DSS2)..." : "Calibrating Astropy ZScale multi-epoch FITS images..."
-      );
-
       const reqFov = (currentLOD === 2) ? 10.0 : ((currentLOD === 0) ? 1.5 : fov);
+      const cacheKey = getClientSpatialKey(ra, dec, reqFov, currentLOD, targetKey);
+      let data = await getTileFromClientCache(cacheKey);
+
+      if (!silent && !data) {
+        showLoading(
+          isCustom ? `Fetching Sky Tile (RA ${ra}, Dec ${dec})` : `Loading ${targetName || 'Target'} FITS`,
+          isCustom ? "Querying live NASA IRSA multi-epoch FITS servers (2MASS & DSS2)..." : "Calibrating Astropy ZScale multi-epoch FITS images..."
+        );
+      }
+
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${reqFov}&lod=${currentLOD}`;
-        if (targetKey) url += `&target=${targetKey}`;
-        
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        
-        const data = await res.json();
+        if (!data) {
+          let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${reqFov}&lod=${currentLOD}`;
+          if (targetKey) url += `&target=${targetKey}`;
+
+          const res = await fetchWithCancellation(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+
+          data = await res.json();
+          await saveTileToClientCache(cacheKey, data);
+        }
         activeCutoutData = data;
 
         if (data.coordinates) {
@@ -2756,6 +3044,7 @@
         // Live CSA NEOSSat Asteroid Tracking Cross-Match (Task 4)
         loadCSANeossatData(camera.ra, camera.dec, camera.fov);
       } catch (err) {
+        if (err && err.name === 'AbortError') return;
         console.error("Failed to load real FITS cutout:", err);
       } finally {
         hideLoading();
@@ -2788,15 +3077,23 @@
     // =========================================================================
     function startFlipbook() {
       if (playTimer) clearInterval(playTimer);
-      playTimer = setInterval(() => {
-        if (!diffMode) {
-          currentFrame = (currentFrame === 1) ? 2 : 1;
-          updateFrameLabel();
-          drawFrame();
-        }
-      }, 1000 / fps);
+      if (blinkMorphMode === 'snap') {
+        playTimer = setInterval(() => {
+          if (!diffMode) {
+            currentFrame = (currentFrame === 1) ? 2 : 1;
+            epochBlend = (currentFrame === 1) ? 0.0 : 1.0;
+            const slider = document.getElementById('epochBlendSlider');
+            if (slider) slider.value = Math.round(epochBlend * 100);
+            const lbl = document.getElementById('epochBlendLabel');
+            if (lbl) lbl.innerText = `${Math.round(epochBlend * 100)}%`;
+            updateFrameLabel();
+            drawFrame();
+          }
+        }, 1000 / fps);
+      }
       isPlaying = true;
-      document.getElementById('playPauseIcon').setAttribute('data-lucide', 'pause');
+      const playIcon = document.getElementById('playPauseIcon');
+      if (playIcon) playIcon.setAttribute('data-lucide', 'pause');
       lucide.createIcons();
     }
 
@@ -2804,7 +3101,8 @@
       if (playTimer) clearInterval(playTimer);
       playTimer = null;
       isPlaying = false;
-      document.getElementById('playPauseIcon').setAttribute('data-lucide', 'play');
+      const playIcon = document.getElementById('playPauseIcon');
+      if (playIcon) playIcon.setAttribute('data-lucide', 'play');
       lucide.createIcons();
     }
 
@@ -2817,34 +3115,99 @@
     document.getElementById('btnJumpStart').addEventListener('click', () => {
       stopFlipbook();
       currentFrame = 1;
+      epochBlend = 0.0;
+      targetEpochBlend = 0.0;
+      morphPhase = 0.0;
+      const slider = document.getElementById('epochBlendSlider');
+      if (slider) slider.value = 0;
+      const lbl = document.getElementById('epochBlendLabel');
+      if (lbl) lbl.innerText = '0%';
       updateFrameLabel();
       drawFrame();
     });
     document.getElementById('btnJumpEnd').addEventListener('click', () => {
       stopFlipbook();
       currentFrame = 2;
+      epochBlend = 1.0;
+      targetEpochBlend = 1.0;
+      morphPhase = Math.PI;
+      const slider = document.getElementById('epochBlendSlider');
+      if (slider) slider.value = 100;
+      const lbl = document.getElementById('epochBlendLabel');
+      if (lbl) lbl.innerText = '100%';
       updateFrameLabel();
       drawFrame();
     });
     document.getElementById('btnStepBack').addEventListener('click', () => {
       stopFlipbook();
-      currentFrame = 1;
+      epochBlend = Math.max(0.0, epochBlend - 0.10);
+      targetEpochBlend = epochBlend;
+      morphPhase = Math.acos(Math.max(-1, Math.min(1, 1.0 - 2.0 * epochBlend)));
+      currentFrame = epochBlend < 0.5 ? 1 : 2;
+      const slider = document.getElementById('epochBlendSlider');
+      if (slider) slider.value = Math.round(epochBlend * 100);
+      const lbl = document.getElementById('epochBlendLabel');
+      if (lbl) lbl.innerText = `${Math.round(epochBlend * 100)}%`;
       updateFrameLabel();
       drawFrame();
     });
     document.getElementById('btnStepFwd').addEventListener('click', () => {
       stopFlipbook();
-      currentFrame = 2;
+      epochBlend = Math.min(1.0, epochBlend + 0.10);
+      targetEpochBlend = epochBlend;
+      morphPhase = Math.acos(Math.max(-1, Math.min(1, 1.0 - 2.0 * epochBlend)));
+      currentFrame = epochBlend < 0.5 ? 1 : 2;
+      const slider = document.getElementById('epochBlendSlider');
+      if (slider) slider.value = Math.round(epochBlend * 100);
+      const lbl = document.getElementById('epochBlendLabel');
+      if (lbl) lbl.innerText = `${Math.round(epochBlend * 100)}%`;
       updateFrameLabel();
       drawFrame();
     });
+
+    const epochBlendSlider = document.getElementById('epochBlendSlider');
+    const epochBlendLabel = document.getElementById('epochBlendLabel');
+    if (epochBlendSlider) {
+      epochBlendSlider.addEventListener('input', (e) => {
+        if (isPlaying) stopFlipbook();
+        epochBlend = parseFloat(e.target.value) / 100.0;
+        targetEpochBlend = epochBlend;
+        morphPhase = Math.acos(Math.max(-1, Math.min(1, 1.0 - 2.0 * epochBlend)));
+        if (epochBlendLabel) epochBlendLabel.innerText = `${Math.round(epochBlend * 100)}%`;
+        const newFrame = epochBlend < 0.5 ? 1 : 2;
+        if (newFrame !== currentFrame) {
+          currentFrame = newFrame;
+          updateFrameLabel();
+        }
+        drawFrame();
+      });
+    }
+
+    const btnToggleBlinkMorph = document.getElementById('btnToggleBlinkMorph');
+    const blinkMorphModeLabel = document.getElementById('blinkMorphModeLabel');
+    if (btnToggleBlinkMorph) {
+      btnToggleBlinkMorph.addEventListener('click', () => {
+        blinkMorphMode = (blinkMorphMode === 'morph') ? 'snap' : 'morph';
+        if (blinkMorphMode === 'morph') {
+          if (blinkMorphModeLabel) blinkMorphModeLabel.innerText = 'Smooth Morph';
+          btnToggleBlinkMorph.classList.add('border-cyan-500/50', 'text-cyan-300');
+          btnToggleBlinkMorph.classList.remove('text-gray-300');
+          if (playTimer) clearInterval(playTimer);
+        } else {
+          if (blinkMorphModeLabel) blinkMorphModeLabel.innerText = 'Snap Blink';
+          btnToggleBlinkMorph.classList.remove('border-cyan-500/50', 'text-cyan-300');
+          btnToggleBlinkMorph.classList.add('text-gray-300');
+          if (isPlaying) startFlipbook();
+        }
+      });
+    }
 
     const speedSlider = document.getElementById('speedSlider');
     const speedLabel = document.getElementById('speedLabel');
     speedSlider.addEventListener('input', (e) => {
       fps = parseFloat(e.target.value);
       speedLabel.innerText = `${fps.toFixed(1)} FPS`;
-      if (isPlaying) startFlipbook();
+      if (isPlaying && blinkMorphMode === 'snap') startFlipbook();
     });
 
     // =========================================================================
@@ -2858,6 +3221,11 @@
     function resetWorkspaceButtons() {
       [wsBlink, wsDiff, wsSpec, wsAladin].forEach(b => b.classList.remove('blender-btn-active'));
       document.getElementById('aladinContainer').classList.add('hidden');
+      const contextBar = document.getElementById('aladinContextBar');
+      if (contextBar) {
+        contextBar.classList.add('hidden');
+        contextBar.classList.remove('flex');
+      }
       document.getElementById('astroCanvas').classList.remove('hidden');
     }
 
@@ -2892,6 +3260,13 @@
       resetWorkspaceButtons();
       wsAladin.classList.add('blender-btn-active');
       document.getElementById('aladinContainer').classList.remove('hidden');
+      const contextBar = document.getElementById('aladinContextBar');
+      if (contextBar) {
+        contextBar.classList.remove('hidden');
+        contextBar.classList.add('flex');
+      }
+      const tour = document.getElementById('guidedTourBanner');
+      if (tour) tour.classList.add('hidden');
       document.getElementById('astroCanvas').classList.add('hidden');
       initAladinLite();
     });
@@ -3421,36 +3796,311 @@
     }
 
     // =========================================================================
-    // CDS ALADIN LITE OBSERVATORY CONTROLLER
+    // CDS ALADIN LITE OBSERVATORY CONTROLLER (SPHEREx DR1 HiPS Context Layer)
     // =========================================================================
+    const DR1_HIPS_CUBE_URL = 'https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube';
+    const FALLBACK_SURVEY = 'P/DSS2/color';
+
+    const SPHEREx_102_CHANNELS = [
+      { ch: 1, band: 1, wl: 0.753 }, { ch: 2, band: 1, wl: 0.771 }, { ch: 3, band: 1, wl: 0.790 },
+      { ch: 4, band: 1, wl: 0.809 }, { ch: 5, band: 1, wl: 0.828 }, { ch: 6, band: 1, wl: 0.848 },
+      { ch: 7, band: 1, wl: 0.868 }, { ch: 8, band: 1, wl: 0.889 }, { ch: 9, band: 1, wl: 0.910 },
+      { ch: 10, band: 1, wl: 0.932 }, { ch: 11, band: 1, wl: 0.955 }, { ch: 12, band: 1, wl: 0.978 },
+      { ch: 13, band: 1, wl: 1.001 }, { ch: 14, band: 1, wl: 1.025 }, { ch: 15, band: 1, wl: 1.050 },
+      { ch: 16, band: 1, wl: 1.075 }, { ch: 17, band: 1, wl: 1.102 },
+      { ch: 18, band: 2, wl: 1.113 }, { ch: 19, band: 2, wl: 1.139 }, { ch: 20, band: 2, wl: 1.167 },
+      { ch: 21, band: 2, wl: 1.195 }, { ch: 22, band: 2, wl: 1.224 }, { ch: 23, band: 2, wl: 1.254 },
+      { ch: 24, band: 2, wl: 1.284 }, { ch: 25, band: 2, wl: 1.315 }, { ch: 26, band: 2, wl: 1.346 },
+      { ch: 27, band: 2, wl: 1.378 }, { ch: 28, band: 2, wl: 1.412 }, { ch: 29, band: 2, wl: 1.446 },
+      { ch: 30, band: 2, wl: 1.481 }, { ch: 31, band: 2, wl: 1.517 }, { ch: 32, band: 2, wl: 1.554 },
+      { ch: 33, band: 2, wl: 1.592 }, { ch: 34, band: 2, wl: 1.631 },
+      { ch: 35, band: 3, wl: 1.656 }, { ch: 36, band: 3, wl: 1.695 }, { ch: 37, band: 3, wl: 1.735 },
+      { ch: 38, band: 3, wl: 1.775 }, { ch: 39, band: 3, wl: 1.818 }, { ch: 40, band: 3, wl: 1.861 },
+      { ch: 41, band: 3, wl: 1.905 }, { ch: 42, band: 3, wl: 1.949 }, { ch: 43, band: 3, wl: 1.995 },
+      { ch: 44, band: 3, wl: 2.041 }, { ch: 45, band: 3, wl: 2.089 }, { ch: 46, band: 3, wl: 2.139 },
+      { ch: 47, band: 3, wl: 2.189 }, { ch: 48, band: 3, wl: 2.240 }, { ch: 49, band: 3, wl: 2.292 },
+      { ch: 50, band: 3, wl: 2.345 }, { ch: 51, band: 3, wl: 2.399 },
+      { ch: 52, band: 4, wl: 2.445 }, { ch: 53, band: 4, wl: 2.506 }, { ch: 54, band: 4, wl: 2.575 },
+      { ch: 55, band: 4, wl: 2.646 }, { ch: 56, band: 4, wl: 2.719 }, { ch: 57, band: 4, wl: 2.794 },
+      { ch: 58, band: 4, wl: 2.871 }, { ch: 59, band: 4, wl: 2.951 }, { ch: 60, band: 4, wl: 3.033 },
+      { ch: 61, band: 4, wl: 3.118 }, { ch: 62, band: 4, wl: 3.204 }, { ch: 63, band: 4, wl: 3.293 },
+      { ch: 64, band: 4, wl: 3.383 }, { ch: 65, band: 4, wl: 3.476 }, { ch: 66, band: 4, wl: 3.570 },
+      { ch: 67, band: 4, wl: 3.667 }, { ch: 68, band: 4, wl: 3.768 },
+      { ch: 69, band: 5, wl: 3.833 }, { ch: 70, band: 5, wl: 3.867 }, { ch: 71, band: 5, wl: 3.901 },
+      { ch: 72, band: 5, wl: 3.935 }, { ch: 73, band: 5, wl: 3.970 }, { ch: 74, band: 5, wl: 4.005 },
+      { ch: 75, band: 5, wl: 4.040 }, { ch: 76, band: 5, wl: 4.076 }, { ch: 77, band: 5, wl: 4.112 },
+      { ch: 78, band: 5, wl: 4.148 }, { ch: 79, band: 5, wl: 4.184 }, { ch: 80, band: 5, wl: 4.220 },
+      { ch: 81, band: 5, wl: 4.257 }, { ch: 82, band: 5, wl: 4.294 }, { ch: 83, band: 5, wl: 4.331 },
+      { ch: 84, band: 5, wl: 4.368 }, { ch: 85, band: 5, wl: 4.405 },
+      { ch: 86, band: 6, wl: 4.435 }, { ch: 87, band: 6, wl: 4.467 }, { ch: 88, band: 6, wl: 4.500 },
+      { ch: 89, band: 6, wl: 4.533 }, { ch: 90, band: 6, wl: 4.566 }, { ch: 91, band: 6, wl: 4.600 },
+      { ch: 92, band: 6, wl: 4.635 }, { ch: 93, band: 6, wl: 4.669 }, { ch: 94, band: 6, wl: 4.704 },
+      { ch: 95, band: 6, wl: 4.739 }, { ch: 96, band: 6, wl: 4.773 }, { ch: 97, band: 6, wl: 4.808 },
+      { ch: 98, band: 6, wl: 4.843 }, { ch: 99, band: 6, wl: 4.879 }, { ch: 100, band: 6, wl: 4.915 },
+      { ch: 101, band: 6, wl: 4.951 }, { ch: 102, band: 6, wl: 4.988 }
+    ];
+
     let aladinInstance = null;
     let aladinInitPromise = null;
+    let selectedHiPSChannel = 1;
+
+    function switchHiPSChannel(chNumber) {
+      selectedHiPSChannel = chNumber;
+      const item = SPHEREx_102_CHANNELS[chNumber - 1];
+      if (!item) return;
+
+      const disp = document.getElementById('hipsWavelengthDisplay');
+      if (disp) {
+        disp.textContent = `${item.wl.toFixed(3)} μm (Band ${item.band})`;
+      }
+
+      if (aladinInstance) {
+        try {
+          const baseLayer = aladinInstance.getBaseImageLayer();
+          if (baseLayer && typeof baseLayer.setSliceNumber === 'function') {
+            baseLayer.setSliceNumber(chNumber);
+          }
+        } catch (e) {
+          console.warn("Failed to set slice on Aladin base layer:", e);
+        }
+      }
+    }
+    const selectHiPSChannel = switchHiPSChannel;
+
+    function populateHiPSChannelSelector() {
+      const selectEl = document.getElementById('hipsChannelSelect');
+      if (!selectEl || selectEl.children.length > 0) return;
+      SPHEREx_102_CHANNELS.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.ch;
+        opt.textContent = `Ch ${item.ch}: ${item.wl.toFixed(3)} μm (Band ${item.band})`;
+        selectEl.appendChild(opt);
+      });
+
+      selectEl.addEventListener('change', (e) => {
+        const ch = parseInt(e.target.value, 10);
+        switchHiPSChannel(ch);
+      });
+    }
+
+    function bindAladinContextBarControls() {
+      populateHiPSChannelSelector();
+
+      const btnAllSky = document.getElementById('btnZoomAllSky');
+      const btnWide = document.getElementById('btnZoomWide');
+      const btnField = document.getElementById('btnZoomField');
+      const btnCore = document.getElementById('btnZoomCore');
+      if (btnAllSky) btnAllSky.onclick = () => { if (aladinInstance) aladinInstance.setFov(180); };
+      if (btnWide) btnWide.onclick = () => { if (aladinInstance) aladinInstance.setFov(30); };
+      if (btnField) btnField.onclick = () => { if (aladinInstance) aladinInstance.setFov(5); };
+      if (btnCore) btnCore.onclick = () => { if (aladinInstance) aladinInstance.setFov(0.1); };
+
+      const btnPrev = document.getElementById('btnHipsPrevCh');
+      const btnNext = document.getElementById('btnHipsNextCh');
+      const selEl = document.getElementById('hipsChannelSelect');
+      if (btnPrev && selEl) {
+        btnPrev.onclick = () => {
+          const cur = parseInt(selEl.value, 10) || 1;
+          if (cur > 1) {
+            selEl.value = cur - 1;
+            switchHiPSChannel(cur - 1);
+          }
+        };
+      }
+      if (btnNext && selEl) {
+        btnNext.onclick = () => {
+          const cur = parseInt(selEl.value, 10) || 1;
+          if (cur < 102) {
+            selEl.value = cur + 1;
+            switchHiPSChannel(cur + 1);
+          }
+        };
+      }
+
+      document.querySelectorAll('.hips-landmark-btn').forEach(btn => {
+        btn.onclick = () => {
+          const tKey = btn.getAttribute('data-target');
+          const t = TARGETS[tKey];
+          if (t) {
+            if (aladinInstance) {
+              aladinInstance.gotoRaDec(t.raDeg, t.decDeg);
+              aladinInstance.setFov(0.3);
+            }
+            selectTarget(tKey);
+          }
+        };
+      });
+    }
+
+    bindAladinContextBarControls();
+
+    function applyHiPSFallback(reason = "Service unreachable") {
+      const statusBadge = document.getElementById('aladinLayerStatus');
+      const alertBox = document.getElementById('aladinFallbackAlert');
+      const alertMsg = document.getElementById('aladinFallbackMsg');
+
+      if (statusBadge) {
+        statusBadge.textContent = "Local Base (Fallback)";
+        statusBadge.className = "px-2 py-0.5 rounded bg-amber-950/80 border border-amber-700/60 text-amber-300 font-mono font-bold text-[9px]";
+      }
+      if (alertBox) {
+        alertBox.classList.remove('hidden');
+      }
+      if (alertMsg) {
+        alertMsg.textContent = `HiPS fallback active: ${reason}. Loaded local baseline.`;
+      }
+      if (aladinInstance) {
+        try {
+          aladinInstance.setBaseImageLayer(FALLBACK_SURVEY);
+        } catch (e) { }
+      }
+    }
+
+    function loadSceneForPosition(ra, dec) {
+      const raNum = parseFloat(ra);
+      const decNum = parseFloat(dec);
+      if (isNaN(raNum) || isNaN(decNum)) return;
+
+      camera.ra = raNum;
+      camera.dec = decNum;
+      camera.panX = 0;
+      camera.panY = 0;
+      updateCoordinateReadouts();
+
+      let matchedKey = null;
+      for (const [k, p] of Object.entries(TARGETS)) {
+        const dra = (camera.ra - p.raDeg) * Math.cos(camera.dec * Math.PI / 180.0);
+        const ddec = camera.dec - p.decDeg;
+        if (Math.sqrt(dra * dra + ddec * ddec) < 0.05) {
+          matchedKey = k;
+          break;
+        }
+      }
+
+      currentTargetKey = matchedKey;
+      loadSceneState(matchedKey, camera.ra, camera.dec, camera.fov);
+      loadSkyCutout(camera.ra, camera.dec, matchedKey, matchedKey ? TARGETS[matchedKey].name : null, camera.fov, true);
+    }
+
     function initAladinLite(retryCount = 0) {
       const container = document.getElementById('aladinContainer');
       if (!container) return;
+
+      bindAladinContextBarControls();
 
       if (typeof window.A === 'undefined' || !window.A.init) {
         if (retryCount < 20) {
           setTimeout(() => initAladinLite(retryCount + 1), 100);
         } else {
-          console.warn("CDS Aladin Lite module loading timeout.");
+          console.warn("CDS Aladin Lite module loading timeout; activating offline fallback.");
+          applyHiPSFallback("Aladin module load timeout");
         }
         return;
       }
 
       if (!aladinInitPromise) {
         aladinInitPromise = window.A.init.then(() => {
-          aladinInstance = window.A.aladin('#aladinContainer', {
-            survey: 'P/DSS2/color',
-            fov: Math.max(0.05, camera.fov / 60.0),
-            target: `${camera.ra} ${camera.dec}`,
-            showReticle: true,
-            showLayersControl: true,
-            showFullscreenControl: false
+          const isOnline = navigator.onLine;
+          const initialSurvey = isOnline ? DR1_HIPS_CUBE_URL : FALLBACK_SURVEY;
+
+          try {
+            aladinInstance = window.A.aladin('#aladinContainer', {
+              survey: initialSurvey,
+              fov: 5.0, // Google Maps style wide initial field of view (5 degrees)
+              target: `${camera.ra} ${camera.dec}`,
+              showReticle: true,
+              showLayersControl: true,
+              showFullscreenControl: false
+            });
+
+            const statusBadge = document.getElementById('aladinLayerStatus');
+            const alertBox = document.getElementById('aladinFallbackAlert');
+            if (isOnline) {
+              if (statusBadge) {
+                statusBadge.textContent = "DR1 Cube (HiPS Online)";
+                statusBadge.className = "px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 font-mono font-bold text-[9px]";
+              }
+              if (alertBox) alertBox.classList.add('hidden');
+            } else {
+              applyHiPSFallback("Offline mode");
+            }
+
+            if (aladinInstance.on) {
+              aladinInstance.on('positionChanged', (pos) => {
+                if (pos && typeof pos.ra === 'number') {
+                  camera.ra = pos.ra;
+                  camera.dec = pos.dec;
+                  const vpRA = document.getElementById('vpRA');
+                  const vpDec = document.getElementById('vpDec');
+                  if (vpRA) vpRA.innerText = `${camera.ra.toFixed(5)}°`;
+                  if (vpDec) vpDec.innerText = `${camera.dec.toFixed(5)}°`;
+                  const propRA = document.getElementById('propRA');
+                  const propDec = document.getElementById('propDec');
+                  if (propRA) propRA.innerText = `${camera.ra.toFixed(5)}°`;
+                  if (propDec) propDec.innerText = `${camera.dec.toFixed(5)}°`;
+                  const inputRA = document.getElementById('inputRA');
+                  const inputDec = document.getElementById('inputDec');
+                  if (inputRA && document.activeElement !== inputRA) inputRA.value = camera.ra.toFixed(5);
+                  if (inputDec && document.activeElement !== inputDec) inputDec.value = camera.dec.toFixed(5);
+                }
+              });
+
+              aladinInstance.on('zoomChanged', (fovDeg) => {
+                if (typeof fovDeg === 'number') {
+                  camera.fov = fovDeg * 60.0;
+                  const vpFOV = document.getElementById('vpFOV');
+                  if (vpFOV) vpFOV.innerText = `${(fovDeg * 60.0).toFixed(2)}'`;
+                }
+              });
+            }
+
+            try {
+              if (window.A && window.A.catalog) {
+                const cat = window.A.catalog({ name: 'NASA SPHEREx Targets', sourceSize: 16, color: '#f59e0b' });
+                aladinInstance.addCatalog(cat);
+                const sources = [];
+                for (const [, t] of Object.entries(TARGETS)) {
+                  if (window.A.marker) {
+                    sources.push(window.A.marker(t.raDeg, t.decDeg, {
+                      popupTitle: t.name,
+                      popupDesc: `${t.type} | ${t.pm || ''}`
+                    }));
+                  }
+                }
+                if (sources.length > 0) cat.addSources(sources);
+              }
+            } catch (catErr) {
+              console.warn("Landmark pin overlay init skipped:", catErr);
+            }
+
+            bindAladinContextBarControls();
+          } catch (err) {
+            console.warn("Aladin creation failed with DR1 HiPS; falling back to local survey:", err);
+            applyHiPSFallback("HiPS initialization error");
+          }
+
+          container.addEventListener('click', (e) => {
+            if (e.target.closest('#aladinContextBar')) return;
+            if (!aladinInstance) return;
+            try {
+              const rect = container.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              if (typeof aladinInstance.pix2world === 'function') {
+                const coords = aladinInstance.pix2world(x, y);
+                if (coords && coords.length >= 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                  loadSceneForPosition(coords[0], coords[1]);
+                }
+              }
+            } catch (clickErr) {
+              console.warn("Aladin pix2world click error:", clickErr);
+            }
           });
+
           return aladinInstance;
         }).catch(err => {
           console.error("Aladin Lite init error:", err);
+          applyHiPSFallback("Initialization exception");
         });
       } else if (aladinInstance) {
         try {
@@ -3640,48 +4290,76 @@
       }
     });
 
-    // 60 FPS Kinematics Loop
+    // 60 FPS Kinematics & Continuous Morph Animation Loop
+    let lastKinematicsTime = performance.now();
+
     function gameKinematicsLoop() {
+      const now = performance.now();
+      const dt = Math.min(0.1, (now - lastKinematicsTime) / 1000);
+      lastKinematicsTime = now;
+
+      let needRedraw = false;
+
       if (isWalkNav) {
-        let moved = false;
         const isSprinting = camera.activeKeys['ShiftLeft'] || camera.activeKeys['ShiftRight'];
         const step = (isSprinting ? 10.0 : 3.5);
 
         // W: Fly Forward (Zoom in)
         if (camera.activeKeys['KeyW']) {
           camera.zoom = Math.min(8.0, camera.zoom * 1.02);
-          moved = true;
+          needRedraw = true;
         }
         // S: Fly Backward (Zoom out)
         if (camera.activeKeys['KeyS']) {
           camera.zoom = Math.max(0.4, camera.zoom * 0.98);
-          moved = true;
+          needRedraw = true;
         }
         // A: Strafe Left
         if (camera.activeKeys['KeyA']) {
           camera.panX += step;
-          moved = true;
+          needRedraw = true;
         }
         // D: Strafe Right
         if (camera.activeKeys['KeyD']) {
           camera.panX -= step;
-          moved = true;
+          needRedraw = true;
         }
         // Space: Ascend
         if (camera.activeKeys['Space']) {
           camera.panY += step;
-          moved = true;
+          needRedraw = true;
         }
         // Control / C: Descend
         if (camera.activeKeys['ControlLeft'] || camera.activeKeys['ControlRight'] || camera.activeKeys['KeyC']) {
           camera.panY -= step;
-          moved = true;
+          needRedraw = true;
         }
+      }
 
-        if (moved) {
-          updateCoordinateReadouts();
-          drawFrame();
+      // Continuous Epoch Morphing & Blending
+      if (isPlaying && !diffMode && blinkMorphMode === 'morph') {
+        morphPhase += (Math.PI * 2 * (fps / 2)) * dt;
+        epochBlend = 0.5 - 0.5 * Math.cos(morphPhase);
+        needRedraw = true;
+
+        const blendPercent = Math.round(epochBlend * 100);
+        const slider = document.getElementById('epochBlendSlider');
+        if (slider && document.activeElement !== slider) {
+          slider.value = blendPercent;
         }
+        const lbl = document.getElementById('epochBlendLabel');
+        if (lbl) lbl.innerText = `${blendPercent}%`;
+
+        const newFrame = epochBlend < 0.5 ? 1 : 2;
+        if (newFrame !== currentFrame) {
+          currentFrame = newFrame;
+          updateFrameLabel();
+        }
+      }
+
+      if (needRedraw) {
+        updateCoordinateReadouts();
+        drawFrame();
       }
       requestAnimationFrame(gameKinematicsLoop);
     }

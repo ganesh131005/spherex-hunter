@@ -26,17 +26,29 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-- **[GitHub Native Issues #8, #9, #10, #11, #12 — ALL RESOLVED & VERIFIED LIVE on `coolodu/web-frontend`]**
+- **[ALL GITHUB ISSUES #8, #9, #10, #11, #12, #13 RESOLVED & CLOSED + `origin/main` & `darkodu` DR1 INTEGRATION COMPLETE on `coolodu/web-frontend`]**
+  - **Issue #13 Link:** https://github.com/joker0210G/spherex-hunter/issues/13 (Hierarchical Spatial-Tile Caching: L0 RAM + L0.5 IndexedDB `spherex_tile_store` + `AbortController` + L1 `_SPATIAL_HASH_CACHE` + WCS sub-matrix FITS crop + `/api/cache/prune` — **CLOSED**)
+  - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12 (Universal Share Modal & Deep-Link Parameter Hub — **CLOSED**)
+  - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11 (Observation Date & Time Search Range Filtering, `exact_date`, FITS `DATE-OBS`/`MJD`, 102-band dates & simultaneity notice — **CLOSED**)
+  - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10 (Continuous Raytracing-like Sky Tiling & Adaptive LOD — **CLOSED**)
+  - **Issues #8 & #9 Links:** https://github.com/joker0210G/spherex-hunter/issues/8 & https://github.com/joker0210G/spherex-hunter/issues/9 (Command Palette Decision & `Ctrl+K` Implementation — **CLOSED**)
+  - **Darkodu DR1 & Multi-Res Integration:** Integrated `demo_cache`, DR1 provenance (`api_v1.py`, `scene_service.py`), mounted `api_v1_router` + RFC 7807 error handler in `backend/main.py`, evidence-tier `neossat_service.py` / `verification_service.py`, Google-Maps DR1 HiPS `#aladinContextBar`, continuous morphing (`#btnToggleBlinkMorph`, `#epochBlendSlider`, `drawFeatheredImage`), and full test suites (excluding synthetic `drawAmbientSkyBackground` and hardcoded Gaia fallback per Principle 1).
+  - **Verification:** **88/88 non-Playwright tests passed** (`test_golden_suite.py` 19/19, `test_api_v1_contract.py` 22/22, `test_neossat_verification.py` 5/5, plus all science/validation/metadata suites). Issues #8–#13 are all CLOSED; open teammate issues `#14` (`@astrodu`) & `#15` (`@iceodu`) remain on GitHub.
+- **[GitHub Native Issues #8, #9, #10, #11, #12 — RESOLVED & VERIFIED LIVE on `coolodu/web-frontend`]**
   - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12 (Universal Share Modal & Deep-Link Parameter Hub — COMPLETE)
   - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11 (Observation Date & Time Search Range Filtering — COMPLETE)
   - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10 (Continuous Raytracing-like Sky Tiling & Adaptive LOD — COMPLETE)
   - **Issue #9 Link:** https://github.com/joker0210G/spherex-hunter/issues/9 (Command Palette Ctrl+K — COMPLETE)
   - **Issue #8 Link:** https://github.com/joker0210G/spherex-hunter/issues/8 (Command Palette Decision — COMPLETE)
   - **Verification:** 13/13 Golden Suite tests passed (`test_golden_suite.py`) and 55/55 unit tests passed. Clean integration and merge of `origin/main` into `coolodu/web-frontend`.
+- **[GitHub Native Issue #13 Created — Hierarchical Spatial-Tile Caching (Client IndexedDB + Backend Spatial-Hash)]**
+  - **Issue #13 Link:** https://github.com/joker0210G/spherex-hunter/issues/13
+  - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` on client IndexedDB & AbortController) | **Resource:** `resource:compute-heavy`
+  - **Scope:** Solves query overload and stutter during continuous panning and zooming. Implements 3-tier caching: L0 Browser Memory + IndexedDB, L1 Backend Spatial-Hash RAM (<2ms), and L2 Persistent FITS Disk. Integrates `AbortController` request cancellation to eliminate stale in-flight fetches during camera flight.
 - **[GitHub Native Issue #12 Created — Universal Sky Region Share Modal & Deep-Link Parameter Hub]**
   - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12
-  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
-  - **Scope:** Adds 1-click `[🔗 Share]` modal generating universal shareable URLs with parameter hydration (`?ra=...&dec=...&fov=...&mode=...`) and formatted astrophysical telemetry briefs for peer collaboration.
+  - **Track:** `web-frontend` | **Role:** `@coolodu` (Collaborating with `@astrodu` for citizen science telemetry sharing) | **Resource:** `resource:standard`
+  - **Scope:** Adds topbar `[🔗 Share]` modal, generates clean deep-link URLs (`?ra=...&dec=...&fov=...&mode=...&date=...`), provides 1-click clipboard copying of formatted astronomical target telemetry, and hydrates shared state automatically when opened on other devices.
 - **[GitHub Native Issue #11 Created — Observation Date & Time Search (Temporal Range Filtering)]**
   - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11
   - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` for frontend datepicker HUD) | **Resource:** `resource:standard`

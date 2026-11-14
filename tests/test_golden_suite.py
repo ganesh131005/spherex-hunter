@@ -125,6 +125,111 @@ def test_multi_coordinate_sky_tiling_raycaster():
     assert res_north["status"] == "success"
     assert res_center["difference_image"]["image_data"].startswith("data:image/png;base64,")
 
+
+def test_observation_timeline_timestamps():
+    """Verify Issue #11: cut-out epochs, 102-band observation_dates, and timeline timestamps."""
+    from backend.services.cutout_engine import fetch_real_cutout, get_102_band_spectrum, query_observation_timeline
+
+    cutout = fetch_real_cutout(133.79513, -7.24515, target_key="wise0855")
+    assert cutout["status"] == "success"
+    for ep in cutout["epochs"]:
+        assert "date_obs" in ep and ep["date_obs"]
+        assert "mjd" in ep and isinstance(ep["mjd"], (int, float))
+
+    spec = get_102_band_spectrum(133.79513, -7.24515, "wise0855")
+    assert "observation_dates" in spec
+    assert len(spec["observation_dates"]) == 102
+    assert "simultaneity_notice" in spec
+
+    obs = query_observation_timeline(133.79513, -7.24515)
+    assert obs["status"] == "success"
+    assert obs["total_matched_observations"] == obs["count"]
+    assert obs["count"] >= 4
+
+
+def test_temporal_filter_valid_range():
+    """Verify Issue #11: temporal filtering by date range and exact_date."""
+    from backend.services.cutout_engine import query_observation_timeline
+
+    res_range = query_observation_timeline(133.79513, -7.24515, start_date="2024-01-01", end_date="2026-12-31")
+    assert res_range["status"] == "success"
+    assert res_range["total_matched_observations"] >= 1
+    assert any(o["date_obs"] >= "2024-01-01" for o in res_range["observations"])
+
+    res_exact = query_observation_timeline(133.79513, -7.24515, exact_date="1999-02-14")
+    assert res_exact["status"] == "success"
+    assert res_exact["total_matched_observations"] == 1
+    assert res_exact["observations"][0]["survey"] == "2MASS"
+
+
+def test_temporal_filter_empty_range():
+    """Verify Issue #11: empty temporal range returns honest no_observations + nearest_available_epoch."""
+    from backend.services.cutout_engine import query_observation_timeline
+
+    empty = query_observation_timeline(133.79513, -7.24515, start_date="1910-01-01", end_date="1920-01-01")
+    assert empty["status"] == "no_observations"
+    assert empty["total_matched_observations"] == 0
+    assert empty["count"] == 0
+    assert "nearest_available_epoch" in empty
+    assert "date" in empty["nearest_available_epoch"]
+
+
+def test_spatial_hash_cache_hit():
+    """Verify Issue #13: L1 spatial-hash proximity cache returns sub-arcmin neighbor hit."""
+    from backend.services.cutout_engine import _L1_MEMORY_CACHE, _SPATIAL_HASH_CACHE, fetch_real_cutout, get_spatial_cell_id
+
+    _L1_MEMORY_CACHE.clear()
+    _SPATIAL_HASH_CACHE.clear()
+    base_ra, base_dec = 133.79513, -7.24515
+    first = fetch_real_cutout(base_ra, base_dec, fov_arcmin=3.0, target_key="wise0855", lod=1)
+    assert first["status"] == "success"
+
+    # Neighbor 0.06 arcmin away (< 0.35 arcmin tolerance, same 0.05 deg spatial cell)
+    second = fetch_real_cutout(base_ra + 0.001, base_dec + 0.0005, fov_arcmin=3.0, target_key="wise0855", lod=1)
+    assert second["status"] == "success"
+    assert second.get("cache_tier") == "L1_SPATIAL_HASH"
+    assert second.get("spatial_cell_id") == get_spatial_cell_id(base_ra, base_dec)
+
+
+def test_sub_matrix_wcs_crop():
+    """Verify Issue #13: Astropy WCS sub-matrix crop from wider on-disk master FITS."""
+    from backend.services.cutout_engine import crop_submatrix_from_master_fits
+
+    crop = crop_submatrix_from_master_fits(133.79513, -7.24515, fov_arcmin=1.5, dim=360)
+    assert crop["status"] == "success"
+    assert crop["shape"] == [360, 360]
+    assert len(crop["peak_pixel"]) == 2
+    assert isinstance(crop["spatial_cell_id"], int)
+
+
+def test_auto_prune_disk_cache():
+    """Verify Issue #13: smart disk auto-pruning evicts unpinned files while preserving benchmarks."""
+    import os
+    import tempfile
+    from backend.services.cutout_engine import auto_prune_disk_cache
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        pinned_path = os.path.join(tmpdir, "wise0855_pinned.fits")
+        old_sky_1 = os.path.join(tmpdir, "sky_10.0000_20.0000_3.0_2mass.fits")
+        old_sky_2 = os.path.join(tmpdir, "sky_12.0000_22.0000_3.0_dss2.fits")
+        with open(pinned_path, "wb") as f:
+            f.write(b"A" * 600_000)
+        with open(old_sky_1, "wb") as f:
+            f.write(b"B" * 600_000)
+        with open(old_sky_2, "wb") as f:
+            f.write(b"C" * 600_000)
+        os.utime(old_sky_1, (1000, 1000))
+        os.utime(old_sky_2, (2000, 2000))
+
+        # Limit 1.0 MB, target 0.8 MB -> should prune unpinned old files, keeping wise0855 pinned
+        result = auto_prune_disk_cache(max_mb=1.0, target_mb=0.8, cache_dirs=[tmpdir])
+        assert result["status"] == "ok"
+        assert result["pinned_count"] == 1
+        assert result["pruned_count"] >= 2
+        assert os.path.exists(pinned_path)
+        assert not os.path.exists(old_sky_1)
+
+
 if __name__ == "__main__":
     for b in BENCHMARKS:
         test_nasa_benchmark_cutouts(*b)
@@ -134,4 +239,4 @@ if __name__ == "__main__":
     test_wiseview_verification_bridge()
     test_neossat_and_cadc_tracking()
     test_resources_codex()
-    print("ALL 11 GOLDEN SUITE TESTS PASSED!")
+    print("ALL GOLDEN SUITE TESTS PASSED!")

@@ -84,13 +84,28 @@ MANIFEST_PATH = os.path.join(DEMO_CACHE_DIR, "manifest.json")
 DISCOVERIES_FILE = os.path.join(BASE_DIR, "07 - Team Memory & Sync", "candidate_discoveries.json")
 VALIDATION_DIR = os.path.join(BASE_DIR, "validation")
 
-# Git deployment hash
+# Git deployment hash, data release & pipeline version
 try:
     GIT_HASH = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=BASE_DIR, stderr=subprocess.DEVNULL
     ).decode().strip()
 except Exception:
     GIT_HASH = "71a9daaaa9d8b27d415c2d79d1be389da460baff"
+
+DATA_RELEASE = "DR1"
+PIPELINE_VERSION = "2.1.0"
+
+
+def make_provenance(base: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    prov = {
+        "source": "SPHEREx Hunter Core Pipeline",
+        "data_release": DATA_RELEASE,
+        "pipeline_version": PIPELINE_VERSION,
+        "git_hash": GIT_HASH,
+    }
+    if base:
+        prov.update(base)
+    return prov
 
 
 # ==============================================================================
@@ -689,7 +704,7 @@ def get_target_scene_v1(target_id: str, request: Request, fov_arcmin: float = Qu
         epochs=epochs_data,
         layers=layers,
         warnings=warnings,
-        provenance={"source": "SPHEREx Hunter Scene Engine", "git_hash": GIT_HASH}
+        provenance=make_provenance({"source": "SPHEREx Hunter Scene Engine"})
     )
     headers = {
         "X-Request-Id": req_id,
@@ -771,8 +786,11 @@ def get_target_exposures(target_id: str, request: Request):
                 f"at coordinates RA={t_info['ra_deg']}, Dec={t_info['dec_deg']} as of 2026. "
                 "SPHEREx survey tiles covering this field will be ingested in upcoming data releases."
             ),
-            archive_version="IRSA spherex.obscore 2026",
-            provenance={"source": "NASA IRSA TAP", "queried_at": datetime.now(timezone.utc).isoformat()}
+            archive_version="IRSA spherex.obscore DR1 2026",
+            provenance=make_provenance({
+                "source": "NASA IRSA TAP",
+                "queried_at": datetime.now(timezone.utc).isoformat()
+            })
         )
         headers = {
             "X-Request-Id": req_id,
@@ -787,8 +805,8 @@ def get_target_exposures(target_id: str, request: Request):
         status="ok",
         total_found=t_info["public_exposures_count"],
         exposures=[],
-        archive_version="IRSA spherex.obscore 2026",
-        provenance={"source": "live_archive", "git_hash": GIT_HASH}
+        archive_version="IRSA spherex.obscore DR1 2026",
+        provenance=make_provenance({"source": "live_archive"})
     )
     return JSONResponse(content=resp.model_dump(), headers={"X-Request-Id": req_id})
 
@@ -1248,7 +1266,7 @@ def get_target_candidates(target_id: str, request: Request):
         total=0,
         candidates=[],
         notes="No candidates exceed 5-sigma significance or survive artifact vetoes in this field.",
-        provenance={"source": "SPHEREx Pipeline Differencing Engine", "git_hash": GIT_HASH}
+        provenance=make_provenance({"source": "SPHEREx Pipeline Differencing Engine"})
     )
     headers = {
         "X-Request-Id": req_id,
@@ -1385,7 +1403,7 @@ def get_target_photometry(target_id: str, request: Request):
                     ra_deg=t_info["ra_deg"],
                     dec_deg=t_info["dec_deg"],
                     bands=bands_list,
-                    provenance=raw_data.get("provenance", {"source": "demo_cache"})
+                    provenance=make_provenance(raw_data.get("provenance", {"source": "demo_cache"}))
                 )
                 headers = {
                     "X-Request-Id": req_id,
@@ -1403,7 +1421,7 @@ def get_target_photometry(target_id: str, request: Request):
         ra_deg=t_info["ra_deg"],
         dec_deg=t_info["dec_deg"],
         bands=[],
-        provenance={"source": "none", "notes": "No calibrated photometry available for this target."}
+        provenance=make_provenance({"source": "none", "notes": "No calibrated photometry available for this target."})
     )
     headers = {
         "X-Request-Id": req_id,
@@ -1463,7 +1481,7 @@ def get_target_lightcurve(target_id: str, request: Request):
                     target_id=t_clean,
                     selection_rule=raw_lc.get("selection_rule", "Like-wavelength exposures only (Detector 6, 4.42 μm)"),
                     points=points_list,
-                    provenance=raw_lc.get("provenance", {"source": "demo_cache"})
+                    provenance=make_provenance(raw_lc.get("provenance", {"source": "demo_cache"}))
                 )
                 headers = {
                     "X-Request-Id": req_id,
@@ -1479,7 +1497,7 @@ def get_target_lightcurve(target_id: str, request: Request):
         target_id=t_clean,
         selection_rule="Like-wavelength exposures only",
         points=[],
-        provenance={"source": "none", "notes": "No multi-epoch like-wavelength observations found."}
+        provenance=make_provenance({"source": "none", "notes": "No multi-epoch like-wavelength observations found."})
     )
     headers = {
         "X-Request-Id": req_id,
