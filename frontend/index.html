@@ -574,7 +574,7 @@
     </main>
 
     <!-- DRAGGABLE SIDE PANEL RESIZE SPLITTER (Issue #16) -->
-    <div id="sidePanelSplitter" class="w-1.5 hover:w-2 bg-space-800 hover:bg-cyan-500/80 cursor-col-resize z-20 transition-all select-none relative -mr-1" title="Drag horizontally to resize panel (Double-click to reset)"></div>
+    <div id="sidePanelSplitter" class="w-2 hover:w-3 bg-space-800 hover:bg-cyan-500/80 cursor-col-resize z-40 transition-all select-none relative -mr-1" title="Drag horizontally to resize panel (Double-click to reset)"></div>
 
     <!-- RIGHT INSPECTOR (380px, Data-Driven Tabbed Interface) -->
     <aside id="propertiesSidebar" class="w-96 bg-space-900 border-l border-space-700 flex flex-col shrink-0 min-h-0 z-20 text-xs select-none shadow-xl" role="region" aria-label="Scene Collection and Layer Manager">
@@ -3928,9 +3928,6 @@
 
       const startSidebarResize = (e) => {
         isResizingSidebar = true;
-        if (e.setPointerCapture && e.pointerId) {
-          try { sidePanelSplitter.setPointerCapture(e.pointerId); } catch (_) {}
-        }
         document.body.style.userSelect = 'none';
         document.body.style.cursor = 'col-resize';
       };
@@ -3951,8 +3948,12 @@
 
       sidePanelSplitter.addEventListener('pointerdown', startSidebarResize);
       sidePanelSplitter.addEventListener('mousedown', startSidebarResize);
+      document.addEventListener('pointermove', doSidebarResize);
+      document.addEventListener('mousemove', doSidebarResize);
       window.addEventListener('pointermove', doSidebarResize);
       window.addEventListener('mousemove', doSidebarResize);
+      document.addEventListener('pointerup', stopSidebarResize);
+      document.addEventListener('mouseup', stopSidebarResize);
       window.addEventListener('pointerup', stopSidebarResize);
       window.addEventListener('mouseup', stopSidebarResize);
 
