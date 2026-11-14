@@ -509,6 +509,14 @@
         <span id="userModeLabel">Beginner</span>
       </button>
 
+      <!-- Universal Sky Region Share Button (Issue #12) -->
+      <button id="btnShareModal"
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-xs font-mono transition-all shrink-0"
+        title="Share Current Sky Region & Deep-Link URL">
+        <i data-lucide="share-2" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span class="hidden md:inline">Share</span>
+      </button>
+
       <!-- Mission Codex & Phase 2 Validation Button -->
       <button id="btnOpenValidation"
         class="p-1.5 rounded blender-btn text-cyan-300 hover:text-white flex items-center gap-1 text-xs"
@@ -1550,6 +1558,62 @@
     </div>
   </div>
 
+  <!-- UNIVERSAL SKY REGION SHARE & DEEP-LINK MODAL (Issue #12) -->
+  <div id="shareModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-700 rounded-xl max-w-lg w-full p-4 shadow-2xl space-y-3 font-mono text-xs">
+      <div class="flex items-center justify-between border-b border-space-700 pb-2">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="share-2" class="w-4 h-4 text-cyan-400"></i>
+          <span>Share Sky Coordinates & Deep-Link</span>
+        </div>
+        <button id="closeShareModalBtn" class="text-gray-400 hover:text-white text-xs p-1">✕</button>
+      </div>
+
+      <!-- Telemetry Summary Card -->
+      <div class="bg-space-950 p-2.5 rounded-lg border border-space-700 space-y-1.5 text-gray-300 text-[11px]">
+        <div class="flex justify-between items-center text-white font-bold">
+          <span id="shareTargetTitle">WISE 0855-0714</span>
+          <span id="shareBaselineDate" class="text-emerald-400 text-[10px] font-mono">Δt: ~26.2 Yrs (2MASS → SPHEREx)</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 text-[10px] text-gray-400 font-mono">
+          <div>RA: <span id="shareRA" class="text-cyan-300">133.79513°</span></div>
+          <div>Dec: <span id="shareDec" class="text-cyan-300">-7.24515°</span></div>
+          <div>FOV: <span id="shareFOV" class="text-gray-200">3.0'</span></div>
+          <div>Mode: <span id="shareMode" class="text-amber-400 font-semibold uppercase">Blink</span></div>
+        </div>
+      </div>
+
+      <!-- Shareable Universal URL Input -->
+      <div class="space-y-1">
+        <label class="text-[10px] text-gray-400 font-sans">Universal Deep-Link URL:</label>
+        <div class="flex items-center gap-1.5">
+          <input id="shareUrlInput" type="text" readonly class="flex-1 bg-space-950 border border-space-700 rounded px-2.5 py-1 text-cyan-300 font-mono text-[10px] select-all focus:outline-none focus:border-cyan-500">
+          <button id="btnCopyShareUrl" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold text-[10px] flex items-center gap-1 transition shadow">
+            <i data-lucide="copy" class="w-3 h-3"></i>
+            <span id="copyUrlBtnText">Copy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Copy Telemetry Citation -->
+      <div class="space-y-1">
+        <label class="text-[10px] text-gray-400 font-sans">Research Observation Telemetry:</label>
+        <textarea id="shareTelemetryText" readonly rows="3" class="w-full bg-space-950 border border-space-700 rounded p-2 text-gray-300 font-mono text-[10px] select-all focus:outline-none"></textarea>
+      </div>
+
+      <!-- Action Footer -->
+      <div class="flex items-center justify-between pt-2 border-t border-space-700">
+        <button id="btnCopyTelemetrySnippet" class="px-2.5 py-1 rounded bg-space-800 hover:bg-space-750 border border-space-700 text-[10px] flex items-center gap-1 text-gray-300 hover:text-white transition">
+          <i data-lucide="file-text" class="w-3 h-3 text-cyan-400"></i>
+          <span>Copy Citation Text</span>
+        </button>
+        <button id="btnCloseShareModal" class="px-3 py-1 rounded bg-space-800 hover:bg-space-700 text-[10px] text-gray-300 transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ========================================================================= -->
   <!-- INTERACTIVE ONBOARDING TOUR & MISSION EXPLAINER MODAL (Issue #5)           -->
   <!-- ========================================================================= -->
@@ -1975,6 +2039,44 @@
       speed: 1.0,
       activeKeys: {}
     };
+
+    // =========================================================================
+    // FRUSTUM RAYCASTER & CONTINUOUS CELESTIAL PROJECTION (Issue #10)
+    // =========================================================================
+    function canvasToSkyCoordinates(px, py) {
+      const w = canvas.width;
+      const h = canvas.height;
+      const basePx = Math.min(w, h) * 0.90;
+      const pixelsPerArcmin = basePx / camera.fov;
+      const worldX = (px - (w / 2 + camera.panX)) / camera.zoom;
+      const worldY = (py - (h / 2 + camera.panY)) / camera.zoom;
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0);
+
+      const draArcmin = -worldX / pixelsPerArcmin;
+      const ddecArcmin = -worldY / pixelsPerArcmin;
+
+      const ra = camera.ra + (draArcmin / 60.0) / (cosDec || 1.0);
+      const dec = camera.dec + (ddecArcmin / 60.0);
+      return { ra, dec };
+    }
+
+    function getVisibleFrustumSkyBounds() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const c1 = canvasToSkyCoordinates(0, 0);
+      const c2 = canvasToSkyCoordinates(w, 0);
+      const c3 = canvasToSkyCoordinates(0, h);
+      const c4 = canvasToSkyCoordinates(w, h);
+      return {
+        minRA: Math.min(c1.ra, c2.ra, c3.ra, c4.ra),
+        maxRA: Math.max(c1.ra, c2.ra, c3.ra, c4.ra),
+        minDec: Math.min(c1.dec, c2.dec, c3.dec, c4.dec),
+        maxDec: Math.max(c1.dec, c2.dec, c3.dec, c4.dec),
+        arcsecPerPixel: (camera.fov * 60.0) / (Math.min(w, h) * camera.zoom)
+      };
+    }
+    window.canvasToSkyCoordinates = canvasToSkyCoordinates;
+    window.getVisibleFrustumSkyBounds = getVisibleFrustumSkyBounds;
 
     function initAmbientStars() {
       if (ambientStars) return;
@@ -2915,6 +3017,9 @@
     // COORDINATE KINEMATICS & HUD UPDATES
     // =========================================================================
     function getCurrentCoordinates() {
+      if (typeof canvasToSkyCoordinates === 'function' && canvas && canvas.width > 0 && canvas.height > 0) {
+        return canvasToSkyCoordinates(canvas.width / 2, canvas.height / 2);
+      }
       const degPerPixel = (camera.fov / 60.0) / (400.0 * camera.zoom);
       const currentRA = camera.ra - (camera.panX * degPerPixel);
       const currentDec = camera.dec + (camera.panY * degPerPixel);
@@ -4402,22 +4507,47 @@
         });
       }
 
-      // Check URL parameters (e.g. ?ra=133.79513&dec=-7.24515&fov=3.0)
-      const urlParams = new URLSearchParams(window.location.search);
+      // Check URL & Hash parameters (e.g. ?ra=133.79513&dec=-7.24515&fov=3.0&mode=diff&gaia=true)
+      let urlParams = new URLSearchParams(window.location.search);
+      if (!urlParams.has('ra') && !urlParams.has('target') && !urlParams.has('mode') && window.location.hash) {
+        const hashStr = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+        urlParams = new URLSearchParams(hashStr);
+      }
       const paramRA = urlParams.get('ra');
       const paramDec = urlParams.get('dec');
       const paramFOV = urlParams.get('fov');
       const paramTarget = urlParams.get('target');
+      const paramMode = urlParams.get('mode');
+      const paramGaia = urlParams.get('gaia');
 
       if (paramRA && paramDec) {
         document.getElementById('inputRA').value = paramRA;
         document.getElementById('inputDec').value = paramDec;
-        if (paramFOV) document.getElementById('selectFOV').value = paramFOV;
+        if (paramFOV) {
+          const selectFOVEl = document.getElementById('selectFOV');
+          if (selectFOVEl) selectFOVEl.value = paramFOV;
+          camera.fov = parseFloat(paramFOV) || 3.0;
+        }
         slewToTypedCoordinates();
       } else if (paramTarget && TARGETS[paramTarget]) {
         selectTarget(paramTarget);
       } else {
         selectTarget('wise0855');
+      }
+
+      if (paramMode) {
+        const modeLower = paramMode.toLowerCase();
+        if ((modeLower === 'map' || modeLower === 'aladin') && wsAladin) wsAladin.click();
+        else if (modeLower === 'diff' && wsDiff) wsDiff.click();
+        else if (modeLower === 'blink' && wsBlink) wsBlink.click();
+        else if (modeLower === 'spectra' && wsSpec) wsSpec.click();
+      }
+
+      if (paramGaia !== null) {
+        const wantGaia = paramGaia === 'true' || paramGaia === '1';
+        if (wantGaia !== gaiaOverlayEnabled && btnToggleGaia) {
+          btnToggleGaia.click();
+        }
       }
 
       startFlipbook();
@@ -4831,44 +4961,80 @@
     function closeCommandPalette() {
       if (commandPaletteModal) commandPaletteModal.classList.add('hidden');
     }
+    window.openCommandPalette = openCommandPalette;
+    window.closeCommandPalette = closeCommandPalette;
+    window.renderCommandPalette = renderCommandPalette;
+
+    let selectedPaletteIdx = 0;
 
     function renderCommandPalette(query) {
       if (!commandPaletteList) return;
       const q = query.toLowerCase().trim();
-      let items = [
-        { label: "WISE 0855-0714", desc: "Cold Y-Dwarf (~250 K), 8.15 \"/yr proper motion", action: () => selectTarget('wise0855'), icon: 'crosshair' },
-        { label: "Barnard's Star", desc: "High Proper Motion Red Dwarf (10.36 \"/yr)", action: () => selectTarget('barnard'), icon: 'crosshair' },
-        { label: "Epsilon Indi B", desc: "Binary Brown Dwarf (T1+T6)", action: () => selectTarget('epsindi'), icon: 'crosshair' },
-        { label: "RW Aurigae", desc: "Young T-Tauri Eruptive Variable", action: () => selectTarget('rwaur'), icon: 'crosshair' },
-        { label: "R Draconis", desc: "Mira Pulsating Red Giant", action: () => selectTarget('rdraconis'), icon: 'crosshair' },
-        { label: "View Mode: Multi-Epoch Blink", desc: "Compare multi-epoch flipbook frames", action: () => { wsBlink.click(); }, icon: 'split' },
-        { label: "View Mode: Difference Imaging", desc: "Numerical ZOGY subtraction (I₂ - I₁)", action: () => { wsDiff.click(); }, icon: 'layers' },
-        { label: "View Mode: 102-Band Spectroscopy", desc: "SPHEREx 0.75-5.0 μm spectral profile", action: () => { wsSpec.click(); }, icon: 'activity' },
-        { label: "View Mode: Aladin Sky Map", desc: "CDS Strasbourg interactive all-sky view", action: () => { wsAladin.click(); }, icon: 'globe' },
-        { label: "Mission Codex & Verification", desc: "Phase 2 Validation benchmark report", action: () => { btnOpenValidation.click(); }, icon: 'check-circle-2' },
-        { label: "Toggle Gaia DR3 Astrometry", desc: "Display proper motion vectors & cross-matches", action: () => { toggleGaia.click(); }, icon: 'sparkles' },
-        { label: "Export Discoveries CSV", desc: "Download flagged candidate catalogue", action: () => { exportDiscoveriesCSV(); }, icon: 'download' },
+
+      const allItems = [
+        // Group: 🌟 Objects (5 NASA Benchmark Targets)
+        { group: "🌟 Objects", label: "WISE 0855-0714", desc: "Cold Y-Dwarf (~250 K), 8.15 \"/yr proper motion", aliases: ["wise", "cold brown dwarf", "y-dwarf", "planet x", "methane", "fast mover", "analog"], action: () => selectTarget('wise0855'), icon: 'crosshair' },
+        { group: "🌟 Objects", label: "Barnard's Star", desc: "High Proper Motion Red Dwarf (10.36 \"/yr)", aliases: ["barnard", "fastest", "proper motion", "red dwarf", "runaway", "10.36"], action: () => selectTarget('barnard'), icon: 'crosshair' },
+        { group: "🌟 Objects", label: "Epsilon Indi B", desc: "Binary Brown Dwarf (T1+T6)", aliases: ["epsindi", "epsilon indi", "binary", "t-dwarf", "brown dwarf", "companion"], action: () => selectTarget('epsindi'), icon: 'crosshair' },
+        { group: "🌟 Objects", label: "RW Aurigae", desc: "Young T-Tauri Eruptive Variable", aliases: ["rwaur", "rw aurigae", "eruptive", "flare", "t-tauri", "variable star", "young star"], action: () => selectTarget('rwaur'), icon: 'crosshair' },
+        { group: "🌟 Objects", label: "R Draconis", desc: "Mira Pulsating Red Giant (245-day cycle)", aliases: ["rdraconis", "r drac", "mira", "pulsating", "red giant", "long period"], action: () => selectTarget('rdraconis'), icon: 'crosshair' },
+
+        // Group: 🗂️ Views (4 Observatory Modes)
+        { group: "🗂️ Views", label: "View: SPHEREx Map (Google Sky)", desc: "Continuous all-sky progressive multi-resolution map (HiPS)", aliases: ["map", "google sky", "google maps", "aladin", "all-sky", "hips", "wide overview"], action: () => { wsAladin.click(); }, icon: 'globe' },
+        { group: "🗂️ Views", label: "View: Multi-Epoch Blink", desc: "Compare multi-epoch flipbook frames & epoch morphing", aliases: ["blink", "comparator", "flipbook", "epochs", "morph", "2mass", "spherex"], action: () => { wsBlink.click(); }, icon: 'split' },
+        { group: "🗂️ Views", label: "View: Difference Imaging", desc: "Numerical ZOGY subtraction dipole detection (I₂ - I₁)", aliases: ["diff", "difference", "subtraction", "zogy", "dipole", "residuals"], action: () => { wsDiff.click(); }, icon: 'layers' },
+        { group: "🗂️ Views", label: "View: 102-Band Spectroscopy", desc: "SPHEREx 0.75-5.0 μm infrared spectral SED profile", aliases: ["spec", "spectra", "spectrum", "sed", "spectroscopy", "absorption", "102 bands"], action: () => { wsSpec.click(); }, icon: 'activity' },
+
+        // Group: ⚡ Actions (Shading, Gaia, Navigation, Sharing)
+        { group: "⚡ Actions", label: "Shading: Grayscale Astronomical Stretch", desc: "Standard linear/asinh gray celestial colormap", aliases: ["gray", "grayscale", "greyscale", "monochrome", "linear stretch"], action: () => { const b = document.getElementById('shadeGrayscale'); if (b) b.click(); }, icon: 'sun' },
+        { group: "⚡ Actions", label: "Shading: Inverted Negative Film Stretch", desc: "High-contrast black-on-white inverted view", aliases: ["invert", "inverted", "negative", "film", "black on white"], action: () => { const b = document.getElementById('shadeInverted'); if (b) b.click(); }, icon: 'moon' },
+        { group: "⚡ Actions", label: "Shading: False-Color Thermal Infrared", desc: "False-color infrared thermal heat gradient", aliases: ["thermal", "heat", "false color", "ironbow", "color map"], action: () => { const b = document.getElementById('shadeThermal'); if (b) b.click(); }, icon: 'flame' },
+        { group: "⚡ Actions", label: "Toggle Gaia DR3 Astrometry Vectors", desc: "Display ESA Gaia DR3 proper motion arrows & parallax", aliases: ["gaia", "vectors", "arrows", "proper motion", "astrometry", "optical veto"], action: () => { const b = document.getElementById('toggleGaia'); if (b) b.click(); }, icon: 'sparkles' },
+        { group: "⚡ Actions", label: "Recenter Viewport to Target (R)", desc: "Slew telescope back to target coordinate center", aliases: ["recenter", "center", "home", "target", "pan 0"], action: () => { const b = document.getElementById('toolRecenter'); if (b) b.click(); }, icon: 'crosshair' },
+        { group: "⚡ Actions", label: "Reset Zoom to 1.0x (1:1)", desc: "Restore standard 1:1 telescope magnification", aliases: ["reset zoom", "1:1", "zoom 1", "default zoom"], action: () => { const b = document.getElementById('toolResetZoom'); if (b) b.click(); }, icon: 'zoom-in' },
+        { group: "⚡ Actions", label: "Spaceflight WASD Flight Mode (W)", desc: "Fly through celestial fields with pointer lock & thruster audio", aliases: ["walk", "fly", "flight", "wasd", "spaceflight", "fps"], action: () => { const b = document.getElementById('toolWalk'); if (b) b.click(); }, icon: 'gamepad-2' },
+        { group: "⚡ Actions", label: "Share Sky Region & Deep-Link", desc: "Generate universal link and astrophysical citation brief", aliases: ["share", "link", "url", "deep link", "copy", "citation", "export"], action: () => { openShareModal(); }, icon: 'share-2' },
+
+        // Group: 🔍 Scale (5 FOV Presets)
+        { group: "🔍 Scale", label: "Set FOV: 1.0' (Deep Core Micro-Dipoles)", desc: "High-magnification field (1 arcminute)", aliases: ["fov 1", "1 arcmin", "deep", "core", "zoom in"], action: () => { const s = document.getElementById('selectFOV'); if (s) { s.value = '1.0'; s.dispatchEvent(new Event('change')); } }, icon: 'search' },
+        { group: "🔍 Scale", label: "Set FOV: 3.0' (Standard Science Field)", desc: "Default astronomical inspection window (3 arcminutes)", aliases: ["fov 3", "3 arcmin", "standard", "science"], action: () => { const s = document.getElementById('selectFOV'); if (s) { s.value = '3.0'; s.dispatchEvent(new Event('change')); } }, icon: 'search' },
+        { group: "🔍 Scale", label: "Set FOV: 5.0' (Medium Sky Field)", desc: "Wide intermediate field (5 arcminutes)", aliases: ["fov 5", "5 arcmin", "medium"], action: () => { const s = document.getElementById('selectFOV'); if (s) { s.value = '5.0'; s.dispatchEvent(new Event('change')); } }, icon: 'search' },
+        { group: "🔍 Scale", label: "Set FOV: 10.0' (Wide Celestial Field)", desc: "1/3rd Moon celestial overview (10 arcminutes)", aliases: ["fov 10", "10 arcmin", "wide", "moon"], action: () => { const s = document.getElementById('selectFOV'); if (s) { s.value = '10.0'; s.dispatchEvent(new Event('change')); } }, icon: 'search' },
+        { group: "🔍 Scale", label: "Set FOV: 15.0' (Half Moon Overview)", desc: "Full cluster overview (15 arcminutes)", aliases: ["fov 15", "15 arcmin", "full overview", "half moon"], action: () => { const s = document.getElementById('selectFOV'); if (s) { s.value = '15.0'; s.dispatchEvent(new Event('change')); } }, icon: 'search' },
       ];
 
+      let items = allItems;
       if (q) {
-        items = items.filter(it => it.label.toLowerCase().includes(q) || it.desc.toLowerCase().includes(q));
+        items = allItems.filter(it => {
+          if (it.label.toLowerCase().includes(q)) return true;
+          if (it.desc.toLowerCase().includes(q)) return true;
+          if (it.aliases && it.aliases.some(a => a.toLowerCase().includes(q))) return true;
+          return false;
+        });
       }
 
+      selectedPaletteIdx = 0;
       let html = '';
       if (items.length === 0) {
-        html = `<div class="p-4 text-center text-gray-500 font-mono text-xs">No matching actions or targets found.</div>`;
+        html = `<div class="p-4 text-center text-gray-500 font-mono text-xs">No matching actions or targets found for "${escapeHtml(q)}".</div>`;
       } else {
+        let currentGroup = '';
         items.forEach((it, idx) => {
+          if (it.group !== currentGroup) {
+            currentGroup = it.group;
+            html += `<div class="px-2.5 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-space-950/80 sticky top-0 border-y border-space-800">${escapeHtml(currentGroup)}</div>`;
+          }
+          const isSel = idx === 0 ? 'bg-space-800 text-white' : 'hover:bg-space-850 text-gray-200';
           html += `
-            <div class="palette-item p-2.5 hover:bg-space-800 rounded cursor-pointer flex items-center justify-between text-xs transition" data-idx="${idx}">
-              <div class="flex items-center gap-2">
-                <i data-lucide="${it.icon}" class="w-4 h-4 text-blender-orange shrink-0"></i>
+            <div class="palette-item p-2 px-3 rounded cursor-pointer flex items-center justify-between text-xs transition ${isSel}" data-idx="${idx}">
+              <div class="flex items-center gap-2.5">
+                <i data-lucide="${it.icon}" class="w-4 h-4 text-cyan-400 shrink-0"></i>
                 <div>
-                  <div class="text-white font-semibold">${escapeHtml(it.label)}</div>
+                  <div class="font-semibold">${escapeHtml(it.label)}</div>
                   <div class="text-[10px] text-gray-400 font-sans">${escapeHtml(it.desc)}</div>
                 </div>
               </div>
-              <span class="text-[9px] text-gray-500 font-mono">Select ↵</span>
+              <span class="text-[9px] text-gray-500 font-mono">↵</span>
             </div>
           `;
         });
@@ -4878,8 +5044,10 @@
       commandPaletteList.querySelectorAll('.palette-item').forEach(el => {
         el.addEventListener('click', () => {
           const idx = parseInt(el.getAttribute('data-idx'));
-          items[idx].action();
-          closeCommandPalette();
+          if (items[idx]) {
+            items[idx].action();
+            closeCommandPalette();
+          }
         });
       });
       if (window.lucide) lucide.createIcons();
@@ -4889,10 +5057,147 @@
     if (closeCommandPaletteBtn) closeCommandPaletteBtn.addEventListener('click', closeCommandPalette);
     if (commandPaletteInput) {
       commandPaletteInput.addEventListener('input', (e) => renderCommandPalette(e.target.value));
+      commandPaletteInput.addEventListener('keydown', (e) => {
+        const items = commandPaletteList.querySelectorAll('.palette-item');
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (items.length > 0) {
+            items[selectedPaletteIdx].classList.remove('bg-space-800', 'text-white');
+            selectedPaletteIdx = (selectedPaletteIdx + 1) % items.length;
+            items[selectedPaletteIdx].classList.add('bg-space-800', 'text-white');
+            items[selectedPaletteIdx].scrollIntoView({ block: 'nearest' });
+          }
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (items.length > 0) {
+            items[selectedPaletteIdx].classList.remove('bg-space-800', 'text-white');
+            selectedPaletteIdx = (selectedPaletteIdx - 1 + items.length) % items.length;
+            items[selectedPaletteIdx].classList.add('bg-space-800', 'text-white');
+            items[selectedPaletteIdx].scrollIntoView({ block: 'nearest' });
+          }
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (items.length > 0 && items[selectedPaletteIdx]) {
+            items[selectedPaletteIdx].click();
+          }
+        }
+      });
     }
     if (commandPaletteModal) {
       commandPaletteModal.addEventListener('click', (e) => {
         if (e.target === commandPaletteModal) closeCommandPalette();
+      });
+    }
+
+    // =========================================================================
+    // UNIVERSAL SKY REGION SHARE & DEEP-LINK HUB (Issue #12)
+    // =========================================================================
+    function generateShareUrl() {
+      const url = new URL(window.location.origin + window.location.pathname);
+      const coords = getCurrentCoordinates();
+      url.searchParams.set('ra', coords.ra.toFixed(5));
+      url.searchParams.set('dec', coords.dec.toFixed(5));
+      url.searchParams.set('fov', (camera.fov / camera.zoom).toFixed(2));
+      const mode = diffMode ? 'diff' : (document.getElementById('aladinContainer') && !document.getElementById('aladinContainer').classList.contains('hidden') ? 'map' : 'blink');
+      url.searchParams.set('mode', mode);
+      if (currentTargetKey) url.searchParams.set('target', currentTargetKey);
+      if (gaiaOverlayEnabled) url.searchParams.set('gaia', 'true');
+      return url.toString();
+    }
+
+    function generateTelemetrySnippet() {
+      const coords = getCurrentCoordinates();
+      const targetName = currentTargetKey && TARGETS[currentTargetKey] ? TARGETS[currentTargetKey].name : 'Custom Celestial Field';
+      const t = currentTargetKey && TARGETS[currentTargetKey] ? TARGETS[currentTargetKey] : null;
+      return `SPHEREx Hunter Astrophysical Target Brief:
+Target: ${targetName}
+Coordinates: RA ${coords.ra.toFixed(5)}°, Dec ${coords.dec.toFixed(5)}° (J2000)
+FOV: ${(camera.fov / camera.zoom).toFixed(2)} arcmin
+Type: ${t ? t.type : 'Celestial Field'} | Proper Motion: ${t ? t.pm : 'N/A'}
+Spectra: 102 NASA SPHEREx LVF Bands (0.75 - 5.0 μm)
+Survey Baseline: 2MASS (1999) → SPHEREx DR1 (2025/2026)
+URL: ${generateShareUrl()}`;
+    }
+
+    function openShareModal() {
+      const modal = document.getElementById('shareModal');
+      if (!modal) return;
+      const coords = getCurrentCoordinates();
+      const targetName = currentTargetKey && TARGETS[currentTargetKey] ? TARGETS[currentTargetKey].name : `Field (${coords.ra.toFixed(4)}, ${coords.dec.toFixed(4)})`;
+
+      const titleEl = document.getElementById('shareTargetTitle');
+      if (titleEl) titleEl.innerText = targetName;
+      const raEl = document.getElementById('shareRA');
+      if (raEl) raEl.innerText = `${coords.ra.toFixed(5)}°`;
+      const decEl = document.getElementById('shareDec');
+      if (decEl) decEl.innerText = `${coords.dec.toFixed(5)}°`;
+      const fovEl = document.getElementById('shareFOV');
+      if (fovEl) fovEl.innerText = `${(camera.fov / camera.zoom).toFixed(2)}'`;
+      const modeEl = document.getElementById('shareMode');
+      if (modeEl) modeEl.innerText = diffMode ? 'Difference' : (document.getElementById('aladinContainer') && !document.getElementById('aladinContainer').classList.contains('hidden') ? 'Google Sky' : 'Blink');
+
+      const urlInput = document.getElementById('shareUrlInput');
+      if (urlInput) urlInput.value = generateShareUrl();
+
+      const telemetryArea = document.getElementById('shareTelemetryText');
+      if (telemetryArea) telemetryArea.value = generateTelemetrySnippet();
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeShareModal() {
+      const modal = document.getElementById('shareModal');
+      if (modal) modal.classList.add('hidden');
+    }
+    window.openShareModal = openShareModal;
+    window.closeShareModal = closeShareModal;
+    window.generateShareUrl = generateShareUrl;
+    window.generateTelemetrySnippet = generateTelemetrySnippet;
+
+    const btnShareModal = document.getElementById('btnShareModal');
+    if (btnShareModal) btnShareModal.addEventListener('click', openShareModal);
+    const closeShareModalBtn = document.getElementById('closeShareModalBtn');
+    if (closeShareModalBtn) closeShareModalBtn.addEventListener('click', closeShareModal);
+    const btnCloseShareModal = document.getElementById('btnCloseShareModal');
+    if (btnCloseShareModal) btnCloseShareModal.addEventListener('click', closeShareModal);
+    const shareModal = document.getElementById('shareModal');
+    if (shareModal) {
+      shareModal.addEventListener('click', (e) => {
+        if (e.target === shareModal) closeShareModal();
+      });
+    }
+
+    const btnCopyShareUrl = document.getElementById('btnCopyShareUrl');
+    if (btnCopyShareUrl) {
+      btnCopyShareUrl.addEventListener('click', () => {
+        const input = document.getElementById('shareUrlInput');
+        if (input) {
+          input.select();
+          navigator.clipboard.writeText(input.value).catch(() => {
+            document.execCommand('copy');
+          });
+          const text = document.getElementById('copyUrlBtnText');
+          if (text) text.innerText = 'Copied!';
+          setTimeout(() => { if (text) text.innerText = 'Copy'; }, 2000);
+        }
+      });
+    }
+
+    const btnCopyTelemetrySnippet = document.getElementById('btnCopyTelemetrySnippet');
+    if (btnCopyTelemetrySnippet) {
+      btnCopyTelemetrySnippet.addEventListener('click', () => {
+        const text = generateTelemetrySnippet();
+        navigator.clipboard.writeText(text).catch(() => {
+          const area = document.getElementById('shareTelemetryText');
+          if (area) { area.select(); document.execCommand('copy'); }
+        });
+        btnCopyTelemetrySnippet.innerHTML = `<i data-lucide="check" class="w-3 h-3 text-emerald-400"></i><span>Copied!</span>`;
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => {
+          btnCopyTelemetrySnippet.innerHTML = `<i data-lucide="file-text" class="w-3 h-3 text-cyan-400"></i><span>Copy Citation Text</span>`;
+          if (window.lucide) lucide.createIcons();
+        }, 2000);
       });
     }
 

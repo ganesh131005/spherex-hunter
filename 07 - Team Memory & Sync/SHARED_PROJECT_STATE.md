@@ -26,6 +26,23 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GITHUB ISSUES #9, #10 & #12 RESOLVED & CLOSED (@darkodu)]**
+  - **Issue #9: Command Palette [Ctrl+K] with 22 Actions & Natural Language Aliases:**
+    - Indexed 22 discrete commands across 4 categorized groups (`🌟 Objects`, `🗂️ Views`, `⚡ Actions`, `🔍 Scale`).
+    - Added comprehensive natural language search aliases (e.g. "cold brown dwarf" $\to$ WISE 0855, "runaway star" $\to$ Barnard's Star, "subtraction" $\to$ Difference view, "heat map" $\to$ Thermal colormap).
+    - Implemented keyboard navigation (`ArrowDown`, `ArrowUp`, `Enter`, `Escape`), active index tracking, and topbar `[Ctrl+K]` shortcut pill.
+  - **Issue #10: Continuous Raycasting & Adaptive Frustum Bounds:**
+    - Implemented `canvasToSkyCoordinates(px, py)` frustum raycaster with spherical $\cos(\text{Dec})$ projection and `getVisibleFrustumSkyBounds()` LOD calculator.
+    - Updated `getCurrentCoordinates()` to derive exact optical center coordinates from the frustum raycaster.
+    - Seamlessly integrated with multi-resolution progressive all-sky streaming (180° all-sky to 0.1° HD native SPHEREx resolution).
+  - **Issue #12: Universal Sky Region Share Modal & Deep-Link Parameter Hub:**
+    - Added `#btnShareModal` in top header and built `#shareModal` dialog.
+    - Features live coordinate and telemetry summary card, read-only URL input with 1-click clipboard copy, and formatted research citation telemetry snippet.
+    - Full URL and hash parameter hydration (`ra`, `dec`, `fov`, `mode`, `target`, `gaia`) on `DOMContentLoaded`.
+  - **Verification & Issue Closure:**
+    - Authored comprehensive Playwright test `tests/test_issues_9_10_12_e2e.py` (3/3 passed in 22.3s). All 5 E2E tests and 74 unit tests passing 100% green.
+    - Successfully closed GitHub Issues #9, #10, and #12 on `joker0210G/spherex-hunter`.
+
 - **[CONTINUOUS GOOGLE-MAPS-STYLE ALL-SKY SPHEREx VIEWER DEPLOYED (@darkodu)]**
   - **Solved Single-Tile Discontinuity & Black Voids:** Eliminated the isolated $3' \times 3'$ bounding box by promoting the NASA IRSA SPHEREx DR1 all-sky cube (`spherex_allsky_cube` HiPS) to a primary interactive mode: **`SPHEREx Map (Google Sky)`** directly in the top bar.
   - **Google Maps Progressive Multi-Resolution Pyramid:** Implemented dedicated multi-resolution scale steppers: `🌌 180° All-Sky` (full cosmic sphere), `✨ 30° Wide Field`, `🔭 5° Intermediate Field`, and `🔬 0.1° HD Native SPHEREx Resolution` (Order 5 detail), allowing users to zoom from the entire Milky Way down to individual stars and cold brown dwarfs with progressive tile resolution increases.

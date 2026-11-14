@@ -3,11 +3,16 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Completed Original DR1 Cross-Survey Like-Wavelength ZOGY Difference Products across all benchmark targets.
-- **Next Task:** Execute GitHub Issue #7 (SPHEREx 102-Band Infrared Spectrum: 6-Array Selector, 17-Wavelength Stepper & Interactive SED Visualizer).
+- **Current Task:** Resolved and closed GitHub Issues #9, #10, and #12.
+- **Next Task:** Execute remaining open tasks (GitHub Issue #11 / #13).
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Resolved & Closed GitHub Issues #9, #10, and #12:
+  - **Issue #9 ([WEB] Command Palette Ctrl+K):** Indexed 22 discrete commands across 4 categorized groups (`🌟 Objects`, `🗂️ Views`, `⚡ Actions`, `🔍 Scale`) with fuzzy natural language aliases (e.g. "cold brown dwarf" $\to$ WISE 0855, "subtraction" $\to$ Difference view), Arrow Up/Down + Enter keyboard navigation, and persistent topbar `[Ctrl+K]` pill.
+  - **Issue #10 ([VIEWPORT] Continuous Raytracing Frustum & Adaptive LOD):** Implemented `canvasToSkyCoordinates(px, py)` frustum raycaster with spherical $\cos(\text{Dec})$ projection and `getVisibleFrustumSkyBounds()`, updating `getCurrentCoordinates()` to derive exact optical center coordinates from the frustum raycaster.
+  - **Issue #12 ([WEB] Universal Sky Region Share Modal & Deep-Link Parameter Hub):** Built `#shareModal` dialog with target citation telemetry, read-only URL input with 1-click clipboard copy, and full URL parameter hydration (`ra`, `dec`, `fov`, `mode`, `target`, `gaia`) on `DOMContentLoaded`.
+  - **Verification:** Built `tests/test_issues_9_10_12_e2e.py` (3/3 passed in 22.3s); all 5 E2E tests and 74 unit tests passing 100% green. Closed issues #9, #10, #12 on GitHub.
 - [x] Continuous Google-Maps-Style Progressive Multi-Resolution SPHEREx All-Sky Viewer:
   - Eliminated single-tile bounding box and surrounding black voids by promoting the NASA IRSA SPHEREx DR1 all-sky cube (`spherex_allsky_cube` HiPS) to a primary view mode: `SPHEREx Map (Google Sky)`.
   - Added Google Maps multi-resolution scale steppers: `🌌 180° All-Sky` (full sphere overview), `✨ 30° Wide`, `🔭 5° Field`, and `🔬 0.1° HD Native SPHEREx Resolution` (revealing individual stars, infrared point sources, and brown dwarfs).
