@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #12 Created — Universal Sky Region Share Modal & Deep-Link Parameter Hub]**
+  - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12
+  - **Track:** `web-frontend` | **Role:** `@coolodu` (Collaborating with `@astrodu` for citizen science telemetry sharing) | **Resource:** `resource:standard`
+  - **Scope:** Adds topbar `[🔗 Share]` modal, generates clean deep-link URLs (`?ra=...&dec=...&fov=...&mode=...&date=...`), provides 1-click clipboard copying of formatted astronomical target telemetry, and hydrates shared state automatically when opened on other devices.
 - **[GitHub Native Issue #11 Created — Observation Date & Time Search (Temporal Range Filtering)]**
   - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11
   - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` for frontend datepicker HUD) | **Resource:** `resource:standard`
