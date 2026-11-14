@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issues #28, #29, and #30 Created from Live Browser Validation Insights]**
+  - **Issue #28 (Backend Stability):** [Resilient Fallback and Graceful Degradation for /api/cutout on Upstream IRSA 502 Gateway Errors](https://github.com/joker0210G/spherex-hunter/issues/28) (Role: `@darkodu`)
+  - **Issue #29 (UI Layout):** [Fix Left Toolbar Vertical Scroll Overflow Pushing Primary Tools Off-Screen](https://github.com/joker0210G/spherex-hunter/issues/29) (Role: `@coolodu`)
+  - **Issue #30 (Client Cache):** [Implement Browser IndexedDB Texture Storage and In-Flight AbortController Cancellation for 60 FPS Panning](https://github.com/joker0210G/spherex-hunter/issues/30) (Role: `@coolodu`)
 - **[GitHub Native Issues #16, #17, and #18 Reopened After Rigorous Code Audit]**
   - **Issues Reopened:**
     * **#18:** Wire Dead Viewport Buttons (Fullscreen & Blink Flip) and Fix Clipped Tooltips (https://github.com/joker0210G/spherex-hunter/issues/18)
