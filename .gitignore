@@ -48,6 +48,11 @@ dist-ssr/
 cache/
 downloads/
 raw_data/
+*.bundle
+scratch/
+.env
+data_samples/*.fits
+data_samples/*.json
 !samples/*.png
 !samples/*.json
 

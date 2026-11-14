@@ -1,0 +1,303 @@
+[
+  {
+    "candidate_id": "SPX-2026-36B3EF",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:58:04.378158+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-74BFE4",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:56:46.697696+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-CFFB69",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:52:52.546071+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-39169C",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:46:30.744766+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-EF0AA7",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:45:54.903930+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-4AD466",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T17:45:39.970919+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-D8116B",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T16:44:08.690436+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-F3E1D2",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T16:42:56.266457+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-469F73",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T16:40:02.660060+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-9FB54F",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T09:45:53.291941+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-25B567",
+    "target_name": "WISE 0855 Test Flag",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "proper_motion_mas": null,
+    "confidence": 5,
+    "timestamp": "2026-11-13T09:45:19.433432+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-882551",
+    "target_name": "Barnards Star Fast Mover",
+    "ra": 269.45208,
+    "dec": 4.69339,
+    "object_type": "High Proper Motion Star",
+    "user_handle": "@darkodu_team_rip",
+    "notes": "10.36 arcsec/yr verified against Gaia DR3",
+    "proper_motion_mas": 10393.4,
+    "confidence": 5,
+    "timestamp": "2026-11-13T09:44:41.117459+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 6.93,
+      "simbad_counterpart": "Barnard's Star (V* V2500 Oph)",
+      "spectral_classification": "M4.0V",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "candidate_id": "SPX-2026-3CC16B",
+    "target_name": "WISE 0855 Deep Dipole",
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "Cold Y-Dwarf Brown Dwarf",
+    "user_handle": "@astronomer_coimbatore",
+    "notes": "Prominent negative/positive dipole in SPHEREx difference imaging",
+    "proper_motion_mas": 8550.0,
+    "confidence": 5,
+    "timestamp": "2026-11-13T09:44:28.446804+00:00",
+    "scientific_validation": {
+      "is_ultracold_candidate": true,
+      "optical_infrared_g_minus_ks": 1.27,
+      "simbad_counterpart": "WISE J085510.83-071442.5",
+      "spectral_classification": "Y4 (Ultracold Y-Dwarf)",
+      "verification_status": "CONFIRMED_ULTRACOLD"
+    }
+  },
+  {
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "target_name": "WISE 0855 Test Flag",
+    "timestamp": "2026-11-12T20:50:00Z"
+  },
+  {
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "target_name": "WISE 0855 Test Flag",
+    "timestamp": "2026-11-12T20:50:00Z"
+  },
+  {
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "Brown Dwarf",
+    "user_handle": "@darkodu_swagger_test",
+    "notes": "",
+    "target_name": "WISE 0855",
+    "timestamp": "2026-11-12T20:50:00Z"
+  },
+  {
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "target_name": "WISE 0855 Test Flag",
+    "timestamp": "2026-11-12T20:50:00Z"
+  },
+  {
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "target_name": "WISE 0855 Test Flag",
+    "timestamp": "2026-11-12T20:50:00Z"
+  },
+  {
+    "ra": 133.79513,
+    "dec": -7.24515,
+    "object_type": "High Proper Motion Brown Dwarf",
+    "user_handle": "@darkodu",
+    "notes": "Fast moving dipole verified in SPHEREx Hunter backend test suite",
+    "target_name": "WISE 0855 Test Flag",
+    "timestamp": "2026-11-12T20:50:00Z"
+  }
+]
