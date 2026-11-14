@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #14 Created — User-Friendly Inspector Panel with Clear Sections, Plain English & Interactive Summaries]**
+  - **Issue #14 Link:** https://github.com/joker0210G/spherex-hunter/issues/14
+  - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu` for frontend component styling) | **Resource:** `resource:standard`
+  - **Scope:** Replaces raw astronomical telemetry with citizen-science friendly cards: (1) Object Identity & Coordinates with Moon scale analogies, (2) Observation Date & Instrument Wavelengths, (3) Brightness & Color with visual gauge bars, (4) Movement speed in plain English, and (5) a dedicated "What This Means" summary card explaining observations to beginners.
 - **[GitHub Native Issues #8, #9, #10, #11, #12 — ALL RESOLVED & MERGED INTO `main`]**
   - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12 (Universal Share Modal & Deep-Link Parameter Hub — MERGED)
   - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11 (Observation Date & Time Search Range Filtering — MERGED)
