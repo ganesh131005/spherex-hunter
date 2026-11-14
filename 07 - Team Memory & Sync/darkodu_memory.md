@@ -8,6 +8,12 @@
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Implemented Continuous Viewport Kinematics, Seamless Epoch Morphing & Feathered Edge Blending:
+  - Eliminated discrete binary flipbook blink jumping: added `#btnToggleBlinkMorph` (Smooth Morph vs Snap Blink toggle) and `#epochBlendSlider` (0% to 100% continuous multi-epoch alpha blend).
+  - In continuous morph mode, flipbook executes continuous sinusoidal crossfading ($I = (1-\alpha)I_1 + \alpha I_2$), enabling smooth visual glide of moving asteroids and brown dwarf proper motions.
+  - Added soft 4-edge linear gradient vignette feathering (`drawFeatheredImage`) and an ambient celestial starfield background (`drawAmbientSkyBackground`), removing harsh rectangular cutout borders.
+  - Upgraded `gameKinematicsLoop` to run on continuous 60 FPS `requestAnimationFrame`, smoothly damping and interpolating camera position and zoom during mouse wheel, dragging, WASD navigation, and 1-click recenter.
+  - Created automated E2E test `tests/test_continuous_viewport_e2e.py` (1/1 passed); verified full repository test suite (95/95 passed).
 - [x] Generated Authentic SPHEREx DR1 Cross-Survey Like-Wavelength Difference Products:
   - Upgraded `demo_cache/*/difference.json` for all 5 benchmark targets from previous `BAND_MISMATCH` states to authentic 6-month cross-survey SPHEREx pairs at matching wavelengths ($\Delta\lambda = 0.00\,\mu\text{m}$).
   - Linked authentic exposure IDs from Survey 1 and Survey 2 with actual observational timestamps (MJD), band parameters, and ZOGY $S_{\text{corr}}$ statistics.

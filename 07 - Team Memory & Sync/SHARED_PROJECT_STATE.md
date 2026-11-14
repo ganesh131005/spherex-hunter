@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[CONTINUOUS VIEWPORT KINEMATICS, EPOCH MORPHING & AMBIENT STARFIELD DEPLOYED (@darkodu)]**
+  - **Fluid Continuous Epoch Morphing:** Eliminated discrete binary 1/2 flipbook hopping. Added `#btnToggleBlinkMorph` (Smooth Morph vs Snap Blink toggle) and `#epochBlendSlider` (0% to 100% continuous multi-epoch alpha blend). In morph mode, the viewport executes sinusoidal continuous crossfades ($I = (1-\alpha)I_1 + \alpha I_2$), allowing moving solar system bodies and high proper-motion brown dwarfs to glide continuously between epochs.
+  - **Soft Celestial Edge Feathering & Ambient Starfield:** Replaced discrete cutout box borders with soft 4-edge linear gradient vignette feathering (`drawFeatheredImage`) and an ambient cosmic background starfield (`drawAmbientSkyBackground`), creating a seamless, borderless telescope window.
+  - **60 FPS Inertial Pan & Zoom Kinematics:** Upgraded `gameKinematicsLoop` to run on continuous `requestAnimationFrame`, smoothly damping and interpolating camera position (`camera.panX/Y`) and zoom (`camera.zoom`) during mouse wheel scrolling, mouse drag slewing, WASD navigation, and 1-click center resets.
+  - **Automated E2E Verification & CI Clean:** Built `tests/test_continuous_viewport_e2e.py` verifying morph toggle, scrub slider, and edge feathering. All 95 tests across the entire codebase passing green. Generated verification screenshot in `docs/figures/continuous_viewport_blended.png`.
 - **[AUTHENTIC SPHEREx DR1 CROSS-SURVEY DIFFERENCE PRODUCTS DEPLOYED (@darkodu)]**
   - **Replaced Band Mismatches with Genuine 6-Month Cross-Survey Pairs:** Upgraded difference products across all 5 benchmark presets (`wise0855`, `barnard`, `epsindi`, `rwaur`, `rdraconis`) to utilize genuine SPHEREx Survey 1 vs Survey 2 Level-2 spectral image pairs matched at the exact same wavelength ($\Delta\lambda = 0.00\,\mu\text{m}$).
   - **Real Observational Epochs:** Every difference product now carries authentic exposure identifiers (`2025W19_1B_0116_1`, `2025W46_1A_0075_4`, etc.), physical MJDs, baseline separations ($\approx 180\text{--}215\text{ days}$), and ZOGY $S_{\text{corr}}$ significance statistics (e.g. $655.9\sigma$ peak for WISE 0855 dipole; $84.2\sigma$ for Barnard's Star northward proper motion; $128.4\sigma$ for RW Aurigae eruptive flare).
