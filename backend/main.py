@@ -57,6 +57,9 @@ app.add_middleware(
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 if os.path.exists(FRONTEND_DIR):
     app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+    ASSETS_DIR = os.path.join(FRONTEND_DIR, "assets")
+    if os.path.exists(ASSETS_DIR):
+        app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
 # Mount Versioned API v1 Router
 app.include_router(api_v1_router)

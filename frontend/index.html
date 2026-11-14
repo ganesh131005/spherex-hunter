@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SPHEREx Hunter - Deep Space Infrared Observatory</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
@@ -158,15 +159,20 @@
 
     <!-- Left: Branding & Workspace Mode Segmented Control -->
     <div class="flex items-center gap-3 shrink-0">
-      <!-- App Brand -->
+      <!-- App Brand & Logo (Issue #5) -->
       <div class="flex items-center gap-2 pr-3 border-r border-space-700">
-        <div class="w-6 h-6 rounded bg-gradient-to-br from-amber-500 via-blender-orange to-orange-600 flex items-center justify-center font-bold text-white text-xs shadow-md shadow-orange-950/50">
-          <i data-lucide="crosshair" class="w-3.5 h-3.5 text-white"></i>
-        </div>
-        <div class="flex items-baseline gap-1">
-          <span class="font-bold text-white tracking-wide text-sm font-sans">SPHEREx</span>
-          <span class="text-blender-orange font-semibold text-xs tracking-wider">HUNTER</span>
-        </div>
+        <a href="#" id="brandLogoLink" class="flex items-center gap-2 group cursor-pointer" title="SPHEREx Hunter - Deep Space Infrared Observatory (Click to open Mission Tour)">
+          <div class="w-7 h-7 rounded-lg overflow-hidden flex items-center justify-center p-0.5 bg-space-950 border border-amber-500/40 group-hover:border-amber-400 shadow-md shadow-orange-950/50 transition">
+            <img src="assets/logo.svg" alt="SPHEREx Hunter Logo" class="w-full h-full object-contain">
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-baseline gap-1 leading-none">
+              <span class="font-extrabold text-white tracking-wide text-sm font-sans">SPHEREx</span>
+              <span class="font-bold text-xs tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500">HUNTER</span>
+            </div>
+            <span class="text-[9px] font-mono text-cyan-400/90 leading-tight tracking-tight">102-Band Infrared Astrometry</span>
+          </div>
+        </a>
       </div>
 
       <!-- Segmented View Mode Control -->
@@ -192,6 +198,14 @@
           <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">A</kbd>
         </button>
       </div>
+
+      <!-- Application Mission Explainer Badge (Issue #5) -->
+      <button id="btnMissionExplainer" class="hidden xl:flex items-center gap-1 px-2.5 py-1 rounded-full bg-space-950/90 border border-space-700/80 text-[10px] text-gray-300 hover:text-white hover:border-amber-500/50 transition cursor-pointer" title="Mission: Hunt for Planet Nine, ultra-cool Brown Dwarfs, and Near-Earth Asteroids across 102 NASA SPHEREx infrared spectral bands with multi-epoch blink astrometry and difference imaging.">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-amber-400 font-mono font-medium">Mission:</span>
+        <span class="text-gray-300 truncate max-w-[200px]">Planet X & Brown Dwarfs</span>
+        <i data-lucide="info" class="w-3 h-3 text-cyan-400 ml-0.5"></i>
+      </button>
     </div>
 
     <!-- Center: Curated Target Selector & Quick Search -->
@@ -219,55 +233,165 @@
     <!-- Right: Telemetry, Coordinates Popover, Primary Actions & Overflow -->
     <div class="flex items-center gap-2 shrink-0">
 
-      <!-- Compact Coordinates Popover Trigger -->
+      <!-- Sky Helper Popover Trigger (Issue #6) -->
       <div class="relative">
-        <button id="btnToggleCoordsPopover" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
+        <button id="btnSkyHelper" class="flex items-center gap-1 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-cyan-300 hover:text-white transition" title="Sky Coordinate Helper & Popular Astronomical Landmarks">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span class="hidden xl:inline text-[11px]">Sky Helper</span>
+        </button>
+
+        <!-- Floating Sky Helper Card -->
+        <div id="skyHelperPopover" class="hidden absolute right-0 top-10 mt-1 w-80 bg-space-900 border border-space-700 rounded-lg p-3 shadow-2xl z-50 space-y-2.5 font-mono">
+          <div class="flex items-center justify-between pb-1.5 border-b border-space-700">
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i data-lucide="map" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>Celestial Navigation Helper</span>
+            </span>
+            <button id="btnCloseSkyHelper" class="text-gray-400 hover:text-white text-xs">✕</button>
+          </div>
+
+          <!-- Format Guide -->
+          <div class="p-2 rounded bg-space-950 border border-space-700/80 text-[10px] space-y-1">
+            <div class="font-bold text-cyan-300 flex items-center gap-1">
+              <i data-lucide="info" class="w-3 h-3 text-cyan-400"></i>
+              <span>Accepted Coordinate Formats</span>
+            </div>
+            <div class="text-gray-300 leading-relaxed font-sans">
+              Enter decimal degrees (<span class="font-mono text-amber-300">133.795, -7.245</span>) or sexagesimal HMS/DMS (<span class="font-mono text-amber-300">08h55m10.8s, -07d14m42s</span>).
+            </div>
+          </div>
+
+          <!-- Quick Landmarks -->
+          <div class="space-y-1">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Popular Astronomical Landmarks</div>
+            <div class="space-y-1 max-h-48 overflow-y-auto pr-1">
+              <button class="landmark-btn w-full text-left p-1.5 rounded hover:bg-space-800 border border-space-700/60 flex items-center justify-between text-xs transition" data-ra="133.79513" data-dec="-7.24515" data-fov="3.0">
+                <div>
+                  <div class="font-bold text-amber-300 text-[11px]">🪐 WISE 0855-0714</div>
+                  <div class="text-[9px] text-gray-400 font-sans">Coldest Brown Dwarf (~250 K)</div>
+                </div>
+                <span class="text-[9px] text-gray-400 font-mono">133.8°, -7.2°</span>
+              </button>
+              <button class="landmark-btn w-full text-left p-1.5 rounded hover:bg-space-800 border border-space-700/60 flex items-center justify-between text-xs transition" data-ra="269.45208" data-dec="4.69339" data-fov="3.0">
+                <div>
+                  <div class="font-bold text-amber-300 text-[11px]">⚡ Barnard's Star</div>
+                  <div class="text-[9px] text-gray-400 font-sans">Fastest Proper Motion (10.36"/yr)</div>
+                </div>
+                <span class="text-[9px] text-gray-400 font-mono">269.5°, +4.7°</span>
+              </button>
+              <button class="landmark-btn w-full text-left p-1.5 rounded hover:bg-space-800 border border-space-700/60 flex items-center justify-between text-xs transition" data-ra="83.82208" data-dec="-5.39111" data-fov="5.0">
+                <div>
+                  <div class="font-bold text-cyan-300 text-[11px]">🌌 Orion Nebula Core</div>
+                  <div class="text-[9px] text-gray-400 font-sans">Massive Star Nursery & Proplyds</div>
+                </div>
+                <span class="text-[9px] text-gray-400 font-mono">83.8°, -5.4°</span>
+              </button>
+              <button class="landmark-btn w-full text-left p-1.5 rounded hover:bg-space-800 border border-space-700/60 flex items-center justify-between text-xs transition" data-ra="266.41682" data-dec="-29.00780" data-fov="3.0">
+                <div>
+                  <div class="font-bold text-rose-300 text-[11px]">🔭 Galactic Center (Sgr A*)</div>
+                  <div class="text-[9px] text-gray-400 font-sans">Supermassive Black Hole</div>
+                </div>
+                <span class="text-[9px] text-gray-400 font-mono">266.4°, -29.0°</span>
+              </button>
+              <button class="landmark-btn w-full text-left p-1.5 rounded hover:bg-space-800 border border-space-700/60 flex items-center justify-between text-xs transition" data-ra="331.04380" data-dec="-56.78270" data-fov="3.0">
+                <div>
+                  <div class="font-bold text-emerald-300 text-[11px]">💫 Epsilon Indi B</div>
+                  <div class="text-[9px] text-gray-400 font-sans">Binary Sub-Stellar Brown Dwarf</div>
+                </div>
+                <span class="text-[9px] text-gray-400 font-mono">331.0°, -56.8°</span>
+              </button>
+              <button class="landmark-btn w-full text-left p-1.5 rounded hover:bg-space-800 border border-space-700/60 flex items-center justify-between text-xs transition" data-ra="346.62240" data-dec="-5.04140" data-fov="3.0">
+                <div>
+                  <div class="font-bold text-purple-300 text-[11px]">🌟 TRAPPIST-1</div>
+                  <div class="text-[9px] text-gray-400 font-sans">7 Earth-Sized Exoplanet System</div>
+                </div>
+                <span class="text-[9px] text-gray-400 font-mono">346.6°, -5.0°</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact Coordinates Popover Trigger (Issue #6 Tooltips & Formatting) -->
+      <div class="relative">
+        <button id="btnToggleCoordsPopover" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Right Ascension (Sky Longitude), Declination (Sky Latitude), and Field of View (Sky Zoom). Click to edit coordinates.">
           <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange"></i>
           <span id="quickCoordsLabel" class="text-[11px]">133.795°, -7.245°</span>
           <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
         </button>
 
         <!-- Floating Coordinates Popover Card -->
-        <div id="coordsPopover" class="hidden absolute right-0 top-10 mt-1 w-72 bg-space-900 border border-space-700 rounded-lg p-3 shadow-2xl z-50 space-y-2.5 font-mono">
+        <div id="coordsPopover" class="hidden absolute right-0 top-10 mt-1 w-80 bg-space-900 border border-space-700 rounded-lg p-3.5 shadow-2xl z-50 space-y-2.5 font-mono">
           <div class="flex items-center justify-between pb-1.5 border-b border-space-700">
             <span class="text-xs font-bold text-white flex items-center gap-1.5">
               <i data-lucide="navigation" class="w-3.5 h-3.5 text-cyan-400"></i>
-              <span>Target Coordinates</span>
+              <span>Target Coordinates & Sky Scale</span>
             </span>
             <button id="btnCloseCoordsPopover" class="text-gray-400 hover:text-white text-xs">✕</button>
           </div>
 
-          <div class="space-y-1.5 text-xs">
+          <div class="space-y-2 text-xs">
+            <!-- RA Input with Educational Tooltip & Validation Hint -->
             <div>
-              <label class="block text-[10px] text-gray-400 mb-0.5">Right Ascension α (deg):</label>
-              <input id="inputRA" type="text" value="133.79513" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
+              <div class="flex items-center justify-between mb-0.5">
+                <label class="block text-[10px] text-gray-400 flex items-center gap-1">
+                  <span>Right Ascension α (RA):</span>
+                  <span class="text-cyan-400 cursor-help" title="Right Ascension (Sky Longitude): Specifies east-west celestial coordinate (0° to 360° or 0h to 24h). Similar to longitude on Earth.">ⓘ</span>
+                </label>
+                <span id="raValidationHint" class="text-[9px] text-gray-400 font-sans">0° to 360°</span>
+              </div>
+              <input id="inputRA" type="text" value="133.79513" placeholder="e.g. 133.79513° (0° - 360°)" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
             </div>
+
+            <!-- Dec Input with Educational Tooltip & Validation Hint -->
             <div>
-              <label class="block text-[10px] text-gray-400 mb-0.5">Declination δ (deg):</label>
-              <input id="inputDec" type="text" value="-7.24515" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
+              <div class="flex items-center justify-between mb-0.5">
+                <label class="block text-[10px] text-gray-400 flex items-center gap-1">
+                  <span>Declination δ (Dec):</span>
+                  <span class="text-cyan-400 cursor-help" title="Declination (Sky Latitude): Specifies north-south celestial coordinate (-90° South Pole to +90° North Pole). Similar to latitude on Earth.">ⓘ</span>
+                </label>
+                <span id="decValidationHint" class="text-[9px] text-gray-400 font-sans">-90° to +90°</span>
+              </div>
+              <input id="inputDec" type="text" value="-7.24515" placeholder="e.g. -7.24515° (-90° - +90°)" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
             </div>
+
+            <!-- FOV Dropdown with Real-World Celestial Scale Cues -->
             <div>
-              <label class="block text-[10px] text-gray-400 mb-0.5">Field of View (FOV):</label>
+              <div class="flex items-center justify-between mb-0.5">
+                <label class="block text-[10px] text-gray-400 flex items-center gap-1">
+                  <span>Field of View (FOV):</span>
+                  <span class="text-cyan-400 cursor-help" title="Field of View (Sky Zoom): Angular diameter in arcminutes (1' = 1/60th of a degree). For comparison: The Full Moon is ~30 arcminutes wide, so 3.0' is 1/10th the width of the Moon.">ⓘ</span>
+                </label>
+                <span class="text-[9px] text-gray-400 font-sans">Moon = 30'</span>
+              </div>
               <select id="selectFOV" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
-                <option value="1.5">1.5 Arcmin (High-Res Core)</option>
-                <option value="3.0" selected>3.0 Arcmin (Standard Science)</option>
-                <option value="5.0">5.0 Arcmin (Extended Context)</option>
-                <option value="10.0">10.0 Arcmin (Wide Overview)</option>
+                <option value="1.0">1.0' (Deep Core / Micro-Arcsec Dipoles)</option>
+                <option value="1.5">1.5' (High-Res Core)</option>
+                <option value="3.0" selected>3.0' (Standard Science / 1/10th Moon)</option>
+                <option value="5.0">5.0' (Cluster View)</option>
+                <option value="10.0">10.0' (Constellation Patch)</option>
+                <option value="15.0">15.0' (Wide Survey / Half Moon Width)</option>
               </select>
             </div>
           </div>
 
           <button id="btnGoCoords" class="w-full py-1.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow">
             <i data-lucide="compass" class="w-3.5 h-3.5"></i>
-            <span>Slew Telescope (Fetch)</span>
+            <span>Slew Telescope & Fetch Live FITS</span>
           </button>
         </div>
       </div>
 
-      <!-- Primary Action: Direct Fetch Button -->
-      <button id="btnTopFetch" class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition" title="Fetch multi-epoch FITS cutouts for current coordinates">
-        <i data-lucide="download" class="w-3.5 h-3.5"></i>
-        <span>Fetch</span>
+      <!-- Primary Action: Direct Fetch Button (Issue #6) -->
+      <button id="btnTopFetch" class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition" title="Fetch live multi-epoch FITS cutouts from NASA IRSA archive servers">
+        <i data-lucide="download" class="w-3.5 h-3.5" id="btnTopFetchIcon"></i>
+        <span id="btnTopFetchText">Fetch Live FITS</span>
+      </button>
+
+      <!-- Mission Onboarding Tour Button (Issue #5) -->
+      <button id="btnOpenOnboardingTour" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-amber-300 hover:text-white border border-amber-500/30 hover:border-amber-400 text-xs font-medium shadow-sm transition" title="Open Interactive Mission Tour & Planet X Guide">
+        <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span class="hidden md:inline">Tour</span>
       </button>
 
       <!-- Beginner / Scientist Mode Toggle Pill -->
@@ -1098,6 +1222,230 @@
       </div>
       <div id="commandPaletteList" class="max-h-80 overflow-y-auto divide-y divide-space-800 p-1">
         <!-- Populated via renderCommandPalette() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- INTERACTIVE ONBOARDING TOUR & MISSION EXPLAINER MODAL (Issue #5)           -->
+  <!-- ========================================================================= -->
+  <div id="onboardingModal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-700 rounded-2xl max-w-2xl w-full p-6 text-white font-sans shadow-2xl space-y-4 relative">
+      
+      <!-- Top Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-space-700">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-space-950 border border-amber-500/50 p-1 flex items-center justify-center shadow-md">
+            <img src="assets/logo.svg" alt="SPHEREx Logo" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+              <span>SPHEREx Hunter Guided Tour</span>
+              <span id="onboardingStepBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">Step 1 of 5</span>
+            </h2>
+            <p class="text-[10px] text-gray-400 font-mono">NASA Space Apps Challenge 2026 | Planet X & SPHEREx</p>
+          </div>
+        </div>
+        <button id="btnCloseOnboardingModal" class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition" title="Close tour">✕</button>
+      </div>
+
+      <!-- Step Progress Bar Indicator -->
+      <div class="flex items-center gap-1.5 py-1">
+        <div class="tour-dot h-1.5 flex-1 rounded-full bg-amber-500 transition-all" data-step="1"></div>
+        <div class="tour-dot h-1.5 flex-1 rounded-full bg-space-700 transition-all" data-step="2"></div>
+        <div class="tour-dot h-1.5 flex-1 rounded-full bg-space-700 transition-all" data-step="3"></div>
+        <div class="tour-dot h-1.5 flex-1 rounded-full bg-space-700 transition-all" data-step="4"></div>
+        <div class="tour-dot h-1.5 flex-1 rounded-full bg-space-700 transition-all" data-step="5"></div>
+      </div>
+
+      <!-- Dynamic Step Content Container -->
+      <div id="onboardingSlideContainer" class="min-h-[240px] py-2">
+        <!-- Slide 1: Mission & Why Infrared -->
+        <div class="tour-slide space-y-3" data-step="1">
+          <div class="p-3 rounded-xl bg-space-950/80 border border-amber-500/30 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/40 text-lg">
+              🪐
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-amber-300 uppercase tracking-wider font-mono">The Challenge Mission</h3>
+              <p class="text-xs text-gray-200 mt-0.5 leading-relaxed">
+                <strong class="text-white">Hunt for Planet Nine, ultra-cool Brown Dwarfs, and Near-Earth Asteroids</strong> across 102 NASA SPHEREx infrared spectral bands with multi-epoch blink astrometry and difference imaging.
+              </p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div class="p-3 rounded-lg bg-space-950 border border-space-800 space-y-1">
+              <div class="font-bold text-cyan-300 flex items-center gap-1.5 text-[11px]">
+                <i data-lucide="eye-off" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Why Optical Telescopes Fail</span>
+              </div>
+              <p class="text-[11px] text-gray-400 leading-snug">
+                Cold outer Solar System bodies and Y-dwarfs at ~250 K emit almost zero visible light. In optical surveys like Gaia or DSS, they appear as complete dropouts (pitch black).
+              </p>
+            </div>
+            <div class="p-3 rounded-lg bg-space-950 border border-space-800 space-y-1">
+              <div class="font-bold text-amber-400 flex items-center gap-1.5 text-[11px]">
+                <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Why SPHEREx Infrared Succeeds</span>
+              </div>
+              <p class="text-[11px] text-gray-400 leading-snug">
+                SPHEREx scans the whole sky across 102 narrow infrared bands (0.75 – 5.0 µm), directly detecting the warm thermal radiation and methane absorption of cold substellar objects!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2: Blink Comparator & Difference Imaging -->
+        <div class="tour-slide space-y-3 hidden" data-step="2">
+          <div class="p-3 rounded-xl bg-space-950/80 border border-cyan-500/30 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/40 text-lg">
+              👁️
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-cyan-300 uppercase tracking-wider font-mono">Viewport & Blink Comparator</h3>
+              <p class="text-xs text-gray-200 mt-0.5 leading-relaxed">
+                Tombaugh discovered Pluto in 1930 using a mechanical Blink Comparator. SPHEREx Hunter brings this technique to citizen scientists with modern image processing.
+              </p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div class="p-3 rounded-lg bg-space-950 border border-space-800 space-y-1">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 text-[11px]">
+                <i data-lucide="split" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>[Blink] Mode (Hotkey: Space / B)</span>
+              </div>
+              <p class="text-[11px] text-gray-400 leading-snug">
+                Rapidly toggles between historical epochs (e.g. 2MASS 1999) and modern SPHEREx observations. Fast-moving objects appear to "jump" back and forth against fixed stars.
+              </p>
+            </div>
+            <div class="p-3 rounded-lg bg-space-950 border border-space-800 space-y-1">
+              <div class="font-bold text-amber-400 flex items-center gap-1.5 text-[11px]">
+                <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>[Difference] Mode (Hotkey: D)</span>
+              </div>
+              <p class="text-[11px] text-gray-400 leading-snug">
+                Runs numerical ZOGY subtraction: static stars cancel to zero noise, while moving objects create unmistakable dark-negative and bright-positive "dipole" pairs!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3: Gaia Astrometry & Optical Veto -->
+        <div class="tour-slide space-y-3 hidden" data-step="3">
+          <div class="p-3 rounded-xl bg-space-950/80 border border-purple-500/30 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/40 text-lg">
+              ✨
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-purple-300 uppercase tracking-wider font-mono">Gaia DR3 Astrometry & Optical Veto</h3>
+              <p class="text-xs text-gray-200 mt-0.5 leading-relaxed">
+                How do we know if a moving object is an ordinary star or a candidate Planet X / brown dwarf? We query the ESA Gaia mission!
+              </p>
+            </div>
+          </div>
+          <div class="p-3 rounded-lg bg-space-950 border border-space-800 space-y-2 text-xs">
+            <div class="flex items-center gap-2 text-cyan-300 font-bold text-[11px]">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>Toggle Gaia DR3 Motion Vectors (Hotkey: G)</span>
+            </div>
+            <ul class="text-[11px] text-gray-400 space-y-1.5 list-disc list-inside leading-snug">
+              <li><strong class="text-gray-200">Optical Detection:</strong> If a source has a visible Gaia ring and arrow, it is a known stellar object in our Milky Way.</li>
+              <li><strong class="text-amber-300">Optical Dropout (Planet X Signature):</strong> If an infrared source shows a prominent dipole on difference imaging but has <span class="text-amber-300 font-semibold">NO Gaia counterpart</span>, it is cold, substellar, and warrants immediate candidate flagging!</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Slide 4: 1-Click NASA Benchmark Presets -->
+        <div class="tour-slide space-y-3 hidden" data-step="4">
+          <div class="p-3 rounded-xl bg-space-950/80 border border-emerald-500/30 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/40 text-lg">
+              🎯
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-emerald-300 uppercase tracking-wider font-mono">Verified NASA Benchmark Targets</h3>
+              <p class="text-xs text-gray-200 mt-0.5 leading-relaxed">
+                Click any benchmark below to instantly slew the observatory and observe verified moving objects and stellar transients:
+              </p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <button class="tour-preset-btn p-2 rounded bg-space-950 hover:bg-space-800 border border-space-700/80 text-left transition flex items-center justify-between" data-target="wise0855">
+              <div>
+                <div class="font-bold text-amber-300 text-[11px]">🪐 WISE 0855-0714</div>
+                <div class="text-[10px] text-gray-400 font-sans">Cold Y-dwarf, 8.12"/yr PM</div>
+              </div>
+              <span class="text-[10px] text-cyan-400 font-mono">Launch →</span>
+            </button>
+            <button class="tour-preset-btn p-2 rounded bg-space-950 hover:bg-space-800 border border-space-700/80 text-left transition flex items-center justify-between" data-target="barnard">
+              <div>
+                <div class="font-bold text-amber-300 text-[11px]">⚡ Barnard's Star</div>
+                <div class="text-[10px] text-gray-400 font-sans">Fastest PM Star (10.36"/yr)</div>
+              </div>
+              <span class="text-[10px] text-cyan-400 font-mono">Launch →</span>
+            </button>
+            <button class="tour-preset-btn p-2 rounded bg-space-950 hover:bg-space-800 border border-space-700/80 text-left transition flex items-center justify-between" data-target="epsindi">
+              <div>
+                <div class="font-bold text-emerald-300 text-[11px]">💫 Epsilon Indi B</div>
+                <div class="text-[10px] text-gray-400 font-sans">Binary Brown Dwarf Companion</div>
+              </div>
+              <span class="text-[10px] text-cyan-400 font-mono">Launch →</span>
+            </button>
+            <button class="tour-preset-btn p-2 rounded bg-space-950 hover:bg-space-800 border border-space-700/80 text-left transition flex items-center justify-between" data-target="rdraconis">
+              <div>
+                <div class="font-bold text-rose-300 text-[11px]">🌟 R Draconis</div>
+                <div class="text-[10px] text-gray-400 font-sans">Pulsating Mira Variable Star</div>
+              </div>
+              <span class="text-[10px] text-cyan-400 font-mono">Launch →</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Slide 5: Flagging Discoveries & Next Steps -->
+        <div class="tour-slide space-y-3 hidden" data-step="5">
+          <div class="p-3 rounded-xl bg-space-950/80 border border-amber-500/30 flex items-start gap-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/40 text-lg">
+              🚩
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-amber-300 uppercase tracking-wider font-mono">Flag Candidates & Log Discoveries</h3>
+              <p class="text-xs text-gray-200 mt-0.5 leading-relaxed">
+                Found a moving dipole or a bright infrared source with no Gaia counterpart? Log it directly into the citizen science discovery ledger!
+              </p>
+            </div>
+          </div>
+          <div class="p-3 rounded-lg bg-space-950 border border-space-800 space-y-2 text-xs">
+            <div class="flex items-center gap-2 text-amber-300 font-bold text-[11px]">
+              <i data-lucide="flag" class="w-3.5 h-3.5 text-amber-400"></i>
+              <span>Discovery Workflow</span>
+            </div>
+            <ol class="text-[11px] text-gray-400 space-y-1.5 list-decimal list-inside leading-snug">
+              <li>Click anywhere in the canvas viewport to drop the astrometric reticle.</li>
+              <li>Inspect the bottom dock for the 102-band infrared spectrum and molecular absorption dips (H₂O, CH₄, CO₂).</li>
+              <li>Click <strong class="text-white bg-space-800 px-1 py-0.5 rounded border border-space-700">[Flag Candidate]</strong> to submit candidate coordinates and WiseView confirmation.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Navigation Controls -->
+      <div class="flex items-center justify-between pt-3 border-t border-space-700">
+        <label class="flex items-center gap-2 text-[11px] text-gray-400 cursor-pointer select-none">
+          <input type="checkbox" id="chkDoNotShowTourAgain" class="rounded bg-space-950 border-space-700 text-amber-500 focus:ring-0">
+          <span>Don't show again on startup</span>
+        </label>
+        
+        <div class="flex items-center gap-2">
+          <button id="btnTourPrev" class="px-3 py-1.5 rounded blender-btn text-xs text-gray-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition" disabled>
+            ◀ Previous
+          </button>
+          <button id="btnTourNext" class="px-4 py-1.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs shadow transition flex items-center gap-1.5">
+            <span>Next</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+          <button id="btnTourSkip" class="px-2.5 py-1.5 rounded text-xs text-gray-400 hover:text-white hover:bg-space-800 transition">
+            Skip Tour
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2138,6 +2486,32 @@
       });
     }
 
+    function setFetchButtonLoading(loading) {
+      const btn = document.getElementById('btnTopFetch');
+      const icon = document.getElementById('btnTopFetchIcon');
+      const text = document.getElementById('btnTopFetchText');
+      if (!btn) return;
+      if (loading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-80', 'cursor-wait');
+        if (text) text.textContent = 'Contacting NASA IRSA...';
+        if (icon) {
+          icon.setAttribute('data-lucide', 'loader-2');
+          icon.classList.add('animate-spin');
+          if (window.lucide) lucide.createIcons();
+        }
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-80', 'cursor-wait');
+        if (text) text.textContent = 'Fetch Live FITS';
+        if (icon) {
+          icon.setAttribute('data-lucide', 'download');
+          icon.classList.remove('animate-spin');
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+
     function showLoading(title, detail) {
       const overlay = document.getElementById('loadingOverlay');
       if (overlay) {
@@ -2151,6 +2525,7 @@
         btn.innerHTML = `<span class="animate-spin inline-block w-2.5 h-2.5 border-2 border-white/30 border-t-white rounded-full"></span>`;
         btn.disabled = true;
       }
+      setFetchButtonLoading(true);
     }
 
     function hideLoading() {
@@ -2164,6 +2539,7 @@
         btn.innerText = "Fetch";
         btn.disabled = false;
       }
+      setFetchButtonLoading(false);
     }
 
     // =========================================================================
@@ -3469,15 +3845,66 @@
     }
     if (btnToggleDock) btnToggleDock.addEventListener('click', () => toggleDockCollapse());
 
-    // COORDINATES POPOVER TOGGLE
+    // COORDINATES POPOVER TOGGLE & VALIDATION (Issue #6)
     const btnToggleCoordsPopover = document.getElementById('btnToggleCoordsPopover');
     const coordsPopover = document.getElementById('coordsPopover');
     const btnCloseCoordsPopover = document.getElementById('btnCloseCoordsPopover');
+    const inputRA = document.getElementById('inputRA');
+    const inputDec = document.getElementById('inputDec');
+    const selectFOV = document.getElementById('selectFOV');
+    const quickCoordsLabel = document.getElementById('quickCoordsLabel');
+    const raValidationHint = document.getElementById('raValidationHint');
+    const decValidationHint = document.getElementById('decValidationHint');
+
+    function validateCoordinatesInput() {
+      if (!inputRA || !inputDec) return true;
+      const raVal = parseFloat(inputRA.value.trim());
+      const decVal = parseFloat(inputDec.value.trim());
+      const raValid = !isNaN(raVal) && raVal >= 0 && raVal <= 360;
+      const decValid = !isNaN(decVal) && decVal >= -90 && decVal <= 90;
+
+      if (raValidationHint) {
+        if (raValid) {
+          inputRA.classList.remove('border-amber-500');
+          inputRA.classList.add('border-emerald-500');
+          raValidationHint.textContent = '✓ Valid (0° to 360°)';
+          raValidationHint.className = 'text-[9px] text-emerald-400 font-sans';
+        } else {
+          inputRA.classList.remove('border-emerald-500');
+          inputRA.classList.add('border-amber-500');
+          raValidationHint.textContent = '⚠ Must be 0° to 360°';
+          raValidationHint.className = 'text-[9px] text-amber-400 font-sans';
+        }
+      }
+
+      if (decValidationHint) {
+        if (decValid) {
+          inputDec.classList.remove('border-amber-500');
+          inputDec.classList.add('border-emerald-500');
+          decValidationHint.textContent = '✓ Valid (-90° to +90°)';
+          decValidationHint.className = 'text-[9px] text-emerald-400 font-sans';
+        } else {
+          inputDec.classList.remove('border-emerald-500');
+          inputDec.classList.add('border-amber-500');
+          decValidationHint.textContent = '⚠ Must be -90° to +90°';
+          decValidationHint.className = 'text-[9px] text-amber-400 font-sans';
+        }
+      }
+
+      if (quickCoordsLabel && !isNaN(raVal) && !isNaN(decVal)) {
+        quickCoordsLabel.textContent = `${raVal.toFixed(3)}°, ${decVal.toFixed(3)}°`;
+      }
+      return raValid && decValid;
+    }
+
+    if (inputRA) inputRA.addEventListener('input', validateCoordinatesInput);
+    if (inputDec) inputDec.addEventListener('input', validateCoordinatesInput);
 
     if (btnToggleCoordsPopover && coordsPopover) {
       btnToggleCoordsPopover.addEventListener('click', (e) => {
         e.stopPropagation();
         coordsPopover.classList.toggle('hidden');
+        if (skyHelperPopover) skyHelperPopover.classList.add('hidden');
       });
       if (btnCloseCoordsPopover) {
         btnCloseCoordsPopover.addEventListener('click', () => coordsPopover.classList.add('hidden'));
@@ -3489,12 +3916,174 @@
       });
     }
 
+    // CELESTIAL NAVIGATION SKY HELPER POPOVER (Issue #6)
+    const btnSkyHelper = document.getElementById('btnSkyHelper');
+    const skyHelperPopover = document.getElementById('skyHelperPopover');
+    const btnCloseSkyHelper = document.getElementById('btnCloseSkyHelper');
+
+    if (btnSkyHelper && skyHelperPopover) {
+      btnSkyHelper.addEventListener('click', (e) => {
+        e.stopPropagation();
+        skyHelperPopover.classList.toggle('hidden');
+        if (coordsPopover) coordsPopover.classList.add('hidden');
+      });
+      if (btnCloseSkyHelper) {
+        btnCloseSkyHelper.addEventListener('click', () => skyHelperPopover.classList.add('hidden'));
+      }
+      document.addEventListener('click', (e) => {
+        if (!skyHelperPopover.contains(e.target) && !btnSkyHelper.contains(e.target)) {
+          skyHelperPopover.classList.add('hidden');
+        }
+      });
+    }
+
+    // 1-Click Popular Astronomical Landmarks
+    document.querySelectorAll('.landmark-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ra = btn.getAttribute('data-ra');
+        const dec = btn.getAttribute('data-dec');
+        const fov = btn.getAttribute('data-fov') || '3.0';
+        if (inputRA) inputRA.value = ra;
+        if (inputDec) inputDec.value = dec;
+        if (selectFOV) selectFOV.value = fov;
+        validateCoordinatesInput();
+        if (skyHelperPopover) skyHelperPopover.classList.add('hidden');
+        slewToTypedCoordinates();
+      });
+    });
+
     // TOP FETCH BUTTON
     const btnTopFetch = document.getElementById('btnTopFetch');
     if (btnTopFetch) {
       btnTopFetch.addEventListener('click', () => {
         slewToTypedCoordinates();
       });
+    }
+
+    // =========================================================================
+    // INTERACTIVE ONBOARDING TOUR LOGIC (Issue #5)
+    // =========================================================================
+    const onboardingModal = document.getElementById('onboardingModal');
+    const btnOpenOnboardingTour = document.getElementById('btnOpenOnboardingTour');
+    const brandLogoLink = document.getElementById('brandLogoLink');
+    const btnMissionExplainer = document.getElementById('btnMissionExplainer');
+    const btnCloseOnboardingModal = document.getElementById('btnCloseOnboardingModal');
+    const btnTourPrev = document.getElementById('btnTourPrev');
+    const btnTourNext = document.getElementById('btnTourNext');
+    const btnTourSkip = document.getElementById('btnTourSkip');
+    const chkDoNotShowTourAgain = document.getElementById('chkDoNotShowTourAgain');
+    const onboardingStepBadge = document.getElementById('onboardingStepBadge');
+
+    let currentTourStep = 1;
+    const TOTAL_TOUR_STEPS = 5;
+
+    function showTourStep(step) {
+      currentTourStep = Math.max(1, Math.min(TOTAL_TOUR_STEPS, step));
+      
+      if (onboardingStepBadge) {
+        onboardingStepBadge.textContent = `Step ${currentTourStep} of ${TOTAL_TOUR_STEPS}`;
+      }
+
+      document.querySelectorAll('.tour-dot').forEach(dot => {
+        const dStep = parseInt(dot.getAttribute('data-step'));
+        if (dStep <= currentTourStep) {
+          dot.className = 'tour-dot h-1.5 flex-1 rounded-full bg-amber-500 transition-all';
+        } else {
+          dot.className = 'tour-dot h-1.5 flex-1 rounded-full bg-space-700 transition-all';
+        }
+      });
+
+      document.querySelectorAll('.tour-slide').forEach(slide => {
+        const sStep = parseInt(slide.getAttribute('data-step'));
+        if (sStep === currentTourStep) {
+          slide.classList.remove('hidden');
+        } else {
+          slide.classList.add('hidden');
+        }
+      });
+
+      if (btnTourPrev) {
+        btnTourPrev.disabled = (currentTourStep === 1);
+      }
+
+      if (btnTourNext) {
+        if (currentTourStep === TOTAL_TOUR_STEPS) {
+          btnTourNext.innerHTML = '<span>Get Started 🚀</span>';
+        } else {
+          btnTourNext.innerHTML = '<span>Next</span><i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>';
+        }
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openOnboardingTour() {
+      if (!onboardingModal) return;
+      showTourStep(1);
+      onboardingModal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeOnboardingTour() {
+      if (!onboardingModal) return;
+      onboardingModal.classList.add('hidden');
+      if (chkDoNotShowTourAgain && chkDoNotShowTourAgain.checked) {
+        localStorage.setItem('spherex_hunter_onboarding_completed', 'true');
+      }
+    }
+
+    if (btnOpenOnboardingTour) btnOpenOnboardingTour.addEventListener('click', openOnboardingTour);
+    if (brandLogoLink) {
+      brandLogoLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        openOnboardingTour();
+      });
+    }
+    if (btnMissionExplainer) btnMissionExplainer.addEventListener('click', openOnboardingTour);
+    if (btnCloseOnboardingModal) btnCloseOnboardingModal.addEventListener('click', closeOnboardingTour);
+    if (btnTourSkip) {
+      btnTourSkip.addEventListener('click', () => {
+        localStorage.setItem('spherex_hunter_onboarding_completed', 'true');
+        closeOnboardingTour();
+      });
+    }
+
+    if (btnTourPrev) {
+      btnTourPrev.addEventListener('click', () => {
+        if (currentTourStep > 1) showTourStep(currentTourStep - 1);
+      });
+    }
+
+    if (btnTourNext) {
+      btnTourNext.addEventListener('click', () => {
+        if (currentTourStep < TOTAL_TOUR_STEPS) {
+          showTourStep(currentTourStep + 1);
+        } else {
+          localStorage.setItem('spherex_hunter_onboarding_completed', 'true');
+          closeOnboardingTour();
+          playTargetLockChime();
+        }
+      });
+    }
+
+    document.querySelectorAll('.tour-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-target');
+        closeOnboardingTour();
+        selectTarget(target);
+      });
+    });
+
+    if (onboardingModal) {
+      onboardingModal.addEventListener('click', (e) => {
+        if (e.target === onboardingModal) closeOnboardingTour();
+      });
+    }
+
+    // Auto-launch on first visit
+    if (!localStorage.getItem('spherex_hunter_onboarding_completed') && !localStorage.getItem('spherex_tour_seen')) {
+      setTimeout(() => {
+        openOnboardingTour();
+      }, 350);
     }
 
     // GUIDED TOUR BANNER
@@ -3773,6 +4362,7 @@
           document.activeElement.blur();
           closeCommandPalette();
           if (coordsPopover) coordsPopover.classList.add('hidden');
+          if (skyHelperPopover) skyHelperPopover.classList.add('hidden');
         }
         return;
       }
@@ -3861,8 +4451,10 @@
         closeCommandPalette();
         if (shortcutsModal) shortcutsModal.classList.add('hidden');
         if (coordsPopover) coordsPopover.classList.add('hidden');
+        if (skyHelperPopover) skyHelperPopover.classList.add('hidden');
         if (flagModal) flagModal.classList.add('hidden');
         if (missionCodexModal) missionCodexModal.classList.add('hidden');
+        if (onboardingModal) onboardingModal.classList.add('hidden');
       }
     });
     

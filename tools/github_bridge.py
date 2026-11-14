@@ -145,6 +145,20 @@ def view_issue(issue_number):
     print(iss.get("body") or "(No description provided)")
     print(f"\n=======================================================\n")
 
+def close_issue(issue_number, comment=None):
+    token = get_github_token()
+    if not token:
+        print("❌ Cannot close issue: No GitHub credentials found.")
+        return False
+    if comment:
+        _request(f"/issues/{issue_number}/comments", method="POST", data={"body": comment})
+    res = _request(f"/issues/{issue_number}", method="PATCH", data={"state": "closed"})
+    if isinstance(res, dict) and res.get("error"):
+        print(f"❌ Failed to close issue #{issue_number}: {res.get('message')}")
+        return False
+    print(f"✅ Issue #{issue_number} successfully closed on GitHub!")
+    return True
+
 def create_issue(title, track, role, resource, body):
     token = get_github_token()
     labels = []
@@ -196,6 +210,11 @@ def main():
     view_parser = subparsers.add_parser("view", help="View issue details")
     view_parser.add_argument("--issue", type=int, required=True, help="Issue number")
 
+    # close
+    close_parser = subparsers.add_parser("close", help="Close an issue")
+    close_parser.add_argument("--issue", type=int, required=True, help="Issue number to close")
+    close_parser.add_argument("--comment", help="Optional comment explaining closure")
+
     # create
     create_parser = subparsers.add_parser("create", help="Create a new task issue")
     create_parser.add_argument("--title", required=True, help="Issue title")
@@ -211,6 +230,8 @@ def main():
         list_issues(track_filter=args.track, status_filter=args.status)
     elif args.command == "view":
         view_issue(args.issue)
+    elif args.command == "close":
+        close_issue(args.issue, comment=args.comment)
     elif args.command == "create":
         create_issue(args.title, args.track, args.role, args.resource, args.body)
     else:

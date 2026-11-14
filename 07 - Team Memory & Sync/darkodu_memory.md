@@ -3,11 +3,22 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Completed SPHEREx DR1 All-Sky HiPS Context Layer, Provenance Alignment & Cross-Survey Epoch Pairing.
-- **Next Task:** Present cross-survey pair findings to team lead `jokerodu` and verify difference product generation decisions.
+- **Current Task:** Resolved & Closed GitHub Issues #5 (Distinct Brand Logo & Interactive Onboarding Tour) and #6 (Beginner-Friendly Celestial Navigation Bar & Sky Scale Helpers).
+- **Next Task:** Execute GitHub Issue #7 (SPHEREx 102-Band Infrared Spectrum: 6-Array Selector, 17-Wavelength Stepper & Interactive SED Visualizer).
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Resolved & Closed GitHub Issue #5 ([UI/UX] Distinct Application Brand & Logo, Interactive Onboarding Tour & Scientific Mission Explainer):
+  - Designed vector SVG logo in `frontend/assets/logo.svg` combining SPHEREx hexagonal sunshield, multi-band IR dispersion, and astrometric dipole reticle; added SVG favicon.
+  - Added Mission Explainer badge and tooltip in top observatory header.
+  - Integrated 5-step dark NASA-themed onboarding tour modal (`#onboardingModal`) with step indicator, `localStorage` persistence, and 1-click preset launcher.
+  - Verified with Playwright E2E test `tests/test_ui_brand_and_nav_e2e.py` (4/4 passed). Closed Issue #5 on GitHub.
+- [x] Resolved & Closed GitHub Issue #6 ([UI/UX] Beginner-Friendly Celestial Navigation Bar: Tooltips, Educational Micro-Copy & Sky Scale Guides):
+  - Added plain-English hover tooltips for RA (Sky Longitude), Dec (Sky Latitude), and FOV (Sky Zoom relative to Full Moon).
+  - Enhanced FOV dropdown with real-world celestial scale descriptors (e.g. `1/10th Moon`, `Micro-Arcsec Dipoles`).
+  - Added Celestial Navigation Sky Helper popover (`#skyHelperPopover`) with accepted coordinate formats guide and 1-click popular astronomical landmarks (WISE 0855, Barnard's Star, Orion Nebula, Sgr A*, Trappist-1).
+  - Implemented real-time coordinate validation with green/amber visual feedback and range hints.
+  - Updated Fetch button with live NASA IRSA request status. Closed Issue #6 on GitHub.
 - [x] SPHEREx DR1 All-Sky HiPS Context Layer, Provenance Alignment & Cross-Survey Epoch Pairing:
   - **Research & Documentation (`docs/dr1_notes.md`):** Extracted authentic IRSA DR1 HiPS URL (`https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube`), IVOA DID `ivo://IPAC/P/SPHEREx/DR1/cube`, order 5 (512x512 tiles), 102 spectral channels ($0.75\text{--}5.0\,\mu\text{m}$), verified CORS header `Access-Control-Allow-Origin: *`, documented date ranges (MJD 60789.75 to 61174.49), and noted that IRSA hosts a single merged DR1 all-sky composite rather than separate per-survey cubes.
   - **Frontend HiPS Integration (`frontend/index.html`):** Added `#aladinContextBar` with honesty disclaimer, `#aladinLayerStatus`, 102-channel selector (`#hipsChannelSelect`), wavelength display, and `#aladinFallbackAlert`. Implemented channel slice switching via `baseLayer.setSliceNumber(chNumber)`. Added coordinate click handling via `aladinInstance.pix2world(x, y)` triggering `loadSceneForPosition()`. Handled failure fallback to `P/DSS2/color` and preserved offline mode.

@@ -23,6 +23,7 @@ def page():
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
         pg = context.new_page()
+        pg.add_init_script("localStorage.setItem('spherex_hunter_onboarding_completed', 'true');")
         pg.goto("http://127.0.0.1:8000/app/index.html", wait_until="domcontentloaded")
         time.sleep(3)
         yield pg

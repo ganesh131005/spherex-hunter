@@ -26,6 +26,16 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GITHUB ISSUES #5 & #6 RESOLVED: Brand Identity, Onboarding Tour & Beginner-Friendly Navigation (@darkodu)]**
+  - **Custom Vector Branding & SVG Logo (Issue #5):** Designed high-resolution SVG logo (`frontend/assets/logo.svg`) reflecting SPHEREx hexagonal sunshield, 102-band IR dispersion, and astrometric dipole reticle; added favicon link in `<head>`. Embedded logo and sleek typography in topbar observatory header.
+  - **Mission Explainer Header Badge:** Added `#btnMissionExplainer` summarizing the scientific motivation for infrared astronomy (thermal radiation of cold 250K bodies invisible in optical surveys).
+  - **5-Step Interactive Guided Tour Modal:** Implemented `#onboardingModal` with progress dots, step badges, explanation of blink/difference imaging and Gaia DR3 optical dropout, 1-click preset launcher, and `localStorage` persistence (`spherex_hunter_onboarding_completed`). Added `#btnOpenOnboardingTour` to topbar.
+  - **Beginner-Friendly Navigation & Scale Tooltips (Issue #6):** Added plain-English hover tooltips for RA (Sky Longitude), Dec (Sky Latitude), and FOV (Sky Zoom relative to the ~30' Full Moon).
+  - **Celestial Scale FOV Options:** Updated `<select id="selectFOV">` with intuitive astronomical cues (e.g. `1/10th Moon`, `Micro-Arcsec Dipoles`, `Half Moon Width`).
+  - **Celestial Navigation Sky Helper Popover:** Added `#btnSkyHelper` and `#skyHelperPopover` with coordinate formatting guide (Decimal vs HMS) and 1-click popular celestial landmarks (WISE 0855, Barnard's Star, Orion Nebula Core, Sgr A*, Epsilon Indi B, Trappist-1).
+  - **Live Coordinate Bounds Validation:** Added visual green/amber borders and live validation feedback for RA (0° to 360°) and Dec (-90° to +90°).
+  - **Live NASA IRSA Fetch Status:** Enhanced `#btnTopFetch` to display active loading state (`Contacting NASA IRSA...`) during network queries.
+  - **Automated E2E Verification:** Built and verified `tests/test_ui_brand_and_nav_e2e.py` (4/4 passed). Generated screenshots in `docs/figures/`. Successfully closed GitHub Issues #5 and #6.
 - **[SPHEREx DR1 ALL-SKY HiPS CONTEXT LAYER & PROVENANCE ALIGNMENT (@darkodu)]**
   - **Research & HiPS Documentation (`docs/dr1_notes.md`):** Looked up authentic IRSA DR1 HiPS URL `https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube`, IVOA DID `ivo://IPAC/P/SPHEREx/DR1/cube`, order 5 (512x512 tiles), 102 spectral channels ($0.75\text{--}5.0\,\mu\text{m}$), verified CORS header `Access-Control-Allow-Origin: *`, documented date ranges (MJD 60789.75 to 61174.49), and confirmed unified DR1 composite cube structure.
   - **Frontend HiPS Layer & UI Honesty (`frontend/index.html`):** Integrated `#aladinContextBar` with honesty disclaimer, `#aladinLayerStatus`, 102-channel selector (`#hipsChannelSelect`), and slice switching via `baseLayer.setSliceNumber(chNumber)`. Added coordinate click handling (`aladinInstance.pix2world(x, y) -> loadSceneForPosition()`), graceful fallback alert (`#aladinFallbackAlert` to `P/DSS2/color`), and non-simultaneous spectral observation date notice (`#spectrumNonSimultaneousNotice`).
