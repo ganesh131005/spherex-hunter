@@ -3,11 +3,15 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed the comprehensive site map and FITS architecture analysis of the Government of Canada Open Data NEOSSat dataset into the Obsidian vault: [[CSA_OPENDATA_NEOSSAT_SITEMAP]].
-- **Next Task:** Awaiting next site or pipeline direction from jokerodu / user.
+- **Current Task:** Completed PR-style branch integration of `origin/darkodu/astro-backend` (`4be20b7`) into `coolodu/web-frontend`, adopting all Phase 0–2.9 scientific Pros and Observatory UI redesign while mitigating regressions and raising GitHub Issues [#2](https://github.com/joker0210G/spherex-hunter/issues/2), [#3](https://github.com/joker0210G/spherex-hunter/issues/3), and [#4](https://github.com/joker0210G/spherex-hunter/issues/4) for `@darkodu`.
+- **Next Task:** Ready for final merge into `main` or Phase 4/5 feature execution.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[PR-Style Branch Integration: `origin/darkodu/astro-backend` -> `coolodu/web-frontend`]**:
+  - Merged `origin/darkodu/astro-backend` (`4be20b7`) into `coolodu/web-frontend`, integrating Phase 0–2.9 scientific modules (`backend/science/` ZOGY differencing, motion models A/B/C, calibrated $\mu\text{Jy}$ preprocessing, 29-bit flags, SkyBoT/Horizons identification, 5-tier evidence engine, tracklet linking, and `validation/`), data-driven Scene Collection Layer Manager (`/api/scene`), multi-catalog cross-matching (`/api/catalog/*`), and the Observatory UI redesign (`frontend/index.html`).
+  - Restored all 5 dropped endpoints (`/api/verify_candidate`, `/api/source_discovery`, `/api/download_fits`, `/api/resources_codex`, `/api/neossat`), unified `cutout_engine.py` spectrum & telemetry schemas, restored all 11 tests in `tests/test_golden_suite.py`, preserved Windows `cmd.exe` batch parser & SSL fixes, removed root debug screenshot bloat (`after_*.png`, `before_*.png`), and deduplicated `candidate_discoveries.json`.
+  - Raised 3 official GitHub Issues assigned to `@darkodu` for the cons identified in `darkodu/astro-backend`: [#2](https://github.com/joker0210G/spherex-hunter/issues/2), [#3](https://github.com/joker0210G/spherex-hunter/issues/3), and [#4](https://github.com/joker0210G/spherex-hunter/issues/4).
 - [x] **[Obsidian Vault Site Import: Government of Canada Open Data NEOSSat Dataset (`data.asc-csa.gc.ca/dataset/neossat`)]**:
   - Live crawled `https://data.asc-csa.gc.ca/dataset/neossat` and queried the CKAN REST API (`package_show?id=62d8033b-87b6-4322-8d5f-e26bebf934c1`).
   - Documented Open Government Licence - Canada terms and open-access data governance.

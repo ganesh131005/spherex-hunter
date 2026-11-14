@@ -6,11 +6,10 @@ Target: WISE 0855-0714 (Fast-moving cold brown dwarf)
 Coordinates: RA = 133.79513 deg (08h 55m 10.831s), Dec = -7.24515 deg (-07d 14m 42.53s)
 """
 
-import sys
 import json
 import ssl
-import urllib.request
 import urllib.parse
+import urllib.request
 
 # 1. Target Coordinates (WISE 0855)
 TARGET_NAME = "WISE 0855-0714"
@@ -57,17 +56,17 @@ try:
     encoded_url = f"{IRSA_TAP_URL}?{urllib.parse.urlencode(params)}"
     req = urllib.request.Request(encoded_url, headers={'User-Agent': 'SPHEREx-Hunter/1.0 (NASA Space Apps Team RIP)'})
     ssl_ctx = ssl._create_unverified_context()
-    
+
     with urllib.request.urlopen(req, context=ssl_ctx, timeout=30) as response:
         data = json.loads(response.read().decode('utf-8'))
-        
+
         fields = [col['name'] for col in data.get('metadata', [])]
         rows = data.get('data', [])
-        
+
         print(f"✅ Success! Found {len(rows)} observation records covering this coordinate.\n")
         print(f"{'Date Observed':<22} | {'RA (deg)':<10} | {'Dec (deg)':<10} | {'W2 Mag (4.6μm)':<12}")
         print("-" * 65)
-        
+
         for row in rows:
             row_dict = dict(zip(fields, row))
             date_obs = str(row_dict.get('date_obs', 'N/A'))[:19]
@@ -79,7 +78,7 @@ try:
 except Exception as e:
     print(f"ℹ️ Note: Live TAP query returned: {e}")
     print("Using pre-computed IRSA SPHEREx / WISE multi-epoch baseline for local development:")
-    
+
     mock_epochs = [
         {"epoch": "Pass 1 (May 2025)", "date": "2025-05-18 04:12:30", "ra": 133.79513, "dec": -7.24515, "delta_pix": "Origin"},
         {"epoch": "Pass 2 (Nov 2025)", "date": "2025-11-20 18:45:10", "ra": 133.79624, "dec": -7.24680, "delta_pix": "+8.1 arcsec shift"}

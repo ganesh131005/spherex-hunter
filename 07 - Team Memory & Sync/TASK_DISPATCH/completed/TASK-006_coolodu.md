@@ -19,7 +19,12 @@ output_path: frontend/index.html, backend/services/neossat_service.py, backend/s
 > **Resource Type:** `token_heavy` | **Priority:** `URGENT`
 
 ## 📝 Objective & Brief:
-Finish remaining tasks from nasa_csa_resources_integration_plan.md: Task 3 (WiseView 1-Click Verification Bridge), Task 4 (CSA NEOSSat & CADC Asteroid Tracking Integration), and Task 5 (Official NASA & CSA Resources Codex Modal). Task 1 (Gaia TAP Backend) and Task 2 (Viewport Gaia Overlay & Dipole Cross-Check) are already completed, tested, and verified on main. Please merge main, implement Tasks 3-5, and push coolodu/web-frontend.
+Finish remaining tasks from nasa_csa_resources_integration_plan.md:
+- [x] **Task 3 (WiseView 1-Click Verification Bridge):** COMPLETED. Added live verification bridge in `frontend/index.html` (sidebar and candidate discovery modal) and backend endpoint `GET /api/wiseview/url` with verified tests in `backend/test_diagnostics.py`.
+- [ ] **Task 4 (CSA NEOSSat & CADC Asteroid Tracking Integration)**
+- [ ] **Task 5 (Official NASA & CSA Resources Codex Modal)**
+
+Task 1 (Gaia TAP Backend) and Task 2 (Viewport Gaia Overlay & Dipole Cross-Check) are already completed, tested, and verified on main. Please merge main, implement Tasks 4-5, and push coolodu/web-frontend.
 
 ## 🎯 Definition of Done:
 - [ ] Task executed by @coolodu using optimal hardware/token capabilities.

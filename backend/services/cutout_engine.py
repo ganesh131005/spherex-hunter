@@ -9,17 +9,14 @@ Applies professional astronomical image reduction:
 4. Difference imaging with clean background and highlighted dipoles
 """
 
-import io
 import base64
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-from scipy.ndimage import shift, gaussian_filter
+import io
 
-import astropy.units as u
-from astropy.coordinates import SkyCoord
+import numpy as np
 from astropy.visualization import AsinhStretch
-from astroquery.skyview import SkyView
 from fastapi import HTTPException
+from PIL import Image
+from scipy.ndimage import gaussian_filter
 
 BENCHMARKS = {
     "wise0855": {
@@ -183,22 +180,22 @@ def clean_astronomical_image(data: np.ndarray, smooth_sigma: float = 1.0, noise_
     4. Applies Asinh stretch so real stars and brown dwarfs shine with soft, luminous halos.
     """
     clean = np.nan_to_num(data, nan=float(np.nanmedian(data)))
-    
+
     # 1. Subtle PSF Gaussian smoothing (converts raw sensor salt-and-pepper pixels into optical Airy disks)
     smoothed = gaussian_filter(clean, sigma=smooth_sigma)
-    
+
     # 2. Background estimation (sigma clipping)
     bg_median = float(np.median(smoothed))
     bg_std = float(np.std(smoothed)) + 1e-6
-    
+
     # Clip pixel noise below threshold (bg + N*sigma) to 0 -> eliminating 'snow' static!
     threshold = bg_median + noise_clip_sigma * bg_std
     signal = np.maximum(0.0, smoothed - threshold)
-    
+
     # 3. Asinh stretch for high dynamic range
     vmax = np.percentile(signal[signal > 0], 99.5) if np.any(signal > 0) else 1.0
     if vmax <= 0: vmax = 1.0
-    
+
     norm = np.clip(signal / vmax, 0.0, 1.0)
     stretch = AsinhStretch(a=0.08)
     stretched = stretch(norm)
@@ -242,24 +239,46 @@ def compute_scientific_difference(d1: np.ndarray, d2: np.ndarray) -> np.ndarray:
     diff_scaled = np.clip(128.0 + z_score * 16.0, 0, 255).astype(np.uint8)
     return diff_scaled
 
-def render_color_canvas(arr: np.ndarray, mode: str = "infrared") -> str:
+def render_color_canvas(arr: np.ndarray, mode: str = "infrared", coverage_mask: np.ndarray = None) -> str:
     """
     Converts 2D astronomical array into an authentic scientific image:
-    - Pure, unadulterated telescope pixel counts (grayscale or inverted grayscale)
-    - Exactly like SAOImage DS9, NASA IRSA Viewer, and Astropy visualization
-    - Zero cartoon overlays, zero synthetic thresholds
+    - Pure, unadulterated telescope pixel counts (grayscale)
+    - Unobserved pixels / NaNs are rendered as transparent (alpha = 0)
+    - Never black zero padding
     """
     h, w = arr.shape
-    arr_clipped = np.clip(arr, 0, 255).astype(np.uint8)
-    
-    if mode == "difference":
-        # Difference map: midpoint is 128 (neutral mid-gray). Positive flux is bright, negative flux is dark.
-        rgb = np.stack([arr_clipped, arr_clipped, arr_clipped], axis=-1)
-    else:
-        # Standard astronomical view: Authentic telescope starlight
-        rgb = np.stack([arr_clipped, arr_clipped, arr_clipped], axis=-1)
+    nan_mask = np.isnan(arr)
+    if coverage_mask is not None:
+        nan_mask = nan_mask | (~coverage_mask.astype(bool))
 
-    img = Image.fromarray(rgb)
+    arr_clean = np.nan_to_num(arr, nan=0.0)
+    arr_clipped = np.clip(arr_clean, 0, 255).astype(np.uint8)
+
+    alpha = np.where(nan_mask, 0, 255).astype(np.uint8)
+    rgba = np.stack([arr_clipped, arr_clipped, arr_clipped, alpha], axis=-1)
+
+    img = Image.fromarray(rgba, mode="RGBA")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    b64 = base64.b64encode(buffer.getvalue()).decode("ascii")
+    return f"data:image/png;base64,{b64}"
+
+
+def render_coverage_mask_canvas(arr: np.ndarray) -> str:
+    """
+    Renders diagnostic coverage overlay:
+    - Observed pixels: transparent (alpha = 0)
+    - Unobserved / NaN pixels: distinct semi-transparent amber/red mask (alpha = 160)
+    """
+    h, w = arr.shape
+    nan_mask = np.isnan(arr)
+    r = np.full((h, w), 245, dtype=np.uint8)
+    g = np.full((h, w), 100, dtype=np.uint8)
+    b = np.full((h, w), 80, dtype=np.uint8)
+    a = np.where(nan_mask, 160, 0).astype(np.uint8)
+
+    rgba = np.stack([r, g, b, a], axis=-1)
+    img = Image.fromarray(rgba, mode="RGBA")
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
     b64 = base64.b64encode(buffer.getvalue()).decode("ascii")
@@ -334,7 +353,7 @@ def detect_astronomical_transients(d1: np.ndarray, d2: np.ndarray, diff_scaled: 
     """
     dim = diff_scaled.shape[0]
     z_scores = (diff_scaled.astype(float) - 128.0) / 16.0
-    
+
     # Mask outer margins to avoid edge artifacts
     margin = max(4, int(dim * 0.06))
     inner_z = np.copy(z_scores)
@@ -399,9 +418,14 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
     Leverages L2 Spatial-Hash FITS on Disk and sub-pixel overlap extraction.
     Downloads authentic multi-epoch 2MASS (1998-2001) and DSS2 (1980-1995) FITS files.
     """
-    import os, io, ssl, urllib.request, xml.etree.ElementTree as ET
+    import io
+    import os
+    import ssl
+    import urllib.request
+    import xml.etree.ElementTree as ET
+
     from astropy.io import fits
-    from astropy.visualization import ZScaleInterval, AsinhStretch
+    from astropy.visualization import AsinhStretch
     from scipy.ndimage import zoom
 
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
@@ -689,7 +713,7 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     t0 = time.time()
 
     cache_key = f"{round(ra, 4)}_{round(dec, 4)}_{round(fov_arcmin, 1)}_{lod}"
-    
+
     # L1 In-Memory RAM Cache Check (< 4ms)
     if not force_refresh and cache_key in _L1_MEMORY_CACHE:
         cached_entry = dict(_L1_MEMORY_CACHE[cache_key])
@@ -728,12 +752,18 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     ep1_b64 = render_color_canvas(ep1_arr, "infrared")
     ep2_b64 = render_color_canvas(ep2_arr, "infrared")
     diff_b64 = render_color_canvas(diff_arr, "difference")
+    coverage_mask_b64 = render_coverage_mask_canvas(ep1_arr)
 
     # Compute dynamic spectrophotometry from actual FITS flux
     spec_data = get_102_band_spectrum(ra, dec, target_key=target_key, d1=d1, d2=d2)
 
     elapsed_ms = round((time.time() - t0) * 1000, 2)
     meta = matched_bm or {}
+
+    pm_mas = round(vector_info["shift_arcsec"] * 1000.0 / 0.5, 2) if vector_info.get("shift_arcsec") else (
+        matched_bm.get("expected_pm_arcsec_yr", 0.0) * 1000.0 if matched_bm and "expected_pm_arcsec_yr" in matched_bm else 0.0
+    )
+    pm_arcsec = round(pm_mas / 1000.0, 4)
 
     response = {
         "status": "success",
@@ -765,11 +795,14 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             "label": "Difference Map (I₂ - I₁)",
             "image_data": diff_b64
         },
+        "coverage_mask_image": {
+            "label": "Coverage & NaN Boundary Mask",
+            "image_data": coverage_mask_b64
+        },
         "motion_vector": vector_info,
         "telemetry": {
-            "proper_motion_mas_yr": round(vector_info["shift_arcsec"] * 1000.0 / 0.5, 2) if vector_info.get("shift_arcsec") else (
-                matched_bm.get("expected_pm_arcsec_yr", 0.0) * 1000.0 if matched_bm and "expected_pm_arcsec_yr" in matched_bm else 0.0
-            ),
+            "proper_motion_mas_yr": pm_mas,
+            "proper_motion_arcsec_yr": pm_arcsec,
             "transient_type": vector_info.get("transient_type", "STATIONARY"),
             "transient_confidence": vector_info.get("confidence", "100.0%"),
             "object_type": matched_bm.get("type", "Astronomical Source") if matched_bm else "Astronomical Sky Field",
