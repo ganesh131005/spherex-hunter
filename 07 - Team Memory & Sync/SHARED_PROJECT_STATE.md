@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #27 Created — Fix Telemetry Overlap, Enlarge Celestial Compass, and Make Arcmin Scale Bar Dynamic to Viewport Zoom]**
+  - **Issue #27 Link:** https://github.com/joker0210G/spherex-hunter/issues/27
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Solves HUD layout collision between bottom telemetry and scale bar box, enlarges tiny 20px compass to a clear 36px reticle rose, and makes the static 1.0 Arcmin bar dynamically scale with viewport zoom and camera focal length.
 - **[GitHub Native Issue #26 Created — Compact Bottom Dock Height to Eliminate Dead Space and Maximize Viewport Canvas]**
   - **Issue #26 Link:** https://github.com/joker0210G/spherex-hunter/issues/26
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
