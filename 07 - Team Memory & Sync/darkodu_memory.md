@@ -30,6 +30,15 @@
 - [x] Verified and completed Seamless Near-Image Viewport Streaming & Zero Black Space (`TASK-005`): Validated multi-ring offset streaming (`col=+1, row=0`, `col=0, row=+1`, `col=-1, row=-1`, `col=+2, row=+2`) across LODs 0, 1, and 2. Ensures zero black space and zero reflection with median cosmic flux padding and coordinate-seeded authentic starlight. Verified via 8th diagnostic test suite in `backend/test_diagnostics.py`.
 - [x] Analyzed and eliminated mirrored sky reflections (`TASK-004`): When offset queries exceed authentic benchmark FITS bounds, cutout_engine queries authentic surrounding fields via NASA IRSA or coordinate-seeded unique fields. Removed symmetric reflection padding and replaced with median cosmic sky flux.
 - [x] Fixed ZeroDivisionError in `backend/services/cutout_engine.py` (`load_real_fits_cutout`): implemented dynamic symmetric padding based on offset RA/Dec coordinates so near-tile queries return valid FITS cutouts and difference images across all LODs without boundary exceptions (`TASK-003`).
+- [x] Delivered SPHEREx Hunter Observatory Frontend Redesign (`frontend/index.html`):
+  - Fixed crowded top bar by replacing 12+ cluttered inputs with a clean 48px header: animated branding, segmented view mode control (`Blink`, `Diff`, `Spectra`, `Aladin`), command palette search (`Ctrl+K`), quick target presets, and compact coordinates popover (`RA/Dec/FOV`).
+  - Implemented 4-Tab Inspector Sidebar (384px): `Layers` (preserving data-driven Scene Collection), `Target` (ICRS astrometry, proper motion, distance, $T_{\text{eff}}$, SIMBAD, WiseView), `Candidates` (discovered sources, evidence tiers, CSV export), `Photometry` (SPHEREx 6-detector arrays with responsive grid and NEOSSat status).
+  - Implemented 3-Tab Bottom Dock: `Timeline` (flipbook scrubber with multi-epoch ticks), `Spectrum` (102-band infrared curve with molecular absorption markers), `Light Curve` (photometric time-series), plus collapsible 36px status bar.
+  - Implemented Left Tool Rail (56px) with visible tooltips and shortcut hints (`Select`, `Pan`, `Dist`, `Flip`, `Gaia`, `Center`, `1:1`, `Walk`, `Full`, `Sound`).
+  - Added Beginner vs Scientist user mode toggle persisted in `localStorage`.
+  - Added URL hash permalink synchronization (`#target=wise0855&mode=blink&frame=1`).
+  - Preserved 100% of underlying scientific data, state objects (`window.scene`), WCS calculations, and API routes.
+  - Added comprehensive E2E test suite (`tests/test_redesign_e2e.py`) - 11/11 Playwright browser tests passing, all unit tests passing, ruff check 100% clean.
 - [x] Upgraded Citizen Science Discovery Pipeline (`/api/flag`):
   - Added unique candidate ID generation (`SPX-2026-XXXX`) and real ISO UTC timestamps.
   - Automated scientific validation: cross-matches every candidate on ingestion against Gaia DR3, 2MASS, and SIMBAD to evaluate Planet X / Brown Dwarf criteria.

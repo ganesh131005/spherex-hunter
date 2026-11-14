@@ -12,6 +12,7 @@ Phase 2.9 Enhancements:
 
 import csv
 import os
+
 import matplotlib
 import numpy as np
 import pyvo as vo
@@ -74,8 +75,8 @@ def run_false_positive_audit():
     center = w1.pixel_to_world(cx, cy)
     tap = vo.dal.TAPService("https://irsa.ipac.caltech.edu/TAP")
     q = f"""
-    SELECT source_id, ra, dec, phot_g_mean_mag 
-    FROM gaia_dr3_source 
+    SELECT source_id, ra, dec, phot_g_mean_mag
+    FROM gaia_dr3_source
     WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {center.ra.deg}, {center.dec.deg}, 1.2))
       AND phot_g_mean_mag < 16.0
     """
@@ -119,8 +120,8 @@ def run_false_positive_audit():
             for s in gaia_table:
                 g = float(s["phot_g_mean_mag"]) if s["phot_g_mean_mag"] is not None else 15.0
                 rad_arcsec = 8.0 * scale_arcsec if g <= 11.0 else (5.0 * scale_arcsec if g <= 13.0 else (3.0 * scale_arcsec if g <= 15.0 else 1.5 * scale_arcsec))
-                from astropy.coordinates import SkyCoord
                 import astropy.units as u
+                from astropy.coordinates import SkyCoord
                 dist = c_sky.separation(SkyCoord(float(s["ra"]) * u.deg, float(s["dec"]) * u.deg)).arcsec
                 if dist <= rad_arcsec:
                     in_star = True

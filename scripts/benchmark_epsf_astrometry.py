@@ -3,13 +3,13 @@ Benchmark Astrometry using 2D EPSF fitting vs Center-of-Mass on real SPHEREx dat
 Checks dependence on detector radius and wavelength across the LVF.
 """
 
-from astropy.io import fits
-from astropy.wcs import WCS
-from astropy.coordinates import SkyCoord
 import astropy.units as u
-from astropy.time import Time
 import numpy as np
 import pyvo as vo
+from astropy.coordinates import SkyCoord
+from astropy.io import fits
+from astropy.time import Time
+from astropy.wcs import WCS
 from scipy.optimize import minimize
 
 with fits.open("data_samples/spherex_level2_sample.fits") as h:
@@ -24,8 +24,8 @@ with fits.open("data_samples/spectral_wcs_sample.fits") as h_swcs:
 center_coord = wcs.pixel_to_world(1020, 1020)
 tap = vo.dal.TAPService("https://irsa.ipac.caltech.edu/TAP")
 q = f"""
-SELECT TOP 50 source_id, ra, dec, pmra, pmdec, phot_g_mean_mag 
-FROM gaia_dr3_source 
+SELECT TOP 50 source_id, ra, dec, pmra, pmdec, phot_g_mean_mag
+FROM gaia_dr3_source
 WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {center_coord.ra.deg}, {center_coord.dec.deg}, 0.3))
   AND phot_g_mean_mag BETWEEN 11.0 AND 14.0
   AND pmra IS NOT NULL AND pmdec IS NOT NULL
@@ -41,17 +41,17 @@ def fit_epsf_centroid(patch: np.ndarray) -> tuple[float, float]:
     h_p, w_p = patch.shape
     cy, cx = h_p / 2.0, w_p / 2.0
     yy, xx = np.mgrid[0:h_p, 0:w_p]
-    
+
     # Initial guess
     bg0 = np.percentile(patch, 15)
     amp0 = max(0.1, np.max(patch) - bg0)
-    
+
     def loss(p):
         amp, x0, y0, bg = p
         r2 = (xx - x0)**2 + (yy - y0)**2
         model = bg + amp * np.exp(-0.5 * r2 / (sig_epsf**2))
         return np.sum((patch - model)**2)
-    
+
     res_fit = minimize(loss, [amp0, cx, cy, bg0], bounds=[(0, None), (1, w_p-2), (1, h_p-2), (None, None)], method="L-BFGS-B")
     return float(res_fit.x[1]), float(res_fit.x[2])
 

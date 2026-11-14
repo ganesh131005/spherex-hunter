@@ -8,12 +8,12 @@ Target: WISE 0855-0714 (T ~ 250K cold brown dwarf)
 Literature: Luhman (2014, ApJ 786, L18), Kirkpatrick et al. (2021, ApJS 253, 7)
 """
 
-from astropy.io import fits
-from astropy.wcs import WCS
-from astropy.coordinates import SkyCoord
-from astropy.time import Time
 import astropy.units as u
 import numpy as np
+from astropy.coordinates import SkyCoord
+from astropy.io import fits
+from astropy.time import Time
+from astropy.wcs import WCS
 
 FITS_PATH = "data_samples/wise0855_spherex_d6.fits"
 
@@ -43,7 +43,7 @@ x_pred, y_pred = wcs.world_to_pixel(sc_prop)
 x_pred, y_pred = float(x_pred), float(y_pred)
 
 print("="*70)
-print(f"WISE 0855-0714 In-Flight Forced Photometry Benchmark")
+print("WISE 0855-0714 In-Flight Forced Photometry Benchmark")
 print(f"Exposure: {header.get('OBSID', '2025W46_1A_0238_2D6')}, Detector: {header.get('DETECTOR', 6)}")
 print(f"Observation Time: {obs_time.iso} (MJD {mjd_obs:.5f})")
 print(f"Baseline since 2010: {obs_time.decimalyear - 2010.0:.2f} years")
@@ -51,7 +51,8 @@ print(f"Predicted Celestial Coordinates: RA = {sc_prop.ra.deg:.5f}°, Dec = {sc_
 print(f"Detector Pixel Coordinates: x = {x_pred:.2f}, y = {y_pred:.2f} (in 2040x2040 array)")
 
 # Pixel scale and conversion
-from backend.science.preprocessing import compute_pixel_solid_angle_sr, MJY_SR_TO_UJY_SR
+from backend.science.preprocessing import MJY_SR_TO_UJY_SR, compute_pixel_solid_angle_sr
+
 pix_scale, omega_sr = compute_pixel_solid_angle_sr(wcs)
 conv_factor = omega_sr * MJY_SR_TO_UJY_SR
 
@@ -82,7 +83,7 @@ snr = f_hat / sigma_f
 
 m_ab = 23.9 - 2.5 * np.log10(max(1e-4, f_hat)) if f_hat > 0 else 99.0
 
-print(f"\nTarget Photometry at Predicted Position:")
+print("\nTarget Photometry at Predicted Position:")
 print(f"  Extracted Flux:       {f_hat:.2f} ± {sigma_f:.2f} µJy")
 print(f"  Calibrated AB Mag:    {m_ab:.2f} mag")
 print(f"  Detection SNR:        {snr:.2f} σ")
@@ -99,7 +100,7 @@ if denom > 0:
     print(f"  Positional Offset:    {pos_offset_arcsec:.2f}\" ({pos_offset_pix:.2f} pixels)")
 
 # Control Positions (4 blank sky positions 30" away)
-print(f"\nControl Positions (Blank Sky Offset 30\" N/S/E/W):")
+print("\nControl Positions (Blank Sky Offset 30\" N/S/E/W):")
 offsets = [(0, 30.0/pix_scale), (0, -30.0/pix_scale), (30.0/pix_scale, 0), (-30.0/pix_scale, 0)]
 control_snrs = []
 for idx, (dx, dy) in enumerate(offsets):

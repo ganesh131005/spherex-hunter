@@ -94,6 +94,13 @@
 - **[FastAPI Live Server Active on Port 8000]** Backend daemon running on `http://localhost:8000`:
   - Verified live endpoints: `/api/health`, `/api/targets`, `/api/cutout`, `/api/spectrum`, `/api/discoveries`, and interactive Swagger docs at `/docs`.
   - Static frontend mounted and accessible directly at `http://localhost:8000/app/`.
+- **[Deep Space Observatory Frontend Redesign Delivered & Verified Live]** Completely redesigned the SPHEREx Hunter user interface:
+  - **48px Compact Top Bar:** Replaced cluttered 12+ inputs with a sleek navigation header featuring an animated logo, view mode switcher (`Blink`, `Diff`, `Spectra`, `Aladin`), command palette (`Ctrl+K`), quick target presets, and compact `Coordinates` popover.
+  - **4-Tab Inspector Sidebar (384px):** Structured into `Layers` (preserving the data-driven Scene Collection), `Target` (ICRS coords, proper motion, distance, $T_{\text{eff}}$, SIMBAD, WiseView), `Candidates` (discovered sources, evidence tiers, CSV export), and `Photometry` (SPHEREx 6-detector arrays with responsive grid and NEOSSat status).
+  - **3-Tab Bottom Dock (Collapsible):** Multi-epoch flipbook `Timeline` with interactive scrubber ticks, `102-Band Spectrum` with molecular band indicators, and `Light Curve` time-series chart; collapses down to a sleek 36px status bar.
+  - **56px Left Tool Rail:** Added icons with visible tooltips and shortcut keys (`Select`, `Pan`, `Dist`, `Flip`, `Gaia`, `Center`, `1:1`, `Walk`, `Full`, `Sound`).
+  - **Ergonomics & Ergonomic Controls:** Added Beginner vs Scientist user mode toggle (persisted in `localStorage`), URL hash permalink synchronization (`#target=wise0855&mode=blink&frame=1`), and first-visit guided tour banner.
+  - **Full Test Suite & Linter Passing:** 11/11 Playwright E2E browser tests passing, 43 unit tests passing, ruff linter 100% clean.
 - **[Continuous Optical Telescope Zoom & Local Aladin Sky Live]** Implemented the ESA/Hubble Andromeda Galaxy zoom engine ([YouTube: TijClV4uHIk](https://youtu.be/TijClV4uHIk)) and resolved the Aladin Sky black screen:
   - **Optical Zoom Engine:** Completely retired disjoint multi-tile checkerboard pasting. All resolution tiers (LOD 2 Wide Overview 8.0', LOD 1 Science 3.0', LOD 0 Deep Core 1.5') are anchored to the physical celestial coordinate center with sub-pixel alignment, bilinear filtering, and 150ms alpha cross-fade. Verified zero seam lines, zero duplicated stars, and zero gray boxes.
   - **Local Aladin Lite Vendor:** Vendored `aladin.js` locally in `frontend/vendor/` served via `/app/vendor/aladin.js` as an ES module with `A.init.then(...)` lifecycle. Eliminates external CDN 404s and browser ORB blocks; interactive Aladin Lite sky map initializes with active magenta reticle and coordinate telemetry.
