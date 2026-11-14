@@ -160,31 +160,52 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
                       "status": "pending",
                       "evidence": "Open WiseView, blink W1+W2, and confirm the source moves consistently across all epochs."})
 
-    # ---------------------------------------------------------------- Verdict
+    # ---------------------------------------------------------------- Verdict & Evidence Tier
     is_dipole = motion.get("transient_type") == "PROPER_MOTION_DIPOLE"
-    # Benchmark targets or infrared-only candidates (like WISE 0855) without optical counterparts
-    is_infrared_exclusive_benchmark = target_key == "wise0855" or (isinstance(target_key, str) and "wise" in target_key.lower())
     if sso_match:
-        verdict, verdict_text = "KNOWN_ASTEROID", f"Known Solar System object ({sso_match['name']}). Not Planet X."
+        evidence_tier = "KNOWN_SOLAR_SYSTEM_OBJECT"
+        verdict = "KNOWN_ASTEROID"
+        verdict_text = f"Catalogued Solar System body ({sso_match['name']}). Tagged as KNOWN_SOLAR_SYSTEM_OBJECT."
     elif gaia_match and (gaia_match.get("total_pm_mas_yr") or 0) >= 100:
-        verdict, verdict_text = "KNOWN_HIGH_PM_STAR", f"Catalogued high proper-motion star (Gaia DR3 {gaia_match['source_id']})."
+        evidence_tier = "KNOWN_STELLAR_OR_BROWN_DWARF"
+        verdict = "KNOWN_HIGH_PM_STAR"
+        verdict_text = f"Catalogued high proper-motion star (Gaia DR3 {gaia_match['source_id']})."
     elif gaia_match:
-        verdict, verdict_text = "STATIC_OPTICAL_STAR", "Static optical star with a Gaia DR3 counterpart."
-    elif is_dipole or is_infrared_exclusive_benchmark or (w1w2 is not None and w1w2 >= 1.5):
-        verdict, verdict_text = "PLANET_X_CANDIDATE", ("Infrared-only object with no Gaia DR3 counterpart and no known "
-                                                         "asteroid match. Confirm motion in WiseView, then flag it!")
+        evidence_tier = "KNOWN_STELLAR_OR_BROWN_DWARF"
+        verdict = "STATIC_OPTICAL_STAR"
+        verdict_text = "Static optical star with a confirmed Gaia DR3 counterpart."
+    elif is_dipole:
+        evidence_tier = "UNKNOWN_RAPID_MOVER"
+        verdict = "CANDIDATE_RAPID_MOVER"
+        verdict_text = ("Infrared motion dipole with optical dropout and no known asteroid match. "
+                        "Candidate, not confirmed. Independent visual confirmation in WiseView recommended.")
+    elif w1w2 is not None and w1w2 >= 1.5:
+        evidence_tier = "SLOW_INFRARED_EXCESS"
+        verdict = "CANDIDATE_INFRARED_EXCESS"
+        verdict_text = ("Infrared-excess source (W1-W2 >= 1.5 mag) with optical dropout. "
+                        "Candidate, not confirmed. Independent verification recommended.")
     else:
-        verdict, verdict_text = "INCONCLUSIVE", "No optical counterpart, but no motion signature yet. Inspect in WiseView."
+        evidence_tier = "INCONCLUSIVE"
+        verdict = "INCONCLUSIVE"
+        verdict_text = "No optical counterpart, but no confirmed motion dipole. Inconclusive observational evidence."
 
-    passed = sum(1 for c in checklist if c["status"] == "pass")
-    scored = sum(1 for c in checklist if c["status"] in ("pass", "fail", "warn"))
+    passed_checks = [c["id"] for c in checklist if c["status"] == "pass"]
+    failed_checks = [c["id"] for c in checklist if c["status"] == "fail"]
+    pending_checks = [c["id"] for c in checklist if c["status"] in ("pending", "warn", "na")]
 
     return {
         "status": "success",
         "coordinates": {"ra_deg": round(ra, 6), "dec_deg": round(dec, 6), "fov_arcmin": fov_arcmin},
         "verdict": verdict,
         "verdict_text": verdict_text,
-        "score": {"passed": passed, "scored": scored},
+        "evidence_tier": evidence_tier,
+        "evidence_summary": verdict_text,
+        "candidate_status": "Candidate, not confirmed" if evidence_tier in ("UNKNOWN_RAPID_MOVER", "SLOW_INFRARED_EXCESS") else "CATALOG_VERIFIED",
+        "checklist_summary": {
+            "passed": passed_checks,
+            "failed": failed_checks,
+            "pending": pending_checks,
+        },
         "checklist": checklist,
         "gaia_match": gaia_match,
         "sso_match": sso_match,

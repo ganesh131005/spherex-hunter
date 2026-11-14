@@ -108,5 +108,17 @@
       "spectral_classification": "K1-K4Ve",
       "verification_status": "CONFIRMED_VARIABLE"
     }
+  },
+  {
+    "candidate_id": "SPX-2026-98F2F2",
+    "target_id": "sample_leo",
+    "target_name": "Technical Validation Field (SPHEREx D6 Flight Pair)",
+    "ra": 160.605,
+    "dec": 30.702,
+    "object_type": "mover",
+    "category": "mover",
+    "user_handle": "@pytest_runner",
+    "notes": "Fast-moving candidate tracklet test",
+    "timestamp": "2026-11-14T18:39:08.489533+00:00"
   }
 ]

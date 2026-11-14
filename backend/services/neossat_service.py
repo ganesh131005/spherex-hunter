@@ -313,12 +313,12 @@ def build_neossat_tracking_report(ra: float, dec: float, fov_arcmin: float = 3.0
         verdict_text = "Known-asteroid check could not be completed (SkyBoT unreachable)."
     elif nearest and nearest["offset_arcsec"] <= match_radius_arcsec:
         verdict = "KNOWN_SOLAR_SYSTEM_OBJECT"
-        verdict_text = (f"Field centre matches known {nearest['object_class']} '{nearest['name']}' "
-                        f"({nearest['offset_arcsec']}\" away, V={nearest['v_mag']}). Reject as Planet X candidate.")
+        verdict_text = (f"Field centre matches catalogued Solar System body {nearest['object_class']} '{nearest['name']}' "
+                        f"({nearest['offset_arcsec']}\" separation, V={nearest['v_mag']}). Candidate, not confirmed as novel source.")
     else:
         verdict = "NO_KNOWN_SSO_MATCH"
-        verdict_text = (f"No known asteroid or comet within {match_radius_arcsec:.0f}\" of the field centre "
-                        f"({sso['count']} known SSOs elsewhere in the {search_radius_arcmin:.1f}' search cone).")
+        verdict_text = (f"No known asteroid or comet within {match_radius_arcsec:.0f}\" of field centre "
+                        f"({sso['count']} known SSOs elsewhere in the {search_radius_arcmin:.1f}' search cone). Candidate, not confirmed.")
 
     return {
         "status": "success",
