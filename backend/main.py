@@ -64,6 +64,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+_FALLBACK_HIPS_JPEG_BYTES: Optional[bytes] = None
+
+
+def _get_fallback_hips_jpeg_bytes() -> bytes:
+    """Builds and caches a 64x64 dark-space JPEG tile for local Aladin HiPS fallback probes."""
+    global _FALLBACK_HIPS_JPEG_BYTES
+    if _FALLBACK_HIPS_JPEG_BYTES is None:
+        from PIL import Image
+        buf = io.BytesIO()
+        Image.new("RGB", (64, 64), (6, 10, 18)).save(buf, format="JPEG")
+        _FALLBACK_HIPS_JPEG_BYTES = buf.getvalue()
+    return _FALLBACK_HIPS_JPEG_BYTES
+
+
 # Serve CDS HiPS properties descriptor cleanly so relative Aladin fallback probes return HTTP 200
 @app.get("/app/P/DSS2/color/properties")
 def get_dss2_hips_properties():
@@ -79,6 +93,12 @@ def get_dss2_hips_properties():
         ),
         media_type="text/plain",
     )
+
+
+@app.get("/app/P/DSS2/color/{tile_path:path}")
+def get_dss2_hips_fallback_tile(tile_path: str):
+    """Serves a clean dark-space JPEG fallback tile so Aladin HiPS local probes never 404."""
+    return Response(content=_get_fallback_hips_jpeg_bytes(), media_type="image/jpeg")
 
 
 # Mount frontend directory for same-origin browsing
