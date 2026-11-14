@@ -4,6 +4,7 @@ Validates GitHub Issue #7: 6-Array Selector, 17-Wavelength Stepper & SED Visuali
 """
 
 from fastapi.testclient import TestClient
+
 from backend.main import app
 
 client = TestClient(app)

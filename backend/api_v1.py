@@ -22,22 +22,18 @@ from typing import Any, Dict, List, Optional
 import astropy.units as u
 import numpy as np
 from astropy.coordinates import SkyCoord
-from astropy.io import fits
 from astropy.table import Table
 from astropy.time import Time
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Query, Request, Response
 from fastapi.responses import JSONResponse
 
 from backend.models_v1 import (
     ArchiveReachability,
     BandPhotometry,
-    CapabilitiesResponse,
-    CandidateItem,
     CandidatesResponse,
+    CapabilitiesResponse,
     CutoutRawHeaderResponse,
-    DifferenceEpoch,
     DifferenceResponse,
-    ExposureItem,
     ExposuresResponse,
     FeatureCapability,
     FlagCandidateRequest,
@@ -67,14 +63,12 @@ from backend.services.catalog_engine import (
 )
 from backend.services.csa_neossat_service import query_csa_neossat
 from backend.services.cutout_engine import (
-    BENCHMARKS,
-    clear_all_caches,
     fetch_real_cutout,
     get_102_band_spectrum,
     get_cache_stats,
 )
 from backend.services.gaia_service import query_gaia_dr3
-from backend.utils.validation import sanitize_target_name, validate_coordinates
+from backend.utils.validation import sanitize_target_name
 
 router = APIRouter(prefix="/api/v1", tags=["v1"])
 

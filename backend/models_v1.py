@@ -10,8 +10,8 @@ Provides strictly typed, validated models for:
 - Dynamic scientific validation metrics and citizen science candidate tracking
 """
 
-from datetime import datetime, timezone
-from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, TypeVar
+
 from pydantic import BaseModel, ConfigDict, Field
 
 T = TypeVar("T")

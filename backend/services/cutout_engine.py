@@ -13,6 +13,7 @@ import base64
 import io
 import os
 import time
+from typing import Optional
 
 import numpy as np
 from astropy.visualization import AsinhStretch
@@ -708,7 +709,6 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     through the exact same authentic FITS retrieval, WCS alignment, difference imaging,
     and multi-tier cache.
     """
-    import time
     t0 = time.time()
 
     cache_key = f"{round(ra, 4)}_{round(dec, 4)}_{round(fov_arcmin, 1)}_{lod}"

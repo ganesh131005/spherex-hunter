@@ -21,9 +21,9 @@ from typing import Optional
 
 from backend.services.gaia_service import query_gaia_dr3
 from backend.services.neossat_service import (
-    query_known_solar_system_objects,
-    build_portal_links,
     angular_sep_arcsec,
+    build_portal_links,
+    query_known_solar_system_objects,
 )
 
 GAIA_REF_EPOCH = 2016.0
