@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #15 Created — Fix Gaia DR3 Blue Overlay Projection Mismatch & FOV Scale Discrepancy]**
+  - **Issue #15 Link:** https://github.com/joker0210G/spherex-hunter/issues/15
+  - **Track:** `image-math` | **Role:** `@iceodu` (Collaborating with `@coolodu` on canvas WCS projection) | **Resource:** `resource:compute-heavy`
+  - **Scope:** Solves the spatial drift and inaccurate placement of the cyan/blue Gaia DR3 reticles and proper motion vectors. Root causes addressed: (1) dynamic `pixelsPerArcmin` calibrated against actual active image FOV, (2) WCS gnomonic (TAN) coordinate projection, and (3) temporal proper motion epoch back-propagation ($2016.0 \to 1999.0 / 1985.0$) so markers lock onto authentic stellar cores across all zoom levels and LOD tiers.
 - **[GitHub Native Issue #14 Created — User-Friendly Inspector Panel with Clear Sections, Plain English & Interactive Summaries]**
   - **Issue #14 Link:** https://github.com/joker0210G/spherex-hunter/issues/14
   - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu` for frontend component styling) | **Resource:** `resource:standard`
