@@ -355,7 +355,7 @@
   <div class="flex-1 flex overflow-hidden relative">
 
     <!-- LEFT TOOL RAIL (56px / w-14) -->
-    <aside class="w-14 bg-space-900 border-r border-space-700 flex flex-col items-center py-2 gap-2 z-20 shrink-0 select-none text-[10px]">
+    <aside class="w-14 bg-space-900 border-r border-space-700 flex flex-col items-center py-2 gap-2 z-30 shrink-0 select-none text-[10px] overflow-visible">
 
       <!-- Select / Inspect Tool -->
       <button id="toolSelect" class="w-10 h-10 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Inspect / Reticle Target (V)">
@@ -562,6 +562,9 @@
         </div>
       </div>
     </main>
+
+    <!-- DRAGGABLE SIDE PANEL RESIZE SPLITTER (Issue #16) -->
+    <div id="sidePanelSplitter" class="w-1.5 hover:w-2 bg-space-800 hover:bg-cyan-500/80 cursor-col-resize z-20 transition-all select-none relative -mr-1" title="Drag horizontally to resize panel (Double-click to reset)"></div>
 
     <!-- RIGHT INSPECTOR (380px, Data-Driven Tabbed Interface) -->
     <aside id="propertiesSidebar" class="w-96 bg-space-900 border-l border-space-700 flex flex-col shrink-0 min-h-0 z-20 text-xs select-none shadow-xl" role="region" aria-label="Scene Collection and Layer Manager">
@@ -813,6 +816,9 @@
   <!-- 3. BOTTOM OBSERVATORY DOCK (Resizable & Collapsible)                      -->
   <!-- ========================================================================= -->
   <footer id="bottomDock" class="bg-space-900 border-t border-space-700 flex flex-col shrink-0 z-30 shadow-2xl transition-all duration-200">
+
+    <!-- DRAGGABLE BOTTOM DOCK RESIZE SPLITTER (Issue #16) -->
+    <div id="bottomDockSplitter" class="h-1.5 hover:h-2 bg-space-800 hover:bg-amber-500/80 cursor-row-resize z-30 transition-all select-none w-full" title="Drag vertically to resize dock (Double-click to reset)"></div>
 
     <!-- Dock Header & Tab Bar -->
     <div class="h-9 px-3 bg-space-850 border-b border-space-700 flex items-center justify-between text-xs shrink-0 select-none">
@@ -2268,6 +2274,9 @@
         drawAdjacentSkyTiling(ctx, pixelsPerArcmin, currentTileFov);
       }
 
+      // 6. Issue #17: Interactive Arcsecond Distance Ruler (Dist Mode)
+      drawMeasurementRuler(ctx, pixelsPerArcmin);
+
       ctx.restore();
     }
 
@@ -2306,6 +2315,103 @@
         ctx.font = '9px monospace';
         ctx.fillText(`${tileRA}°, ${tileDec}°`, x0 + 8, y0 + 16);
       });
+
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // INTERACTIVE DISTANCE RULER ENGINE (Issue #17)
+    // =========================================================================
+    let currentTool = 'select'; // 'select' | 'pan' | 'measure'
+    let measureStartWorld = null;
+    let measureEndWorld = null;
+    let isMeasuring = false;
+
+    function drawMeasurementRuler(ctx, pixelsPerArcmin) {
+      if (!measureStartWorld || !measureEndWorld) return;
+
+      const p1 = measureStartWorld;
+      const p2 = measureEndWorld;
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const distPx = Math.sqrt(dx * dx + dy * dy);
+      if (distPx < 1.5) return;
+
+      const distArcmin = distPx / pixelsPerArcmin;
+      const distArcsec = distArcmin * 60.0;
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+      const draArcsec = (Math.abs(dx) / pixelsPerArcmin) * 60.0 * cosDec;
+      const ddecArcsec = (Math.abs(dy) / pixelsPerArcmin) * 60.0;
+
+      ctx.save();
+
+      // Shadow for high contrast over bright starfields
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.lineWidth = 3.5 / camera.zoom;
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      // Dashed measurement caliper
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 1.8 / camera.zoom;
+      ctx.setLineDash([6 / camera.zoom, 4 / camera.zoom]);
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Endpoint crosshairs
+      const tick = 6 / camera.zoom;
+      [p1, p2].forEach((p, idx) => {
+        ctx.strokeStyle = idx === 0 ? '#38bdf8' : '#fb923c';
+        ctx.lineWidth = 2 / camera.zoom;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4 / camera.zoom, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1 / camera.zoom;
+        ctx.beginPath();
+        ctx.moveTo(p.x - tick, p.y);
+        ctx.lineTo(p.x + tick, p.y);
+        ctx.moveTo(p.x, p.y - tick);
+        ctx.lineTo(p.x, p.y + tick);
+        ctx.stroke();
+      });
+
+      // Floating Measurement Pill
+      const mx = (p1.x + p2.x) / 2;
+      const my = (p1.y + p2.y) / 2;
+      const labelText = distArcsec < 60.0 
+        ? `${distArcsec.toFixed(1)}" (Δα:${draArcsec.toFixed(1)}", Δδ:${ddecArcsec.toFixed(1)}")`
+        : `${distArcmin.toFixed(2)}' (${distArcsec.toFixed(0)}")`;
+
+      ctx.font = `bold ${Math.max(10, 11 / camera.zoom)}px monospace`;
+      const textMetrics = ctx.measureText(labelText);
+      const padX = 8 / camera.zoom;
+      const padY = 4 / camera.zoom;
+      const pillW = textMetrics.width + padX * 2;
+      const pillH = (14 / camera.zoom) + padY * 2;
+
+      ctx.fillStyle = 'rgba(6, 8, 14, 0.94)';
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 1.2 / camera.zoom;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(mx - pillW / 2, my - pillH - (8 / camera.zoom), pillW, pillH, 4 / camera.zoom);
+      } else {
+        ctx.rect(mx - pillW / 2, my - pillH - (8 / camera.zoom), pillW, pillH);
+      }
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labelText, mx, my - pillH / 2 - (8 / camera.zoom));
 
       ctx.restore();
     }
@@ -3644,27 +3750,221 @@
       drawFrame();
     });
 
-    // Mouse drag / pan handling
+    // =========================================================================
+    // TOOLBAR TOOL MODE CONTROLS (Issue #17)
+    // =========================================================================
+    const toolSelect = document.getElementById('toolSelect');
+    const toolPan = document.getElementById('toolPan');
+    const toolMeasure = document.getElementById('toolMeasure');
+    const toolBlinkFlip = document.getElementById('toolBlinkFlip');
+    const toolFullscreen = document.getElementById('toolFullscreen');
+
+    function setCanvasTool(tool) {
+      currentTool = tool;
+      [toolSelect, toolPan, toolMeasure].forEach(btn => {
+        if (btn) btn.classList.remove('blender-btn-active');
+      });
+      if (tool === 'select' && toolSelect) {
+        toolSelect.classList.add('blender-btn-active');
+        viewportContainer.style.cursor = 'crosshair';
+      } else if (tool === 'pan' && toolPan) {
+        toolPan.classList.add('blender-btn-active');
+        viewportContainer.style.cursor = 'grab';
+      } else if (tool === 'measure' && toolMeasure) {
+        toolMeasure.classList.add('blender-btn-active');
+        viewportContainer.style.cursor = 'crosshair';
+      }
+    }
+
+    if (toolSelect) toolSelect.addEventListener('click', () => setCanvasTool('select'));
+    if (toolPan) toolPan.addEventListener('click', () => setCanvasTool('pan'));
+    if (toolMeasure) toolMeasure.addEventListener('click', () => setCanvasTool('measure'));
+
+    // Issue #18: Action Tools (Flip & Fullscreen)
+    if (toolBlinkFlip) {
+      toolBlinkFlip.addEventListener('click', () => {
+        if (diffMode) toggleDifferenceMode();
+        const btnFwd = document.getElementById('btnStepFwd');
+        if (btnFwd) btnFwd.click();
+        toolBlinkFlip.classList.add('blender-btn-orange-active');
+        setTimeout(() => toolBlinkFlip.classList.remove('blender-btn-orange-active'), 200);
+      });
+    }
+
+    if (toolFullscreen) {
+      toolFullscreen.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+      document.addEventListener('fullscreenchange', () => {
+        const isFull = !!document.fullscreenElement;
+        toolFullscreen.classList.toggle('blender-btn-active', isFull);
+        const icon = toolFullscreen.querySelector('i');
+        if (icon) {
+          icon.setAttribute('data-lucide', isFull ? 'minimize' : 'maximize');
+          if (window.lucide) lucide.createIcons();
+        }
+        resizeCanvas();
+      });
+    }
+
+    // =========================================================================
+    // DRAGGABLE RESIZE SPLITTERS (Issue #16)
+    // =========================================================================
+    const sidePanelSplitter = document.getElementById('sidePanelSplitter');
+    const propertiesSidebar = document.getElementById('propertiesSidebar');
+    let isResizingSidebar = false;
+
+    if (sidePanelSplitter && propertiesSidebar) {
+      const savedWidth = localStorage.getItem('spherex_sidebar_width');
+      if (savedWidth) {
+        const w = parseInt(savedWidth, 10);
+        if (w >= 260 && w <= 650) {
+          propertiesSidebar.style.width = w + 'px';
+          propertiesSidebar.classList.remove('w-96');
+        }
+      }
+
+      sidePanelSplitter.addEventListener('pointerdown', (e) => {
+        isResizingSidebar = true;
+        sidePanelSplitter.setPointerCapture(e.pointerId);
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'col-resize';
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (!isResizingSidebar) return;
+        const newWidth = Math.max(260, Math.min(650, window.innerWidth - e.clientX));
+        propertiesSidebar.style.width = newWidth + 'px';
+        propertiesSidebar.classList.remove('w-96');
+        resizeCanvas();
+        if (window.specChart && typeof window.specChart.resize === 'function') {
+          window.specChart.resize();
+        }
+      });
+
+      window.addEventListener('pointerup', () => {
+        if (isResizingSidebar) {
+          isResizingSidebar = false;
+          document.body.style.userSelect = '';
+          document.body.style.cursor = '';
+          localStorage.setItem('spherex_sidebar_width', propertiesSidebar.offsetWidth);
+        }
+      });
+
+      sidePanelSplitter.addEventListener('dblclick', () => {
+        propertiesSidebar.style.width = '384px';
+        propertiesSidebar.classList.add('w-96');
+        localStorage.removeItem('spherex_sidebar_width');
+        resizeCanvas();
+      });
+    }
+
+    const bottomDockSplitter = document.getElementById('bottomDockSplitter');
+    const dockContentBody = document.getElementById('dockContentBody');
+    let isResizingDock = false;
+
+    if (bottomDockSplitter && dockContentBody) {
+      const savedHeight = localStorage.getItem('spherex_dock_height');
+      if (savedHeight) {
+        const h = parseInt(savedHeight, 10);
+        if (h >= 56 && h <= 450) {
+          dockContentBody.style.height = h + 'px';
+          dockContentBody.classList.remove('h-36');
+        }
+      }
+
+      bottomDockSplitter.addEventListener('pointerdown', (e) => {
+        isResizingDock = true;
+        bottomDockSplitter.setPointerCapture(e.pointerId);
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'row-resize';
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (!isResizingDock) return;
+        const windowH = window.innerHeight;
+        const newH = Math.max(56, Math.min(Math.floor(windowH * 0.55), windowH - e.clientY - 44));
+        dockContentBody.style.height = newH + 'px';
+        dockContentBody.classList.remove('h-36');
+        resizeCanvas();
+        if (window.specChart && typeof window.specChart.resize === 'function') {
+          window.specChart.resize();
+        }
+      });
+
+      window.addEventListener('pointerup', () => {
+        if (isResizingDock) {
+          isResizingDock = false;
+          document.body.style.userSelect = '';
+          document.body.style.cursor = '';
+          localStorage.setItem('spherex_dock_height', dockContentBody.offsetHeight);
+        }
+      });
+
+      bottomDockSplitter.addEventListener('dblclick', () => {
+        dockContentBody.style.height = '144px';
+        dockContentBody.classList.add('h-36');
+        localStorage.removeItem('spherex_dock_height');
+        resizeCanvas();
+      });
+    }
+
+    // Mouse drag / pan / ruler measurement handling
     let isDragging = false;
     let lastMouseX = 0;
     let lastMouseY = 0;
 
     canvas.addEventListener('mousedown', (e) => {
       if (e.button === 0) { // Left click
-        isDragging = true;
-        lastMouseX = e.clientX;
-        lastMouseY = e.clientY;
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const wx = (px - (canvas.width / 2 + camera.panX)) / camera.zoom;
+        const wy = (py - (canvas.height / 2 + camera.panY)) / camera.zoom;
+
+        if (currentTool === 'measure') {
+          isMeasuring = true;
+          measureStartWorld = { x: wx, y: wy };
+          measureEndWorld = { x: wx, y: wy };
+          drawFrame();
+        } else {
+          isDragging = true;
+          lastMouseX = e.clientX;
+          lastMouseY = e.clientY;
+          if (currentTool === 'pan') {
+            viewportContainer.style.cursor = 'grabbing';
+          }
+        }
       }
     });
 
     window.addEventListener('mouseup', () => {
       if (isDragging) {
         isDragging = false;
+        if (currentTool === 'pan') {
+          viewportContainer.style.cursor = 'grab';
+        }
+      }
+      if (isMeasuring) {
+        isMeasuring = false;
+        drawFrame();
       }
     });
 
     window.addEventListener('mousemove', (e) => {
-      if (isWalkNav && document.pointerLockElement === canvas) {
+      if (isMeasuring) {
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const wx = (px - (canvas.width / 2 + camera.panX)) / camera.zoom;
+        const wy = (py - (canvas.height / 2 + camera.panY)) / camera.zoom;
+        measureEndWorld = { x: wx, y: wy };
+        drawFrame();
+      } else if (isWalkNav && document.pointerLockElement === canvas) {
         // Pointer Lock FPS Mode
         const sensitivity = 1.0;
         camera.panX -= e.movementX * sensitivity;
