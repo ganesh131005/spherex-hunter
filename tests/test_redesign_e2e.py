@@ -125,7 +125,7 @@ def test_bottom_dock_tabs_and_collapse(page):
     btn_collapse.click()
     time.sleep(0.5)
     height_expanded = page.locator("#dockContentBody").evaluate("el => el.style.height")
-    assert height_expanded == "112px"
+    assert height_expanded == "144px"
 
 def test_beginner_scientist_toggle(page):
     """Verify switching Beginner / Scientist mode updates the label and body class."""

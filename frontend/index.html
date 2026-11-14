@@ -59,7 +59,7 @@
   </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-    
+
     :root {
       --bg-deep: #070a11;
       --bg-panel: #0d111b;
@@ -155,7 +155,7 @@
   <!-- 1. TOP OBSERVATORY HEADER (48px / h-12)                                    -->
   <!-- ========================================================================= -->
   <header class="h-12 bg-space-900 border-b border-space-700 px-3 flex items-center justify-between z-30 shrink-0 text-xs gap-3 shadow-md">
-    
+
     <!-- Left: Branding & Workspace Mode Segmented Control -->
     <div class="flex items-center gap-3 shrink-0">
       <!-- App Brand -->
@@ -196,7 +196,7 @@
 
     <!-- Center: Curated Target Selector & Quick Search -->
     <div class="flex items-center gap-1.5 bg-space-950 p-1 px-2.5 rounded-lg border border-space-700 shadow-inner overflow-x-auto shrink min-w-0">
-      
+
       <!-- Command Palette / Target Switcher Button -->
       <button id="btnOpenCommandPalette" class="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-space-850 hover:bg-space-800 px-2 py-0.5 rounded border border-space-700 transition" title="Search targets and coordinates (Ctrl+K)">
         <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
@@ -218,7 +218,7 @@
 
     <!-- Right: Telemetry, Coordinates Popover, Primary Actions & Overflow -->
     <div class="flex items-center gap-2 shrink-0">
-      
+
       <!-- Compact Coordinates Popover Trigger -->
       <div class="relative">
         <button id="btnToggleCoordsPopover" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
@@ -301,7 +301,7 @@
 
     <!-- LEFT TOOL RAIL (56px / w-14) -->
     <aside class="w-14 bg-space-900 border-r border-space-700 flex flex-col items-center py-2 gap-2 z-20 shrink-0 select-none text-[10px]">
-      
+
       <!-- Select / Inspect Tool -->
       <button id="toolSelect" class="w-10 h-10 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Inspect / Reticle Target (V)">
         <i data-lucide="mouse-pointer" class="w-4 h-4 text-cyan-400"></i>
@@ -369,7 +369,7 @@
 
     <!-- CENTER OBSERVATORY VIEWPORT (Edge-to-Edge Pure Astronomy Canvas) -->
     <main class="flex-1 relative bg-[#070a11] overflow-hidden flex items-center justify-center cursor-crosshair" id="viewportContainer">
-      
+
       <!-- Primary Astronomical Canvas -->
       <canvas id="astroCanvas" class="w-full h-full block filter-grayscale"></canvas>
 
@@ -503,7 +503,7 @@
 
     <!-- RIGHT INSPECTOR (380px, Data-Driven Tabbed Interface) -->
     <aside id="propertiesSidebar" class="w-96 bg-space-900 border-l border-space-700 flex flex-col shrink-0 min-h-0 z-20 text-xs select-none shadow-xl" role="region" aria-label="Scene Collection and Layer Manager">
-      
+
       <!-- STICKY TAB HEADER -->
       <div class="px-2 pt-2 bg-space-850 border-b border-space-700 shrink-0 sticky top-0 z-30 shadow-sm">
         <div class="flex items-center justify-between pb-1.5 px-1">
@@ -542,7 +542,7 @@
 
       <!-- TAB PANEL 1: LAYERS (Scene Collection - Preserves exact state and tests) -->
       <div id="inspectorPanelLayers" class="flex-1 overflow-y-auto min-h-0 divide-y divide-space-700/60 p-1">
-        
+
         <!-- Filter Search Bar for Layers -->
         <div class="p-2">
           <div class="relative">
@@ -634,7 +634,7 @@
 
       <!-- TAB PANEL 3: CANDIDATES (Discovered Moving Sources & Evidence Tiers) -->
       <div id="inspectorPanelCandidates" class="hidden flex-1 overflow-y-auto min-h-0 p-3 space-y-3 font-mono text-xs">
-        
+
         <div class="flex items-center justify-between pb-1">
           <span class="font-bold text-white text-xs flex items-center gap-1.5">
             <i data-lucide="flag" class="w-3.5 h-3.5 text-amber-400"></i>
@@ -672,7 +672,7 @@
 
       <!-- TAB PANEL 4: PHOTOMETRY (SPHEREx 6-Detector Array Cards & NEOSSat) -->
       <div id="inspectorPanelPhotometry" class="hidden flex-1 overflow-y-auto min-h-0 p-3 space-y-3 font-mono text-xs">
-        
+
         <div class="flex items-center justify-between">
           <span class="font-bold text-white text-xs flex items-center gap-1.5">
             <i data-lucide="activity" class="w-3.5 h-3.5 text-cyan-400"></i>
@@ -736,10 +736,10 @@
   <!-- 3. BOTTOM OBSERVATORY DOCK (Resizable & Collapsible)                      -->
   <!-- ========================================================================= -->
   <footer id="bottomDock" class="bg-space-900 border-t border-space-700 flex flex-col shrink-0 z-30 shadow-2xl transition-all duration-200">
-    
+
     <!-- Dock Header & Tab Bar -->
     <div class="h-9 px-3 bg-space-850 border-b border-space-700 flex items-center justify-between text-xs shrink-0 select-none">
-      
+
       <!-- Dock Tabs -->
       <div class="flex items-center gap-1">
         <button id="dockTabTimeline" class="blender-btn blender-btn-active px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition">
@@ -768,11 +768,11 @@
     </div>
 
     <!-- Dock Content Body -->
-    <div id="dockContentBody" class="h-28 overflow-hidden transition-all duration-200">
-      
+    <div id="dockContentBody" class="h-36 overflow-hidden transition-all duration-200">
+
       <!-- PANEL 1: TIMELINE (Multi-Epoch Flipbook Controls) -->
       <div id="dockPanelTimeline" class="h-full px-4 flex items-center justify-between gap-4 font-mono text-xs">
-        
+
         <!-- Left: Playback VCR Transport Controls -->
         <div class="flex items-center gap-1 shrink-0">
           <button id="btnJumpStart" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Jump to First Frame (Shift + Left)">
@@ -858,7 +858,7 @@
   <!-- ========================================================================= -->
   <!-- 4. MODALS & OVERLAYS                                                      -->
   <!-- ========================================================================= -->
-  
+
   <!-- CITIZEN SCIENCE DISCOVERY MODAL -->
   <div id="flagModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
     <div class="bg-space-900 border border-space-700 rounded-xl max-w-md w-full p-5 shadow-2xl space-y-3 font-mono text-xs">
@@ -914,7 +914,7 @@
   <!-- NASA & CSA RESOURCES CODEX & PHASE 2 VALIDATION MODAL -->
   <div id="missionCodexModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
     <div class="bg-space-900 border border-space-700 rounded-xl max-w-2xl w-full p-5 shadow-2xl space-y-4 font-mono text-xs flex flex-col max-h-[85vh]">
-      
+
       <!-- Codex Header -->
       <div class="flex items-center justify-between border-b border-space-700 pb-3">
         <div class="flex items-center gap-2.5">
@@ -951,7 +951,7 @@
 
       <!-- Codex Body Content (Scrollable) -->
       <div class="flex-1 overflow-y-auto space-y-3 pr-1 text-gray-300 font-sans text-xs">
-        
+
         <!-- PANEL 1: NASA Missions -->
         <div id="codexPanelNASA" class="space-y-3">
           <div class="bg-space-950/70 p-3 rounded-lg border border-space-700 space-y-1.5">
@@ -1082,6 +1082,7 @@
   <!-- ========================================================================= -->
   <script>
 
+
     lucide.createIcons();
 
     const BACKEND_URL = (window.location.protocol.startsWith('http'))
@@ -1094,7 +1095,8 @@
         raDeg: 133.79513,
         decDeg: -7.24515,
         type: "Cold Y-Dwarf (Substellar)",
-        pm: "8.12 \"/yr",
+        pm: "8.149 \"/yr (8149 mas/yr)",
+        dist: "2.28 pc (7.43 ly)",
         temp: "~250 K",
         baseline: "26.2 Years (2MASS 1999 → SPHEREx 2025)"
       },
@@ -1103,7 +1105,8 @@
         raDeg: 269.45208,
         decDeg: 4.69339,
         type: "High Proper Motion Red Dwarf",
-        pm: "10.36 \"/yr",
+        pm: "10.36 \"/yr (10360 mas/yr)",
+        dist: "1.83 pc (5.96 ly)",
         temp: "~3130 K",
         baseline: "25.8 Years (2MASS 1999 → SPHEREx 2025)"
       },
@@ -1112,7 +1115,8 @@
         raDeg: 331.04379,
         decDeg: -56.78272,
         type: "Binary Brown Dwarf (T1+T6)",
-        pm: "4.70 \"/yr",
+        pm: "4.70 \"/yr (4700 mas/yr)",
+        dist: "3.64 pc (11.87 ly)",
         temp: "~1300 K",
         baseline: "26.5 Years (2MASS 1999 → SPHEREx 2025)"
       },
@@ -1121,7 +1125,8 @@
         raDeg: 76.95642,
         decDeg: 30.40142,
         type: "Young T-Tauri Variable",
-        pm: "0.02 \"/yr",
+        pm: "0.02 \"/yr (20 mas/yr)",
+        dist: "163 pc (531 ly)",
         temp: "~5000 K",
         baseline: "Variable Star Dimming Baseline"
       },
@@ -1130,7 +1135,8 @@
         raDeg: 248.16763,
         decDeg: 66.75506,
         type: "Mira Pulsating Red Giant",
-        pm: "0.01 \"/yr",
+        pm: "0.01 \"/yr (10 mas/yr)",
+        dist: "650 pc (2120 ly)",
         temp: "~2700 K",
         baseline: "245-Day Periodic Pulsation"
       }
@@ -2514,6 +2520,24 @@
       document.getElementById('inputRA').value = t.raDeg.toFixed(5);
       document.getElementById('inputDec').value = t.decDeg.toFixed(5);
 
+      // Target FOV: use 3.0 arcmin science standard for instant demo cache hit
+      const targetFov = 3.0;
+      camera.fov = targetFov;
+      const fovSelect = document.getElementById('selectFOV');
+      if (fovSelect) fovSelect.value = targetFov.toFixed(1);
+
+      // Update Inspector Astrometry Card
+      const propRA = document.getElementById('propRA');
+      if (propRA) propRA.innerText = `${t.raDeg.toFixed(5)}°`;
+      const propDec = document.getElementById('propDec');
+      if (propDec) propDec.innerText = `${t.decDeg.toFixed(5)}°`;
+      const propTotalPM = document.getElementById('propTotalPM');
+      if (propTotalPM) propTotalPM.innerText = t.pm || '--';
+      const propDist = document.getElementById('propDist');
+      if (propDist) propDist.innerText = t.dist || '--';
+      const propTeff = document.getElementById('propTeff');
+      if (propTeff) propTeff.innerText = t.temp || '--';
+
       const btnWiseView = document.getElementById('btnWiseView');
       if (btnWiseView) {
         btnWiseView.href = `http://byw.tools/wiseview#ra=${t.raDeg.toFixed(5)}&dec=${t.decDeg.toFixed(5)}&size=150&band=3&linear=True&diff=True`;
@@ -2524,7 +2548,8 @@
       if (activeBtn) activeBtn.classList.add('blender-btn-active');
 
       playTargetLockChime();
-      loadSkyCutout(t.raDeg, t.decDeg, key, t.name);
+      loadSceneState(key, t.raDeg, t.decDeg, targetFov);
+      loadSkyCutout(t.raDeg, t.decDeg, key, t.name, targetFov);
       loadSpectrumData(t.raDeg, t.decDeg, key);
     }
 
@@ -2600,10 +2625,21 @@
         const res = await fetch(url);
         if (res.ok) {
           const spec = await res.json();
-          if (specChart && spec.bands) {
-            const fluxes = spec.bands.map(b => b.flux_ujy);
-            specChart.data.datasets[0].data = fluxes;
-            specChart.update();
+          if (specChart) {
+            let fluxes = [];
+            let labels = [];
+            if (spec.flux_microjanskys && spec.wavelengths_microns) {
+              fluxes = spec.flux_microjanskys;
+              labels = spec.wavelengths_microns.map(w => typeof w === 'number' ? w.toFixed(2) : w);
+            } else if (spec.bands) {
+              fluxes = spec.bands.map(b => b.flux_ujy);
+              labels = spec.bands.map(b => typeof b.wavelength === 'number' ? b.wavelength.toFixed(2) : b.wavelength);
+            }
+            if (fluxes.length > 0) {
+              specChart.data.labels = labels;
+              specChart.data.datasets[0].data = fluxes;
+              specChart.update();
+            }
           }
         }
       } catch (e) {
@@ -3143,7 +3179,7 @@
         dockContentBody.style.height = '0px';
         if (dockCollapseIcon) dockCollapseIcon.setAttribute('data-lucide', 'chevron-up');
       } else {
-        dockContentBody.style.height = '112px';
+        dockContentBody.style.height = '144px';
         if (dockCollapseIcon) dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
       }
       if (window.lucide) lucide.createIcons();
@@ -3561,6 +3597,7 @@
       }
     });
     
+  
   </script>
 </body>
 </html>

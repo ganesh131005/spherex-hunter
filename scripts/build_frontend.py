@@ -788,7 +788,7 @@ def build():
     </div>
 
     <!-- Dock Content Body -->
-    <div id="dockContentBody" class="h-28 overflow-hidden transition-all duration-200">
+    <div id="dockContentBody" class="h-36 overflow-hidden transition-all duration-200">
 
       <!-- PANEL 1: TIMELINE (Multi-Epoch Flipbook Controls) -->
       <div id="dockPanelTimeline" class="h-full px-4 flex items-center justify-between gap-4 font-mono text-xs">
@@ -1118,12 +1118,22 @@ def build():
 
 
 def generate_script() -> str:
-    with open('frontend/index.html.bak', 'r', encoding='utf-8') as f:
-        bak_text = f.read()
-
+    import os
     import re
-    matches = list(re.finditer(r'<script(?![^>]*src)[^>]*>(.*?)</script>', bak_text, re.DOTALL))
-    orig_script = matches[-1].group(1)
+
+    if os.path.exists('frontend/index.html.bak'):
+        with open('frontend/index.html.bak', 'r', encoding='utf-8') as f:
+            bak_text = f.read()
+        matches = list(re.finditer(r'<script(?![^>]*src)[^>]*>(.*?)</script>', bak_text, re.DOTALL))
+        orig_script = matches[-1].group(1)
+    else:
+        with open('frontend/index.html', 'r', encoding='utf-8') as f:
+            text = f.read()
+        matches = list(re.finditer(r'<script(?![^>]*src)[^>]*>(.*?)</script>', text, re.DOTALL))
+        script_full = matches[-1].group(1)
+        if '// NEW UI STATE & TAB MANAGERS' in script_full:
+            return script_full
+        orig_script = script_full
 
     addon_script = """
     // =========================================================================
@@ -1216,7 +1226,7 @@ def generate_script() -> str:
         dockContentBody.style.height = '0px';
         if (dockCollapseIcon) dockCollapseIcon.setAttribute('data-lucide', 'chevron-up');
       } else {
-        dockContentBody.style.height = '112px';
+        dockContentBody.style.height = '144px';
         if (dockCollapseIcon) dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
       }
       if (window.lucide) lucide.createIcons();
