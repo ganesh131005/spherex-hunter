@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #21 Created — Implement 'Previous Analyses / My Investigations' Session Persistence and Full State Restoration]**
+  - **Issue #21 Link:** https://github.com/joker0210G/spherex-hunter/issues/21
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Adds 'My Investigations' / 'Previous Analyses' drawer to review and 1-click restore saved exploration sessions (target, coordinates, dates, channels, stretch), with graceful stale data retrieval.
 - **[GitHub Native Issue #20 Created — Replace Cryptic Technical Diagnostics with Actionable User-Friendly Error Messages and Retry Controls]**
   - **Issue #20 Link:** https://github.com/joker0210G/spherex-hunter/issues/20
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
