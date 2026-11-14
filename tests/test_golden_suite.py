@@ -125,6 +125,19 @@ def test_multi_coordinate_sky_tiling_raycaster():
     assert res_north["status"] == "success"
     assert res_center["difference_image"]["image_data"].startswith("data:image/png;base64,")
 
+def test_truthful_fov_and_lod_cropping():
+    """Verify Issue #15: Truthful FOV and sub-pixel center cropping without falsified dimensions."""
+    from backend.services.cutout_engine import fetch_real_cutout
+    # LOD 1 standard science field
+    res_lod1 = fetch_real_cutout(133.79513, -7.24515, fov_arcmin=3.0, target_key="wise0855", lod=1)
+    assert res_lod1["status"] == "success"
+    assert res_lod1["coordinates"]["fov_arcmin"] == 3.0
+
+    # LOD 0 hero zoom field center-cropped
+    res_lod0 = fetch_real_cutout(133.79513, -7.24515, fov_arcmin=1.5, target_key="wise0855", lod=0)
+    assert res_lod0["status"] == "success"
+    assert res_lod0["coordinates"]["fov_arcmin"] == 1.5
+
 if __name__ == "__main__":
     for b in BENCHMARKS:
         test_nasa_benchmark_cutouts(*b)

@@ -382,7 +382,10 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                         pass
 
     # L2 Benchmark Static FITS Check (backend/cache/fits)
-    if (d1 is None or d2 is None) and not force_refresh:
+    # Note: Static benchmark FITS files are calibrated 3.0' cutouts.
+    # Only reuse them directly when requested FOV is within standard science range (<= 3.5').
+    # For wide overview (> 3.5'), query authentic wide survey from IRSA.
+    if (d1 is None or d2 is None) and not force_refresh and fov_arcmin <= 3.5 and lod != 2:
         fits_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "fits")
         if os.path.exists(fits_dir):
             for bm_k, bm_v in BENCHMARKS.items():
@@ -431,14 +434,49 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                 cache_tier = "LIVE_IRSA_FETCH"
         except Exception as err:
             print(f"NASA IRSA live fetch fallback for RA {ra}, Dec {dec}: {err}")
-            return None
+            d1, d2 = None, None
+
+    # Offline / Local fallback to benchmark disk (truthfully retaining 3.0' FOV)
+    if (d1 is None or d2 is None):
+        fits_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "fits")
+        if os.path.exists(fits_dir):
+            for bm_k, bm_v in BENCHMARKS.items():
+                dra = (ra - bm_v["ra"]) * np.cos(np.radians(bm_v["dec"])) * 60.0
+                ddec = (dec - bm_v["dec"]) * 60.0
+                if np.hypot(dra, ddec) <= 1.5:
+                    bp1 = os.path.join(fits_dir, f"{bm_k}_2mass.fits")
+                    bp2 = os.path.join(fits_dir, f"{bm_k}_dss2.fits")
+                    if os.path.exists(bp1) and os.path.exists(bp2):
+                        try:
+                            with fits.open(bp1) as h1: d1 = np.nan_to_num(h1[0].data.astype(float))
+                            with fits.open(bp2) as h2: d2 = np.nan_to_num(h2[0].data.astype(float))
+                            cache_tier = "L2_BENCHMARK_DISK"
+                            break
+                        except Exception:
+                            d1, d2 = None, None
 
     if d1 is None or d2 is None or d1.size == 0 or d2.size == 0:
         return None
 
+    # Authentic FOV calculation:
+    # If source is a 3.0' benchmark tile and hero deep zoom (LOD 0 or FOV <= 2.0') is requested,
+    # perform authentic central sub-aperture cropping before matrix resampling.
+    source_fov = 3.0 if cache_tier == "L2_BENCHMARK_DISK" else fov_arcmin
+    actual_fov = source_fov
+
+    if (lod == 0 or fov_arcmin <= 2.0) and source_fov >= 2.5:
+        target_crop_fov = 1.5 if lod == 0 else fov_arcmin
+        crop_ratio = target_crop_fov / source_fov
+        sy, sx = d1.shape
+        cy, cx = int(sy * crop_ratio), int(sx * crop_ratio)
+        y0 = max(0, (sy - cy) // 2)
+        x0 = max(0, (sx - cx) // 2)
+        d1 = d1[y0:y0+cy, x0:x0+cx]
+        d2 = d2[y0:y0+cy, x0:x0+cx]
+        actual_fov = target_crop_fov
+
     # Target Matrix Resolution: 1024p for Hero Core, 720p for Standard Science, 360p for Wide Overview
     dim = 1024 if lod == 0 else (360 if lod == 2 else 720)
-    actual_fov = 1.5 if lod == 0 else (8.0 if lod == 2 else fov_arcmin)
 
     # Resample to LOD display matrix
     if d1.shape != (dim, dim):

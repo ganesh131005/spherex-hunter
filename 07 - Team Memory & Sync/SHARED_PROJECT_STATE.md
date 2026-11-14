@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Architectural Alignment & Viewport Tile / Astrometry Fix Deployed into `main`]**
+  - **Closed Issues Reconciled:** Issue #10 (Continuous Viewport Frustum Raycaster & Ambient Skyfield) & Issue #15 (Gaia DR3 Astrometry Alignment & FOV Scale Discrepancy).
+  - **Merged Components:**
+    1. **Ambient Celestial Background & Edge Feathering:** Integrated `drawAmbientSkyBackground` (280 ambient starlight points) and `drawFeatheredImage` vignette blending, permanently eliminating the harsh single-tile black void.
+    2. **Dynamic Focal Calibration:** Replaced static `basePx / 3.0` with `pixelsPerArcmin = basePx / currentTileFov`. Starlight and coordinate grid scale in lockstep at all zoom tiers.
+    3. **WCS Gnomonic Tangent Projection & Epoch Back-Propagation:** Reticles projected via standard celestial tangent formulas and back-propagated from $J2016.0$ to survey dates ($1999.1$ for 2MASS, $1985.0$ for DSS2), locking reticles squarely onto stellar cores.
+    4. **Truthful Backend FOV & Center Cropping:** Solved $3.0' \to 8.0'$ falsehood in `cutout_engine.py`. Center-crops deep zoom apertures truthfully and preserves authentic wide-field matrix scaling.
+  - **Verification:** 14/14 Golden Suite tests passing (100% pass rate) with 0 ruff lint errors.
 - **[GitHub Native Issue #16 Created — Add Draggable Cursor Resize Splitters for Side Panel and Bottom Bar]**
   - **Issue #16 Link:** https://github.com/joker0210G/spherex-hunter/issues/16
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
