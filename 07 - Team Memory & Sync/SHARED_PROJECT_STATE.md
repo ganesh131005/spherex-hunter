@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #24 Created — Fix Flipbook Blink Animation Clamped to 2 Frames Instead of All 4 Observation Epochs]**
+  - **Issue #24 Link:** https://github.com/joker0210G/spherex-hunter/issues/24
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Fixes bug where timeline indicates 'Frame: 1 / 4' but JS blink loop and VCR step buttons are hardcoded to alternate only between 1 and 2 (`(currentFrame === 1) ? 2 : 1`). Expands sequence and canvas renderer to cycle through all 4 epochs (2MASS 1999, unWISE W1 2010, unWISE W2 2020, SPHEREx 2025).
 - **[GitHub Native Issue #23 Created — Scientific Cache Lifecycle: Validity Checks, Force Refresh, Storage Quotas, and Truthful Provenance]**
   - **Issue #23 Link:** https://github.com/joker0210G/spherex-hunter/issues/23
   - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`
