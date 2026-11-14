@@ -33,6 +33,7 @@ from backend.services.catalog_engine import (
 from backend.services.csa_neossat_service import query_csa_neossat
 from backend.services.cutout_engine import (
     BENCHMARKS,
+    auto_prune_disk_cache,
     clear_all_caches,
     fetch_real_cutout,
     get_102_band_spectrum,
@@ -146,6 +147,11 @@ def clear_cache():
 def cache_stats():
     """Returns current cache metrics."""
     return get_cache_stats()
+
+@app.post("/api/cache/prune")
+def prune_cache(max_mb: float = 500.0, target_mb: float = 350.0):
+    """Triggers smart auto-pruning of dynamic FITS cache based on soft storage quotas."""
+    return auto_prune_disk_cache(max_mb=max_mb, target_mb=target_mb)
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
