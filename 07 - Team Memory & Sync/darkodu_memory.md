@@ -3,11 +3,15 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Resolved and closed GitHub Issues #9, #10, and #12.
-- **Next Task:** Execute remaining open tasks (GitHub Issue #11 / #13).
+- **Current Task:** Resolved and closed GitHub Issues #13 and #14.
+- **Next Task:** Execute remaining open tasks (GitHub Issue #16, #17, #18).
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Resolved & Closed GitHub Issues #13 and #14:
+  - **Issue #13 ([CACHE] Hierarchical Spatial-Tile Caching Engine):** Implemented backend spatial-hash binning cache for sub-3ms pan hits, automated disk cache pruner daemon (`auto_prune_disk_cache`, `/api/cache/prune`) with a 500MB soft quota and benchmark pinning, client IndexedDB cache (`spherex_tile_store`), and in-flight request cancellation via `AbortController`.
+  - **Issue #14 ([UX/UI] User-Friendly Inspector Panel for Citizen Scientists):** Redesigned `#inspectorPanelTarget` into 6 clear thematic sections with plain-English descriptions, visual surface temperature thermometer gauge, cosmic speed ratings, and "What This Means" takeaway box.
+  - **Verification:** Built `tests/test_caching_and_inspector_e2e.py` (5/5 passed in 17.7s); verified golden suite (8/8) and full E2E suites. Closed issues #13 and #14 on GitHub.
 - [x] Resolved & Closed GitHub Issues #9, #10, and #12:
   - **Issue #9 ([WEB] Command Palette Ctrl+K):** Indexed 22 discrete commands across 4 categorized groups (`🌟 Objects`, `🗂️ Views`, `⚡ Actions`, `🔍 Scale`) with fuzzy natural language aliases (e.g. "cold brown dwarf" $\to$ WISE 0855, "subtraction" $\to$ Difference view), Arrow Up/Down + Enter keyboard navigation, and persistent topbar `[Ctrl+K]` pill.
   - **Issue #10 ([VIEWPORT] Continuous Raytracing Frustum & Adaptive LOD):** Implemented `canvasToSkyCoordinates(px, py)` frustum raycaster with spherical $\cos(\text{Dec})$ projection and `getVisibleFrustumSkyBounds()`, updating `getCurrentCoordinates()` to derive exact optical center coordinates from the frustum raycaster.

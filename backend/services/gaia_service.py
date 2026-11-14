@@ -55,8 +55,15 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
 
     sources = []
     try:
-        service = vo.dal.TAPService(IRSA_TAP_URL)
-        res = service.run_sync(adql)
+        import concurrent.futures
+
+        def _exec_tap():
+            service = vo.dal.TAPService(IRSA_TAP_URL)
+            return service.run_sync(adql)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(_exec_tap)
+            res = future.result(timeout=5.0)
 
         for row in res:
             pmra_val = None if np.isnan(row["pmra"]) else float(round(row["pmra"], 2))

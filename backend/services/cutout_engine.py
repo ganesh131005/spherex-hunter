@@ -195,16 +195,71 @@ def render_coverage_mask_canvas(arr: np.ndarray) -> str:
     return f"data:image/png;base64,{b64}"
 
 # =========================================================================
-# L1 IN-MEMORY RAM LRU CACHE & CACHE MANAGEMENT
+# L1 IN-MEMORY RAM LRU CACHE & SPATIAL-HASH MANAGEMENT (Issue #13)
 # =========================================================================
 _L1_MEMORY_CACHE = {}
+_SPATIAL_HASH_MAP = {}
 _MAX_L1_CACHE_ENTRIES = 128
 
+def compute_spatial_hash(ra: float, dec: float, fov_arcmin: float, bin_size_deg: float = 0.05) -> str:
+    """Computes a spatial bin key for celestial coordinates to enable proximity cache hits."""
+    ra_bin = int(np.floor(ra / bin_size_deg))
+    dec_bin = int(np.floor((dec + 90.0) / bin_size_deg))
+    fov_bin = round(fov_arcmin, 1)
+    return f"bin_{ra_bin}_{dec_bin}_{fov_bin}"
+
+def auto_prune_disk_cache(max_mb: float = 500.0, target_mb: float = 350.0) -> dict:
+    """
+    Smart Auto-Pruning Daemon for Dynamic FITS Cache:
+    Enforces soft quota limits while pinning master NASA benchmark targets.
+    """
+    cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
+    if not os.path.exists(cache_dir):
+        return {"pruned_files": 0, "freed_mb": 0.0, "total_disk_mb": 0.0}
+
+    files = []
+    total_bytes = 0
+    for f in os.listdir(cache_dir):
+        if f.endswith(".fits"):
+            p = os.path.join(cache_dir, f)
+            try:
+                sz = os.path.getsize(p)
+                atime = os.path.getatime(p)
+                total_bytes += sz
+                # Pinned core benchmarks are NEVER evicted
+                is_pinned = any(k in f for k in ["wise0855", "barnard", "epsindi", "rwaur", "rdraconis"])
+                if not is_pinned:
+                    files.append((atime, p, sz))
+            except Exception:
+                pass
+
+    pruned_files = 0
+    freed_bytes = 0
+    if total_bytes > max_mb * 1024 * 1024:
+        files.sort(key=lambda x: x[0])  # Sort by access time ascending
+        for _, path, sz in files:
+            try:
+                os.remove(path)
+                total_bytes -= sz
+                freed_bytes += sz
+                pruned_files += 1
+                if total_bytes <= target_mb * 1024 * 1024:
+                    break
+            except Exception:
+                pass
+
+    return {
+        "pruned_files": pruned_files,
+        "freed_mb": round(freed_bytes / (1024 * 1024), 2),
+        "total_disk_mb": round(total_bytes / (1024 * 1024), 2)
+    }
+
 def clear_all_caches() -> dict:
-    """Flushes the L1 RAM LRU cache and purges dynamic FITS files from disk."""
-    global _L1_MEMORY_CACHE
+    """Flushes the L1 RAM LRU cache, spatial hash index, and purges dynamic FITS files from disk."""
+    global _L1_MEMORY_CACHE, _SPATIAL_HASH_MAP
     ram_count = len(_L1_MEMORY_CACHE)
     _L1_MEMORY_CACHE.clear()
+    _SPATIAL_HASH_MAP.clear()
 
     import os
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
@@ -213,6 +268,9 @@ def clear_all_caches() -> dict:
     if os.path.exists(cache_dir):
         for fname in os.listdir(cache_dir):
             if fname.endswith(".fits"):
+                # Preserve pinned benchmark calibration targets
+                if any(k in fname for k in ["wise0855", "barnard", "epsindi", "rwaur", "rdraconis"]):
+                    continue
                 p = os.path.join(cache_dir, fname)
                 try:
                     freed_bytes += os.path.getsize(p)
@@ -230,7 +288,7 @@ def clear_all_caches() -> dict:
     }
 
 def get_cache_stats() -> dict:
-    """Returns current cache telemetry (L1 RAM entries, L2 disk files, disk usage in MB)."""
+    """Returns current cache telemetry (L1 RAM entries, spatial bins, L2 disk files, disk usage in MB)."""
     import os
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
     file_count = 0
@@ -245,6 +303,7 @@ def get_cache_stats() -> dict:
                     pass
     return {
         "l1_ram_entries": len(_L1_MEMORY_CACHE),
+        "spatial_bins_indexed": len(_SPATIAL_HASH_MAP),
         "l2_disk_files": file_count,
         "disk_usage_mb": round(disk_bytes / (1024 * 1024), 2)
     }
@@ -574,14 +633,25 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     t0 = time.time()
 
     cache_key = f"{round(ra, 4)}_{round(dec, 4)}_{round(fov_arcmin, 1)}_{lod}"
+    spatial_bin = compute_spatial_hash(ra, dec, fov_arcmin)
 
-    # L1 In-Memory RAM Cache Check (< 4ms)
+    # L1 In-Memory RAM Cache Check (< 2ms)
     if not force_refresh and cache_key in _L1_MEMORY_CACHE:
         cached_entry = dict(_L1_MEMORY_CACHE[cache_key])
         cached_entry["telemetry"] = dict(cached_entry.get("telemetry", {}))
         cached_entry["telemetry"]["cache_tier"] = "L1_RAM"
         cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 2)
         return cached_entry
+
+    # L1 Spatial-Hash Cache Check (< 3ms) for proximity pan hits
+    if not force_refresh and spatial_bin in _SPATIAL_HASH_MAP:
+        ref_key = _SPATIAL_HASH_MAP[spatial_bin]
+        if ref_key in _L1_MEMORY_CACHE:
+            cached_entry = dict(_L1_MEMORY_CACHE[ref_key])
+            cached_entry["telemetry"] = dict(cached_entry.get("telemetry", {}))
+            cached_entry["telemetry"]["cache_tier"] = "L1_SPATIAL_HASH"
+            cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 2)
+            return cached_entry
 
     # Match benchmark bookmark name if present (for UI display only, zero pipeline shortcut)
     display_name = f"Sky Field (RA {ra:.4f}°, Dec {dec:+.4f}°)"
@@ -712,10 +782,17 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         }
     }
 
-    # Store in L1 RAM cache (managing LRU capacity)
+    # Store in L1 RAM cache (managing LRU capacity) and register spatial hash bin
     if len(_L1_MEMORY_CACHE) >= _MAX_L1_CACHE_ENTRIES:
         first_k = next(iter(_L1_MEMORY_CACHE))
         del _L1_MEMORY_CACHE[first_k]
     _L1_MEMORY_CACHE[cache_key] = response
+    _SPATIAL_HASH_MAP[spatial_bin] = cache_key
+
+    # Auto-prune disk cache to enforce soft limits without blocking
+    try:
+        auto_prune_disk_cache(max_mb=500.0, target_mb=350.0)
+    except Exception:
+        pass
 
     return response

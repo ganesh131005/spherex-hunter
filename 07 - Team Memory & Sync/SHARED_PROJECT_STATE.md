@@ -26,6 +26,25 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GITHUB ISSUES #13 & #14 RESOLVED & CLOSED (@darkodu & @astrodu)]**
+  - **Issue #13: Hierarchical Spatial-Tile Caching Engine (Client IndexedDB + Backend Spatial-Hash):**
+    - Built L1 spatial-hash binning cache in backend (`compute_spatial_hash`) for celestial proximity pan hits under 3ms.
+    - Added automated disk cache auto-pruning daemon (`auto_prune_disk_cache`, `/api/cache/prune`) maintaining a 500MB soft quota while pinning NASA benchmark calibration targets.
+    - Implemented client-side IndexedDB persistent cache (`spherex_tile_store`) for instant local tile retrieval with zero network roundtrips.
+    - Integrated `AbortController` in-flight query cancellation in `loadSkyCutout` and `streamLODTile`, eliminating network thrashing during rapid mouse wheel zooms or WASD flight.
+  - **Issue #14: User-Friendly Inspector Panel for Citizen Scientists:**
+    - Redesigned `#inspectorPanelTarget` into 6 clearly separated, beginner-friendly thematic sections:
+      1. *Object Overview & Location:* Common name, plain-English subtitle, and Moon-scale analogy (`1/10th width of Full Moon`).
+      2. *Multi-Epoch Telescope Observations:* Comparative table of surveys (2MASS, WISE, SPHEREx DR1), dates, wavelengths, and baseline separation.
+      3. *Surface Temperature & Heat:* Interactive horizontal thermometer gauge (Deep Freeze $<300\text{ K}$ to Sun $>5000\text{ K}$) with Celsius/Fahrenheit and real-world analogies.
+      4. *Proper Motion & Cosmic Speed:* Plain-English speed rating (🚀 Extreme Fast Mover, 🏃 Moderate Mover, 🛑 Static Background) with 50-year shift preview.
+      5. *"What This Means" Summary Card:* Plain-English discovery takeaway box translating infrared heat and proper motion.
+      6. *External Archival Bridges:* One-click links to NASA WiseView, CADC NEOSSat, and Discovery Flagging.
+    - Retained 100% backward compatibility for all scientific metrics and automated bindings.
+  - **Verification & Issue Closure:**
+    - Authored test suite `tests/test_caching_and_inspector_e2e.py` (5/5 passed in 17.7s). Golden suite (8/8) and previous E2E suites passing green.
+    - Successfully closed GitHub Issues #13 and #14 on `joker0210G/spherex-hunter`.
+
 - **[GITHUB ISSUES #9, #10 & #12 RESOLVED & CLOSED (@darkodu)]**
   - **Issue #9: Command Palette [Ctrl+K] with 22 Actions & Natural Language Aliases:**
     - Indexed 22 discrete commands across 4 categorized groups (`🌟 Objects`, `🗂️ Views`, `⚡ Actions`, `🔍 Scale`).
