@@ -19,9 +19,10 @@
 - [x] [Task 1 Complete] Implement Live Gaia DR3 TAP Client (`backend/services/gaia_service.py`) querying NASA IRSA TAP (`irsa.ipac.caltech.edu/TAP`) and validating real proper motions ($\mu \approx 10,393\text{ mas/yr}$ for Barnard's Star). 8/8 tests passing.
 - [x] [Task 2 Complete] Viewport Gaia DR3 Astrometry Overlay & Dipole Cross-Check in `frontend/index.html` (verified live in browser on WISE 0855 and Barnard's Star).
 - [x] Consolidated codebase batch scripts: validated coolodu's cmd.exe bugfix in `run_spherex_hunter.bat` and unified 8 redundant batch files into 2 clean master scripts (`run_spherex_hunter.bat` and `team_sync.bat`).
-- [ ] [TASK-006 Assigned to coolodu] Tasks 3, 4, 5 of `nasa_csa_resources_integration_plan.md` forwarded to `coolodu` via `/assign` protocol.
-- [ ] Guide darkodu, coolodu, iceodu, and astrodu to fetch repository and execute forwarded tasks.
-- [ ] Review upcoming feature PRs from team branches into `main`.
+- [x] [TASK-006 Assigned to coolodu] Tasks 3, 4, 5 of `nasa_csa_resources_integration_plan.md` forwarded to `coolodu` via `/assign` protocol.
+- [x] Guide darkodu, coolodu, iceodu, and astrodu to fetch repository and execute forwarded tasks.
+- [x] Review upcoming feature PRs from team branches into `main`.
+- [x] **[Release Integration Complete (`coolodu/web-frontend` -> `main`)]**: Merged verified `coolodu/web-frontend` work (Issues `#8`–`#31`, Integrated AI Science Co-Pilot, resilient IRSA 502 fallback, scientific cache lifecycle, `/app/P/DSS2/color/*` local HiPS fallback route, `94/94` non-Playwright `pytest` verification) into `main` and pushed to `origin/main` (0 open GitHub issues remaining).
 
 ## Notes & Technical Decisions:
 - Astropy `reproject_interp` will be the standard for spatial grid alignment.
