@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #26 Created — Compact Bottom Dock Height to Eliminate Dead Space and Maximize Viewport Canvas]**
+  - **Issue #26 Link:** https://github.com/joker0210G/spherex-hunter/issues/26
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Solves excessive bottom dock height: replaces static `h-36` (144px) with a sleek `h-14` (~56px) for the single-row Timeline Flipbook, dynamically expanding height only for chart tabs (Spectrum / Light Curve), freeing 100+ pixels for the main sky canvas.
 - **[GitHub Native Issue #25 Created — Clarify 'Δt Baseline' Time Gap for Beginners and Disambiguate from Dock Collapse Button]**
   - **Issue #25 Link:** https://github.com/joker0210G/spherex-hunter/issues/25
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
