@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #16 Created — Add Draggable Cursor Resize Splitters for Side Panel and Bottom Bar]**
+  - **Issue #16 Link:** https://github.com/joker0210G/spherex-hunter/issues/16
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Adds interactive draggable splitter handles for the Scene Collection / Inspector Side Panel (width adjustment with `col-resize`) and the Bottom Bar/Dock (height adjustment with `row-resize`). Enforces min/max constraints, triggers responsive canvas and chart resize reflows, and persists user layout preferences in `localStorage`.
 - **[GitHub Native Issue #15 Created — Fix Gaia DR3 Blue Overlay Projection Mismatch & FOV Scale Discrepancy]**
   - **Issue #15 Link:** https://github.com/joker0210G/spherex-hunter/issues/15
   - **Track:** `image-math` | **Role:** `@iceodu` (Collaborating with `@coolodu` on canvas WCS projection) | **Resource:** `resource:compute-heavy`
