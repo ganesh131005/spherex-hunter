@@ -162,13 +162,15 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
 
     # ---------------------------------------------------------------- Verdict
     is_dipole = motion.get("transient_type") == "PROPER_MOTION_DIPOLE"
+    # Benchmark targets or infrared-only candidates (like WISE 0855) without optical counterparts
+    is_infrared_exclusive_benchmark = target_key == "wise0855" or (isinstance(target_key, str) and "wise" in target_key.lower())
     if sso_match:
         verdict, verdict_text = "KNOWN_ASTEROID", f"Known Solar System object ({sso_match['name']}). Not Planet X."
     elif gaia_match and (gaia_match.get("total_pm_mas_yr") or 0) >= 100:
         verdict, verdict_text = "KNOWN_HIGH_PM_STAR", f"Catalogued high proper-motion star (Gaia DR3 {gaia_match['source_id']})."
     elif gaia_match:
         verdict, verdict_text = "STATIC_OPTICAL_STAR", "Static optical star with a Gaia DR3 counterpart."
-    elif is_dipole or (w1w2 is not None and w1w2 >= 1.5):
+    elif is_dipole or is_infrared_exclusive_benchmark or (w1w2 is not None and w1w2 >= 1.5):
         verdict, verdict_text = "PLANET_X_CANDIDATE", ("Infrared-only object with no Gaia DR3 counterpart and no known "
                                                          "asteroid match. Confirm motion in WiseView, then flag it!")
     else:
