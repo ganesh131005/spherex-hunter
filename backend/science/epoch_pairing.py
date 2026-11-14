@@ -12,8 +12,7 @@ at target celestial positions to determine epoch differencing feasibility:
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any
-import numpy as np
+from typing import Any, Dict, List
 
 
 @dataclass

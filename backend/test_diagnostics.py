@@ -10,42 +10,43 @@ Tests:
 5. FastAPI REST API Route Handlers & Astropy Coordinate Parsing
 """
 
-import time
-import sys
 import os
+import sys
+import time
 
 # Ensure backend root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.services.cutout_engine import (
-    BENCHMARKS,
-    fetch_real_cutout,
-    get_102_band_spectrum,
-    compute_scientific_difference
-)
 from backend.main import (
-    health_check,
+    DiscoveryCandidate,
+    export_discoveries_csv,
+    flag_candidate,
+    get_2mass_catalog,
     get_benchmark_targets,
+    get_crossmatched_photometry,
+    get_csa_neossat,
     get_cutout,
+    get_discoveries,
+    get_gaia_catalog,
+    get_simbad_metadata,
     get_spectrum,
     get_wiseview_url,
-    get_csa_neossat,
-    get_gaia_catalog,
-    get_2mass_catalog,
-    get_simbad_metadata,
-    get_crossmatched_photometry,
+    health_check,
     parse_celestial_coords,
-    flag_candidate,
-    get_discoveries,
-    export_discoveries_csv,
-    DiscoveryCandidate
 )
 from backend.services.catalog_engine import (
-    query_gaia_dr3,
+    crossmatch_photometry,
     query_2mass_psc,
+    query_gaia_dr3,
     query_simbad_metadata,
-    crossmatch_photometry
 )
+from backend.services.cutout_engine import (
+    BENCHMARKS,
+    compute_scientific_difference,
+    fetch_real_cutout,
+    get_102_band_spectrum,
+)
+
 
 def print_banner(text):
     print("\n" + "=" * 65)
@@ -97,7 +98,7 @@ def test_cutout_engine_lods():
 def test_difference_imaging_math():
     print_banner("3. ALARD-LUPTON DIFFERENCE IMAGING TEST")
     import numpy as np
-    
+
     # Create synthetic test frames with stationary background and moving transient
     rng = np.random.default_rng(42)
     dim = 200
@@ -121,7 +122,7 @@ def test_difference_imaging_math():
     # Background should cluster around neutral mid-gray (128)
     median_val = float(np.median(diff))
     assert 120 <= median_val <= 136, f"Neutral mid-gray offset unexpected: {median_val}"
-    
+
     print(f"  [PASS] Difference Map Computed in {elapsed_ms:.2f} ms")
     print(f"  [PASS] Background Median: {median_val:.1f} (Centered at neutral 128 mid-gray)")
     print(f"  [PASS] Dynamic Range: Min {np.min(diff)} (Negative Dipole) to Max {np.max(diff)} (Positive Dipole)")
@@ -282,7 +283,7 @@ def test_2mass_and_simbad_direct():
     xm = crossmatch_photometry(ra=133.79513, dec=-7.24515, radius_arcmin=3.0)
     xm_ms = (time.perf_counter() - t0) * 1000
     assert xm["status"] == "success"
-    assert xm["color_diagnostics"]["is_ultracold_candidate"] == True
+    assert xm["color_diagnostics"]["is_ultracold_candidate"]
     print(f"  [PASS] Unified Multi-Survey Cross-Match in {xm_ms:5.2f} ms")
     print(f"  [PASS] Brown Dwarf / Planet X Flag: {xm['color_diagnostics']['is_ultracold_candidate']} ({xm['color_diagnostics']['classification_reason']})")
 

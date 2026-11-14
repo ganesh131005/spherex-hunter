@@ -52,6 +52,7 @@ raw_data/
 scratch/
 .env
 data_samples/*.fits
+data_samples/*.json
 !samples/*.png
 !samples/*.json
 

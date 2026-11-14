@@ -142,7 +142,7 @@ def test_model_b_distant_solar_system_body():
 
     p_alpha, p_dec = project_parallax_factors(120.0, 15.0, times)
     true_dist = 500.0  # AU
-    plx = 1.0 / true_dist
+    plx = RAD_TO_ARCSEC / true_dist
 
     sim_x = 0.05 * dt_yr + plx * p_alpha
     sim_y = -0.02 * dt_yr + plx * p_dec

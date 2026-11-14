@@ -9,34 +9,31 @@ Provides REST API endpoints for:
 - Citizen science candidate logging
 """
 
-import os
-import io
 import csv
+import io
 import json
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
-from fastapi import FastAPI, Query, HTTPException
-from fastapi.responses import Response
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from backend.services.catalog_engine import crossmatch_photometry, query_2mass_psc, query_simbad_metadata
+from backend.services.csa_neossat_service import query_csa_neossat
 from backend.services.cutout_engine import (
-    fetch_real_cutout,
-    get_102_band_spectrum,
     BENCHMARKS,
     clear_all_caches,
-    get_cache_stats
+    fetch_real_cutout,
+    get_102_band_spectrum,
+    get_cache_stats,
 )
 from backend.services.gaia_service import query_gaia_dr3
-from backend.services.csa_neossat_service import query_csa_neossat
 from backend.services.scene_service import get_target_scene
-from backend.services.catalog_engine import (
-    query_2mass_psc,
-    query_simbad_metadata,
-    crossmatch_photometry
-)
 
 app = FastAPI(
     title="SPHEREx Hunter Astronomical API",
@@ -132,11 +129,13 @@ def cache_stats():
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
-from backend.utils.validation import validate_coordinates, sanitize_target_name
+
+from backend.utils.validation import sanitize_target_name, validate_coordinates
+
 
 def parse_celestial_coords(ra_input: str, dec_input: str) -> tuple[float, float]:
     """
-    Parses both decimal degrees ('133.79513', '-7.24515') and 
+    Parses both decimal degrees ('133.79513', '-7.24515') and
     standard sexagesimal notation ('08h55m10.831s', '-7d14m42.53s') via Astropy.
     Validates physical celestial boundaries [0, 360) and [-90, +90].
     """
@@ -145,7 +144,7 @@ def parse_celestial_coords(ra_input: str, dec_input: str) -> tuple[float, float]
         return validate_coordinates(ra_val, dec_val)[:2]
     except ValueError:
         pass
-        
+
     try:
         ra_clean = str(ra_input).strip()
         dec_clean = str(dec_input).strip()
@@ -307,10 +306,10 @@ def get_scene(
         ra_val, dec_val = None, None
         if isinstance(ra, str) and isinstance(dec, str):
             ra_val, dec_val = parse_celestial_coords(ra, dec)
-        
+
         target_key = target if isinstance(target, str) else None
         fov_val = float(fov) if isinstance(fov, (int, float, str)) and type(fov).__name__ != 'Query' else 3.0
-        
+
         return get_target_scene(
             target_key=target_key,
             ra=ra_val,

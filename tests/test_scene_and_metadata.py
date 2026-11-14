@@ -8,11 +8,8 @@ Verifies:
 
 import pytest
 from pydantic import ValidationError
-from backend.services.metadata_schema import (
-    AstronomicalTargetMetadata,
-    EvidenceTier,
-    VERIFIED_PRESETS
-)
+
+from backend.services.metadata_schema import VERIFIED_PRESETS, AstronomicalTargetMetadata, EvidenceTier
 from backend.services.motion_service import propagate_target_epoch
 from backend.services.scene_service import get_target_scene
 

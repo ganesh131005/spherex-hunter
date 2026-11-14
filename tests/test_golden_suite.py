@@ -5,6 +5,7 @@ and 102-Band Infrared Spectrophotometry against the Spec-Kit requirements.
 """
 import pytest
 from astropy.coordinates import SkyCoord
+
 from backend.services.cutout_engine import fetch_real_cutout, get_102_band_spectrum
 
 BENCHMARKS = [

@@ -229,7 +229,7 @@ class MotionModelFitter:
         parallax_vector = np.concatenate([self.p_alpha_cosdec, self.p_dec])
 
         def compute_chi2_for_d(d_au: float) -> float:
-            plx = 1.0 / max(1.0, d_au)
+            plx = RAD_TO_ARCSEC / max(1.0, d_au)
             y_adjusted = self.data_stacked - plx * parallax_vector
             y4_w = y_adjusted * self.weights
             theta4, _, _, _ = np.linalg.lstsq(A4_w, y4_w, rcond=None)
@@ -239,7 +239,7 @@ class MotionModelFitter:
         # Golden section search over distance d in range [10.0, 5000.0] AU
         opt = minimize_scalar(compute_chi2_for_d, bounds=(10.0, 5000.0), method="bounded")
         best_d = float(opt.x)
-        best_plx = 1.0 / best_d
+        best_plx = RAD_TO_ARCSEC / best_d
 
         y_adjusted_best = self.data_stacked - best_plx * parallax_vector
         y4_w_best = y_adjusted_best * self.weights
@@ -259,6 +259,22 @@ class MotionModelFitter:
         dof = max(1, n - k)
         bic = float(k * np.log(n) + chi2)
 
+        # Baseline coverage span in days
+        dt_span_days = float(np.ptp(self.times.mjd))
+
+        # Identifiability & Fisher Matrix condition check:
+        # If baseline is short (dt < 60 days) or parallax vector has low orthogonal variance,
+        # distance and linear drift are mathematically degenerate!
+        is_identifiable = (dt_span_days >= 60.0) and (self.n_obs >= 3)
+        if not is_identifiable:
+            distance_status = "UNCONSTRAINED"
+            allowed_range_au = [10.0, 5000.0]
+            dist_uncertainty = np.inf
+        else:
+            distance_status = "CONSTRAINED"
+            allowed_range_au = [max(10.0, best_d - 0.2 * best_d), min(5000.0, best_d + 0.2 * best_d)]
+            dist_uncertainty = float(best_d * 0.15)
+
         return FitResult(
             model_name="Model B (Distant Solar-System Body: Reflex Parallax + Keplerian Drift)",
             num_params=k,
@@ -268,15 +284,19 @@ class MotionModelFitter:
                 "v_drift_ra_arcsec_yr": float(theta4_best[2]),
                 "v_drift_dec_arcsec_yr": float(theta4_best[3]),
                 "distance_au": best_d,
-                "implied_parallax_arcsec": best_plx
+                "implied_parallax_arcsec": best_plx,
+                "distance_status": distance_status,
+                "allowed_range_au_min": float(allowed_range_au[0]),
+                "allowed_range_au_max": float(allowed_range_au[1]),
+                "baseline_days": dt_span_days
             },
             uncertainties={
                 "dx0_arcsec": float(perr4[0]),
                 "dy0_arcsec": float(perr4[1]),
                 "v_drift_ra_arcsec_yr": float(perr4[2]),
                 "v_drift_dec_arcsec_yr": float(perr4[3]),
-                "distance_au": float(best_d * 0.1),  # Estimated 10% distance precision
-                "implied_parallax_arcsec": float(best_plx * 0.1)
+                "distance_au": dist_uncertainty,
+                "implied_parallax_arcsec": float(best_plx * 0.15) if is_identifiable else np.nan
             },
             chi2=chi2,
             reduced_chi2=chi2 / dof,

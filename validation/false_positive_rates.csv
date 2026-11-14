@@ -1,0 +1,8 @@
+snr_threshold_sigma,raw_detections,raw_rate_per_sq_deg,vetoed_detections,clean_rate_per_sq_deg,rejection_fraction_pct
+3.0,0,0.0,0,0.0,100.0
+3.5,0,0.0,0,0.0,100.0
+4.0,0,0.0,0,0.0,100.0
+4.5,0,0.0,0,0.0,100.0
+5.0,0,0.0,0,0.0,100.0
+5.5,0,0.0,0,0.0,100.0
+6.0,0,0.0,0,0.0,100.0

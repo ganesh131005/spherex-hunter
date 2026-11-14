@@ -10,6 +10,7 @@ and fast-moving solar system asteroids / Near-Earth Objects (NEOs).
 
 import time
 import urllib.parse
+
 import numpy as np
 
 # Official CADC TAP Service URL

@@ -4,10 +4,11 @@ Uses Astropy SkyCoord.apply_space_motion to rigorously propagate celestial
 coordinates across observation epochs (e.g. 2MASS 1999 -> SPHEREx 2025).
 """
 
-from typing import Dict, Any, Optional
 import math
-from astropy.coordinates import SkyCoord, Distance
+from typing import Any, Dict, Optional
+
 import astropy.units as u
+from astropy.coordinates import Distance, SkyCoord
 from astropy.time import Time
 
 

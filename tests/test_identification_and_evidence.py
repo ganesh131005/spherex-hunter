@@ -12,7 +12,6 @@ Verifies:
 4. Fabricated probabilities are completely absent.
 """
 
-import pytest
 
 from backend.science.evidence_engine import evaluate_candidate_evidence
 from backend.science.identification import SkyBoTClient

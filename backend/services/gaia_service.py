@@ -8,8 +8,10 @@ parallax, and optical G-band magnitudes for astronomical cross-matching.
 """
 
 import time
-import pyvo as vo
+
 import numpy as np
+import pyvo as vo
+
 from backend.utils.validation import validate_coordinates
 
 # Official NASA IRSA TAP Service URL hosting Gaia DR3 catalog

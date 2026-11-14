@@ -4,13 +4,10 @@ Constructs the authoritative, validated single source of truth (scene)
 comprising Target, Epochs (with proper-motion propagation), and Layers.
 """
 
-from typing import Dict, Any, Optional
 import math
-from backend.services.metadata_schema import (
-    AstronomicalTargetMetadata,
-    EvidenceTier,
-    VERIFIED_PRESETS
-)
+from typing import Any, Dict, Optional
+
+from backend.services.metadata_schema import VERIFIED_PRESETS, AstronomicalTargetMetadata, EvidenceTier
 from backend.services.motion_service import propagate_target_epoch
 
 
@@ -194,7 +191,7 @@ def get_target_scene(
         },
         {
             "id": "diff_image",
-            "name": f"Difference Map (Frame B - Frame A)",
+            "name": "Difference Map (Frame B - Frame A)",
             "type": "difference",
             "visible": False,
             "opacity": 1.0,

@@ -6,6 +6,7 @@ conform to strict astrophysical standards and literature sources.
 
 from enum import Enum
 from typing import List, Optional
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
@@ -23,7 +24,7 @@ class AstronomicalTargetMetadata(BaseModel):
     dec_deg: float = Field(..., ge=-90.0, le=90.0, description="Declination in ICRS degrees")
     object_type: str = Field(..., description="SIMBAD / astrophysical classification")
     spectral_type: Optional[str] = Field(None, description="MK / substellar spectral class")
-    
+
     # Proper motion with explicit units
     pm_ra_mas_yr: float = Field(0.0, description="Proper motion in RA * cos(dec) [mas/yr]")
     pm_dec_mas_yr: float = Field(0.0, description="Proper motion in Dec [mas/yr]")

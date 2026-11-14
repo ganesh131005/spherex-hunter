@@ -10,11 +10,12 @@ Queries the official European Space Agency (ESA) Gaia DR3 catalog via TAP:
 - Offline caching and benchmark fallbacks for guaranteed resilience
 """
 
-import os
 import json
+import os
+
 import numpy as np
+
 from backend.utils.validation import validate_coordinates
-from typing import Optional
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache", "catalog_gaia")
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -128,7 +129,7 @@ def query_gaia_dr3(
             pass
 
     sources = []
-    
+
     # 2. Query ESA Gaia TAP service
     try:
         import pyvo
@@ -150,11 +151,11 @@ def query_gaia_dr3(
             src_id = str(row["source_id"])
             s_ra = float(row["ra"]) if row["ra"] is not None and not np.isnan(row["ra"]) else ra
             s_dec = float(row["dec"]) if row["dec"] is not None and not np.isnan(row["dec"]) else dec
-            
+
             pmra = float(row["pmra"]) if row["pmra"] is not None and not np.isnan(row["pmra"]) else 0.0
             pmdec = float(row["pmdec"]) if row["pmdec"] is not None and not np.isnan(row["pmdec"]) else 0.0
             total_pm = float(round(np.hypot(pmra, pmdec), 2))
-            
+
             # Position angle: 0 = North, 90 = East, 180 = South, 270 = West
             pm_angle = float(round(np.degrees(np.arctan2(pmra, pmdec)) % 360.0, 2)) if total_pm > 0 else 0.0
 
@@ -555,7 +556,7 @@ def query_simbad_metadata(
     return {
         "status": "resolved",
         "canonical_name": f"SPHEREx J{ra:.4f}{dec:+.4f}",
-        "simbad_id": f"Gaia DR3 / 2MASS Coordinate Locus",
+        "simbad_id": "Gaia DR3 / 2MASS Coordinate Locus",
         "object_type": "Field Astronomical Source",
         "spectral_type": "Standard Main Sequence / Field",
         "parallax_mas": None,
