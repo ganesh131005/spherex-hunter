@@ -45,7 +45,33 @@ def test_sanitize_target_name_valid():
 
 
 def test_sanitize_target_name_injection_rejection():
-    with pytest.raises(HTTPException) as excinfo:
-        sanitize_target_name("target; DROP TABLE users;--")
-    assert excinfo.value.status_code == 400
+    # ADQL SQL Injection attacks
+    attacks = [
+        "target; DROP TABLE users;--",
+        "wise0855' UNION SELECT * FROM gaia_dr3_source --",
+        "target/*comment*/",
+        "target; SELECT @@version",
+        "<script>alert(1)</script>",
+        "target' OR '1'='1",
+        "target; SHUTDOWN;--",
+    ]
+    for attack in attacks:
+        with pytest.raises(HTTPException) as excinfo:
+            sanitize_target_name(attack)
+        assert excinfo.value.status_code == 400
+
+
+def test_coordinate_injection_and_extremes():
+    # Non-numeric coordinate injections
+    with pytest.raises(HTTPException):
+        validate_coordinates("133.7; DROP TABLE", -7.2)
+    with pytest.raises(HTTPException):
+        validate_coordinates(133.7, "SELECT 1")
+    # Coordinates exceeding physical bounds
+    with pytest.raises(HTTPException):
+        validate_coordinates(365.0, 0.0)
+    with pytest.raises(HTTPException):
+        validate_coordinates(180.0, -91.0)
+    with pytest.raises(HTTPException):
+        validate_coordinates(180.0, 91.0)
 
