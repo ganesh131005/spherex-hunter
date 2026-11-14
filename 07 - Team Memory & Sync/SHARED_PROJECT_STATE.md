@@ -1,5 +1,5 @@
 # 🌐 SHARED PROJECT STATE (Team RIP Central Ledger)
-> **Last Updated:** Hackathon Phase 2 Integration | **Status:** Scene Collection Layer Manager & Truthful Metadata Deployed
+> **Last Updated:** Hackathon Phase 2 Integration | **Status:** SPHEREx DR1 All-Sky HiPS Context Layer & Holdings Deployed
 > **Rule:** Whenever ANY teammate's Antigravity agent finishes a feature or hits a blocker, append a short note here and commit!
 
 ---
@@ -9,7 +9,7 @@
 | Track | Owner | Branch | Current Focus | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **System Lead** | `jokerodu` | `main` | Architecture, coordination & merge reviews | 🟢 Active |
-| **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Scene State, Space Motion Propagation & Schema Validation | 🟢 100% Operational |
+| **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | DR1 HiPS Context Layer, Provenance Alignment & Cross-Survey Pairs | 🟢 100% Operational |
 | **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Reactive Layer Tree, Eye Toggles, Coverage Masks | 🟢 Live / Verified |
 | **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟢 Operational |
 | **UX, Story & Video** | `astrodu` | `astrodu/ui-story-pitch` | Citizen science modal, slide deck & video script | 🟡 In Progress |
@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[SPHEREx DR1 ALL-SKY HiPS CONTEXT LAYER & PROVENANCE ALIGNMENT (@darkodu)]**
+  - **Research & HiPS Documentation (`docs/dr1_notes.md`):** Looked up authentic IRSA DR1 HiPS URL `https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube`, IVOA DID `ivo://IPAC/P/SPHEREx/DR1/cube`, order 5 (512x512 tiles), 102 spectral channels ($0.75\text{--}5.0\,\mu\text{m}$), verified CORS header `Access-Control-Allow-Origin: *`, documented date ranges (MJD 60789.75 to 61174.49), and confirmed unified DR1 composite cube structure.
+  - **Frontend HiPS Layer & UI Honesty (`frontend/index.html`):** Integrated `#aladinContextBar` with honesty disclaimer, `#aladinLayerStatus`, 102-channel selector (`#hipsChannelSelect`), and slice switching via `baseLayer.setSliceNumber(chNumber)`. Added coordinate click handling (`aladinInstance.pix2world(x, y) -> loadSceneForPosition()`), graceful fallback alert (`#aladinFallbackAlert` to `P/DSS2/color`), and non-simultaneous spectral observation date notice (`#spectrumNonSimultaneousNotice`).
+  - **Backend Holdings & Provenance Alignment:** Recorded `data_release="DR1"` and `pipeline_version="2.1.0"` across API responses (`backend/api_v1.py`, `backend/services/scene_service.py`) and `demo_cache/manifest.json`. Re-queried IRSA ObsCore with true spatial polygon containment (`CONTAINS(POINT, s_region) = 1`), revealing that RW Aurigae has 374 real overlapping exposures in DR1 and all targets have dense multi-hundred coverage.
+  - **Cross-Survey Pairing Analysis (`docs/epoch_pairing.md`):** Found thousands of $\approx 6$-month baseline pairs across surveys for all demo targets (2,788 pairs for WISE 0855, 4,922 for RW Aurigae, 4,504 for Barnard's Star).
+  - **Testing & Green CI:** 5/5 Playwright E2E tests passing (`tests/test_aladin_hips_e2e.py`); full repository test suite (90/90 tests) passing green.
 - **[GITHUB ISSUE #2 RESOLVED: Wired Phase 1 ZOGY Differencing & Float32 Preprocessing into Live `/api/cutout` Pipeline (@darkodu)]**
   - **Live ZOGY Integration:** Connected `zogy_subtraction()` and `construct_gaussian_psf()` in `backend/services/cutout_engine.py`, surfacing authentic statistical significance metrics (`units: sigma`, `peak_sigma`, `trough_sigma`) on `/api/cutout` and `/api/v1/cutout`.
   - **Raw Float32 Streaming:** Exposed `/api/cutout/raw` and `/api/cutout/raw/header` streaming 65,536-byte Float32 binary buffers for dynamic client-side WebGL / Canvas Asinh & ZScale sliders.

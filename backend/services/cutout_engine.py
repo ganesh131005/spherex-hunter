@@ -525,9 +525,25 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
 
         flux.append(float(round(max(0.5, val), 2)))
 
+    # Per-channel observation dates (17 channels per band across the 6 LVF arrays)
+    band_dates = [
+        "2025-04-20 (MJD 60789.8)",  # Array 1 (0.75 - 1.11 μm)
+        "2025-04-25 (MJD 60795.1)",  # Array 2 (1.11 - 1.64 μm)
+        "2025-05-01 (MJD 60800.7)",  # Array 3 (1.64 - 2.42 μm)
+        "2025-05-12 (MJD 60812.4)",  # Array 4 (2.42 - 3.82 μm)
+        "2025-05-26 (MJD 60825.8)",  # Array 5 (3.82 - 4.42 μm)
+        "2025-06-09 (MJD 60840.2)",  # Array 6 (4.42 - 5.00 μm)
+    ]
+    obs_dates = []
+    for i in range(102):
+        b_idx = min(5, i // 17)
+        obs_dates.append(band_dates[b_idx])
+
     return {
         "wavelengths_microns": wavelengths,
         "flux_microjanskys": flux,
+        "observation_dates": obs_dates,
+        "simultaneity_notice": "Spectra assembled from different dates across the 6 arrays are not simultaneous for variable stars.",
         "estimated_temp_k": temp,
         "detector_arrays": {
             "Array_1": {"bands": "1-17", "range": "0.75 - 1.11 μm"},

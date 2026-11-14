@@ -3,11 +3,18 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Completed GitHub Issue #2 (Wiring Phase 1 ZOGY Differencing & Float32 Preprocessing into Live `/api/cutout` Pipeline). Pushed to `darkodu/astro-backend`.
-- **Next Task:** Assist team lead `jokerodu` on PR merge into `main` and frontend endpoint wiring.
+- **Current Task:** Completed SPHEREx DR1 All-Sky HiPS Context Layer, Provenance Alignment & Cross-Survey Epoch Pairing.
+- **Next Task:** Present cross-survey pair findings to team lead `jokerodu` and verify difference product generation decisions.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] SPHEREx DR1 All-Sky HiPS Context Layer, Provenance Alignment & Cross-Survey Epoch Pairing:
+  - **Research & Documentation (`docs/dr1_notes.md`):** Extracted authentic IRSA DR1 HiPS URL (`https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube`), IVOA DID `ivo://IPAC/P/SPHEREx/DR1/cube`, order 5 (512x512 tiles), 102 spectral channels ($0.75\text{--}5.0\,\mu\text{m}$), verified CORS header `Access-Control-Allow-Origin: *`, documented date ranges (MJD 60789.75 to 61174.49), and noted that IRSA hosts a single merged DR1 all-sky composite rather than separate per-survey cubes.
+  - **Frontend HiPS Integration (`frontend/index.html`):** Added `#aladinContextBar` with honesty disclaimer, `#aladinLayerStatus`, 102-channel selector (`#hipsChannelSelect`), wavelength display, and `#aladinFallbackAlert`. Implemented channel slice switching via `baseLayer.setSliceNumber(chNumber)`. Added coordinate click handling via `aladinInstance.pix2world(x, y)` triggering `loadSceneForPosition()`. Handled failure fallback to `P/DSS2/color` and preserved offline mode.
+  - **UI Honesty Protocol:** Added `#spectrumNonSimultaneousNotice` banner and per-point observation date tooltips in `#dockPanelSpectrum` to honestly convey that spectra assembled from multi-epoch exposures are non-simultaneous for variable objects.
+  - **Backend Holdings & Provenance Alignment:** Updated `backend/api_v1.py` and `backend/services/scene_service.py` to record `DATA_RELEASE = "DR1"`, `PIPELINE_VERSION = "2.1.0"` and structured provenance objects. Re-ran IRSA ObsCore spatial containment queries (`CONTAINS(POINT, s_region) = 1`), caching in `data_samples/irsa_obscore_dr1_cache.json`. Verified real exposure coverage: WISE 0855 (258), Barnard's Star (363), Epsilon Indi B (459), RW Aurigae (374), R Draconis (2542), Leo Minor (262).
+  - **Cross-Survey Pairing Analysis (`scripts/analyze_cross_survey_pairs.py`, `docs/epoch_pairing.md`):** Identified $\approx 6$-month baseline pairs ($130\text{--}230\text{ days}$) across surveys for all demo targets (2,788 pairs for WISE 0855, 4,922 for RW Aurigae, 4,504 for Barnard's Star, 4,557 for Epsilon Indi B, 26,051 for R Draconis, 2,828 for Leo Minor).
+  - **Comprehensive E2E & Full-Suite Verification:** Built `tests/test_aladin_hips_e2e.py` (5/5 passed), captured figures in `docs/figures/`, and verified full repository test suite (90/90 tests passing).
 - [x] Resolved GitHub Issue #2 ([BACKEND] Con #1: Wire Phase 1 ZOGY Differencing & Float32 Preprocessing into Live /api/cutout Pipeline):
   - Connected `zogy_subtraction()` and `construct_gaussian_psf()` from `backend/science/differencing.py` into `backend/services/cutout_engine.py`.
   - Upgraded live `GET /api/cutout` response to deliver authentic ZOGY $S_{\text{corr}}$ significance metrics (`units: sigma`, `peak_sigma`, `trough_sigma`, `snr_threshold: 5.0`).
