@@ -306,6 +306,18 @@
         <span>Fetch FITS</span>
       </button>
 
+      <!-- Command Palette Pill (Ctrl+K) -->
+      <button id="cmdPaletteBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0" title="Open Command Palette (Ctrl+K)">
+        <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
+        <span class="hidden sm:inline">Ctrl+K</span>
+      </button>
+
+      <!-- Share Sky Region Button (Issue #12) -->
+      <button id="btnShareModal" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0" title="Share Sky Region & Deep-Link URL">
+        <i data-lucide="share-2" class="w-3 h-3 text-cyan-400"></i>
+        <span class="hidden sm:inline">Share</span>
+      </button>
+
       <!-- Citizen Science Mission Guide Button -->
       <button id="btnOpenOnboarding" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-[11px] font-medium text-amber-300 hover:text-white transition shadow-sm" title="Open Citizen Science Mission Guide & Guided 5-Step Tour">
         <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-400"></i>
@@ -332,6 +344,7 @@
       <!-- Toggle Right Inspector Panel -->
       <button id="toggleSidebarBtn" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Toggle Inspector Sidebar">
         <i data-lucide="sidebar" class="w-3.5 h-3.5"></i>
+      </button>
       </button>
     </div>
   </header>
@@ -470,6 +483,13 @@
           Record
         </button>
         <button id="btnDismissCandidateAlert" class="text-gray-400 hover:text-white text-xs">✕</button>
+      </div>
+
+      <!-- TEMPORAL NO OBSERVATIONS BANNER (Issue #11) -->
+      <div id="noObsBanner" class="hidden absolute top-14 left-1/2 -translate-x-1/2 bg-amber-950/90 border border-amber-500/80 text-amber-200 px-4 py-2 rounded-lg text-xs font-mono shadow-2xl flex items-center gap-2 z-30">
+        <i data-lucide="calendar-x" class="w-4 h-4 text-amber-400"></i>
+        <span>No observations found in selected range. <span id="noObsDetailText"></span></span>
+        <button id="btnCloseNoObsBanner" class="text-amber-400 hover:text-white ml-2 text-xs">✕</button>
       </div>
 
       <!-- TOP-LEFT VIEWPORT TARGET TELEMETRY CHIP (Minimal & Unobtrusive) -->
@@ -811,6 +831,11 @@
           <i data-lucide="trending-up" class="w-3.5 h-3.5 text-amber-400"></i>
           <span>Light Curve</span>
         </button>
+        <!-- Temporal Observation Date Search (Issue #11) -->
+        <button id="btnOpenTemporalFilter" class="blender-btn px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition text-amber-300 hover:text-white" title="Filter Observation Epochs by Date / Time Range">
+          <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span id="temporalFilterBtnLabel">Dates</span>
+        </button>
       </div>
 
       <!-- Quick Playback Telemetry & Collapse Toggle -->
@@ -950,7 +975,35 @@
   </footer>
 
   <!-- ========================================================================= -->
+  <!-- ========================================================================= -->
+  <!-- 4. COMMAND PALETTE OVERLAY (Ctrl+K / Cmd+K)                              -->
+  <!-- ========================================================================= -->
+  <div id="cmdPaletteOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-[60] flex items-start justify-center pt-[12vh]" role="dialog" aria-modal="true" aria-label="Command Palette">
+    <div class="bg-blender-900 border border-blender-600 rounded-xl w-full max-w-xl shadow-2xl overflow-hidden font-mono text-xs" style="box-shadow: 0 0 0 1px rgba(43,118,201,0.3), 0 25px 50px rgba(0,0,0,0.8);">
+      <!-- Search Input -->
+      <div class="flex items-center gap-2.5 px-4 py-3 border-b border-blender-700">
+        <i data-lucide="search" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+        <input id="cmdInput" type="text"
+          class="flex-1 bg-transparent text-white placeholder-gray-500 text-sm focus:outline-none"
+          placeholder="Search targets, views, actions… (try 'brown dwarf' or 'blink')"
+          autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-controls="cmdResultsList">
+        <span class="text-[10px] text-gray-500 bg-space-800 px-1.5 py-0.5 rounded border border-space-700 shrink-0 font-sans">Esc</span>
+      </div>
+      <!-- Results list -->
+      <ul id="cmdResultsList" class="max-h-80 overflow-y-auto py-1" role="listbox"></ul>
+      <!-- Footer -->
+      <div class="flex items-center gap-4 px-4 py-2 border-t border-blender-700 text-[10px] text-gray-500">
+        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">↑↓</kbd> navigate</span>
+        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">↵</kbd> execute</span>
+        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">Esc</kbd> close</span>
+        <span class="ml-auto text-cyan-400">SPHEREx Hunter</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- 4. MODALS & OVERLAYS                                                      -->
+  <!-- ========================================================================= -->
   <!-- ========================================================================= -->
 
   <!-- CITIZEN SCIENCE DISCOVERY MODAL -->
@@ -1000,6 +1053,111 @@
         <button id="cancelModalBtn" class="px-3 py-1.5 rounded blender-btn text-gray-300">Cancel</button>
         <button id="submitCandidateBtn" class="px-3 py-1.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold shadow transition-all">
           Record Discovery
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNIVERSAL SKY REGION SHARE MODAL (Issue #12) -->
+  <div id="shareModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-700 rounded-xl max-w-lg w-full p-4 shadow-2xl space-y-3 font-mono text-xs">
+      <div class="flex items-center justify-between border-b border-space-700 pb-2">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="share-2" class="w-4 h-4 text-cyan-400"></i>
+          <span>Share Sky Coordinates &amp; Deep-Link</span>
+        </div>
+        <button id="closeShareModalBtn" class="text-gray-400 hover:text-white">✕</button>
+      </div>
+
+      <!-- Telemetry Summary Card -->
+      <div class="bg-space-950 p-2.5 rounded border border-space-800 space-y-1 text-gray-300 text-[11px]">
+        <div class="flex justify-between text-white font-bold">
+          <span id="shareTargetTitle">WISE 0855-0714</span>
+          <span id="shareBaselineDate" class="text-emerald-400 text-[10px]">Δt: 26.2 Yrs (1999 → 2025)</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1 text-[10px] text-gray-400">
+          <div>RA: <span id="shareRA" class="text-cyan-300">133.79513°</span></div>
+          <div>Dec: <span id="shareDec" class="text-cyan-300">-7.24515°</span></div>
+          <div>FOV: <span id="shareFOV" class="text-gray-200">3.0'</span></div>
+          <div>Mode: <span id="shareMode" class="text-orange-400 font-semibold">Blink</span></div>
+        </div>
+      </div>
+
+      <!-- Shareable URL Field -->
+      <div class="space-y-1">
+        <label class="text-[10px] text-gray-400">Shareable Universal URL:</label>
+        <div class="flex items-center gap-1.5">
+          <input id="shareUrlInput" type="text" readonly class="flex-1 bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-cyan-300 font-mono text-[10px] select-all">
+          <button id="btnCopyShareUrl" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold text-[10px] flex items-center gap-1 transition">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copyUrlBtnText">Copy Link</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-between pt-2 border-t border-space-700">
+        <button id="btnCopyTelemetrySnippet" class="px-2.5 py-1 blender-btn text-[10px] flex items-center gap-1 text-gray-300 hover:text-white">
+          <i data-lucide="file-text" class="w-3 h-3 text-cyan-400"></i>
+          <span id="copyTelemetryBtnText">Copy Telemetry Text</span>
+        </button>
+        <button id="btnCloseShareModal" class="px-3 py-1 blender-btn text-[10px] text-gray-300">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEMPORAL OBSERVATION RANGE FILTER MODAL (Issue #11) -->
+  <div id="temporalFilterModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-700 rounded-xl max-w-md w-full p-4 shadow-2xl space-y-3 font-mono text-xs">
+      <div class="flex items-center justify-between border-b border-space-700 pb-2">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="calendar" class="w-4 h-4 text-amber-400"></i>
+          <span>Temporal Observation Date Search</span>
+        </div>
+        <button id="closeTemporalModalBtn" class="text-gray-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="space-y-2.5 text-gray-300">
+        <div>
+          <label class="block text-[10px] text-gray-400 mb-1">Start Date / Time (UTC):</label>
+          <input id="inputStartDate" type="date" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-amber-400">
+        </div>
+        <div>
+          <label class="block text-[10px] text-gray-400 mb-1">End Date / Time (UTC):</label>
+          <input id="inputEndDate" type="date" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-amber-400">
+        </div>
+
+        <div class="pt-1">
+          <label class="block text-[10px] text-gray-400 mb-1">Quick Era Presets:</label>
+          <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+            <button class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left" data-start="" data-end="">
+              <div class="font-bold text-white">All-Time Archive</div>
+              <div class="text-[9px] text-gray-400">1990 — 2026</div>
+            </button>
+            <button class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left" data-start="1950-01-01" data-end="1996-12-31">
+              <div class="font-bold text-white">Photographic Plates</div>
+              <div class="text-[9px] text-gray-400">1950 — 1996 (DSS/POSS)</div>
+            </button>
+            <button class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left" data-start="1997-01-01" data-end="2024-12-31">
+              <div class="font-bold text-white">Infrared Baselines</div>
+              <div class="text-[9px] text-gray-400">1997 — 2024 (2MASS/WISE)</div>
+            </button>
+            <button class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left" data-start="2025-01-01" data-end="2027-12-31">
+              <div class="font-bold text-white">SPHEREx Mission Era</div>
+              <div class="text-[9px] text-gray-400">2025+ (DR1 / DR2)</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-space-700">
+        <button id="btnResetTemporalFilter" class="px-2.5 py-1 blender-btn text-[10px] text-gray-400 hover:text-white">
+          Reset Filter
+        </button>
+        <button id="btnApplyTemporalFilter" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded font-bold text-[10px]">
+          Apply Filter
         </button>
       </div>
     </div>
@@ -2025,6 +2183,50 @@
         drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha);
       }
 
+      // 5. Issue #10: Continuous Raytracing Sky Tiling & adjacent boundary preview
+      if (camera.zoom < 0.98 || Math.abs(camera.panX) > 60 || Math.abs(camera.panY) > 60) {
+        drawAdjacentSkyTiling(ctx, pixelsPerArcmin);
+      }
+
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // CONTINUOUS SKY TILING RAYCASTER (Issue #10)
+    // =========================================================================
+    function drawAdjacentSkyTiling(ctx, pixelsPerArcmin) {
+      const tileFovArcmin = 3.0;
+      const tileSize = tileFovArcmin * pixelsPerArcmin;
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+
+      const offsets = [
+        [-1, 0], [1, 0], [0, -1], [0, 1],
+        [-1, -1], [1, -1], [-1, 1], [1, 1]
+      ];
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+      ctx.lineWidth = 1.0;
+      ctx.setLineDash([4, 6]);
+
+      offsets.forEach(([ox, oy]) => {
+        const cx = ox * tileSize;
+        const cy = oy * tileSize;
+        const x0 = cx - tileSize / 2;
+        const y0 = cy - tileSize / 2;
+
+        ctx.strokeRect(x0, y0, tileSize, tileSize);
+
+        const dra = - (ox * tileFovArcmin / 60.0) / cosDec;
+        const ddec = - (oy * tileFovArcmin / 60.0);
+        const tileRA = (camera.ra + dra).toFixed(3);
+        const tileDec = (camera.dec + ddec).toFixed(3);
+
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.40)';
+        ctx.font = '9px monospace';
+        ctx.fillText(`${tileRA}°, ${tileDec}°`, x0 + 8, y0 + 16);
+      });
+
       ctx.restore();
     }
 
@@ -2266,9 +2468,28 @@
     }
 
     // =========================================================================
-    // COORDINATE KINEMATICS & HUD UPDATES
+    // COORDINATE KINEMATICS & HUD UPDATES (Issue #10 Continuous Raycasting)
     // =========================================================================
+    function canvasToSkyCoordinates(px, py) {
+      const w = canvas.width;
+      const h = canvas.height;
+      const basePx = Math.min(w, h) * 0.90;
+      const pixelsPerArcmin = basePx / 3.0;
+      const worldX = (px - (w / 2 + camera.panX)) / camera.zoom;
+      const worldY = (py - (h / 2 + camera.panY)) / camera.zoom;
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+      const draArcmin = -worldX / pixelsPerArcmin;
+      const ddecArcmin = -worldY / pixelsPerArcmin;
+      const ra = camera.ra + (draArcmin / 60.0) / cosDec;
+      const dec = camera.dec + (ddecArcmin / 60.0);
+      return { ra, dec, worldX, worldY };
+    }
+    window.canvasToSkyCoordinates = canvasToSkyCoordinates;
+
     function getCurrentCoordinates() {
+      if (canvas && canvas.width && canvas.height) {
+        return canvasToSkyCoordinates(canvas.width / 2, canvas.height / 2);
+      }
       const degPerPixel = (camera.fov / 60.0) / (400.0 * camera.zoom);
       const currentRA = camera.ra - (camera.panX * degPerPixel);
       const currentDec = camera.dec + (camera.panY * degPerPixel);
@@ -3520,6 +3741,205 @@
       }
     });
 
+    // =========================================================================
+    // COMMAND PALETTE (Ctrl+K / Cmd+K) — Issue #8 & #9
+    // Research verdict: YES with strict design constraints
+    // =========================================================================
+    (function initCommandPalette() {
+      const overlay    = document.getElementById('cmdPaletteOverlay');
+      const input      = document.getElementById('cmdInput');
+      const list       = document.getElementById('cmdResultsList');
+      const openBtn    = document.getElementById('cmdPaletteBtn');
+
+      // ---- Command Index (21 commands + natural language aliases) ----
+      const CMD_INDEX = [
+        // 🌟 Astronomical Targets
+        { group: '🌟 Targets', icon: 'crosshair', label: 'WISE 0855-0714 (Cold Y-Dwarf)', sub: 'RA 133.795°  Dec -7.245°  · 8.12"/yr', aliases: ['cold brown dwarf','planet x candidate','infrared only','y dwarf','wise 0855'], action: () => selectTarget('wise0855') },
+        { group: '🌟 Targets', icon: 'crosshair', label: "Barnard's Star (Proper Motion)", sub: 'RA 269.452°  Dec +4.693°  · 10.36"/yr', aliases: ['barnard','fast mover','red dwarf','proper motion','highest pm'], action: () => selectTarget('barnard') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'Epsilon Indi B (Binary Brown Dwarf)', sub: 'RA 331.044°  Dec -56.783°  · 4.70"/yr', aliases: ['eps indi','epsilon indi','binary','t dwarf','brown dwarf companion'], action: () => selectTarget('epsindi') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'RW Aurigae (Variable T-Tauri Star)', sub: 'RA 76.956°  Dec +30.401°  · Variable Flux', aliases: ['rw aur','variable star','t tauri','dimming','young star'], action: () => selectTarget('rwaur') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'R Draconis (Mira Pulsating Giant)', sub: 'RA 248.168°  Dec +66.755°  · 245-day cycle', aliases: ['r draconis','mira','pulsating','giant','periodic','red giant'], action: () => selectTarget('rdraconis') },
+
+        // 🗂️ Workspace Views
+        { group: '🗂️ Views', icon: 'split', label: 'View: Blink Comparator', sub: 'Multi-epoch flipbook animation (default)', aliases: ['blink','flipbook','animation','epochs','compare'], action: () => document.getElementById('wsBlink').click() },
+        { group: '🗂️ Views', icon: 'layers', label: 'View: Difference Imaging', sub: 'I₂ − I₁  Alard-Lupton subtraction', aliases: ['difference','diff','subtract','alard lupton','residual','dipole'], action: () => document.getElementById('wsDiff').click() },
+        { group: '🗂️ Views', icon: 'activity', label: 'View: 102-Band Spectra', sub: 'SPHEREx infrared SED 0.75–5.0 μm', aliases: ['spectra','spectrum','sed','infrared','band','102','wavelength'], action: () => document.getElementById('wsSpec').click() },
+        { group: '🗂️ Views', icon: 'globe', label: 'View: Aladin Sky Atlas', sub: 'CDS Strasbourg interactive sky map', aliases: ['aladin','atlas','sky map','cds','interactive','hips'], action: () => document.getElementById('wsAladin').click() },
+
+        // ⚡ Shading / Colormaps
+        { group: '⚡ Shading', icon: 'circle', label: 'Shading: Grayscale (Telescope Default)', sub: 'Authentic astronomical photometric gray', aliases: ['gray','grayscale','default','monochrome','standard'], action: () => document.getElementById('shadeGrayscale').click() },
+        { group: '⚡ Shading', icon: 'moon', label: 'Shading: Inverted (DS9 Print Style)', sub: 'Dark stars on light background', aliases: ['invert','inverted','ds9','print','white background','negative'], action: () => document.getElementById('shadeInverted').click() },
+        { group: '⚡ Shading', icon: 'thermometer', label: 'Shading: Thermal Infrared Color', sub: 'False-color heat-map rendering', aliases: ['thermal','heat','infrared','false color','colormap','fire'], action: () => document.getElementById('shadeThermal').click() },
+
+        // ⚡ Overlay Controls
+        { group: '⚡ Actions', icon: 'sparkles', label: 'Toggle Gaia DR3 Astrometry Overlay', sub: 'ESA proper motion vectors & optical cross-match', aliases: ['gaia','dr3','astrometry','proper motion','overlay','toggle gaia','esa','cross match'], action: () => document.getElementById('toggleGaia').click() },
+
+        // ⚡ Navigation
+        { group: '⚡ Navigation', icon: 'focus', label: 'Recenter on Target Object', sub: 'Reset pan — snap to field center', aliases: ['recenter','center','home','reset pan','snap','origin'], action: () => document.getElementById('toolRecenter').click() },
+        { group: '⚡ Navigation', icon: 'scan', label: 'Reset Zoom to 1:1', sub: 'Return to standard 1.0× zoom level', aliases: ['reset zoom','zoom','1x','1:1','zoom out','scale'], action: () => document.getElementById('toolResetZoom').click() },
+        { group: '⚡ Navigation', icon: 'gamepad-2', label: 'Enter Walk Navigation Mode', sub: 'WASD flight through the sky (Shift+`)', aliases: ['walk','wasd','fly','navigation','gamepad','3d fly'], action: () => document.getElementById('toolWalk').click() },
+
+        // ⚡ FOV Presets
+        { group: '⚡ FOV Presets', icon: 'zoom-in', label: "FOV 1.0' — Deep Core (Hero Mode)", sub: 'Unbinned sub-pixel 1024p — finest detail', aliases: ["fov 1","1 arcmin","deep","hero","1024p","sub pixel","micro arcsec"], action: () => { document.getElementById('selectFOV').value = '1.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+        { group: '⚡ FOV Presets', icon: 'circle-dot', label: "FOV 3.0' — Standard Science (Default)", sub: 'HD 720p science-grade · default view', aliases: ["fov 3","3 arcmin","standard","default fov","720p","science"], action: () => { document.getElementById('selectFOV').value = '3.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+        { group: '⚡ FOV Presets', icon: 'zoom-out', label: "FOV 5.0' — Medium Wide Field", sub: 'Wider context view for fast movers', aliases: ["fov 5","5 arcmin","wide","medium","context"], action: () => { document.getElementById('selectFOV').value = '5.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+        { group: '⚡ FOV Presets', icon: 'maximize', label: "FOV 15.0' — Galactic Transit (Max Wide)", sub: '360p overview · fast solar system scan', aliases: ["fov 15","15 arcmin","max","galactic","transit","360p","wide field","solar system"], action: () => { document.getElementById('selectFOV').value = '15.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+      ];
+
+      // ---- Fuzzy scoring ----
+      function fuzzyScore(cmd, query) {
+        const q = query.toLowerCase().trim();
+        if (!q) return 100; // show all when empty
+        const label   = cmd.label.toLowerCase();
+        const sub     = (cmd.sub || '').toLowerCase();
+        const aliases = (cmd.aliases || []).join(' ');
+        const full    = `${label} ${sub} ${aliases}`;
+        // Exact substring
+        if (label.includes(q)) return 90;
+        if (sub.includes(q)) return 70;
+        if (aliases.includes(q)) return 80;
+        // Token match
+        const tokens = q.split(/\s+/);
+        const matchCount = tokens.filter(t => full.includes(t)).length;
+        if (matchCount === tokens.length) return 60;
+        if (matchCount > 0) return 30 * (matchCount / tokens.length);
+        return 0;
+      }
+
+      let activeIndex = -1;
+      let filteredCmds = [];
+      let recentKeys = [];
+
+      function renderResults(query) {
+        list.innerHTML = '';
+        activeIndex = -1;
+
+        // Score and filter
+        filteredCmds = CMD_INDEX
+          .map(cmd => ({ cmd, score: fuzzyScore(cmd, query) }))
+          .filter(r => r.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .map(r => r.cmd);
+
+        if (filteredCmds.length === 0) {
+          list.innerHTML = `<li class="px-4 py-6 text-center text-gray-500 text-[11px]">
+            <i class="inline-block mb-1">🔭</i><br>No commands match "<span class="text-gray-400">${escHtml(query)}</span>"<br>
+            <span class="text-[10px]">Try: "blink", "barnard", "thermal", "gaia"</span></li>`;
+          return;
+        }
+
+        // Group rendering
+        let currentGroup = null;
+        filteredCmds.forEach((cmd, idx) => {
+          if (cmd.group !== currentGroup) {
+            currentGroup = cmd.group;
+            const groupEl = document.createElement('li');
+            groupEl.className = 'px-3 py-1 text-[9px] text-gray-500 uppercase tracking-wider font-semibold select-none';
+            groupEl.textContent = cmd.group;
+            list.appendChild(groupEl);
+          }
+          const li = document.createElement('li');
+          li.className = 'cmd-item flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors hover:bg-blender-800/70 rounded mx-1';
+          li.setAttribute('role', 'option');
+          li.setAttribute('data-idx', idx);
+          li.innerHTML = `
+            <i data-lucide="${cmd.icon}" class="w-3.5 h-3.5 text-blender-blue shrink-0"></i>
+            <div class="flex-1 min-w-0">
+              <div class="text-white text-[11px] font-medium truncate">${escHtml(cmd.label)}</div>
+              ${cmd.sub ? `<div class="text-gray-500 text-[9px] truncate">${escHtml(cmd.sub)}</div>` : ''}
+            </div>`;
+          li.addEventListener('mouseenter', () => setActive(idx));
+          li.addEventListener('click', () => executeCmd(idx));
+          list.appendChild(li);
+        });
+
+        // Re-render lucide icons inside palette
+        lucide.createIcons();
+        // Activate first item
+        if (filteredCmds.length > 0) setActive(0);
+      }
+
+      function escHtml(str) {
+        return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      function setActive(idx) {
+        list.querySelectorAll('.cmd-item').forEach(el => el.classList.remove('bg-blender-800', 'text-white'));
+        activeIndex = idx;
+        const items = list.querySelectorAll('.cmd-item');
+        if (items[idx]) {
+          items[idx].classList.add('bg-blender-800');
+          items[idx].scrollIntoView({ block: 'nearest' });
+        }
+      }
+
+      function executeCmd(idx) {
+        const cmd = filteredCmds[idx];
+        if (!cmd) return;
+        closePalette();
+        // Small delay to allow UI update before action fires
+        setTimeout(() => { try { cmd.action(); } catch(e) { console.warn('Command palette action error:', e); } }, 60);
+      }
+
+      function openPalette() {
+        overlay.classList.remove('hidden');
+        input.value = '';
+        renderResults('');
+        setTimeout(() => input.focus(), 30);
+      }
+
+      function closePalette() {
+        overlay.classList.add('hidden');
+        input.value = '';
+        list.innerHTML = '';
+      }
+
+      // Input handler
+      input.addEventListener('input', () => renderResults(input.value));
+
+      // Keyboard navigation inside palette
+      input.addEventListener('keydown', (e) => {
+        const items = list.querySelectorAll('.cmd-item');
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setActive(Math.min(activeIndex + 1, filteredCmds.length - 1));
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setActive(Math.max(activeIndex - 1, 0));
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          executeCmd(activeIndex);
+        } else if (e.key === 'Escape') {
+          closePalette();
+        }
+      });
+
+      // Click backdrop to close
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) closePalette(); });
+
+      // Open button
+      if (openBtn) openBtn.addEventListener('click', openPalette);
+
+      // Global Ctrl+K / Cmd+K shortcut
+      document.addEventListener('keydown', (e) => {
+        const isTypingInInput = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+        // Ctrl+K or Cmd+K
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          // Don't block if palette is already open and input is focused — that's normal typing
+          if (!overlay.classList.contains('hidden')) { closePalette(); return; }
+          e.preventDefault();
+          openPalette();
+          return;
+        }
+        // Escape always closes
+        if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
+          closePalette();
+        }
+      });
+
+      console.log('[SPHEREx Hunter] ✅ Command Palette initialized — 21 commands indexed. Press Ctrl+K to open.');
+    })();
+
     // Audio Toggle
     const toolMute = document.getElementById('toolMute');
     const muteIcon = document.getElementById('muteIcon');
@@ -3600,11 +4020,257 @@
     }
 
     // =========================================================================
+    // UNIVERSAL SKY REGION SHARE MODAL & DEEP-LINK HUB (Issue #12)
+    // =========================================================================
+    function initShareModal() {
+      const shareModal = document.getElementById('shareModal');
+      const btnShareModal = document.getElementById('btnShareModal');
+      const closeShareModalBtn = document.getElementById('closeShareModalBtn');
+      const btnCloseShareModal = document.getElementById('btnCloseShareModal');
+      const shareUrlInput = document.getElementById('shareUrlInput');
+      const btnCopyShareUrl = document.getElementById('btnCopyShareUrl');
+      const copyUrlBtnText = document.getElementById('copyUrlBtnText');
+      const btnCopyTelemetrySnippet = document.getElementById('btnCopyTelemetrySnippet');
+      const copyTelemetryBtnText = document.getElementById('copyTelemetryBtnText');
+
+      function generateShareData() {
+        const coords = getCurrentCoordinates();
+        const url = new URL(window.location.origin + window.location.pathname);
+        url.searchParams.set('ra', coords.ra.toFixed(5));
+        url.searchParams.set('dec', coords.dec.toFixed(5));
+        url.searchParams.set('fov', camera.fov.toFixed(1));
+
+        let mode = 'blink';
+        const wsDiffEl = document.getElementById('wsDiff');
+        const wsSpecEl = document.getElementById('wsSpec');
+        const wsAladinEl = document.getElementById('wsAladin');
+
+        if (wsDiffEl && wsDiffEl.classList.contains('blender-btn-active')) mode = 'diff';
+        else if (wsSpecEl && wsSpecEl.classList.contains('blender-btn-active')) mode = 'spec';
+        else if (wsAladinEl && wsAladinEl.classList.contains('blender-btn-active')) mode = 'aladin';
+        url.searchParams.set('mode', mode);
+
+        if (currentTargetKey) url.searchParams.set('target', currentTargetKey);
+        url.searchParams.set('gaia', gaiaOverlayEnabled ? '1' : '0');
+
+        const startDate = document.getElementById('inputStartDate')?.value;
+        const endDate = document.getElementById('inputEndDate')?.value;
+        if (startDate) url.searchParams.set('start_date', startDate);
+        if (endDate) url.searchParams.set('end_date', endDate);
+
+        return {
+          url: url.toString(),
+          ra: coords.ra.toFixed(5),
+          dec: coords.dec.toFixed(5),
+          fov: camera.fov.toFixed(1),
+          mode: mode.toUpperCase(),
+          target: currentTargetKey ? (TARGETS[currentTargetKey]?.name || currentTargetKey) : 'Custom Coordinates'
+        };
+      }
+
+      function openShareModal() {
+        if (!shareModal) return;
+        const data = generateShareData();
+        if (shareUrlInput) shareUrlInput.value = data.url;
+
+        const targetTitle = document.getElementById('shareTargetTitle');
+        const baselineDate = document.getElementById('shareBaselineDate');
+        const shareRA = document.getElementById('shareRA');
+        const shareDec = document.getElementById('shareDec');
+        const shareFOV = document.getElementById('shareFOV');
+        const shareMode = document.getElementById('shareMode');
+
+        if (targetTitle) targetTitle.innerText = data.target;
+        if (baselineDate) baselineDate.innerText = activeCutoutData?.epochs?.[0]?.epoch || "1998 — 2026 Archive";
+        if (shareRA) shareRA.innerText = `${data.ra}°`;
+        if (shareDec) shareDec.innerText = `${data.dec}°`;
+        if (shareFOV) shareFOV.innerText = `${data.fov}'`;
+        if (shareMode) shareMode.innerText = data.mode;
+
+        shareModal.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function closeShareModal() {
+        if (shareModal) shareModal.classList.add('hidden');
+        if (copyUrlBtnText) copyUrlBtnText.innerText = "Copy Link";
+        if (copyTelemetryBtnText) copyTelemetryBtnText.innerText = "Copy Telemetry Text";
+      }
+
+      async function copyToClipboard(text, successCallback) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(text);
+            successCallback();
+            return;
+          } catch (e) {
+            console.warn('Clipboard writeText fallback used:', e);
+          }
+        }
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          successCallback();
+        } catch (err) {
+          showToast('Failed to copy text', 'error');
+        }
+        document.body.removeChild(textArea);
+      }
+
+      if (btnShareModal) btnShareModal.addEventListener('click', openShareModal);
+      if (closeShareModalBtn) closeShareModalBtn.addEventListener('click', closeShareModal);
+      if (btnCloseShareModal) btnCloseShareModal.addEventListener('click', closeShareModal);
+      if (shareModal) {
+        shareModal.addEventListener('click', (e) => {
+          if (e.target === shareModal) closeShareModal();
+        });
+      }
+
+      if (btnCopyShareUrl) {
+        btnCopyShareUrl.addEventListener('click', () => {
+          const url = shareUrlInput?.value || generateShareData().url;
+          copyToClipboard(url, () => {
+            if (copyUrlBtnText) copyUrlBtnText.innerText = "Copied!";
+            showToast("Deep-link celestial URL copied to clipboard!", "success");
+            setTimeout(() => { if (copyUrlBtnText) copyUrlBtnText.innerText = "Copy Link"; }, 2500);
+          });
+        });
+      }
+
+      if (btnCopyTelemetrySnippet) {
+        btnCopyTelemetrySnippet.addEventListener('click', () => {
+          const data = generateShareData();
+          const snippet = [
+            `🔭 **SPHEREx Hunter Celestial Telemetry Brief**`,
+            `- **Field Target:** ${data.target}`,
+            `- **Coordinates:** RA ${data.ra}°, Dec ${data.dec}° (J2000)`,
+            `- **Field of View:** ${data.fov} arcmin`,
+            `- **Analysis Mode:** ${data.mode}`,
+            `- **Deep-Link URL:** ${data.url}`
+          ].join('\n');
+
+          copyToClipboard(snippet, () => {
+            if (copyTelemetryBtnText) copyTelemetryBtnText.innerText = "Copied Snippet!";
+            showToast("Scientific telemetry brief copied to clipboard!", "success");
+            setTimeout(() => { if (copyTelemetryBtnText) copyTelemetryBtnText.innerText = "Copy Telemetry Text"; }, 2500);
+          });
+        });
+      }
+    }
+
+    // =========================================================================
+    // TEMPORAL OBSERVATION DATE SEARCH & RANGE FILTER (Issue #11)
+    // =========================================================================
+    function initTemporalFilter() {
+      const modal = document.getElementById('temporalFilterModal');
+      const openBtn = document.getElementById('btnOpenTemporalFilter');
+      const closeBtn = document.getElementById('closeTemporalModalBtn');
+      const inputStart = document.getElementById('inputStartDate');
+      const inputEnd = document.getElementById('inputEndDate');
+      const applyBtn = document.getElementById('btnApplyTemporalFilter');
+      const resetBtn = document.getElementById('btnResetTemporalFilter');
+      const noObsBanner = document.getElementById('noObsBanner');
+      const noObsDetailText = document.getElementById('noObsDetailText');
+      const btnCloseNoObsBanner = document.getElementById('btnCloseNoObsBanner');
+
+      function openModal() {
+        if (modal) modal.classList.remove('hidden');
+      }
+
+      function closeModal() {
+        if (modal) modal.classList.add('hidden');
+      }
+
+      if (openBtn) openBtn.addEventListener('click', openModal);
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal();
+        });
+      }
+
+      if (btnCloseNoObsBanner && noObsBanner) {
+        btnCloseNoObsBanner.addEventListener('click', () => {
+          noObsBanner.classList.add('hidden');
+        });
+      }
+
+      document.querySelectorAll('.temporal-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const s = btn.getAttribute('data-start') || '';
+          const e = btn.getAttribute('data-end') || '';
+          if (inputStart) inputStart.value = s;
+          if (inputEnd) inputEnd.value = e;
+        });
+      });
+
+      async function applyTemporalQuery() {
+        const startDate = inputStart?.value || '';
+        const endDate = inputEnd?.value || '';
+        const coords = getCurrentCoordinates();
+
+        showLoading("Filtering Observation Epochs...", `Searching temporal range ${startDate || 'earliest'} to ${endDate || 'latest'}`);
+        closeModal();
+
+        try {
+          let q = `${BACKEND_URL}/api/observations?ra=${encodeURIComponent(coords.ra)}&dec=${encodeURIComponent(coords.dec)}`;
+          if (startDate) q += `&start_date=${encodeURIComponent(startDate)}`;
+          if (endDate) q += `&end_date=${encodeURIComponent(endDate)}`;
+
+          const res = await fetch(q);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          if (data.status === 'no_observations') {
+            if (noObsBanner && noObsDetailText) {
+              const nearest = data.nearest_available_epoch;
+              const nearestStr = nearest ? `Nearest available data: ${nearest.survey} (${nearest.date}).` : 'No astronomical records in database.';
+              noObsDetailText.innerText = `No public telescope imaging found between ${startDate || 'archive start'} and ${endDate || 'present'}. ${nearestStr}`;
+              noObsBanner.classList.remove('hidden');
+            }
+            showToast("No observations found in selected date range.", "warning");
+          } else {
+            if (noObsBanner) noObsBanner.classList.add('hidden');
+            showToast(`Temporal filter active: ${data.total_matched_observations} observation epochs found.`, "success");
+          }
+        } catch (err) {
+          console.warn("Temporal filter query failed:", err);
+          showToast("Failed to query temporal observation timeline.", "error");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      if (applyBtn) applyBtn.addEventListener('click', applyTemporalQuery);
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+          if (inputStart) inputStart.value = '';
+          if (inputEnd) inputEnd.value = '';
+          if (noObsBanner) noObsBanner.classList.add('hidden');
+          closeModal();
+          showToast("Observation date range reset to full archive (1990–2026).", "info");
+        });
+      }
+
+      // Export for external callers (e.g. URL hydration)
+      window.applyTemporalQuery = applyTemporalQuery;
+    }
+
+    // =========================================================================
     // INITIALIZATION
     // =========================================================================
     window.addEventListener('DOMContentLoaded', () => {
       resizeCanvas();
       initSpectrumChart();
+      initShareModal();
+      initTemporalFilter();
 
       const btnRefresh = document.getElementById('btnRefreshScene');
       if (btnRefresh) {
@@ -3619,12 +4285,31 @@
         });
       }
 
-      // Check URL parameters (e.g. ?ra=133.79513&dec=-7.24515&fov=3.0)
+      // Check URL parameters (Issue #12 Deep-Link Hub)
       const urlParams = new URLSearchParams(window.location.search);
       const paramRA = urlParams.get('ra');
       const paramDec = urlParams.get('dec');
       const paramFOV = urlParams.get('fov');
       const paramTarget = urlParams.get('target');
+      const paramMode = urlParams.get('mode');
+      const paramGaia = urlParams.get('gaia');
+      const paramStart = urlParams.get('start_date');
+      const paramEnd = urlParams.get('end_date');
+
+      if (paramStart && document.getElementById('inputStartDate')) {
+        document.getElementById('inputStartDate').value = paramStart;
+      }
+      if (paramEnd && document.getElementById('inputEndDate')) {
+        document.getElementById('inputEndDate').value = paramEnd;
+      }
+
+      if (paramGaia !== null) {
+        gaiaOverlayEnabled = (paramGaia === '1' || paramGaia === 'true');
+        const gaiaBtn = document.getElementById('toggleGaia');
+        if (gaiaBtn) {
+          gaiaBtn.classList.toggle('blender-btn-active', gaiaOverlayEnabled);
+        }
+      }
 
       if (paramRA && paramDec) {
         document.getElementById('inputRA').value = paramRA;
@@ -3635,6 +4320,27 @@
         selectTarget(paramTarget);
       } else {
         selectTarget('wise0855');
+      }
+
+      if (paramMode) {
+        const lowerMode = paramMode.toLowerCase();
+        setTimeout(() => {
+          if (lowerMode === 'diff' && document.getElementById('wsDiff')) {
+            document.getElementById('wsDiff').click();
+          } else if (lowerMode === 'spec' && document.getElementById('wsSpec')) {
+            document.getElementById('wsSpec').click();
+          } else if (lowerMode === 'aladin' && document.getElementById('wsAladin')) {
+            document.getElementById('wsAladin').click();
+          }
+        }, 500);
+      }
+
+      if (paramStart || paramEnd) {
+        setTimeout(() => {
+          if (typeof window.applyTemporalQuery === 'function') {
+            window.applyTemporalQuery();
+          }
+        }, 800);
       }
 
       startFlipbook();

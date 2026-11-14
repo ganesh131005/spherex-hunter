@@ -314,3 +314,9 @@
   - Asynchronously queries adjacent near coordinates from NASA IRSA (`fetchNeighborTile(dx, dy)`).
   - Renders continuous Poisson-noise and stellar PSF distribution so there is zero empty black void when zoomed out.
   - Displays dynamic HUD status badge `#vpMosaicBadge`: `Mosaic: 3×3 Near Tiles` or `Mosaic: 5×5 Near Tiles`.
+- [x] Resolved GitHub Issues #8, #9, #10, #11, and #12:
+  - **Issue #8 & #9 (Command Palette Ctrl+K):** Integrated fast fuzzy search command palette indexed with 21 astronomical actions, target slew navigation, colormaps, mode switches, and citizen science workflows.
+  - **Issue #10 (Continuous Raytracing-like Sky Tiling & Continuous Adaptive LOD):** Implemented `canvasToSkyCoordinates(px, py)` frustum raycasting with spherical trigonometry cos(Dec) correction, smooth adjacent boundary tile footprints and seamless multi-coordinate continuous LOD without pop-in or black voids.
+  - **Issue #11 (Temporal Date/Time Range Filtering & Honest Science Reporting):** Built temporal query modal with quick era presets (Photographic Plates 1950-1996, Infrared Baselines 1997-2024, SPHEREx Mission Era 2025+), `/api/observations` endpoint, and honest `#noObsBanner` indicating nearest available telescope epoch when public imaging is absent.
+  - **Issue #12 (Universal Sky Region Share Modal & Deep-Link Parameter Hub):** Built `#shareModal` with one-click URL copy, formatted Markdown research brief copy, and bi-directional URL parameter hydration (`?ra=...&dec=...&fov=...&mode=...&target=...&gaia=...&start_date=...&end_date=...`).
+  - **Full Golden Suite & Unit Test Regression:** 13/13 Golden Suite tests passed and 55/55 unit tests passed. Cleanly integrated and merged with `origin/main`.

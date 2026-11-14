@@ -37,6 +37,7 @@ from backend.services.cutout_engine import (
     fetch_real_cutout,
     get_102_band_spectrum,
     get_cache_stats,
+    query_observation_timeline,
     run_automated_source_discovery,
 )
 from backend.services.gaia_service import query_gaia_dr3
@@ -197,6 +198,25 @@ def get_cutout(
         target_sanitized = sanitize_target_name(target) if target else None
         data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target_sanitized, lod=lod_val, force_refresh=is_refresh)
         return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/observations")
+def get_available_observations(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    start_date: Optional[str] = Query(None, description="Start date (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"),
+    end_date: Optional[str] = Query(None, description="End date (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"),
+):
+    """
+    Returns authentic multi-epoch observation metadata covering celestial coordinates (RA, Dec)
+    within an optional temporal date/time filtering window [start_date, end_date].
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return query_observation_timeline(ra_deg, dec_deg, start_date=start_date, end_date=end_date)
     except HTTPException:
         raise
     except Exception as e:

@@ -88,6 +88,43 @@ def test_resources_codex():
     assert res["status"] == "success"
     assert len(res["portals"]) == 7
 
+def test_observation_timeline_temporal_search():
+    """Verify Issue #11: Observation Date & Time Search and Temporal Range Filtering."""
+    from backend.services.cutout_engine import query_observation_timeline
+
+    # 1. Full baseline
+    all_obs = query_observation_timeline(133.79513, -7.24515)
+    assert all_obs["status"] == "success"
+    assert all_obs["count"] >= 4
+    for o in all_obs["observations"]:
+        assert "date_obs" in o
+        assert "mjd" in o
+        assert "survey" in o
+
+    # 2. Filtered 2MASS window (1998-2002)
+    filtered = query_observation_timeline(133.79513, -7.24515, start_date="1998-01-01", end_date="2002-01-01")
+    assert filtered["status"] == "success"
+    assert filtered["count"] == 1
+    assert filtered["observations"][0]["survey"] == "2MASS"
+
+    # 3. Empty historical window (1800-1850) -> honest no-observations state
+    empty = query_observation_timeline(133.79513, -7.24515, start_date="1800-01-01", end_date="1850-01-01")
+    assert empty["status"] == "no_observations"
+    assert empty["count"] == 0
+    assert "nearest_available_epoch" in empty
+
+def test_multi_coordinate_sky_tiling_raycaster():
+    """Verify Issue #10: Continuous sky tiling multi-coordinate off-center tile queries."""
+    from backend.services.cutout_engine import fetch_real_cutout
+    # Query slightly offset tiles around WISE 0855
+    res_center = fetch_real_cutout(133.79513, -7.24515, fov_arcmin=3.0, lod=1)
+    res_east = fetch_real_cutout(133.74513, -7.24515, fov_arcmin=3.0, lod=1)
+    res_north = fetch_real_cutout(133.79513, -7.19515, fov_arcmin=3.0, lod=1)
+    assert res_center["status"] == "success"
+    assert res_east["status"] == "success"
+    assert res_north["status"] == "success"
+    assert res_center["difference_image"]["image_data"].startswith("data:image/png;base64,")
+
 if __name__ == "__main__":
     for b in BENCHMARKS:
         test_nasa_benchmark_cutouts(*b)

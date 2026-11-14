@@ -26,6 +26,30 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issues #8, #9, #10, #11, #12 — ALL RESOLVED & VERIFIED LIVE on `coolodu/web-frontend`]**
+  - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12 (Universal Share Modal & Deep-Link Parameter Hub — COMPLETE)
+  - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11 (Observation Date & Time Search Range Filtering — COMPLETE)
+  - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10 (Continuous Raytracing-like Sky Tiling & Adaptive LOD — COMPLETE)
+  - **Issue #9 Link:** https://github.com/joker0210G/spherex-hunter/issues/9 (Command Palette Ctrl+K — COMPLETE)
+  - **Issue #8 Link:** https://github.com/joker0210G/spherex-hunter/issues/8 (Command Palette Decision — COMPLETE)
+  - **Verification:** 13/13 Golden Suite tests passed (`test_golden_suite.py`) and 55/55 unit tests passed. Clean integration and merge of `origin/main` into `coolodu/web-frontend`.
+- **[GitHub Native Issue #12 Created — Universal Sky Region Share Modal & Deep-Link Parameter Hub]**
+  - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Adds 1-click `[🔗 Share]` modal generating universal shareable URLs with parameter hydration (`?ra=...&dec=...&fov=...&mode=...`) and formatted astrophysical telemetry briefs for peer collaboration.
+- **[GitHub Native Issue #11 Created — Observation Date & Time Search (Temporal Range Filtering)]**
+  - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11
+  - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` for frontend datepicker HUD) | **Resource:** `resource:standard`
+  - **Scope:** Adds temporal observation querying across multi-epoch surveys. Provides start/end date-time fields, parses `DATE-OBS`/`MJD` FITS header timestamps, and renders explicit no-data state when a chosen window has no observations.
+- **[GitHub Native Issue #10 Created — Continuous Raytracing-like Sky Tiling & Continuous Adaptive LOD Zoom Engine]**
+  - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10
+  - **Track:** `web-frontend` | **Role:** `@coolodu` (Collaborating with `@darkodu` on backend tile streaming) | **Resource:** `resource:compute-heavy`
+  - **Scope:** Solves the single isolated square image problem by introducing continuous camera frustum sky ray-casting/tile streaming, eliminating black voids when panning or zooming out, and replacing discrete integer LOD steps (0, 1, 2) with a smooth continuous LOD scale and seamless sub-patch cross-fading.
+- **[GitHub Issues #8 & #9 — Command Palette Decision & Implementation COMPLETE on `main` & `coolodu/web-frontend`]**
+  - **Decision Issue #8:** https://github.com/joker0210G/spherex-hunter/issues/8
+  - **Implementation Issue #9:** https://github.com/joker0210G/spherex-hunter/issues/9
+  - **Research Verdict: ✅ YES** — 3 independent web searches confirmed Command Palette is SUITABLE with strict design constraints.
+  - **Merged and integrated into `coolodu/web-frontend`:** 21 commands indexed across 5 groups (Targets, Views, Shading, Actions, FOV Presets), fuzzy search with natural language aliases, persistent `[🔍 Ctrl+K]` pill in header, keyboard navigation, and zero-state showing all 5 NASA benchmarks.
 - **[MULTI-SURVEY CATALOG SYNTHESIS & LIVE DATA UPDATE DEPLOYED (@coolodu)]**:
   - Updated all backend/frontend pipelines to synthesize **ESA Gaia DR3**, **2MASS PSC**, **NASA AllWISE + NEOWISE-R**, **NASA SPHEREx DR1 (`spherex.obscore`)**, and **CDS SIMBAD** across all benchmarks plus **Orion Nebula (M42)** and **Sgr A*** (`scripts/update_all_astro_data.py`).
   - Added resilient socket-timeout sessions and fast mirror fallbacks (ESA Gaia <-> IRSA `gaia_dr3_source`, IRSA <-> Harvard CfA VizieR `II/246/out` & `II/328/allwise`) across `backend/services/catalog_engine.py` and `backend/services/gaia_service.py`, plus new endpoints `GET /api/catalog/wise` and `GET /api/catalog/spherex` in `backend/main.py`.
