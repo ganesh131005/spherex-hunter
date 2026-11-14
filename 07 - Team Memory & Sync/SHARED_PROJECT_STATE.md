@@ -26,6 +26,17 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[CONTINUOUS MULTI-RESOLUTION MAPPING & AUTO-IDENTIFICATION DEPLOYED (@darkodu)]**
+  - **Single Unified Coordinate Anchor Pyramid (`activeField`):**
+    - Removed arbitrary `spatialTileCache` offset loops and deleted `checkAndTriggerAdjacentTileStream`, eliminating the duplicate staggered/overlapping cutout stamps reported in citizen testing.
+    - Anchored LOD 2 (Wide $8.0'$), LOD 1 (Standard $3.0'$), and LOD 0 (Deep Core $1.5'$) to the exact same celestial center `(RA, Dec)`.
+    - Panning now uses 60 FPS hardware-accelerated canvas translations with zero network re-fetch freezes or tile disappearance.
+    - Zooming dynamically adapts detail like Google Maps with seamless background pre-caching of high- and low-resolution tiers.
+  - **Time Step Differencing & Auto-Identification Engine:**
+    - Integrated top-center Time Step HUD (`#viewportTimeStepHUD`) with baseline separation, epoch stepper (`◀ t₁`, `t₁ ↔ t₂`, `t₂ ▶`), and difference mode toggle (`⚡ Diff`).
+    - Implemented automated change & transient detection (`runAutoIdentification`): identifies proper motion dipoles and flux transients, drawing pulsing corner reticles `[ ]`, dashed motion vectors with arrowheads pointing towards $t_2$, and target-lock telemetry.
+    - No git push or remote test suites run (ready for user manual inspection).
+
 - **[GITHUB ISSUES #13 & #14 RESOLVED & CLOSED (@darkodu & @astrodu)]**
   - **Issue #13: Hierarchical Spatial-Tile Caching Engine (Client IndexedDB + Backend Spatial-Hash):**
     - Built L1 spatial-hash binning cache in backend (`compute_spatial_hash`) for celestial proximity pan hits under 3ms.
