@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issues #16, #17, and #18 Reopened After Rigorous Code Audit]**
+  - **Issues Reopened:**
+    * **#18:** Wire Dead Viewport Buttons (Fullscreen & Blink Flip) and Fix Clipped Tooltips (https://github.com/joker0210G/spherex-hunter/issues/18)
+    * **#17:** Implement Interactive Toolbar Modes: Select, Pan, and Arcsec Ruler (https://github.com/joker0210G/spherex-hunter/issues/17)
+    * **#16:** Add Draggable Cursor Resize Splitters for Side Panel and Bottom Bar (https://github.com/joker0210G/spherex-hunter/issues/16)
+  - **Audit Finding:** Codebase inspection revealed zero implementation code existed in `frontend/index.html` despite premature closure comments.
+  - **Execution Order:** Step 1 (Issue #18) -> Step 2 (Issue #17) -> Step 3 (Issue #16).
 - **[GitHub Native Issue #27 Created — Fix Telemetry Overlap, Enlarge Celestial Compass, and Make Arcmin Scale Bar Dynamic to Viewport Zoom]**
   - **Issue #27 Link:** https://github.com/joker0210G/spherex-hunter/issues/27
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
