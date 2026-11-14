@@ -37,6 +37,11 @@ dev = [
     "mypy>=1.9.0",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*"]
+exclude = ["specs*", "frontend*", "demo_cache*", "validation*", "tests*", "tools*", "scripts*"]
+
 [tool.pytest.ini_options]
 minversion = "7.0"
 testpaths = ["tests"]

@@ -11,7 +11,7 @@ except ImportError:
         def parametrize(*args, **kwargs):
             def decorator(fn): return fn
             return decorator
-    class pytest:
+    class pytest:  # noqa: N801
         mark = _DummyMark()
 from astropy.coordinates import SkyCoord
 

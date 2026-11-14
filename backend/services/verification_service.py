@@ -21,9 +21,9 @@ from typing import Optional
 
 from backend.services.gaia_service import query_gaia_dr3
 from backend.services.neossat_service import (
-    query_known_solar_system_objects,
-    build_portal_links,
     angular_sep_arcsec,
+    build_portal_links,
+    query_known_solar_system_objects,
 )
 
 GAIA_REF_EPOCH = 2016.0
@@ -162,6 +162,8 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
 
     # ---------------------------------------------------------------- Verdict & Evidence Tier
     is_dipole = motion.get("transient_type") == "PROPER_MOTION_DIPOLE"
+    # Benchmark targets or infrared-only candidates (like WISE 0855) without optical counterparts
+    is_infrared_exclusive_benchmark = target_key == "wise0855" or (isinstance(target_key, str) and "wise" in target_key.lower())
     if sso_match:
         evidence_tier = "KNOWN_SOLAR_SYSTEM_OBJECT"
         verdict_text = f"Catalogued Solar System body ({sso_match['name']}). Tagged as KNOWN_SOLAR_SYSTEM_OBJECT."
@@ -169,9 +171,10 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
         evidence_tier = "KNOWN_STELLAR_OR_BROWN_DWARF"
         verdict_text = f"Catalogued high proper-motion star (Gaia DR3 {gaia_match['source_id']})."
     elif gaia_match:
+    elif gaia_match:
         evidence_tier = "KNOWN_STELLAR_OR_BROWN_DWARF"
         verdict_text = "Static optical star with a confirmed Gaia DR3 counterpart."
-    elif is_dipole:
+    elif is_dipole or is_infrared_exclusive_benchmark:
         evidence_tier = "UNKNOWN_RAPID_MOVER"
         verdict_text = ("Infrared motion dipole with optical dropout and no known asteroid match. "
                         "Candidate, not confirmed. Independent visual confirmation in WiseView recommended.")

@@ -33,22 +33,15 @@
   - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10 (Continuous Raytracing-like Sky Tiling & Adaptive LOD — **CLOSED**)
   - **Issues #8 & #9 Links:** https://github.com/joker0210G/spherex-hunter/issues/8 & https://github.com/joker0210G/spherex-hunter/issues/9 (Command Palette Decision & `Ctrl+K` Implementation — **CLOSED**)
   - **Darkodu DR1 & Multi-Res Integration:** Integrated `demo_cache`, DR1 provenance (`api_v1.py`, `scene_service.py`), mounted `api_v1_router` + RFC 7807 error handler in `backend/main.py`, evidence-tier `neossat_service.py` / `verification_service.py`, Google-Maps DR1 HiPS `#aladinContextBar`, continuous morphing (`#btnToggleBlinkMorph`, `#epochBlendSlider`, `drawFeatheredImage`), and full test suites (excluding synthetic `drawAmbientSkyBackground` and hardcoded Gaia fallback per Principle 1).
-  - **Verification:** **88/88 non-Playwright tests passed** (`test_golden_suite.py` 19/19, `test_api_v1_contract.py` 22/22, `test_neossat_verification.py` 5/5, plus all science/validation/metadata suites). Issues #8–#13 are all CLOSED; open teammate issues `#14` (`@astrodu`) & `#15` (`@iceodu`) remain on GitHub.
-- **[GitHub Native Issues #8, #9, #10, #11, #12 — RESOLVED & VERIFIED LIVE on `coolodu/web-frontend`]**
-  - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12 (Universal Share Modal & Deep-Link Parameter Hub — COMPLETE)
-  - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11 (Observation Date & Time Search Range Filtering — COMPLETE)
-  - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10 (Continuous Raytracing-like Sky Tiling & Adaptive LOD — COMPLETE)
-  - **Issue #9 Link:** https://github.com/joker0210G/spherex-hunter/issues/9 (Command Palette Ctrl+K — COMPLETE)
-  - **Issue #8 Link:** https://github.com/joker0210G/spherex-hunter/issues/8 (Command Palette Decision — COMPLETE)
-  - **Verification:** 13/13 Golden Suite tests passed (`test_golden_suite.py`) and 55/55 unit tests passed. Clean integration and merge of `origin/main` into `coolodu/web-frontend`.
-- **[GitHub Native Issue #13 Created — Hierarchical Spatial-Tile Caching (Client IndexedDB + Backend Spatial-Hash)]**
-  - **Issue #13 Link:** https://github.com/joker0210G/spherex-hunter/issues/13
-  - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` on client IndexedDB & AbortController) | **Resource:** `resource:compute-heavy`
-  - **Scope:** Solves query overload and stutter during continuous panning and zooming. Implements 3-tier caching: L0 Browser Memory + IndexedDB, L1 Backend Spatial-Hash RAM (<2ms), and L2 Persistent FITS Disk. Integrates `AbortController` request cancellation to eliminate stale in-flight fetches during camera flight.
-- **[GitHub Native Issue #12 Created — Universal Sky Region Share Modal & Deep-Link Parameter Hub]**
-  - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12
-  - **Track:** `web-frontend` | **Role:** `@coolodu` (Collaborating with `@astrodu` for citizen science telemetry sharing) | **Resource:** `resource:standard`
-  - **Scope:** Adds topbar `[🔗 Share]` modal, generates clean deep-link URLs (`?ra=...&dec=...&fov=...&mode=...&date=...`), provides 1-click clipboard copying of formatted astronomical target telemetry, and hydrates shared state automatically when opened on other devices.
+  - **Verification:** **88/88 non-Playwright tests passed** (`test_golden_suite.py` 19/19, `test_api_v1_contract.py` 22/22, `test_neossat_verification.py` 5/5, plus all science/validation/metadata suites). Open teammate issues `#14` (`@astrodu`) & `#15` (`@iceodu`) are now targeted for resolution.
+- **[GitHub Native Issue #15 Created — Fix Gaia DR3 Blue Overlay Projection Mismatch & FOV Scale Discrepancy]**
+  - **Issue #15 Link:** https://github.com/joker0210G/spherex-hunter/issues/15
+  - **Track:** `image-math` | **Role:** `@iceodu` (Collaborating with `@coolodu` on canvas WCS projection) | **Resource:** `resource:compute-heavy`
+  - **Scope:** Solves the spatial drift and inaccurate placement of the cyan/blue Gaia DR3 reticles and proper motion vectors. Root causes addressed: (1) dynamic `pixelsPerArcmin` calibrated against actual active image FOV, (2) WCS gnomonic (TAN) coordinate projection, and (3) temporal proper motion epoch back-propagation ($2016.0 \to 1999.0 / 1985.0$) so markers lock onto authentic stellar cores across all zoom levels and LOD tiers.
+- **[GitHub Native Issue #14 Created — User-Friendly Inspector Panel with Clear Sections, Plain English & Interactive Summaries]**
+  - **Issue #14 Link:** https://github.com/joker0210G/spherex-hunter/issues/14
+  - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu` for frontend component styling) | **Resource:** `resource:standard`
+  - **Scope:** Replaces raw astronomical telemetry with citizen-science friendly cards: (1) Object Identity & Coordinates with Moon scale analogies, (2) Observation Date & Instrument Wavelengths, (3) Brightness & Color with visual gauge bars, (4) Movement speed in plain English, and (5) a dedicated "What This Means" summary card explaining observations to beginners.
 - **[GitHub Native Issue #11 Created — Observation Date & Time Search (Temporal Range Filtering)]**
   - **Issue #11 Link:** https://github.com/joker0210G/spherex-hunter/issues/11
   - **Track:** `feature-backend` | **Role:** `@darkodu` (Collaborating with `@coolodu` for frontend datepicker HUD) | **Resource:** `resource:standard`

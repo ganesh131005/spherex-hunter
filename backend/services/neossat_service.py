@@ -17,10 +17,10 @@ fabricated. When an archive is unreachable the response says so explicitly
 ("status": "unavailable") instead of inventing objects.
 """
 
-import ssl
 import json
-import time
 import math
+import ssl
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
