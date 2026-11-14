@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #31 Created — Fix Bottom Telemetry Overlap, Enlarge Compass Reticle to 36px, and Make Arcmin Scale Bar Dynamic]**
+  - **Issue #31 Link:** https://github.com/joker0210G/spherex-hunter/issues/31
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Forensic Diagnosis:**
+    1. Overlap occurs because `vpMosaicBadge` injects `Optical Lens: Contiguous NASA FITS Master Field` into `bottom-3 left-3` without a max-width limit, causing it to collide with the backdrop blur of `bottom-3 right-3`.
+    2. Compass is cramped in a tiny `w-5 h-5` (20px) container with unreadable `text-[8px]` labels.
+    3. Scale bar is completely static HTML (`<div class="w-16 h-1 bg-cyan-400"></div><span>1.0 Arcmin</span>`) with zero dynamic JavaScript math connected to viewport zoom or FOV.
 - **[Verification-Before-Close Guardrail Adopted & Issues #19, #20, #21, #22 Reopened]**
   - **Rule Adopted:** Updated `GEMINI.md` with strict 3-point physical audit requirement (Git commit check, AST/DOM grep check, functional test check) before closing any issue.
   - **Issues Reopened:**
