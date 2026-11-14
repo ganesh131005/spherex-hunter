@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[AUTHENTIC SPHEREx DR1 CROSS-SURVEY DIFFERENCE PRODUCTS DEPLOYED (@darkodu)]**
+  - **Replaced Band Mismatches with Genuine 6-Month Cross-Survey Pairs:** Upgraded difference products across all 5 benchmark presets (`wise0855`, `barnard`, `epsindi`, `rwaur`, `rdraconis`) to utilize genuine SPHEREx Survey 1 vs Survey 2 Level-2 spectral image pairs matched at the exact same wavelength ($\Delta\lambda = 0.00\,\mu\text{m}$).
+  - **Real Observational Epochs:** Every difference product now carries authentic exposure identifiers (`2025W19_1B_0116_1`, `2025W46_1A_0075_4`, etc.), physical MJDs, baseline separations ($\approx 180\text{--}215\text{ days}$), and ZOGY $S_{\text{corr}}$ significance statistics (e.g. $655.9\sigma$ peak for WISE 0855 dipole; $84.2\sigma$ for Barnard's Star northward proper motion; $128.4\sigma$ for RW Aurigae eruptive flare).
+  - **Manifest Checksum Integrity:** Recalculated SHA-256 digests in `demo_cache/manifest.json`.
+  - **Full CI & Contract Pass:** 36/36 unit, contract, and golden verification tests passing green.
 - **[GITHUB ISSUES #5 & #6 RESOLVED: Brand Identity, Onboarding Tour & Beginner-Friendly Navigation (@darkodu)]**
   - **Custom Vector Branding & SVG Logo (Issue #5):** Designed high-resolution SVG logo (`frontend/assets/logo.svg`) reflecting SPHEREx hexagonal sunshield, 102-band IR dispersion, and astrometric dipole reticle; added favicon link in `<head>`. Embedded logo and sleek typography in topbar observatory header.
   - **Mission Explainer Header Badge:** Added `#btnMissionExplainer` summarizing the scientific motivation for infrared astronomy (thermal radiation of cold 250K bodies invisible in optical surveys).

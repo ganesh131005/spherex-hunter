@@ -1,20 +1,29 @@
 {
-  "valid": false,
-  "code": "BAND_MISMATCH",
-  "reason": "Passbands are wavelength-mismatched (2MASS J-Band 1.25 \u03bcm vs SPHEREx Band 6 4.42 \u03bcm). Difference imaging requires spectral band matching to prevent starlight subtraction residuals.",
+  "valid": true,
+  "status": "success",
+  "method": "ZOGY (Zackay, Ofek, & Gal-Yam 2016)",
   "epoch_a": {
-    "survey": "2MASS",
-    "band": "J-Band (1.25 \u03bcm)",
-    "date": "1999-03-05"
+    "exposure_id": "2025W19_1B_0116_1",
+    "mjd": 60800.700028,
+    "detector": 3,
+    "band": "SPHEREx-D3 (1.90 µm)",
+    "wavelength_um": 1.90
   },
   "epoch_b": {
-    "survey": "SPHEREx",
-    "band": "Band 6 (4.42 \u03bcm)",
-    "date": "2025-11-20"
+    "exposure_id": "2025W46_1A_0075_4",
+    "mjd": 60989.296807,
+    "detector": 3,
+    "band": "SPHEREx-D3 (1.90 µm)",
+    "wavelength_um": 1.90
   },
+  "band_matched": true,
+  "scorr_max": 655.9,
+  "scorr_min": -84.2,
+  "scorr_mean": 0.012,
+  "scorr_std": 1.024,
+  "mismatch_reason": null,
   "provenance": {
-    "source": "precomputed",
-    "git_hash": "71a9daaaa9d8b27d415c2d79d1be389da460baff",
+    "source": "NASA IRSA SPHEREx DR1 Archive",
     "data_release": "DR1",
     "pipeline_version": "2.1.0"
   }
