@@ -4135,10 +4135,11 @@
     // SIDEBAR & CITIZEN SCIENCE CANDIDATE MODAL
     // =========================================================================
     const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
-    const propertiesSidebar = document.getElementById('propertiesSidebar');
-    toggleSidebarBtn.addEventListener('click', () => {
-      propertiesSidebar.classList.toggle('hidden');
-    });
+    if (toggleSidebarBtn && propertiesSidebar) {
+      toggleSidebarBtn.addEventListener('click', () => {
+        propertiesSidebar.classList.toggle('hidden');
+      });
+    }
 
     const flagCandidateBtn = document.getElementById('flagCandidateBtn');
     const flagModal = document.getElementById('flagModal');
@@ -4853,7 +4854,6 @@
     const dockPanelTimeline = document.getElementById('dockPanelTimeline');
     const dockPanelSpectrum = document.getElementById('dockPanelSpectrum');
     const dockPanelLightCurve = document.getElementById('dockPanelLightCurve');
-    const dockContentBody = document.getElementById('dockContentBody');
     const btnToggleDock = document.getElementById('btnToggleDock');
     const dockCollapseIcon = document.getElementById('dockCollapseIcon');
 
