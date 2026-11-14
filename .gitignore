@@ -48,6 +48,9 @@ dist-ssr/
 cache/
 downloads/
 raw_data/
+
+# Third-party Research Vault (manuals, third-party tutorials, sitemaps - see docs/references.md)
+05 - Research & Resources/
 *.bundle
 scratch/
 .env
