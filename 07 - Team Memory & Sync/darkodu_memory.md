@@ -14,7 +14,7 @@
 - [x] Installed and configured `astropy`, `astroquery`, and `pyvo`.
 - [x] Implemented `backend/services/cutout_engine.py` with Astropy ZScale/Asinh FITS stretching, multi-epoch generation, and difference imaging ($I_2 - I_1$).
 - [x] Implemented FastAPI server in `backend/main.py` with `/api/health`, `/api/targets`, `/api/cutout`, `/api/spectrum`, and `/api/flag`.
-- [x] Created `start_backend.bat` for 1-click startup.
+- [x] Created `run_spherex_hunter.bat` for 1-click startup.
 
 - [x] Integrated live NASA IRSA Caltech FinderChart API into `cutout_engine.py` for real-time querying and downloading of authentic 2MASS and DSS2 FITS files for ANY arbitrary celestial coordinates.
 - [x] Implemented dynamic disk caching (`backend/cache/dynamic_fits/`) ensuring instant sub-200ms retrieval on repeated visits to the same coordinates.

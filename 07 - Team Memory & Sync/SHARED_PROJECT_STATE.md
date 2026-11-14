@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Batch Scripts Streamlined: Reduced from 8 to 2 Clean Entry Points]**
+  - Validated and incorporated coolodu's `cmd.exe` bug fix into `run_spherex_hunter.bat` (resolving syntax crash during port 8000 cleanup).
+  - Consolidated 8 scattered batch scripts (`setup_teammate.bat`, `start_backend.bat`, `stop_server.bat`, `sync_all.bat`, `sync_my_work.bat`, `update_from_team.bat`, `test_run.bat`) into **2** clean, dedicated scripts:
+    1. **`run_spherex_hunter.bat`**: 1-click application launcher (handles Python check, auto-port 8000 cleanup, uvicorn server, and browser auto-open).
+    2. **`team_sync.bat`**: Unified Team Sync & Workspace Hub (Interactive menu & CLI shortcuts for safe team radar, 1-click work push, teammate branch setup, and manual server shutdown).
 - **[GitHub Native Issues Live: Issue #1 Assigned to @coolodu]** Migrated task management to official GitHub Native Issues:
   - **Live Issues Board:** https://github.com/joker0210G/spherex-hunter/issues
   - **Issue #1 ([WEB] Tasks 3, 4, 5: WiseView Bridge, CSA NEOSSat Tracking & Resources Codex):** https://github.com/joker0210G/spherex-hunter/issues/1
