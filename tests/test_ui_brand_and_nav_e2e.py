@@ -1,5 +1,5 @@
 import os
-import pytest
+
 from playwright.sync_api import sync_playwright
 
 DOCS_FIGURES = os.path.join(os.path.dirname(__file__), "..", "docs", "figures")

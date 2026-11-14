@@ -179,13 +179,9 @@ def cache_stats():
     """Returns current cache metrics."""
     return get_cache_stats()
 
-
-@app.get("/api/cache/prune")
-def prune_cache(
-    max_mb: float = Query(500.0, description="Soft disk cache cap in MB before eviction"),
-    target_mb: float = Query(350.0, description="Target disk usage in MB after pruning"),
-):
-    """Triggers smart disk auto-pruning daemon while keeping benchmark targets pinned."""
+@app.post("/api/cache/prune")
+def prune_cache(max_mb: float = 500.0, target_mb: float = 350.0):
+    """Triggers smart auto-pruning of dynamic FITS cache based on soft storage quotas."""
     return auto_prune_disk_cache(max_mb=max_mb, target_mb=target_mb)
 
 import astropy.units as u

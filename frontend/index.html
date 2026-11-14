@@ -2321,6 +2321,81 @@
     }
 
     // =========================================================================
+    // AMBIENT CELESTIAL BACKGROUND & FEATHERED EDGE BLENDING (Issue #10 Completion)
+    // =========================================================================
+    let ambientStars = null;
+
+    function initAmbientStars() {
+      if (ambientStars) return;
+      ambientStars = [];
+      for (let i = 0; i < 280; i++) {
+        ambientStars.push({
+          x: (Math.random() - 0.5) * 3600,
+          y: (Math.random() - 0.5) * 3600,
+          r: 0.4 + Math.random() * 1.3,
+          alpha: 0.15 + Math.random() * 0.55
+        });
+      }
+    }
+
+    function drawAmbientSkyBackground(ctx, w, h) {
+      if (!ambientStars) initAmbientStars();
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      for (let i = 0; i < ambientStars.length; i++) {
+        const s = ambientStars[i];
+        ctx.globalAlpha = s.alpha * 0.35;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawFeatheredImage(ctx, img, x, y, w, h, alpha = 1.0) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0.0, Math.min(1.0, alpha));
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, x, y, w, h);
+
+      // Smooth edge vignette: softly blends rectangular cutout borders into continuous space
+      if (!diffMode) {
+        const feather = Math.max(6, Math.min(24, w * 0.05));
+        const bg = '#06080e';
+
+        // Top edge
+        const gTop = ctx.createLinearGradient(0, y, 0, y + feather);
+        gTop.addColorStop(0, bg);
+        gTop.addColorStop(1, 'rgba(6, 8, 14, 0)');
+        ctx.fillStyle = gTop;
+        ctx.fillRect(x - 1, y - 1, w + 2, feather);
+
+        // Bottom edge
+        const gBot = ctx.createLinearGradient(0, y + h, 0, y + h - feather);
+        gBot.addColorStop(0, bg);
+        gBot.addColorStop(1, 'rgba(6, 8, 14, 0)');
+        ctx.fillStyle = gBot;
+        ctx.fillRect(x - 1, y + h - feather, w + 2, feather + 1);
+
+        // Left edge
+        const gLeft = ctx.createLinearGradient(x, 0, x + feather, 0);
+        gLeft.addColorStop(0, bg);
+        gLeft.addColorStop(1, 'rgba(6, 8, 14, 0)');
+        ctx.fillStyle = gLeft;
+        ctx.fillRect(x - 1, y - 1, feather, h + 2);
+
+        // Right edge
+        const gRight = ctx.createLinearGradient(x + w, 0, x + w - feather, 0);
+        gRight.addColorStop(0, bg);
+        gRight.addColorStop(1, 'rgba(6, 8, 14, 0)');
+        ctx.fillStyle = gRight;
+        ctx.fillRect(x + w - feather, y - 1, feather + 1, h + 2);
+      }
+      ctx.restore();
+    }
+
+    // =========================================================================
     // DRAW REAL ASTRONOMICAL FITS IMAGERY (Single Continuous Optical Telescope Lens)
     // =========================================================================
     function drawFeatheredImage(ctx, img, x, y, w, h, alpha = 1.0) {
@@ -2376,8 +2451,16 @@
       ctx.scale(camera.zoom, camera.zoom);
       ctx.imageSmoothingEnabled = true;
 
+      // Ambient celestial background (continuous subtle starfield outside cutout to eliminate black void)
+      if (!diffMode) {
+        drawAmbientSkyBackground(ctx, w, h);
+      }
+
+      // Dynamic focal calibration: Anchor pixelsPerArcmin to the EXACT physical FOV of active image
+      const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
+      const currentTileFov = (activeImg && activeImg.fov) ? activeImg.fov : (camera.fov || 3.0);
       const basePx = Math.min(w, h) * 0.90;
-      const pixelsPerArcmin = basePx / 3.0;
+      const pixelsPerArcmin = basePx / currentTileFov;
 
       // Query layer states from Scene
       const layerA = getSceneLayer('base_epoch_a');
@@ -2395,7 +2478,7 @@
       if (prevEpoch1Img && crossFadeAlpha < 1.0) {
         const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
         if (prevImg && prevImg.complete && isVisible) {
-          const pfov = prevImg.fov || 3.0;
+          const pfov = prevImg.fov || currentTileFov;
           const pw = pfov * pixelsPerArcmin;
           const ph = pfov * pixelsPerArcmin;
           drawFeatheredImage(ctx, prevImg, -pw / 2, -ph / 2, pw, ph, (1.0 - crossFadeAlpha) * layerAlpha);
@@ -2407,7 +2490,7 @@
         const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
         const diffVis = diffLayer ? diffLayer.visible : true;
         if (diffVis && realDiffImg && realDiffImg.complete) {
-          const afov = realDiffImg.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
+          const afov = realDiffImg.fov || currentTileFov;
           const rw = afov * pixelsPerArcmin;
           const rh = afov * pixelsPerArcmin;
           ctx.globalAlpha = diffAlpha;
@@ -2415,34 +2498,18 @@
           ctx.globalAlpha = 1.0;
         }
       } else {
-        const visA = layerA ? layerA.visible : true;
-        const visB = layerB ? layerB.visible : true;
-        const opacityA = layerA ? layerA.opacity : 1.0;
-        const opacityB = layerB ? layerB.opacity : 1.0;
-        const lodFade = (prevEpoch1Img && crossFadeAlpha < 1.0) ? crossFadeAlpha : 1.0;
-
-        // Continuous Epoch Morphing & Blending
-        const alphaA = (1.0 - epochBlend) * opacityA * lodFade;
-        const alphaB = epochBlend * opacityB * lodFade;
-
-        if (visA && realEpoch1Img && realEpoch1Img.complete && alphaA > 0.005) {
-          const afov = realEpoch1Img.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
+        if (isVisible && activeImg && activeImg.complete) {
+          const afov = activeImg.fov || currentTileFov;
           const rw = afov * pixelsPerArcmin;
           const rh = afov * pixelsPerArcmin;
-          drawFeatheredImage(ctx, realEpoch1Img, -rw / 2, -rh / 2, rw, rh, alphaA);
-        }
-
-        if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
-          const bfov = realEpoch2Img.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
-          const rw = bfov * pixelsPerArcmin;
-          const rh = bfov * pixelsPerArcmin;
-          drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB);
+          const effAlpha = (prevEpoch1Img && crossFadeAlpha < 1.0) ? (crossFadeAlpha * layerAlpha) : layerAlpha;
+          drawFeatheredImage(ctx, activeImg, -rw / 2, -rh / 2, rw, rh, effAlpha);
         }
       }
 
       // 3. Draw Coverage Mask Overlay (transparent NaN / unobserved boundary mask)
       if (covLayer && covLayer.visible && realCoverageMaskImg && realCoverageMaskImg.complete) {
-        const mfov = realCoverageMaskImg.fov || 3.0;
+        const mfov = realCoverageMaskImg.fov || currentTileFov;
         const mw = mfov * pixelsPerArcmin;
         const mh = mfov * pixelsPerArcmin;
         ctx.globalAlpha = covLayer.opacity;
@@ -2454,12 +2521,12 @@
       const gaiaVis = gaiaLayer ? gaiaLayer.visible : gaiaOverlayEnabled;
       const gaiaAlpha = gaiaLayer ? gaiaLayer.opacity : 0.85;
       if (gaiaVis) {
-        drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha);
+        drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha, currentTileFov);
       }
 
       // 5. Issue #10: Continuous Raytracing Sky Tiling & adjacent boundary preview
       if (camera.zoom < 0.98 || Math.abs(camera.panX) > 60 || Math.abs(camera.panY) > 60) {
-        drawAdjacentSkyTiling(ctx, pixelsPerArcmin);
+        drawAdjacentSkyTiling(ctx, pixelsPerArcmin, currentTileFov);
       }
 
       ctx.restore();
@@ -2640,20 +2707,56 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    function drawGaiaOverlay(ctx, pixelsPerArcmin, opacity = 0.85) {
+    // Standard WCS Gnomonic Tangent Projection (Plane of Projection @ Camera Center)
+    function projectSkyToTangentialArcmin(ra, dec, centerRa, centerDec) {
+      const deg2rad = Math.PI / 180.0;
+      const r = ra * deg2rad;
+      const d = dec * deg2rad;
+      const r0 = centerRa * deg2rad;
+      const d0 = centerDec * deg2rad;
+
+      const denom = Math.sin(d0) * Math.sin(d) + Math.cos(d0) * Math.cos(d) * Math.cos(r - r0);
+      if (denom <= 0) return null; // Behind celestial horizon
+
+      const xi = (Math.cos(d) * Math.sin(r - r0)) / denom; // in radians
+      const eta = (Math.cos(d0) * Math.sin(d) - Math.sin(d0) * Math.cos(d) * Math.cos(r - r0)) / denom; // in radians
+
+      const rad2arcmin = (180.0 * 60.0) / Math.PI;
+      return {
+        xArcmin: xi * rad2arcmin,
+        yArcmin: eta * rad2arcmin
+      };
+    }
+
+    function drawGaiaOverlay(ctx, pixelsPerArcmin, opacity = 0.85, activeFov = 3.0) {
       if (!gaiaOverlayEnabled || !gaiaSources || gaiaSources.length === 0 || opacity <= 0) return;
       ctx.save();
       ctx.globalAlpha = opacity;
 
-      const cosDec = Math.cos(camera.dec * Math.PI / 180.0);
       const zoom = camera.zoom;
+      // Epoch back-propagation: 2MASS (1999.1) vs SPHEREx/DSS2 (2025.5)
+      const epochYear = (currentFrame === 1) ? 1999.1 : 2025.5;
+      const dt = epochYear - 2016.0;
+
+      // Celestial bounding limit to prevent stars from bleeding beyond active starlight region
+      const maxBoundPx = (activeFov * pixelsPerArcmin * 0.52);
 
       for (let i = 0; i < gaiaSources.length; i++) {
         const src = gaiaSources[i];
-        const draArcmin = (src.ra - camera.ra) * 60.0 * cosDec;
-        const ddecArcmin = (src.dec - camera.dec) * 60.0;
-        const sx = - draArcmin * pixelsPerArcmin;
-        const sy = - ddecArcmin * pixelsPerArcmin;
+        
+        // Propagate coordinate with Gaia DR3 proper motion to target epoch
+        const cosDec = Math.cos(src.dec * Math.PI / 180.0) || 1.0;
+        const propRa = src.ra + (src.pm_ra_mas_yr ? (src.pm_ra_mas_yr / 1000.0 / 3600.0 * dt) / cosDec : 0);
+        const propDec = src.dec + (src.pm_dec_mas_yr ? (src.pm_dec_mas_yr / 1000.0 / 3600.0 * dt) : 0);
+
+        const proj = projectSkyToTangentialArcmin(propRa, propDec, camera.ra, camera.dec);
+        if (!proj) continue;
+
+        const sx = - proj.xArcmin * pixelsPerArcmin;
+        const sy = - proj.yArcmin * pixelsPerArcmin;
+
+        // Clip to current active tile region to eliminate off-canvas distortion
+        if (Math.abs(sx) > maxBoundPx || Math.abs(sy) > maxBoundPx) continue;
 
         const isHovered = hoveredGaiaStar && (hoveredGaiaStar.source_id === src.source_id);
         const hasHighPM = src.total_pm_mas_yr && src.total_pm_mas_yr >= 100;
@@ -2747,8 +2850,10 @@
     function canvasToSkyCoordinates(px, py) {
       const w = canvas.width;
       const h = canvas.height;
+      const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
+      const currentTileFov = (activeImg && activeImg.fov) ? activeImg.fov : (camera.fov || 3.0);
       const basePx = Math.min(w, h) * 0.90;
-      const pixelsPerArcmin = basePx / 3.0;
+      const pixelsPerArcmin = basePx / currentTileFov;
       const worldX = (px - (w / 2 + camera.panX)) / camera.zoom;
       const worldY = (py - (h / 2 + camera.panY)) / camera.zoom;
       const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
@@ -2759,6 +2864,23 @@
       return { ra, dec, worldX, worldY };
     }
     window.canvasToSkyCoordinates = canvasToSkyCoordinates;
+
+    function getVisibleFrustumSkyBounds() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const c1 = canvasToSkyCoordinates(0, 0);
+      const c2 = canvasToSkyCoordinates(w, 0);
+      const c3 = canvasToSkyCoordinates(0, h);
+      const c4 = canvasToSkyCoordinates(w, h);
+      return {
+        minRA: Math.min(c1.ra, c2.ra, c3.ra, c4.ra),
+        maxRA: Math.max(c1.ra, c2.ra, c3.ra, c4.ra),
+        minDec: Math.min(c1.dec, c2.dec, c3.dec, c4.dec),
+        maxDec: Math.max(c1.dec, c2.dec, c3.dec, c4.dec),
+        arcsecPerPixel: (camera.fov * 60.0) / (Math.min(w, h) * camera.zoom)
+      };
+    }
+    window.getVisibleFrustumSkyBounds = getVisibleFrustumSkyBounds;
 
     function getCurrentCoordinates() {
       if (canvas && canvas.width && canvas.height) {
@@ -4207,19 +4329,28 @@
           const worldX = (mouseX - (w / 2 + camera.panX)) / camera.zoom;
           const worldY = (mouseY - (h / 2 + camera.panY)) / camera.zoom;
 
+          const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
+          const currentTileFov = (activeImg && activeImg.fov) ? activeImg.fov : (camera.fov || 3.0);
           const basePx = Math.min(w, h) * 0.90;
-          const pixelsPerArcmin = basePx / 3.0;
-          const cosDec = Math.cos(camera.dec * Math.PI / 180.0);
+          const pixelsPerArcmin = basePx / currentTileFov;
+
+          const epochYear = (currentFrame === 1) ? 1999.1 : 2025.5;
+          const dt = epochYear - 2016.0;
 
           let nearest = null;
           let nearestDist = 20 / camera.zoom;
 
           for (let i = 0; i < gaiaSources.length; i++) {
             const src = gaiaSources[i];
-            const draArcmin = (src.ra - camera.ra) * 60.0 * cosDec;
-            const ddecArcmin = (src.dec - camera.dec) * 60.0;
-            const sx = - draArcmin * pixelsPerArcmin;
-            const sy = - ddecArcmin * pixelsPerArcmin;
+            const cosDec = Math.cos(src.dec * Math.PI / 180.0) || 1.0;
+            const propRa = src.ra + (src.pm_ra_mas_yr ? (src.pm_ra_mas_yr / 1000.0 / 3600.0 * dt) / cosDec : 0);
+            const propDec = src.dec + (src.pm_dec_mas_yr ? (src.pm_dec_mas_yr / 1000.0 / 3600.0 * dt) : 0);
+
+            const proj = projectSkyToTangentialArcmin(propRa, propDec, camera.ra, camera.dec);
+            if (!proj) continue;
+
+            const sx = - proj.xArcmin * pixelsPerArcmin;
+            const sy = - proj.yArcmin * pixelsPerArcmin;
             const dist = Math.hypot(worldX - sx, worldY - sy);
             if (dist < nearestDist) {
               nearestDist = dist;

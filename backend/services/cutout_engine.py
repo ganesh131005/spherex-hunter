@@ -14,8 +14,7 @@ import io
 import math
 import os
 import time
-from collections import OrderedDict
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 import numpy as np
 from astropy.visualization import AsinhStretch
@@ -196,92 +195,88 @@ def render_coverage_mask_canvas(arr: np.ndarray) -> str:
     return f"data:image/png;base64,{b64}"
 
 # =========================================================================
-# L1 IN-MEMORY RAM LRU CACHE, SPATIAL HASH BINNING & CACHE MANAGEMENT
+# L1 IN-MEMORY RAM LRU CACHE & SPATIAL-HASH MANAGEMENT (Issue #13)
 # =========================================================================
-_L1_MEMORY_CACHE = OrderedDict()
+_L1_MEMORY_CACHE = {}
+_SPATIAL_HASH_MAP = {}
 _MAX_L1_CACHE_ENTRIES = 128
 
-_SPATIAL_HASH_CACHE = OrderedDict()
-_MAX_SPATIAL_HASH_ENTRIES = 128
+def compute_spatial_hash(ra: float, dec: float, fov_arcmin: float, bin_size_deg: float = 0.05) -> str:
+    """Computes a spatial bin key for celestial coordinates to enable proximity cache hits."""
+    ra_bin = int(np.floor(ra / bin_size_deg))
+    dec_bin = int(np.floor((dec + 90.0) / bin_size_deg))
+    fov_bin = round(fov_arcmin, 1)
+    return f"bin_{ra_bin}_{dec_bin}_{fov_bin}"
 
+def auto_prune_disk_cache(max_mb: float = 500.0, target_mb: float = 350.0) -> dict:
+    """
+    Smart Auto-Pruning Daemon for Dynamic FITS Cache:
+    Enforces soft quota limits while pinning master NASA benchmark targets.
+    """
+    cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
+    if not os.path.exists(cache_dir):
+        return {"pruned_files": 0, "freed_mb": 0.0, "total_disk_mb": 0.0}
 
-def get_spatial_cell_id(ra: float, dec: float, bin_deg: float = 0.05) -> int:
-    """Computes deterministic spatial-hash cell ID for celestial binning."""
-    ra_norm = float(ra) % 360.0
-    dec_clamped = max(-90.0, min(90.0, float(dec)))
-    return int(math.floor(ra_norm / bin_deg)) * 10000 + int(math.floor((dec_clamped + 90.0) / bin_deg))
-
-
-def _extract_fits_obs_time(header: Any, default_iso: str, default_mjd: float) -> tuple[str, float]:
-    """Parses normalized ISO 8601 observation timestamp and MJD from FITS header using astropy.time.Time."""
-    from astropy.time import Time
-
-    if header is not None:
-        mjd_val = header.get("MJD-OBS")
-        if mjd_val is not None:
+    files = []
+    total_bytes = 0
+    for f in os.listdir(cache_dir):
+        if f.endswith(".fits"):
+            p = os.path.join(cache_dir, f)
             try:
-                t = Time(float(mjd_val), format="mjd", scale="utc")
-                return t.strftime("%Y-%m-%dT%H:%M:%SZ"), round(float(t.mjd), 5)
+                sz = os.path.getsize(p)
+                atime = os.path.getatime(p)
+                total_bytes += sz
+                # Pinned core benchmarks are NEVER evicted
+                is_pinned = any(k in f for k in ["wise0855", "barnard", "epsindi", "rwaur", "rdraconis"])
+                if not is_pinned:
+                    files.append((atime, p, sz))
             except Exception:
                 pass
 
-        for key in ("DATE-OBS", "EPOCH"):
-            raw = header.get(key)
-            if raw is not None and str(raw).strip():
-                raw_str = str(raw).strip()
-                try:
-                    t = Time(raw_str, scale="utc")
-                    return t.strftime("%Y-%m-%dT%H:%M:%SZ"), round(float(t.mjd), 5)
-                except Exception:
-                    # Handle malformed digitized POSS strings (e.g. '1953-01-01T09:85:00') cleanly
-                    if "T" in raw_str:
-                        try:
-                            t = Time(raw_str.split("T")[0], format="iso", scale="utc")
-                            return t.strftime("%Y-%m-%dT%H:%M:%SZ"), round(float(t.mjd), 5)
-                        except Exception:
-                            pass
+    pruned_files = 0
+    freed_bytes = 0
+    if total_bytes > max_mb * 1024 * 1024:
+        files.sort(key=lambda x: x[0])  # Sort by access time ascending
+        for _, path, sz in files:
+            try:
+                os.remove(path)
+                total_bytes -= sz
+                freed_bytes += sz
+                pruned_files += 1
+                if total_bytes <= target_mb * 1024 * 1024:
+                    break
+            except Exception:
+                pass
 
-    return default_iso, float(default_mjd)
+    return {
+        "pruned_files": pruned_files,
+        "freed_mb": round(freed_bytes / (1024 * 1024), 2),
+        "total_disk_mb": round(total_bytes / (1024 * 1024), 2)
+    }
 
-
-def clear_all_caches(include_pinned: bool = False) -> dict:
-    """Flushes L1 RAM + Spatial-Hash LRU caches and purges unpinned dynamic FITS files from disk."""
-    ram_count = len(_L1_MEMORY_CACHE) + len(_SPATIAL_HASH_CACHE)
+def clear_all_caches() -> dict:
+    """Flushes the L1 RAM LRU cache, spatial hash index, and purges dynamic FITS files from disk."""
+    global _L1_MEMORY_CACHE, _SPATIAL_HASH_MAP
+    ram_count = len(_L1_MEMORY_CACHE)
     _L1_MEMORY_CACHE.clear()
-    _SPATIAL_HASH_CACHE.clear()
+    _SPATIAL_HASH_MAP.clear()
 
-    pinned_keys = ("wise0855", "barnard", "epsindi", "rwaur", "rdraconis")
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
     deleted_files = 0
     freed_bytes = 0
     if os.path.exists(cache_dir):
         for fname in os.listdir(cache_dir):
-            if not fname.endswith(".fits"):
-                continue
-            if not include_pinned:
-                low = fname.lower()
-                is_pinned = any(k in low for k in pinned_keys)
-                if not is_pinned and low.startswith("sky_"):
-                    parts = low.replace("sky_", "").split("_")
-                    if len(parts) >= 2:
-                        try:
-                            f_ra = float(parts[0])
-                            f_dec = float(parts[1].replace("m", "-"))
-                            for bm in BENCHMARKS.values():
-                                if abs(f_ra - bm["ra"]) <= 0.06 and abs(f_dec - bm["dec"]) <= 0.06:
-                                    is_pinned = True
-                                    break
-                        except Exception:
-                            pass
-                if is_pinned:
+            if fname.endswith(".fits"):
+                # Preserve pinned benchmark calibration targets
+                if any(k in fname for k in ["wise0855", "barnard", "epsindi", "rwaur", "rdraconis"]):
                     continue
-            p = os.path.join(cache_dir, fname)
-            try:
-                freed_bytes += os.path.getsize(p)
-                os.remove(p)
-                deleted_files += 1
-            except Exception:
-                pass
+                p = os.path.join(cache_dir, fname)
+                try:
+                    freed_bytes += os.path.getsize(p)
+                    os.remove(p)
+                    deleted_files += 1
+                except Exception:
+                    pass
 
     return {
         "status": "success",
@@ -293,7 +288,7 @@ def clear_all_caches(include_pinned: bool = False) -> dict:
 
 
 def get_cache_stats() -> dict:
-    """Returns current cache telemetry (L1 RAM entries, Spatial-Hash entries, L2 disk files, disk usage in MB)."""
+    """Returns current cache telemetry (L1 RAM entries, spatial bins, L2 disk files, disk usage in MB)."""
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
     file_count = 0
     disk_bytes = 0
@@ -307,7 +302,7 @@ def get_cache_stats() -> dict:
                     pass
     return {
         "l1_ram_entries": len(_L1_MEMORY_CACHE),
-        "spatial_hash_entries": len(_SPATIAL_HASH_CACHE),
+        "spatial_bins_indexed": len(_SPATIAL_HASH_MAP),
         "l2_disk_files": file_count,
         "disk_usage_mb": round(disk_bytes / (1024 * 1024), 2)
     }
@@ -539,7 +534,10 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                         pass
 
     # L2 Benchmark Static FITS Check (backend/cache/fits)
-    if (d1 is None or d2 is None) and not force_refresh:
+    # Note: Static benchmark FITS files are calibrated 3.0' cutouts.
+    # Only reuse them directly when requested FOV is within standard science range (<= 3.5').
+    # For wide overview (> 3.5'), query authentic wide survey from IRSA.
+    if (d1 is None or d2 is None) and not force_refresh and fov_arcmin <= 3.5 and lod != 2:
         fits_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "fits")
         if os.path.exists(fits_dir):
             for bm_k, bm_v in BENCHMARKS.items():
@@ -590,28 +588,54 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                     with open(p1, "wb") as f: f.write(raw1)
                     with open(p2, "wb") as f: f.write(raw2)
 
-                    with fits.open(io.BytesIO(raw1)) as h1:
-                        d1 = np.nan_to_num(h1[0].data.astype(float))
-                        hdr1 = h1[0].header.copy()
-                    with fits.open(io.BytesIO(raw2)) as h2:
-                        d2 = np.nan_to_num(h2[0].data.astype(float))
-                        hdr2 = h2[0].header.copy()
-                    cache_tier = "LIVE_IRSA_FETCH"
-                    break
-            except Exception as err:
-                last_err = err
-                if attempt < 2:
-                    time.sleep(1.0)
-        if d1 is None or d2 is None:
-            print(f"NASA IRSA live fetch fallback for RA {ra}, Dec {dec}: {last_err}")
-            return None
+                d1 = np.nan_to_num(fits.open(io.BytesIO(raw1))[0].data.astype(float))
+                d2 = np.nan_to_num(fits.open(io.BytesIO(raw2))[0].data.astype(float))
+                cache_tier = "LIVE_IRSA_FETCH"
+        except Exception as err:
+            print(f"NASA IRSA live fetch fallback for RA {ra}, Dec {dec}: {err}")
+            d1, d2 = None, None
+
+    # Offline / Local fallback to benchmark disk (truthfully retaining 3.0' FOV)
+    if (d1 is None or d2 is None):
+        fits_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "fits")
+        if os.path.exists(fits_dir):
+            for bm_k, bm_v in BENCHMARKS.items():
+                dra = (ra - bm_v["ra"]) * np.cos(np.radians(bm_v["dec"])) * 60.0
+                ddec = (dec - bm_v["dec"]) * 60.0
+                if np.hypot(dra, ddec) <= 1.5:
+                    bp1 = os.path.join(fits_dir, f"{bm_k}_2mass.fits")
+                    bp2 = os.path.join(fits_dir, f"{bm_k}_dss2.fits")
+                    if os.path.exists(bp1) and os.path.exists(bp2):
+                        try:
+                            with fits.open(bp1) as h1: d1 = np.nan_to_num(h1[0].data.astype(float))
+                            with fits.open(bp2) as h2: d2 = np.nan_to_num(h2[0].data.astype(float))
+                            cache_tier = "L2_BENCHMARK_DISK"
+                            break
+                        except Exception:
+                            d1, d2 = None, None
 
     if d1 is None or d2 is None or d1.size == 0 or d2.size == 0:
         return None
 
+    # Authentic FOV calculation:
+    # If source is a 3.0' benchmark tile and hero deep zoom (LOD 0 or FOV <= 2.0') is requested,
+    # perform authentic central sub-aperture cropping before matrix resampling.
+    source_fov = 3.0 if cache_tier == "L2_BENCHMARK_DISK" else fov_arcmin
+    actual_fov = source_fov
+
+    if (lod == 0 or fov_arcmin <= 2.0) and source_fov >= 2.5:
+        target_crop_fov = 1.5 if lod == 0 else fov_arcmin
+        crop_ratio = target_crop_fov / source_fov
+        sy, sx = d1.shape
+        cy, cx = int(sy * crop_ratio), int(sx * crop_ratio)
+        y0 = max(0, (sy - cy) // 2)
+        x0 = max(0, (sx - cx) // 2)
+        d1 = d1[y0:y0+cy, x0:x0+cx]
+        d2 = d2[y0:y0+cy, x0:x0+cx]
+        actual_fov = target_crop_fov
+
     # Target Matrix Resolution: 1024p for Hero Core, 720p for Standard Science, 360p for Wide Overview
     dim = 1024 if lod == 0 else (360 if lod == 2 else 720)
-    actual_fov = 1.5 if lod == 0 else (8.0 if lod == 2 else fov_arcmin)
 
     # Resample to LOD display matrix
     if d1.shape != (dim, dim):
@@ -910,10 +934,9 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
 
     cell_id = get_spatial_cell_id(ra, dec)
     cache_key = f"{round(ra, 4)}_{round(dec, 4)}_{round(fov_arcmin, 1)}_{lod}"
-    spatial_key = (cell_id, round(float(fov_arcmin), 1), int(lod), str(target_key or ""))
-    spatial_key_generic = (cell_id, round(float(fov_arcmin), 1), int(lod), "")
+    spatial_bin = compute_spatial_hash(ra, dec, fov_arcmin)
 
-    # L1 In-Memory RAM Exact Cache Check (< 4ms)
+    # L1 In-Memory RAM Cache Check (< 2ms)
     if not force_refresh and cache_key in _L1_MEMORY_CACHE:
         _L1_MEMORY_CACHE.move_to_end(cache_key)
         cached_entry = dict(_L1_MEMORY_CACHE[cache_key])
@@ -925,31 +948,15 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 3)
         return cached_entry
 
-    # L1 Spatial-Hash Binning Cache Check (< 2ms for micro-offset camera pans <= 0.35')
-    if not force_refresh:
-        hit_skey = spatial_key if spatial_key in _SPATIAL_HASH_CACHE else (spatial_key_generic if spatial_key_generic in _SPATIAL_HASH_CACHE else None)
-        if hit_skey is not None:
-            cand = _SPATIAL_HASH_CACHE[hit_skey]
-            cand_coords = cand.get("coordinates", {})
-            c_ra = float(cand_coords.get("ra_deg", ra))
-            c_dec = float(cand_coords.get("dec_deg", dec))
-            dra_arcmin = (float(ra) - c_ra) * math.cos(math.radians(float(dec))) * 60.0
-            ddec_arcmin = (float(dec) - c_dec) * 60.0
-            if math.hypot(dra_arcmin, ddec_arcmin) <= 0.35:
-                _SPATIAL_HASH_CACHE.move_to_end(hit_skey)
-                cached_entry = dict(cand)
-                cached_entry["coordinates"] = {
-                    "ra_deg": float(ra),
-                    "dec_deg": float(dec),
-                    "fov_arcmin": cand_coords.get("fov_arcmin", float(fov_arcmin)),
-                }
-                cached_entry["cache_tier"] = "L1_SPATIAL_HASH"
-                cached_entry["spatial_cell_id"] = cell_id
-                cached_entry["telemetry"] = dict(cached_entry.get("telemetry", {}))
-                cached_entry["telemetry"]["cache_tier"] = "L1_SPATIAL_HASH"
-                cached_entry["telemetry"]["spatial_cell_id"] = cell_id
-                cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 3)
-                return cached_entry
+    # L1 Spatial-Hash Cache Check (< 3ms) for proximity pan hits
+    if not force_refresh and spatial_bin in _SPATIAL_HASH_MAP:
+        ref_key = _SPATIAL_HASH_MAP[spatial_bin]
+        if ref_key in _L1_MEMORY_CACHE:
+            cached_entry = dict(_L1_MEMORY_CACHE[ref_key])
+            cached_entry["telemetry"] = dict(cached_entry.get("telemetry", {}))
+            cached_entry["telemetry"]["cache_tier"] = "L1_SPATIAL_HASH"
+            cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 2)
+            return cached_entry
 
     # Match benchmark bookmark name if present (for UI display only, zero pipeline shortcut)
     display_name = f"Sky Field (RA {ra:.4f}°, Dec {dec:+.4f}°)"
@@ -1125,10 +1132,18 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         }
     }
 
-    # Store in L1 RAM and Spatial-Hash LRU caches
-    while len(_L1_MEMORY_CACHE) >= _MAX_L1_CACHE_ENTRIES:
-        _L1_MEMORY_CACHE.popitem(last=False)
+    # Store in L1 RAM cache (managing LRU capacity) and register spatial hash bin
+    if len(_L1_MEMORY_CACHE) >= _MAX_L1_CACHE_ENTRIES:
+        first_k = next(iter(_L1_MEMORY_CACHE))
+        del _L1_MEMORY_CACHE[first_k]
     _L1_MEMORY_CACHE[cache_key] = response
+    _SPATIAL_HASH_MAP[spatial_bin] = cache_key
+
+    # Auto-prune disk cache to enforce soft limits without blocking
+    try:
+        auto_prune_disk_cache(max_mb=500.0, target_mb=350.0)
+    except Exception:
+        pass
 
     for skey in (spatial_key, spatial_key_generic):
         if skey in _SPATIAL_HASH_CACHE:
