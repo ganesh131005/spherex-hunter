@@ -17,7 +17,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -58,8 +58,11 @@ FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 if os.path.exists(FRONTEND_DIR):
     app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
-# In-memory discovery ledger (persisted to JSON)
-DISCOVERIES_FILE = os.path.join(os.path.dirname(__file__), "..", "07 - Team Memory & Sync", "candidate_discoveries.json")
+# In-memory discovery ledger (persisted to JSON, overridable via env for isolated testing)
+DISCOVERIES_FILE = os.environ.get(
+    "DISCOVERIES_FILE",
+    os.path.join(os.path.dirname(__file__), "..", "07 - Team Memory & Sync", "candidate_discoveries.json")
+)
 
 class DiscoveryCandidate(BaseModel):
     ra: float
@@ -211,6 +214,25 @@ def get_gaia_astrometry(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/cutout/raw")
+def get_cutout_raw_compat(
+    request: Request,
+    target: str = Query(..., description="Target slug e.g. 'sample_leo' or 'wise0855'"),
+    format: Optional[str] = Query("binary", description="'binary' or 'header'")
+):
+    """Exposes Float32 ArrayBuffer cutout streaming for dynamic client-side stretch sliders."""
+    from backend.api_v1 import get_cutout_raw
+    return get_cutout_raw(request=request, target=target, format=format)
+
+@app.get("/api/cutout/raw/header")
+def get_cutout_raw_header_compat(
+    request: Request,
+    target: str = Query(..., description="Target slug e.g. 'sample_leo' or 'wise0855'")
+):
+    """Exposes JSON WCS header for raw float32 cutout."""
+    from backend.api_v1 import get_cutout_raw_header
+    return get_cutout_raw_header(request=request, target=target)
+
 @app.get("/api/spectrum")
 def get_spectrum(
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
@@ -226,6 +248,43 @@ def get_spectrum(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/bands")
+def get_bands_metadata():
+    """Returns static SPHEREx 6-array x 17-channel (102 bands) structural metadata."""
+    ARRAYS = [
+        {"array_id": "A1", "array_name": "Array 1 (0.75-1.11 µm)", "band_range": "1-17", "range_um": "0.750-1.110", "wavelength_min": 0.750, "wavelength_max": 1.110, "resolving_power": 41, "science": "Optical/NIR boundary, stellar continuum, proper motion stars"},
+        {"array_id": "A2", "array_name": "Array 2 (1.11-1.64 µm)", "band_range": "18-34", "range_um": "1.110-1.640", "wavelength_min": 1.110, "wavelength_max": 1.640, "resolving_power": 41, "science": "2MASS J/H overlap, stellar photospheres"},
+        {"array_id": "A3", "array_name": "Array 3 (1.64-2.42 µm)", "band_range": "35-51", "range_um": "1.640-2.420", "wavelength_min": 1.640, "wavelength_max": 2.420, "resolving_power": 41, "science": "2MASS Ks overlap, warm circumstellar dust"},
+        {"array_id": "A4", "array_name": "Array 4 (2.42-3.82 µm)", "band_range": "52-68", "range_um": "2.420-3.820", "wavelength_min": 2.420, "wavelength_max": 3.820, "resolving_power": 35, "science": "H₂O Ice (3.05 µm), CH₄ Methane (3.30 µm)"},
+        {"array_id": "A5", "array_name": "Array 5 (3.82-4.42 µm)", "band_range": "69-85", "range_um": "3.820-4.420", "wavelength_min": 3.820, "wavelength_max": 4.420, "resolving_power": 110, "science": "CO₂ Ice (4.27 µm), Cold Brown Dwarf thermal peak"},
+        {"array_id": "A6", "array_name": "Array 6 (4.42-5.00 µm)", "band_range": "86-102", "range_um": "4.420-5.000", "wavelength_min": 4.420, "wavelength_max": 5.000, "resolving_power": 130, "science": "CO Carbon Monoxide (4.67 µm), Organics, Planet X emission"}
+    ]
+    channels = []
+    for arr in ARRAYS:
+        w_min = arr["wavelength_min"]
+        w_max = arr["wavelength_max"]
+        w_step = (w_max - w_min) / 16.0
+        start_idx = int(arr["band_range"].split("-")[0])
+        for i in range(17):
+            b_id = start_idx + i
+            w_center = round(w_min + i * w_step, 4)
+            mol = None
+            if abs(w_center - 1.40) < 0.05: mol = "H2O"
+            elif abs(w_center - 3.05) < 0.08: mol = "H2O_ICE"
+            elif abs(w_center - 3.30) < 0.08: mol = "CH4"
+            elif abs(w_center - 4.27) < 0.05: mol = "CO2_ICE"
+            elif abs(w_center - 4.67) < 0.06: mol = "CO"
+            channels.append({
+                "band_id": b_id,
+                "band": b_id,
+                "array_id": arr["array_id"],
+                "array_name": arr["array_name"],
+                "wavelength_um": w_center,
+                "resolving_power": arr["resolving_power"],
+                "molecular_flag": mol
+            })
+    return {"status": "success", "total_bands": 102, "arrays": ARRAYS, "bands": channels}
 
 @app.get("/api/source_discovery")
 def source_discovery(

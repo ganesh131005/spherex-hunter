@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SPHEREx Hunter - Deep Space Infrared Observatory</title>
+  <link rel="icon" type="image/svg+xml" href="/app/assets/logo.svg">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
@@ -158,14 +159,17 @@
 
     <!-- Left: Branding & Workspace Mode Segmented Control -->
     <div class="flex items-center gap-3 shrink-0">
-      <!-- App Brand -->
-      <div class="flex items-center gap-2 pr-3 border-r border-space-700">
-        <div class="w-6 h-6 rounded bg-gradient-to-br from-amber-500 via-blender-orange to-orange-600 flex items-center justify-center font-bold text-white text-xs shadow-md shadow-orange-950/50">
-          <i data-lucide="crosshair" class="w-3.5 h-3.5 text-white"></i>
+      <!-- App Brand & Logo -->
+      <div class="flex items-center gap-2.5 pr-3 border-r border-space-700 cursor-pointer group" id="btnHeaderBrand" title="SPHEREx Hunter: Hunt for Planet Nine, ultra-cool Brown Dwarfs, and Near-Earth Asteroids across 102 NASA SPHEREx infrared spectral bands with multi-epoch blink astrometry and difference imaging. Click to open Mission Guide.">
+        <div class="w-8 h-8 rounded-lg bg-space-950 border border-space-700 flex items-center justify-center relative shadow-md shadow-orange-950/40 group-hover:border-blender-orange transition-all">
+          <img src="/app/assets/logo.svg" alt="SPHEREx Hunter Logo" class="w-6 h-6 object-contain drop-shadow-[0_0_6px_rgba(234,118,0,0.5)] transition-transform group-hover:scale-110" />
         </div>
-        <div class="flex items-baseline gap-1">
-          <span class="font-bold text-white tracking-wide text-sm font-sans">SPHEREx</span>
-          <span class="text-blender-orange font-semibold text-xs tracking-wider">HUNTER</span>
+        <div class="flex flex-col">
+          <div class="flex items-baseline gap-1">
+            <span class="font-bold text-white tracking-wide text-sm font-sans">SPHEREx</span>
+            <span class="text-blender-orange font-bold text-xs tracking-wider">HUNTER</span>
+          </div>
+          <span class="text-[9px] text-gray-400 font-mono hidden xl:inline leading-none">102-Band NASA IR Observatory</span>
         </div>
       </div>
 
@@ -228,46 +232,84 @@
         </button>
 
         <!-- Floating Coordinates Popover Card -->
-        <div id="coordsPopover" class="hidden absolute right-0 top-10 mt-1 w-72 bg-space-900 border border-space-700 rounded-lg p-3 shadow-2xl z-50 space-y-2.5 font-mono">
+        <div id="coordsPopover" class="hidden absolute right-0 top-10 mt-1 w-80 bg-space-900 border border-space-700 rounded-lg p-3.5 shadow-2xl z-50 space-y-3 font-mono">
           <div class="flex items-center justify-between pb-1.5 border-b border-space-700">
             <span class="text-xs font-bold text-white flex items-center gap-1.5">
               <i data-lucide="navigation" class="w-3.5 h-3.5 text-cyan-400"></i>
-              <span>Target Coordinates</span>
+              <span>Celestial Coordinates & FOV</span>
             </span>
             <button id="btnCloseCoordsPopover" class="text-gray-400 hover:text-white text-xs">✕</button>
           </div>
 
-          <div class="space-y-1.5 text-xs">
+          <!-- Format Hint -->
+          <div class="bg-space-950 p-2 rounded border border-space-800 text-[10px] text-gray-400 space-y-0.5">
+            <div class="text-cyan-400 font-semibold flex items-center gap-1">
+              <i data-lucide="help-circle" class="w-3 h-3"></i>
+              <span>Accepted Coordinate Formats:</span>
+            </div>
+            <div>• Decimal: <span class="text-white">133.79513, -7.24515</span></div>
+            <div>• Sexagesimal: <span class="text-white">08h 55m 10.8s, -07d 14m 42s</span></div>
+          </div>
+
+          <div class="space-y-2 text-xs">
             <div>
-              <label class="block text-[10px] text-gray-400 mb-0.5">Right Ascension α (deg):</label>
-              <input id="inputRA" type="text" value="133.79513" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
+              <div class="flex items-center justify-between mb-0.5">
+                <label class="block text-[10px] text-gray-400 font-sans">Right Ascension α (Sky Longitude):</label>
+                <span class="text-[9px] text-cyan-400 cursor-help" title="Right Ascension (Sky Longitude): East-west celestial coordinate (0° to 360° or 0h to 24h). Similar to longitude on Earth.">0° - 360° [?]</span>
+              </div>
+              <input id="inputRA" type="text" value="133.79513" placeholder="e.g. 133.79513 or 08h 55m 10.8s" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
             </div>
             <div>
-              <label class="block text-[10px] text-gray-400 mb-0.5">Declination δ (deg):</label>
-              <input id="inputDec" type="text" value="-7.24515" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
+              <div class="flex items-center justify-between mb-0.5">
+                <label class="block text-[10px] text-gray-400 font-sans">Declination δ (Sky Latitude):</label>
+                <span class="text-[9px] text-cyan-400 cursor-help" title="Declination (Sky Latitude): North-south celestial coordinate (-90° South Pole to +90° North Pole). Similar to latitude on Earth.">-90° - +90° [?]</span>
+              </div>
+              <input id="inputDec" type="text" value="-7.24515" placeholder="e.g. -7.24515 or -07d 14m 42s" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
             </div>
             <div>
-              <label class="block text-[10px] text-gray-400 mb-0.5">Field of View (FOV):</label>
+              <div class="flex items-center justify-between mb-0.5">
+                <label class="block text-[10px] text-gray-400 font-sans">Field of View (Sky Zoom):</label>
+                <span class="text-[9px] text-amber-400 cursor-help" title="Field of View (Sky Zoom): Angular diameter in arcminutes (1' = 1/60th deg). Full Moon is ~30' wide, so 3.0' is 1/10th the width of the Full Moon.">Moon Scale [?]</span>
+              </div>
               <select id="selectFOV" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
-                <option value="1.5">1.5 Arcmin (High-Res Core)</option>
-                <option value="3.0" selected>3.0 Arcmin (Standard Science)</option>
-                <option value="5.0">5.0 Arcmin (Extended Context)</option>
-                <option value="10.0">10.0 Arcmin (Wide Overview)</option>
+                <option value="1.0">1.0' (Deep Core / Micro-Arcsec Dipoles)</option>
+                <option value="1.5">1.5' (High-Res Core / 1/20th Moon Width)</option>
+                <option value="3.0" selected>3.0' (Standard Science / 1/10th Full Moon)</option>
+                <option value="5.0">5.0' (Cluster View / 1/6th Full Moon)</option>
+                <option value="10.0">10.0' (Constellation Patch / 1/3rd Moon)</option>
+                <option value="15.0">15.0' (Wide Survey / Half Moon Width)</option>
               </select>
+            </div>
+          </div>
+
+          <!-- Quick Sky Landmarks Presets -->
+          <div class="border-t border-space-800 pt-2 space-y-1">
+            <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">1-Click Sky Landmarks:</span>
+            <div class="grid grid-cols-2 gap-1 text-[10px]">
+              <button class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate" data-ra="133.79513" data-dec="-7.24515" data-fov="3.0" data-name="WISE 0855">🪐 WISE 0855</button>
+              <button class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate" data-ra="269.45208" data-dec="4.69339" data-fov="3.0" data-name="Barnard">⚡ Barnard's Star</button>
+              <button class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate" data-ra="83.82208" data-dec="-5.39111" data-fov="5.0" data-name="Orion Core">🌌 Orion Core</button>
+              <button class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate" data-ra="266.41683" data-dec="-29.00781" data-fov="5.0" data-name="Sgr A*">🔭 Galactic Center</button>
             </div>
           </div>
 
           <button id="btnGoCoords" class="w-full py-1.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow">
             <i data-lucide="compass" class="w-3.5 h-3.5"></i>
-            <span>Slew Telescope (Fetch)</span>
+            <span>Slew Telescope (Fetch Real FITS)</span>
           </button>
         </div>
       </div>
 
       <!-- Primary Action: Direct Fetch Button -->
-      <button id="btnTopFetch" class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition" title="Fetch multi-epoch FITS cutouts for current coordinates">
+      <button id="btnTopFetch" class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition" title="Query NASA IRSA: Fetch real calibrated FITS cutouts from NASA archives (Enter)">
         <i data-lucide="download" class="w-3.5 h-3.5"></i>
-        <span>Fetch</span>
+        <span>Fetch FITS</span>
+      </button>
+
+      <!-- Citizen Science Mission Guide Button -->
+      <button id="btnOpenOnboarding" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-[11px] font-medium text-amber-300 hover:text-white transition shadow-sm" title="Open Citizen Science Mission Guide & Guided 5-Step Tour">
+        <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span class="hidden sm:inline">Mission Guide</span>
       </button>
 
       <!-- Beginner / Scientist Mode Toggle Pill -->
@@ -828,17 +870,54 @@
         </div>
       </div>
 
-      <!-- PANEL 2: SPECTRUM (102-Band Curve Canvas with Molecular Dips) -->
-      <div id="dockPanelSpectrum" class="h-full hidden px-4 py-2 flex items-center gap-4">
-        <div class="flex-1 h-full relative">
-          <canvas id="spectrumChart"></canvas>
+      <!-- PANEL 2: SPECTRUM (102-Band SPHEREx Spectrophotometry with 6-Array Selector & 17-Wavelength Stepper) -->
+      <div id="dockPanelSpectrum" class="h-full hidden px-3 py-1.5 flex flex-col justify-between gap-1">
+        <!-- Top Toolbar: Array Tabs, Channel Stepper & Science Guide -->
+        <div class="flex items-center justify-between gap-2 shrink-0 border-b border-space-800 pb-1 text-[11px] font-mono flex-wrap">
+          <!-- 6-Array Tabs -->
+          <div class="flex items-center gap-1" id="arrayTabsContainer">
+            <span class="text-[10px] text-gray-400 uppercase font-sans font-semibold mr-1">Array:</span>
+            <button class="array-tab blender-btn blender-btn-active px-2 py-0.5 rounded text-[10px] transition" data-array="A1" title="A1: 0.75-1.11 µm (Optical boundary, stellar continuum)">A1</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition" data-array="A2" title="A2: 1.11-1.64 µm (2MASS J/H overlap, photospheres)">A2</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition" data-array="A3" title="A3: 1.64-2.42 µm (2MASS Ks overlap, circumstellar dust)">A3</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-amber-300" data-array="A4" title="A4: 2.42-3.82 µm (H₂O Ice 3.05 µm, CH₄ 3.30 µm)">A4 🔬</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-orange-300" data-array="A5" title="A5: 3.82-4.42 µm (CO₂ Ice 4.27 µm, Planet X thermal peak)">A5 🔬</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-rose-300" data-array="A6" title="A6: 4.42-5.00 µm (CO 4.67 µm, Organics)">A6 🔬</button>
+          </div>
+
+          <!-- 17-Wavelength Stepper within Array -->
+          <div class="flex items-center gap-1.5 bg-space-950 px-2 py-0.5 rounded border border-space-800 shadow-inner">
+            <button id="chanPrev" class="blender-btn px-1.5 py-0.2 rounded hover:text-white" title="Previous Spectral Channel (Left Arrow)">◀</button>
+            <span id="chanDisplay" class="text-white font-semibold text-[10px] min-w-[150px] text-center">Ch 1 / 17 — λ = 0.750 µm</span>
+            <button id="chanNext" class="blender-btn px-1.5 py-0.2 rounded hover:text-white" title="Next Spectral Channel (Right Arrow)">▶</button>
+            <input type="range" id="chanSlider" min="1" max="17" value="1" class="w-20 h-1.5 bg-space-700 rounded cursor-pointer accent-amber-500">
+            <span id="chanFluxBadge" class="text-amber-400 font-mono text-[9px]">1.00 rel</span>
+          </div>
+
+          <!-- 102-Band Science Explainer Trigger -->
+          <button id="btnOpenBandScience" class="flex items-center gap-1 px-2 py-0.5 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-cyan-300 hover:text-white transition text-[10px]" title="Open SPHEREx 102-Band Science Explainer Modal">
+            <i data-lucide="info" class="w-3 h-3 text-cyan-400"></i>
+            <span>102-Band Science</span>
+          </button>
         </div>
-        <div class="w-48 bg-space-950 p-2 rounded border border-space-700 font-mono text-[10px] space-y-1 shrink-0">
-          <div class="text-gray-400 font-bold uppercase text-[9px] text-cyan-400">Molecular Absorption</div>
-          <div class="flex justify-between"><span class="text-cyan-300">H₂O:</span><span>1.4 μm / 1.9 μm</span></div>
-          <div class="flex justify-between"><span class="text-emerald-400">CH₄:</span><span>3.3 μm</span></div>
-          <div class="flex justify-between"><span class="text-orange-400">CO₂:</span><span>4.3 μm</span></div>
-          <div class="flex justify-between"><span class="text-purple-400">CO:</span><span>4.7 μm</span></div>
+
+        <!-- Middle: Canvas & Molecular Absorption Legend -->
+        <div class="flex-1 flex items-center gap-3 min-h-0 relative">
+          <div class="flex-1 h-full relative">
+            <canvas id="spectrumChart"></canvas>
+          </div>
+          <!-- Molecular Reference Sidebar -->
+          <div class="w-52 bg-space-950 p-2 rounded border border-space-800 font-mono text-[9px] space-y-1 shrink-0 shadow-inner">
+            <div class="text-gray-400 font-bold uppercase text-[9px] text-cyan-400 border-b border-space-800 pb-0.5 flex justify-between">
+              <span>Molecular Signatures</span>
+              <span class="text-gray-500 font-normal">λ (µm)</span>
+            </div>
+            <div class="flex justify-between items-center"><span class="text-sky-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block"></span>H₂O / Vapor:</span><span class="text-gray-300 font-bold">1.40 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-sky-300 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-300 inline-block"></span>H₂O Ice:</span><span class="text-gray-300 font-bold">3.05 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>CH₄ Methane:</span><span class="text-gray-300 font-bold">3.30 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-orange-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-orange-400 inline-block"></span>CO₂ Ice:</span><span class="text-gray-300 font-bold">4.27 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-rose-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block"></span>CO Monoxide:</span><span class="text-gray-300 font-bold">4.67 µm</span></div>
+          </div>
         </div>
       </div>
 
@@ -1073,6 +1152,135 @@
         <div class="flex justify-between py-1 border-b border-space-800"><span>Command Palette</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Ctrl + K</kbd></div>
         <div class="flex justify-between py-1 border-b border-space-800"><span>WASD Walk Nav Flight</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Shift + `</kbd></div>
         <div class="flex justify-between py-1"><span>Dismiss Modals</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Esc</kbd></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CITIZEN SCIENCE MISSION GUIDE & ONBOARDING TOUR MODAL -->
+  <div id="onboardingModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 font-sans text-xs relative overflow-hidden">
+      <!-- Top Glow -->
+      <div class="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-space-700 pb-3">
+        <div class="flex items-center gap-2.5">
+          <img src="/app/assets/logo.svg" alt="SPHEREx Logo" class="w-7 h-7 drop-shadow-[0_0_8px_rgba(234,118,0,0.5)]">
+          <div>
+            <h2 class="font-bold text-white text-sm flex items-center gap-1.5 font-sans">
+              <span>SPHEREx Hunter</span>
+              <span class="text-blender-orange font-mono text-[11px] font-semibold px-1.5 py-0.2 bg-amber-500/10 rounded border border-amber-500/30">Mission Guide</span>
+            </h2>
+            <p class="text-[10px] text-gray-400 font-mono">Citizen Science Walkthrough • Step <span id="tourStepIndicator">1</span> of 5</p>
+          </div>
+        </div>
+        <button id="btnCloseOnboardingModal" class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition">✕</button>
+      </div>
+
+      <!-- Tour Content Slides (Switched via JS) -->
+      <div id="tourSlideContent" class="min-h-[220px] py-1">
+        <!-- Injected via renderTourSlide(step) -->
+      </div>
+
+      <!-- Footer Navigation & Step Progress Dots -->
+      <div class="flex items-center justify-between border-t border-space-700 pt-3">
+        <button id="btnTourSkip" class="text-gray-400 hover:text-gray-200 text-[11px] font-mono hover:underline">Skip Tour</button>
+        
+        <!-- Step Indicator Dots -->
+        <div class="flex items-center gap-1.5" id="tourDotsContainer">
+          <span class="w-2.5 h-2.5 rounded-full bg-blender-orange transition-all duration-200"></span>
+          <span class="w-2 h-2 rounded-full bg-space-700 transition-all duration-200"></span>
+          <span class="w-2 h-2 rounded-full bg-space-700 transition-all duration-200"></span>
+          <span class="w-2 h-2 rounded-full bg-space-700 transition-all duration-200"></span>
+          <span class="w-2 h-2 rounded-full bg-space-700 transition-all duration-200"></span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnTourPrev" class="blender-btn px-3 py-1 rounded text-xs text-gray-400 hover:text-white disabled:opacity-40" disabled>◀ Back</button>
+          <button id="btnTourNext" class="px-4 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs transition shadow flex items-center gap-1">
+            <span>Next</span>
+            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 102-BAND SPHEREX SCIENCE EXPLAINER MODAL -->
+  <div id="bandScienceModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-space-900 border border-space-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 font-sans text-xs relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-space-700 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="activity" class="w-5 h-5 text-emerald-400"></i>
+          <div>
+            <h2 class="font-bold text-white text-sm">SPHEREx 102-Band Infrared Science Guide</h2>
+            <p class="text-[10px] text-gray-400 font-mono">6 Linear Variable Filter (LVF) Detector Arrays × 17 Narrow Spectral Channels</p>
+          </div>
+        </div>
+        <button id="btnCloseBandScienceModal" class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition">✕</button>
+      </div>
+
+      <div class="space-y-3.5 text-gray-300 text-xs">
+        <!-- Section 1 -->
+        <div class="bg-space-950 p-3 rounded-lg border border-space-800 space-y-1.5">
+          <h3 class="text-amber-400 font-bold flex items-center gap-1.5 text-xs">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+            <span>Why 102 Narrow Spectral Bands Matter for Planet X & Cold Brown Dwarfs</span>
+          </h3>
+          <p class="text-[11px] leading-relaxed text-gray-300">
+            Cold sub-stellar bodies like <span class="text-white font-semibold">WISE 0855</span> (at ~250 K / -23°C) and the hypothetical <span class="text-white font-semibold">Planet Nine</span> emit almost entirely in the thermal infrared and are <span class="text-rose-400 font-semibold">completely invisible</span> in optical surveys (Gaia, DSS2). SPHEREx divides the 0.75 µm – 5.00 µm spectrum into 102 contiguous narrow bands, pinpointing the peak thermal emission while distinguishing true cold worlds from background stars.
+          </p>
+        </div>
+
+        <!-- Section 2: 6 Arrays Architecture -->
+        <div class="space-y-1.5">
+          <h4 class="text-white font-bold text-xs uppercase tracking-wider font-mono text-[11px]">The 6 Detector Arrays (A1 – A6)</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono">
+            <div class="bg-space-950 p-2.5 rounded border-l-2 border-indigo-500 border-t border-r border-b border-space-800">
+              <span class="text-indigo-400 font-bold">Array 1 (Bands 1–17):</span> 0.750 – 1.110 µm<br>
+              <span class="text-gray-400">Optical/NIR boundary, stellar continuum, proper motion validation.</span>
+            </div>
+            <div class="bg-space-950 p-2.5 rounded border-l-2 border-cyan-500 border-t border-r border-b border-space-800">
+              <span class="text-cyan-400 font-bold">Array 2 (Bands 18–34):</span> 1.110 – 1.640 µm<br>
+              <span class="text-gray-400">2MASS J/H-band overlap, warm stellar photospheres, H₂O vapor dip.</span>
+            </div>
+            <div class="bg-space-950 p-2.5 rounded border-l-2 border-emerald-500 border-t border-r border-b border-space-800">
+              <span class="text-emerald-400 font-bold">Array 3 (Bands 35–51):</span> 1.640 – 2.420 µm<br>
+              <span class="text-gray-400">2MASS Ks overlap, circumstellar dust, stellar CO bandheads.</span>
+            </div>
+            <div class="bg-space-950 p-2.5 rounded border-l-2 border-amber-500 border-t border-r border-b border-space-800">
+              <span class="text-amber-400 font-bold">Array 4 (Bands 52–68):</span> 2.420 – 3.820 µm 🔬<br>
+              <span class="text-gray-400"><strong class="text-white">H₂O Ice (3.05 µm)</strong> and <strong class="text-white">CH₄ Methane (3.30 µm)</strong> absorption dips.</span>
+            </div>
+            <div class="bg-space-950 p-2.5 rounded border-l-2 border-orange-500 border-t border-r border-b border-space-800">
+              <span class="text-orange-400 font-bold">Array 5 (Bands 69–85):</span> 3.820 – 4.420 µm 🔬<br>
+              <span class="text-gray-400"><strong class="text-white">CO₂ Ice (4.27 µm)</strong> and cold Y-dwarf thermal peak.</span>
+            </div>
+            <div class="bg-space-950 p-2.5 rounded border-l-2 border-rose-500 border-t border-r border-b border-space-800">
+              <span class="text-rose-400 font-bold">Array 6 (Bands 86–102):</span> 4.420 – 5.000 µm 🔬<br>
+              <span class="text-gray-400"><strong class="text-white">CO Monoxide (4.67 µm)</strong>, complex organics, and Planet X emission.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Molecular Absorption Identification Table -->
+        <div class="space-y-1.5">
+          <h4 class="text-white font-bold text-xs uppercase tracking-wider font-mono text-[11px]">Key Molecular Absorption Signatures</h4>
+          <div class="overflow-x-auto rounded border border-space-800">
+            <table class="w-full text-[10px] font-mono text-left">
+              <thead class="bg-space-950 text-gray-400 border-b border-space-800">
+                <tr><th class="p-1.5">Feature</th><th class="p-1.5">Wavelength λ</th><th class="p-1.5">SPHEREx Array</th><th class="p-1.5">Astrophysical Significance</th></tr>
+              </thead>
+              <tbody class="divide-y divide-space-800 text-gray-300">
+                <tr><td class="p-1.5 font-bold text-sky-400">H₂O Vapor</td><td class="p-1.5">1.40 µm</td><td class="p-1.5 text-cyan-400">A2</td><td class="p-1.5">Atmospheric water vapor in low-mass brown dwarfs</td></tr>
+                <tr><td class="p-1.5 font-bold text-sky-300">H₂O Ice</td><td class="p-1.5">3.05 µm</td><td class="p-1.5 text-amber-400">A4</td><td class="p-1.5">Water ice grains in circumstellar disks & icy comets</td></tr>
+                <tr><td class="p-1.5 font-bold text-emerald-400">CH₄ Methane</td><td class="p-1.5">3.30 µm</td><td class="p-1.5 text-amber-400">A4</td><td class="p-1.5">Primary atmospheric signature of T & Y-class brown dwarfs</td></tr>
+                <tr><td class="p-1.5 font-bold text-orange-400">CO₂ Ice</td><td class="p-1.5">4.27 µm</td><td class="p-1.5 text-orange-400">A5</td><td class="p-1.5">Interstellar ice mantles & frozen volatile planetary crusts</td></tr>
+                <tr><td class="p-1.5 font-bold text-rose-400">CO Monoxide</td><td class="p-1.5">4.67 µm</td><td class="p-1.5 text-rose-400">A6</td><td class="p-1.5">Carbon monoxide in proto-planetary disks and deep atmospheres</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2593,40 +2801,263 @@
     });
 
     // =========================================================================
-    // 102-BAND SPECTRUM CHART
+    // 102-BAND SPECTRUM CHART & 6-ARRAY / 17-WAVELENGTH STEPPER
     // =========================================================================
     let specChart;
+    let currentSpectrumData = null;
+    let activeArray = 'A1';
+    let activeChannelInArray = 1;
+
+    const SPHEREX_ARRAY_DEFS = {
+      A1: { name: "Array 1", range_um: "0.750 - 1.110", min_um: 0.750, max_um: 1.110, start_band: 1, color: 'rgba(99, 102, 241, 0.14)', stroke: '#6366f1' },
+      A2: { name: "Array 2", range_um: "1.110 - 1.640", min_um: 1.110, max_um: 1.640, start_band: 18, color: 'rgba(6, 182, 212, 0.14)', stroke: '#06b6d4' },
+      A3: { name: "Array 3", range_um: "1.640 - 2.420", min_um: 1.640, max_um: 2.420, start_band: 35, color: 'rgba(16, 185, 129, 0.14)', stroke: '#10b981' },
+      A4: { name: "Array 4", range_um: "2.420 - 3.820", min_um: 2.420, max_um: 3.820, start_band: 52, color: 'rgba(245, 158, 11, 0.16)', stroke: '#f59e0b' },
+      A5: { name: "Array 5", range_um: "3.820 - 4.420", min_um: 3.820, max_um: 4.420, start_band: 69, color: 'rgba(249, 115, 22, 0.18)', stroke: '#f97316' },
+      A6: { name: "Array 6", range_um: "4.420 - 5.000", min_um: 4.420, max_um: 5.000, start_band: 86, color: 'rgba(239, 68, 68, 0.18)', stroke: '#ef4444' }
+    };
+
+    const MOLECULAR_ANNOTATIONS = [
+      { label: "H₂O (1.40µm)", wavelength: 1.40, color: "#38bdf8" },
+      { label: "H₂O Ice (3.05µm)", wavelength: 3.05, color: "#7dd3fc" },
+      { label: "CH₄ (3.30µm)", wavelength: 3.30, color: "#34d399" },
+      { label: "CO₂ Ice (4.27µm)", wavelength: 4.27, color: "#fb923c" },
+      { label: "CO (4.67µm)", wavelength: 4.67, color: "#f87171" }
+    ];
+
+    function getChannelWavelength(arrayId, channelIndex1to17) {
+      const arr = SPHEREX_ARRAY_DEFS[arrayId];
+      if (!arr) return "0.750";
+      const step = (arr.max_um - arr.min_um) / 16.0;
+      return (arr.min_um + (channelIndex1to17 - 1) * step).toFixed(3);
+    }
+
+    function updateChannelUI() {
+      const chanDisplay = document.getElementById('chanDisplay');
+      const chanSlider = document.getElementById('chanSlider');
+      const chanFluxBadge = document.getElementById('chanFluxBadge');
+      const wl = getChannelWavelength(activeArray, activeChannelInArray);
+      const arrInfo = SPHEREX_ARRAY_DEFS[activeArray];
+      const absoluteBand = arrInfo.start_band + activeChannelInArray - 1;
+
+      if (chanDisplay) {
+        chanDisplay.innerText = `Ch ${activeChannelInArray}/17 (Band ${absoluteBand}) — λ = ${wl} µm`;
+      }
+      if (chanSlider && parseInt(chanSlider.value) !== activeChannelInArray) {
+        chanSlider.value = activeChannelInArray;
+      }
+
+      // Update array tabs active styling
+      document.querySelectorAll('.array-tab').forEach(tab => {
+        if (tab.getAttribute('data-array') === activeArray) {
+          tab.classList.add('blender-btn-active');
+        } else {
+          tab.classList.remove('blender-btn-active');
+        }
+      });
+
+      // Update flux badge if data loaded
+      if (currentSpectrumData && currentSpectrumData.bands) {
+        const found = currentSpectrumData.bands.find(b => (b.band_id === absoluteBand || b.band === absoluteBand));
+        if (found && chanFluxBadge) {
+          chanFluxBadge.innerText = `${found.flux_ujy} µJy`;
+        }
+      }
+      if (specChart) specChart.update('none');
+    }
+
     function initSpectrumChart() {
       const chartCanvas = document.getElementById('spectrumChart');
       if (!chartCanvas) return;
       const ctxChart = chartCanvas.getContext('2d');
-      const wl = [];
-      for(let i = 0; i < 102; i++) wl.push((0.75 + (i / 101) * 4.25).toFixed(2));
+      const wlLabels = [];
+      for(let i = 0; i < 102; i++) wlLabels.push((0.75 + (i / 101) * 4.25).toFixed(2));
+
+      // Custom Plugin: SPHEREx Array Background Bands & Molecular Lines
+      const spherexArrayPlugin = {
+        id: 'spherexArrayPlugin',
+        beforeDraw: (chart) => {
+          const { ctx, chartArea } = chart;
+          if (!chartArea) return;
+          const { top, bottom, left, right, width, height } = chartArea;
+
+          // 1. Draw 6 Array Color Backgrounds
+          const arrayKeys = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'];
+          arrayKeys.forEach(key => {
+            const def = SPHEREX_ARRAY_DEFS[key];
+            const startX = left + ((def.min_um - 0.75) / (5.00 - 0.75)) * width;
+            const endX = left + ((def.max_um - 0.75) / (5.00 - 0.75)) * width;
+
+            ctx.save();
+            ctx.fillStyle = def.color;
+            ctx.fillRect(startX, top, endX - startX, height);
+
+            // Active array subtle outline / glow
+            if (key === activeArray) {
+              ctx.strokeStyle = def.stroke;
+              ctx.lineWidth = 1.5;
+              ctx.strokeRect(startX, top, endX - startX, height);
+            }
+
+            // Array Label at top
+            ctx.fillStyle = def.stroke;
+            ctx.font = 'bold 9px "JetBrains Mono", monospace';
+            ctx.fillText(key, startX + 4, top + 11);
+            ctx.restore();
+          });
+
+          // 2. Draw Molecular Absorption Markers
+          MOLECULAR_ANNOTATIONS.forEach(mol => {
+            const molX = left + ((mol.wavelength - 0.75) / (5.00 - 0.75)) * width;
+            if (molX >= left && molX <= right) {
+              ctx.save();
+              ctx.setLineDash([3, 2]);
+              ctx.strokeStyle = mol.color;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(molX, top + 14);
+              ctx.lineTo(molX, bottom);
+              ctx.stroke();
+
+              ctx.fillStyle = mol.color;
+              ctx.font = '8px "JetBrains Mono", monospace';
+              ctx.fillText(mol.label, molX + 2, bottom - 4);
+              ctx.restore();
+            }
+          });
+
+          // 3. Draw Active Channel Indicator
+          const curWl = parseFloat(getChannelWavelength(activeArray, activeChannelInArray));
+          const curX = left + ((curWl - 0.75) / (5.00 - 0.75)) * width;
+          if (curX >= left && curX <= right) {
+            ctx.save();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(curX, top);
+            ctx.lineTo(curX, bottom);
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+      };
 
       specChart = new Chart(ctxChart, {
         type: 'line',
         data: {
-          labels: wl,
+          labels: wlLabels,
           datasets: [{
             data: [],
             borderColor: '#ea7600',
-            backgroundColor: 'rgba(234, 118, 0, 0.1)',
+            backgroundColor: 'rgba(234, 118, 0, 0.15)',
             fill: true,
-            borderWidth: 1.5,
+            borderWidth: 2,
             pointRadius: 0,
+            pointHoverRadius: 4,
+            pointHoverBackgroundColor: '#ffffff',
             tension: 0.25
           }]
         },
+        plugins: [spherexArrayPlugin],
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          scales: {
-            x: { display: false },
-            y: { display: false }
+          onClick: (evt) => {
+            const chartArea = specChart.chartArea;
+            if (!chartArea) return;
+            const clickX = evt.x !== undefined ? evt.x : (evt.native ? evt.native.offsetX : 0);
+            const ratio = (clickX - chartArea.left) / chartArea.width;
+            const clickedWl = 0.75 + Math.max(0, Math.min(1, ratio)) * (5.00 - 0.75);
+
+            // Determine which array and channel
+            for (const [k, def] of Object.entries(SPHEREX_ARRAY_DEFS)) {
+              if (clickedWl >= def.min_um && clickedWl <= def.max_um) {
+                activeArray = k;
+                const step = (def.max_um - def.min_um) / 16.0;
+                activeChannelInArray = Math.max(1, Math.min(17, Math.round((clickedWl - def.min_um) / step) + 1));
+                updateChannelUI();
+                break;
+              }
+            }
           },
-          plugins: { legend: { display: false } }
+          scales: {
+            x: {
+              display: true,
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 12 },
+              grid: { color: 'rgba(255,255,255,0.03)' }
+            },
+            y: {
+              display: true,
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 4 },
+              grid: { color: 'rgba(255,255,255,0.03)' }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: (items) => `λ = ${items[0].label} µm`,
+                label: (item) => `Flux: ${item.raw}`
+              }
+            }
+          }
         }
       });
+
+      // Bind Array Tab Click Events
+      document.querySelectorAll('.array-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          activeArray = e.currentTarget.getAttribute('data-array');
+          activeChannelInArray = 1;
+          updateChannelUI();
+        });
+      });
+
+      // Bind Stepper Controls
+      const chanPrev = document.getElementById('chanPrev');
+      const chanNext = document.getElementById('chanNext');
+      const chanSlider = document.getElementById('chanSlider');
+
+      if (chanPrev) {
+        chanPrev.addEventListener('click', () => {
+          if (activeChannelInArray > 1) {
+            activeChannelInArray--;
+          } else {
+            const keys = Object.keys(SPHEREX_ARRAY_DEFS);
+            const idx = keys.indexOf(activeArray);
+            if (idx > 0) {
+              activeArray = keys[idx - 1];
+              activeChannelInArray = 17;
+            }
+          }
+          updateChannelUI();
+        });
+      }
+
+      if (chanNext) {
+        chanNext.addEventListener('click', () => {
+          if (activeChannelInArray < 17) {
+            activeChannelInArray++;
+          } else {
+            const keys = Object.keys(SPHEREX_ARRAY_DEFS);
+            const idx = keys.indexOf(activeArray);
+            if (idx < keys.length - 1) {
+              activeArray = keys[idx + 1];
+              activeChannelInArray = 1;
+            }
+          }
+          updateChannelUI();
+        });
+      }
+
+      if (chanSlider) {
+        chanSlider.addEventListener('input', (e) => {
+          activeChannelInArray = parseInt(e.target.value);
+          updateChannelUI();
+        });
+      }
+
+      updateChannelUI();
     }
 
     async function loadSpectrumData(ra, dec, targetKey = null) {
@@ -2636,6 +3067,7 @@
         const res = await fetch(url);
         if (res.ok) {
           const spec = await res.json();
+          currentSpectrumData = spec;
           if (specChart) {
             let fluxes = [];
             let labels = [];
@@ -2644,7 +3076,7 @@
               labels = spec.wavelengths_microns.map(w => typeof w === 'number' ? w.toFixed(2) : w);
             } else if (spec.bands) {
               fluxes = spec.bands.map(b => b.flux_ujy);
-              labels = spec.bands.map(b => typeof b.wavelength === 'number' ? b.wavelength.toFixed(2) : b.wavelength);
+              labels = spec.bands.map(b => typeof b.wavelength === 'number' ? b.wavelength.toFixed(2) : (b.wavelength_um || b.wavelength));
             }
             if (fluxes.length > 0) {
               specChart.data.labels = labels;
@@ -2652,6 +3084,7 @@
               specChart.update();
             }
           }
+          updateChannelUI();
         }
       } catch (e) {
         console.warn("Spectrum fetch failed:", e);
@@ -3605,7 +4038,285 @@
         if (coordsPopover) coordsPopover.classList.add('hidden');
         if (flagModal) flagModal.classList.add('hidden');
         if (missionCodexModal) missionCodexModal.classList.add('hidden');
+        if (onboardingModal) onboardingModal.classList.add('hidden');
+        if (bandScienceModal) bandScienceModal.classList.add('hidden');
       }
+    });
+
+    // =========================================================================
+    // CITIZEN SCIENCE ONBOARDING TOUR MODAL
+    // =========================================================================
+    let currentTourStep = 1;
+    const TOTAL_TOUR_STEPS = 5;
+
+    const TOUR_SLIDES = [
+      {
+        step: 1,
+        title: "The Hunt for Planet Nine & Brown Dwarfs",
+        tag: "Why Infrared?",
+        badgeClass: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+        icon: "telescope",
+        content: `
+          <div class="space-y-2.5">
+            <p class="leading-relaxed text-gray-300">
+              Hypothetical <strong class="text-white">Planet Nine</strong> and nearby ultra-cool <strong class="text-white">Y-Dwarfs</strong> (like WISE 0855 at 250 K / -23°C) are so cold that they emit almost zero visible light, making them <span class="text-rose-400 font-semibold">100% invisible</span> in optical sky surveys like Gaia and DSS.
+            </p>
+            <div class="bg-space-950 p-3 rounded-lg border border-space-800 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <i data-lucide="eye" class="w-5 h-5 text-amber-400"></i>
+              </div>
+              <div class="text-[11px] leading-snug text-gray-300">
+                <strong class="text-white block font-sans">102 NASA SPHEREx Infrared Bands:</strong>
+                By mapping the entire sky from 0.75 µm to 5.00 µm, SPHEREx captures the thermal glow of these hidden solar system bodies and planetary companions.
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        step: 2,
+        title: "Multi-Epoch Blink Comparator & ZOGY Subtraction",
+        tag: "Blink & Difference",
+        badgeClass: "text-cyan-400 bg-cyan-500/10 border-cyan-500/30",
+        icon: "split",
+        content: `
+          <div class="space-y-2.5">
+            <p class="leading-relaxed text-gray-300">
+              Distant stars remain stationary over decades, while nearby solar system objects and high-proper-motion brown dwarfs visibly shift across the celestial sphere.
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-[11px] font-mono">
+              <div class="bg-space-950 p-2.5 rounded border border-space-800">
+                <span class="text-cyan-400 font-bold block mb-1">Blink Mode (Space / B):</span>
+                Flips between Epoch 1 (2MASS 1999) and Epoch 2 (SPHEREx 2025). Watch for moving dipoles jumping back and forth!
+              </div>
+              <div class="bg-space-950 p-2.5 rounded border border-space-800">
+                <span class="text-amber-400 font-bold block mb-1">Difference Mode (D):</span>
+                Executes optimal ZOGY PSF-matched subtraction to mathematically subtract stationary stars and isolate moving dipoles.
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        step: 3,
+        title: "Astrometric Filtering with Gaia DR3",
+        tag: "Optical vs Infrared",
+        badgeClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/30",
+        icon: "sparkles",
+        content: `
+          <div class="space-y-2.5">
+            <p class="leading-relaxed text-gray-300">
+              Click <strong class="text-emerald-400">[✨ Gaia DR3]</strong> or press <strong class="text-white">G</strong> to overlay high-precision optical astrometry vectors from ESA's Gaia space observatory.
+            </p>
+            <div class="bg-space-950 p-3 rounded-lg border border-space-800 space-y-1 text-[11px]">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 inline-block"></span>
+                <span class="text-white font-semibold">Cyan circles:</span> Known optical Gaia stars with proper motion vectors.
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+                <span class="text-rose-400 font-semibold">Infrared Dipole with NO Gaia Match:</span> Top candidate for an ultra-cool brown dwarf, rogue world, or Planet Nine!
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        step: 4,
+        title: "Real NASA FITS Presets & Benchmarks",
+        tag: "Verified Science",
+        badgeClass: "text-indigo-400 bg-indigo-500/10 border-indigo-500/30",
+        icon: "target",
+        content: `
+          <div class="space-y-2.5">
+            <p class="leading-relaxed text-gray-300">
+              Test your hunting eye on authentic NASA archival benchmarks using the 1-click preset bar:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[10px] font-mono">
+              <div class="bg-space-950 p-2 rounded border border-space-800">
+                <strong class="text-amber-400 block font-sans text-[11px]">WISE 0855-0714</strong>
+                Coldest known brown dwarf (~250 K). Shifts 8.1"/yr westward!
+              </div>
+              <div class="bg-space-950 p-2 rounded border border-space-800">
+                <strong class="text-cyan-400 block font-sans text-[11px]">Barnard's Star</strong>
+                Fastest proper motion star in Earth's sky (10.36"/yr northward).
+              </div>
+              <div class="bg-space-950 p-2 rounded border border-space-800">
+                <strong class="text-emerald-400 block font-sans text-[11px]">Epsilon Indi B</strong>
+                Cold binary brown dwarf (T1+T6) with 4.7"/yr companion motion.
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        step: 5,
+        title: "Flag Discoveries & Join the Science Ledger",
+        tag: "Citizen Science",
+        badgeClass: "text-rose-400 bg-rose-500/10 border-rose-500/30",
+        icon: "flag",
+        content: `
+          <div class="space-y-2.5">
+            <p class="leading-relaxed text-gray-300">
+              Found a candidate moving dipole or unusual infrared variable? Click <strong class="text-blender-orange">[Flag Candidate]</strong> in the dock or press <strong class="text-white">F</strong> to log the coordinates.
+            </p>
+            <div class="bg-space-950 p-3 rounded-lg border border-space-800 space-y-1.5 text-[11px]">
+              <div class="flex items-center gap-2 text-emerald-400 font-semibold">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>Automated Multi-Archive Crossmatch:</span>
+              </div>
+              <p class="text-gray-400 leading-normal text-[10px]">
+                Your flag automatically queries Gaia DR3, 2MASS, and SIMBAD, evaluating optical-to-infrared color diagnostic <span class="text-white font-mono">(G - Ks > 8.0)</span> and recording it to Team RIP's persistent discovery ledger.
+              </p>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    function renderTourSlide(step) {
+      currentTourStep = step;
+      const slide = TOUR_SLIDES[step - 1];
+      const container = document.getElementById('tourSlideContent');
+      const stepIndicator = document.getElementById('tourStepIndicator');
+      const prevBtn = document.getElementById('btnTourPrev');
+      const nextBtn = document.getElementById('btnTourNext');
+      const dotsContainer = document.getElementById('tourDotsContainer');
+
+      if (stepIndicator) stepIndicator.innerText = step;
+      if (prevBtn) prevBtn.disabled = (step === 1);
+      if (nextBtn) {
+        if (step === TOTAL_TOUR_STEPS) {
+          nextBtn.innerHTML = `<span>Start Hunting!</span> <i data-lucide="rocket" class="w-3.5 h-3.5 ml-1"></i>`;
+        } else {
+          nextBtn.innerHTML = `<span>Next</span> <i data-lucide="arrow-right" class="w-3 h-3 ml-1"></i>`;
+        }
+      }
+
+      if (dotsContainer) {
+        const dots = dotsContainer.querySelectorAll('span');
+        dots.forEach((dot, idx) => {
+          if (idx === step - 1) {
+            dot.className = 'w-3 h-3 rounded-full bg-blender-orange shadow-md shadow-orange-500/50 transition-all';
+          } else {
+            dot.className = 'w-2 h-2 rounded-full bg-space-700 hover:bg-space-600 transition-all cursor-pointer';
+            dot.onclick = () => renderTourSlide(idx + 1);
+          }
+        });
+      }
+
+      if (container) {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i data-lucide="${slide.icon}" class="w-4 h-4 text-blender-orange"></i>
+                <span>${slide.title}</span>
+              </h3>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded border ${slide.badgeClass}">${slide.tag}</span>
+            </div>
+            ${slide.content}
+          </div>
+        `;
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openOnboardingModal() {
+      const modal = document.getElementById('onboardingModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      renderTourSlide(1);
+    }
+
+    function closeOnboardingModal() {
+      const modal = document.getElementById('onboardingModal');
+      if (modal) modal.classList.add('hidden');
+      localStorage.setItem('spherex_hunter_onboarding_completed', 'true');
+    }
+
+    // Bind Tour Buttons
+    const btnHeaderBrand = document.getElementById('btnHeaderBrand');
+    const btnOpenOnboarding = document.getElementById('btnOpenOnboarding');
+    const btnCloseOnboardingModal = document.getElementById('btnCloseOnboardingModal');
+    const btnTourSkip = document.getElementById('btnTourSkip');
+    const btnTourPrev = document.getElementById('btnTourPrev');
+    const btnTourNext = document.getElementById('btnTourNext');
+    const onboardingModal = document.getElementById('onboardingModal');
+
+    if (btnHeaderBrand) btnHeaderBrand.addEventListener('click', openOnboardingModal);
+    if (btnOpenOnboarding) btnOpenOnboarding.addEventListener('click', openOnboardingModal);
+    if (btnCloseOnboardingModal) btnCloseOnboardingModal.addEventListener('click', closeOnboardingModal);
+    if (btnTourSkip) btnTourSkip.addEventListener('click', closeOnboardingModal);
+    if (onboardingModal) {
+      onboardingModal.addEventListener('click', (e) => {
+        if (e.target === onboardingModal) closeOnboardingModal();
+      });
+    }
+
+    if (btnTourPrev) {
+      btnTourPrev.addEventListener('click', () => {
+        if (currentTourStep > 1) renderTourSlide(currentTourStep - 1);
+      });
+    }
+    if (btnTourNext) {
+      btnTourNext.addEventListener('click', () => {
+        if (currentTourStep < TOTAL_TOUR_STEPS) {
+          renderTourSlide(currentTourStep + 1);
+        } else {
+          closeOnboardingModal();
+          showToast("Welcome aboard Citizen Scientist! Use Spacebar to Blink or Ctrl+K to Search.", "info");
+        }
+      });
+    }
+
+    // Auto-launch Onboarding Tour on first visit
+    if (!localStorage.getItem('spherex_hunter_onboarding_completed')) {
+      setTimeout(() => openOnboardingModal(), 600);
+    }
+
+    // =========================================================================
+    // 102-BAND SCIENCE EXPLAINER MODAL
+    // =========================================================================
+    const btnOpenBandScience = document.getElementById('btnOpenBandScience');
+    const bandScienceModal = document.getElementById('bandScienceModal');
+    const btnCloseBandScienceModal = document.getElementById('btnCloseBandScienceModal');
+
+    if (btnOpenBandScience && bandScienceModal) {
+      btnOpenBandScience.addEventListener('click', () => bandScienceModal.classList.remove('hidden'));
+    }
+    if (btnCloseBandScienceModal && bandScienceModal) {
+      btnCloseBandScienceModal.addEventListener('click', () => bandScienceModal.classList.add('hidden'));
+    }
+    if (bandScienceModal) {
+      bandScienceModal.addEventListener('click', (e) => {
+        if (e.target === bandScienceModal) bandScienceModal.classList.add('hidden');
+      });
+    }
+
+    // =========================================================================
+    // QUICK PRESET LANDMARK BUTTONS IN COORDINATES POPOVER
+    // =========================================================================
+    document.querySelectorAll('.preset-landmark-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const raVal = e.currentTarget.getAttribute('data-ra');
+        const decVal = e.currentTarget.getAttribute('data-dec');
+        const fovVal = e.currentTarget.getAttribute('data-fov');
+        const nameVal = e.currentTarget.getAttribute('data-name');
+
+        const inputRA = document.getElementById('inputRA');
+        const inputDec = document.getElementById('inputDec');
+        const selectFOV = document.getElementById('selectFOV');
+        const coordsPopover = document.getElementById('coordsPopover');
+
+        if (inputRA) inputRA.value = raVal;
+        if (inputDec) inputDec.value = decVal;
+        if (selectFOV) selectFOV.value = fovVal;
+        if (coordsPopover) coordsPopover.classList.add('hidden');
+
+        slewToTypedCoordinates();
+        showToast(`Slewing telescope to ${nameVal}...`, "info");
+      });
     });
     
   

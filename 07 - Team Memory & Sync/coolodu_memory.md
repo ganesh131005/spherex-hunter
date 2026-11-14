@@ -3,14 +3,19 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed full synchronization with `origin/main` (integrating GitHub Issues #5, #6, #7 and consolidated batch scripts). Resolved merge conflicts in `run_spherex_hunter.bat` and `SHARED_PROJECT_STATE.md`, validated all 11 Golden Suite tests, and pushed merge commit `8428e72` to `origin/coolodu/web-frontend`.
-- **Next Task:** Execute frontend enhancements for GitHub Native Issues #5, #6, and #7 in collaboration with `@astrodu` and `@darkodu`:
-  - **Issue #5:** Custom SPHEREx infrared telescope SVG logo, mission tagline, and 5-step Citizen Science onboarding tour modal.
-  - **Issue #6:** Beginner-friendly celestial navigation bar with hover tooltips, real-world angular scale analogies (e.g. 3' = 1/10th Full Moon), and coordinate format hints.
-  - **Issue #7:** SPHEREx 102-band 6-array selector tabs (A1–A6), 17-channel wavelength stepper, and colored array bands + molecular markers (H₂O, CH₄, CO₂, CO) on the SED chart.
+- **Current Task:** 100% of open GitHub Issues (#1, #2, #3, #4, #5, #6, #7) have been systematically rectified, verified with unit/golden test suites, and officially closed on GitHub.
+- **Next Task:** Maintain clean codebase, verify continuous green test passes, and support teammates (`@astrodu`, `@darkodu`, `@iceodu`, `@jokerodu`).
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[GitHub Issues #1, #2, #3, #4, #5, #6, #7 Rectified & Closed]**:
+  - **Issue #1 (Tasks 3, 4, 5: WiseView Bridge, CSA NEOSSat Tracking & Resources Codex):** Verified that WiseView 1-click verification, NEOSSat/CADC telemetry, and NASA/CSA Resources Codex are live and passing. Closed on GitHub.
+  - **Issue #2 (Wire Phase 1 ZOGY Differencing into Live /api/cutout):** Wired `zogy_subtraction` and `construct_gaussian_psf` into `cutout_engine.py` serving authentic $S_{\text{corr}}$ significance maps (`units: sigma`). Added `GET /api/cutout/raw` and `GET /api/cutout/raw/header` Float32 ArrayBuffer streaming. All 4 tests in `tests/test_live_cutout_zogy.py` passed with $S_{\text{corr}} \ge 5\sigma$. Closed on GitHub.
+  - **Issue #3 (Restore Dropped Scientific Endpoints & Metadata):** Verified all 5 scientific endpoints (`/api/download_fits`, `/api/verify_candidate`, `/api/source_discovery`, `/api/resources_codex`, `/api/neossat`) are live and validated by Golden Suite. Closed on GitHub.
+  - **Issue #4 (Windows Batch, SSL, Screenshot Clean-up & Test Ledger Isolation):** Fixed `run_spherex_hunter.bat` syntax crash, verified SSL fallback in `step1_wise0855_irsa.py`, added `*_screenshot.png` and `*_sidebar.png` to `.gitignore`, and made `DISCOVERIES_FILE` environment-overridable to prevent test pollution of `candidate_discoveries.json`. Closed on GitHub.
+  - **Issue #5 (Application Brand/Logo, Onboarding Tour & Mission Explainer):** Designed custom high-res vector SVG logo (`frontend/assets/logo.svg`, `frontend/favicon.svg`) featuring SPHEREx's hexagonal cryocooler sunshield and 102-band infrared dispersion rainbow. Added mission tagline tooltip, persistent `[❓ Mission Guide]` header button, and built an interactive 5-step Citizen Science Onboarding Tour modal with `localStorage` persistence (`spherex_hunter_onboarding_completed`). Closed on GitHub.
+  - **Issue #6 (Beginner-Friendly Celestial Navigation Bar):** Added educational plain-English hover tooltips for RA (Sky Longitude: 0°–360°) and Dec (Sky Latitude: -90° to +90°). Added real-world Full Moon scale descriptors to FOV dropdown (1.0' Deep Core, 1.5' 1/20th Moon, 3.0' 1/10th Moon, 5.0' 1/6th Moon, 10.0' 1/3rd Moon, 15.0' Half Moon). Added 1-click popular celestial landmarks presets popover (WISE 0855, Barnard's Star, Orion Nebula Core, Galactic Center Sgr A*). Closed on GitHub.
+  - **Issue #7 (SPHEREx 102-Band Infrared Spectrum: 6-Array Selector, 17-Wavelength Stepper & SED Visualizer):** Implemented `GET /api/bands` returning 102 channels across 6 LVF arrays (A1–A6) with resolving powers and molecular flags. Enhanced `GET /api/spectrum` returning 102 per-channel `bands[]` and A1–A6 `array_summary`. Built 6-array selector tabs, 17-channel wavelength stepper, and 102-band science explainer modal in UI. Enhanced Chart.js SED chart with 6 color-coded array background bands and vertical molecular absorption markers (H₂O, CH₄, CO₂, CO). All tests in `tests/test_bands_spectrum.py` and `tests/test_golden_suite.py` passed. Closed on GitHub.
 - [x] **[Git Merge & GitHub Native Updates Sync (`origin/main` -> `coolodu/web-frontend`)]**:
   - Fetched all remote tracking branches (`git fetch --all --prune`).
   - Merged latest `origin/main` into `coolodu/web-frontend`.
