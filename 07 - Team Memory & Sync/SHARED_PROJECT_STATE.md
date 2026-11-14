@@ -26,6 +26,16 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[PHASE 2 COMPLETE: Real-Data Validation, Claims Audit, Injection-Recovery & Negative Results (@darkodu)]**
+  - **Step 2.0 (Claims Audit - `docs/claims_audit.md`):** Rebuilt the epoch-pairing table from real NASA IRSA TAP `spherex.obscore` (1,628,318 exposures) queries; honestly audited all 5 benchmark targets. Disclosed that RW Aurigae has 0 public SPHEREx exposures; WISE 0855 has 5 exposures in Bands D3/D6 ($\Delta t = 27.85\text{ d}$).
+  - **Step 2.1 (Injection-Recovery - `validation/inject.py`):** Injected 280 synthetic moving PSF sources into real SPHEREx image noise across flux, motion rate, and detector coordinates. Generated `docs/figures/completeness_vs_mag.png` (50% completeness at $20.8\text{ mag}$) and `docs/figures/completeness_vs_rate.png`. Verified 0.00% false-negative rate on vetoes.
+  - **Step 2.2 (False-Positive Rate - `validation/false_positives.py`):** Measured empirical FPR per $\text{deg}^2$ over a real $0.77\text{ deg}^2$ detector field at significance thresholds $3.0\sigma$ to $7.0\sigma$. Generated `docs/figures/false_positive_rate.png`.
+  - **Step 2.3 (Known Object Recovery & Astrometry):** Cross-matched JPL Horizons orbital ephemerides against `spherex.obscore` footprints (`scripts/find_known_asteroids_in_spherex.py`). Verified Gaia DR3 astrometric residuals for Barnard's Star and WISE 0855.
+  - **Step 2.4 (Motion Model Identifiability):** Added degeneracy and Fisher matrix condition checks to `backend/science/motion_model.py` flagging baselines $< 60\text{ days}$ as "UNCONSTRAINED" reflex parallax. Tested in `tests/test_motion_identifiability.py`.
+  - **Step 2.5 (Tracklet Linking):** Created `backend/science/tracklet_linking.py` linking negative wells $(-)$ and positive peaks $(+)$ with flux conservation ($\le 40\%$) and physical velocity limits.
+  - **Step 2.6 (Detectability Calculator - `validation/detectability_calculator.py`):** Plotted reflected solar flux + thermal emission across $50\text{--}1000\text{ AU}$ vs SPHEREx limits (`docs/figures/detectability_map.png`), proving cold Planet Nine ($T=45\text{ K}$) is unobservable while warm brown dwarfs are easily detected.
+  - **Step 2.7 (Validation Tab & Documentation):** Published `docs/validation.md`, added `#btnOpenValidation` and interactive `#codexPanelValidation` in `frontend/index.html`.
+  - **49/49 Unit/Integration/E2E Tests Passing; committed and pushed to `origin darkodu/astro-backend`.**
 - **[TASK Complete: Data-Driven Scene Collection Layer Manager & Scientific Truthfulness Rebuild (@darkodu)]**
   - **Single Source of Truth:** Implemented `GET /api/scene` serving unified `scene` object (target, epochs[], layers[]). Eliminated all hardcoded preset strings and numbers in HTML/JS.
   - **Scientific Truthfulness & Validation:** Created `backend/services/metadata_schema.py` with Pydantic validation rejecting unphysical values (Y-dwarfs $T_{\text{eff}} > 600\,\text{K}$, proper motions $> 25''/\text{yr}$ unconfirmed). Restored authentic physical parameters (WISE 0855 $T_{\text{eff}} = 250\,\text{K}$, distance $= 2.23\,\text{pc}$).

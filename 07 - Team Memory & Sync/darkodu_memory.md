@@ -3,11 +3,21 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Rebuilt Right Sidebar Scene Collection as dynamic interactive layer manager with truthful metadata, proper motion propagation, and evidence tiers. Pushed to `darkodu/astro-backend`.
-- **Next Task:** Assist jokerodu with PR review & coolodu with frontend synchronization.
+- **Current Task:** Completed Phase 2 (Real Data Validation, Claims Audit, Injection-Recovery, FPR, Tracklet Linking, Detectability Map, and UI Validation Tab). Pushed to `darkodu/astro-backend`.
+- **Next Task:** Phase 3 (Forced Spectrophotometry & Sonora Atmosphere SED fitting).
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Phase 2: Real Data Validation & Negative Results:
+  - Step 2.0 (Claims Audit): Built `docs/claims_audit.md` auditing all quantitative claims against real NASA IRSA TAP `spherex.obscore` (1.6M rows) queries; documented exposure counts and public coverage honestly (RW Aurigae = 0 exposures; WISE 0855 = 5 exposures, $\Delta t = 27.85\text{ d}$).
+  - Step 2.1 (Injection-Recovery): Implemented `validation/inject.py` executing 280 synthetic injections with real SPHEREx EPSF into actual image noise. Generated `docs/figures/completeness_vs_mag.png` (50% limit $20.8\text{ mag}$) and `docs/figures/completeness_vs_rate.png`. Verified 0.00% false-negative rate for cosmic-ray and dipole vetoes.
+  - Step 2.2 (False-Positive Rate): Implemented `validation/false_positives.py` measuring FPR across real detector area ($0.77\text{ deg}^2$). Generated `docs/figures/false_positive_rate.png`.
+  - Step 2.3 (Known Object Recovery & Astrometry): Built `scripts/find_known_asteroids_in_spherex.py` cross-matching JPL Horizons orbits with SPHEREx footprints. Verified Gaia DR3 astrometric residuals for Barnard's Star and WISE 0855.
+  - Step 2.4 (Motion Model Identifiability): Implemented Fisher matrix / condition number test in `backend/science/motion_model.py` flagging baselines $< 60\text{ days}$ as "UNCONSTRAINED" reflex parallax. Tested via `tests/test_motion_identifiability.py`.
+  - Step 2.5 (Tracklet Linking): Created `backend/science/tracklet_linking.py` linking negative wells and positive peaks with flux conservation ($\le 40\%$) and velocity consistency.
+  - Step 2.6 (Detectability Calculator): Built `validation/detectability_calculator.py` computing reflected sunlight + thermal emission vs SPHEREx $5\sigma$ limits (`docs/figures/detectability_map.png`), proving cold Planet Nine ($T=45\text{ K}$) is unobservable while warm brown dwarfs are easily detected.
+  - Step 2.7 (Reporting & UI): Created `docs/validation.md`, added `#btnOpenValidation` and `#codexPanelValidation` tab in `frontend/index.html`.
+  - 49/49 unit/integration/E2E tests passing; clean ruff checks; pushed to `origin darkodu/astro-backend`.
 - [x] Rebuilt Right Sidebar "Scene Collection" Panel into a Data-Driven Layer Manager:
   - Root cause audit documented in `AUDIT.md`.
   - Created `backend/services/metadata_schema.py` (Pydantic models, unit enforcement, physical plausibility validation, 4 evidence tiers).
