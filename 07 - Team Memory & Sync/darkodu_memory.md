@@ -3,11 +3,20 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** All assigned tasks (`TASK-003`, `TASK-004`, `TASK-005`) completed and verified with 8/8 diagnostic suites.
-- **Next Task:** Assist coolodu with frontend verification & support astrodu with presentation numbers and video demo.
+- **Current Task:** Rebuilt Right Sidebar Scene Collection as dynamic interactive layer manager with truthful metadata, proper motion propagation, and evidence tiers. Pushed to `darkodu/astro-backend`.
+- **Next Task:** Assist jokerodu with PR review & coolodu with frontend synchronization.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Rebuilt Right Sidebar "Scene Collection" Panel into a Data-Driven Layer Manager:
+  - Root cause audit documented in `AUDIT.md`.
+  - Created `backend/services/metadata_schema.py` (Pydantic models, unit enforcement, physical plausibility validation, 4 evidence tiers).
+  - Created `backend/services/motion_service.py` (`SkyCoord.apply_space_motion` epoch propagation & FOV alert).
+  - Created `backend/services/scene_service.py` & `GET /api/scene` endpoint.
+  - Rebuilt `frontend/index.html` right sidebar into flex-col layer tree with eye toggles, opacity sliders, blink pair selectors, provenance popovers, and transparent NaN coverage masks.
+  - 6/6 pytest unit tests passed (`tests/test_scene_and_metadata.py`).
+  - 5/5 Playwright E2E tests passed (`tests/test_scene_panel_e2e.py`).
+  - Committed and pushed to `origin darkodu/astro-backend`.
 - [x] Verified and completed Seamless Near-Image Viewport Streaming & Zero Black Space (`TASK-005`): Validated multi-ring offset streaming (`col=+1, row=0`, `col=0, row=+1`, `col=-1, row=-1`, `col=+2, row=+2`) across LODs 0, 1, and 2. Ensures zero black space and zero reflection with median cosmic flux padding and coordinate-seeded authentic starlight. Verified via 8th diagnostic test suite in `backend/test_diagnostics.py`.
 - [x] Analyzed and eliminated mirrored sky reflections (`TASK-004`): When offset queries exceed authentic benchmark FITS bounds, cutout_engine queries authentic surrounding fields via NASA IRSA or coordinate-seeded unique fields. Removed symmetric reflection padding and replaced with median cosmic sky flux.
 - [x] Fixed ZeroDivisionError in `backend/services/cutout_engine.py` (`load_real_fits_cutout`): implemented dynamic symmetric padding based on offset RA/Dec coordinates so near-tile queries return valid FITS cutouts and difference images across all LODs without boundary exceptions (`TASK-003`).

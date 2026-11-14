@@ -1,5 +1,5 @@
 # 🌐 SHARED PROJECT STATE (Team RIP Central Ledger)
-> **Last Updated:** Hackathon Phase 2 Integration | **Status:** Multi-Survey & Near-Tile Live
+> **Last Updated:** Hackathon Phase 2 Integration | **Status:** Scene Collection Layer Manager & Truthful Metadata Deployed
 > **Rule:** Whenever ANY teammate's Antigravity agent finishes a feature or hits a blocker, append a short note here and commit!
 
 ---
@@ -9,9 +9,9 @@
 | Track | Owner | Branch | Current Focus | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **System Lead** | `jokerodu` | `main` | Architecture, coordination & merge reviews | 🟢 Active |
-| **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Real FITS cutout, Gaia DR3, 2MASS, SIMBAD & Discovery CSV | 🟢 100% Operational |
-| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Blender GUI, Near-tile streaming & LOD camera zoom | 🟢 Live / Verified |
-| **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟡 In Progress |
+| **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | Scene State, Space Motion Propagation & Schema Validation | 🟢 100% Operational |
+| **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Reactive Layer Tree, Eye Toggles, Coverage Masks | 🟢 Live / Verified |
+| **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟢 Operational |
 | **UX, Story & Video** | `astrodu` | `astrodu/ui-story-pitch` | Citizen science modal, slide deck & video script | 🟡 In Progress |
 
 ---
@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[TASK Complete: Data-Driven Scene Collection Layer Manager & Scientific Truthfulness Rebuild (@darkodu)]**
+  - **Single Source of Truth:** Implemented `GET /api/scene` serving unified `scene` object (target, epochs[], layers[]). Eliminated all hardcoded preset strings and numbers in HTML/JS.
+  - **Scientific Truthfulness & Validation:** Created `backend/services/metadata_schema.py` with Pydantic validation rejecting unphysical values (Y-dwarfs $T_{\text{eff}} > 600\,\text{K}$, proper motions $> 25''/\text{yr}$ unconfirmed). Restored authentic physical parameters (WISE 0855 $T_{\text{eff}} = 250\,\text{K}$, distance $= 2.23\,\text{pc}$).
+  - **Proper-Motion-Aware Epochs:** Implemented `backend/services/motion_service.py` using Astropy `SkyCoord.apply_space_motion` to propagate target positions to each epoch observation date (MJD), calculating $\Delta \theta$ and issuing FOV warnings when $\Delta \theta > \text{FOV}$.
+  - **Interactive Layer Tree:** Built responsive flex-column layer manager (`role="region"`, `aria-label="Scene Collection Layer Manager"`) with visibility eye toggles, opacity sliders, blink pair selectors `[Set A]` / `[Set B]`, passband-matching difference locks with tooltips, and provenance popovers.
+  - **Evidence Tiers:** Removed sensationalized "Planet X Prob 98%" and contradictory NEOSSat card; replaced with 4 evidence tiers (*Known Solar-System Object*, *Known Star / Sub-Stellar Object*, *Unknown Rapid Mover*, *Slow Infrared-Excess Candidate*).
+  - **Transparent NaN & Coverage Masks:** Rendered unobserved pixels as transparent RGBA with an interactive Coverage Mask overlay toggle.
+  - **Full Automated Testing:** 6/6 unit tests passed (`tests/test_scene_and_metadata.py`), 5/5 Playwright E2E browser tests passed (`tests/test_scene_panel_e2e.py`). Pushed to `origin darkodu/astro-backend`.
 - **[TASK-006 Complete: Tasks 3, 4, 5 of NASA & CSA Integration Plan Verified (@coolodu & @darkodu)]**
   - **Task 3 (WiseView Bridge):** Integrated 1-click verification bridge to NASA Backyard Worlds WiseView tool (`http://byw.tools/wiseview#ra={ra}&dec={dec}&size=150&band=3&linear=True&diff=True`). Added interactive sidebar action, modal link, and backend `GET /api/wiseview/url`.
   - **Task 4 (CSA NEOSSat & CADC Asteroid Tracker):** Created `backend/services/csa_neossat_service.py` and endpoint `GET /api/csa/neossat`. Added Section 1C in sidebar displaying nearest asteroid tracks, diurnal motion rates, and Planet X vs Near-Earth Asteroid probability discrimination, with direct 1-click search on the Canadian Astronomy Data Centre (CADC) archive.
