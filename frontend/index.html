@@ -316,226 +316,136 @@
       </div>
     </main>
 
-    <!-- RIGHT BLENDER PROPERTIES & OUTLINER SIDEBAR (280px width) -->
-    <aside id="propertiesSidebar" class="w-72 bg-blender-900 border-l border-blender-700 flex flex-col shrink-0 overflow-y-auto z-20 text-[11px]">
+    <!-- RIGHT BLENDER PROPERTIES & OUTLINER SIDEBAR (Data-Driven Layer Manager) -->
+    <aside id="propertiesSidebar" class="w-80 bg-blender-900 border-l border-blender-700 flex flex-col shrink-0 min-h-0 z-20 text-[11px] select-none" role="region" aria-label="Scene Collection and Layer Manager">
       
-      <!-- OUTLINER HEADER (Blender Scene Tree) -->
-      <div class="px-3 py-1.5 bg-blender-850 border-b border-blender-700 flex items-center justify-between text-gray-300 font-semibold text-[11px]">
+      <!-- STICKY HEADER -->
+      <div class="px-3 py-2 bg-blender-850 border-b border-blender-700 flex items-center justify-between text-gray-200 font-semibold text-[11px] shrink-0 sticky top-0 z-30 shadow-sm">
         <span class="flex items-center gap-1.5">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-blender-orange"></i>
-          Scene Collection
+          <span>Scene Collection</span>
         </span>
-        <span class="text-[9px] font-mono text-gray-400">IRSA / SPHEREx</span>
-      </div>
-
-      <!-- OUTLINER TREE ITEMS -->
-      <div class="px-2 py-1.5 border-b border-blender-700/60 font-mono text-[10px] space-y-0.5 text-gray-400">
-        <div class="flex items-center gap-1.5 text-gray-300">
-          <i data-lucide="folder" class="w-3 h-3 text-blender-orange"></i>
-          <span>Observatory Collection</span>
-        </div>
-        <div class="pl-4 flex items-center justify-between py-0.5 hover:bg-blender-800/40 rounded px-1">
-          <span class="flex items-center gap-1 text-gray-300">
-            <i data-lucide="camera" class="w-3 h-3 text-cyan-400"></i>
-            <span>SPHEREx Telescope</span>
-          </span>
-          <span class="text-[9px] text-gray-400">Active</span>
-        </div>
-        <div class="pl-4 flex items-center justify-between py-0.5 hover:bg-blender-800/40 rounded px-1">
-          <span class="flex items-center gap-1 text-gray-300">
-            <i data-lucide="target" class="w-3 h-3 text-blender-orange"></i>
-            <span id="outlinerTarget">WISE 0855-0714</span>
-          </span>
-          <span id="outlinerTargetType" class="text-[9px] text-blender-orange">Y-Dwarf</span>
-        </div>
-        <div class="pl-4 flex items-center justify-between py-0.5 hover:bg-blender-800/40 rounded px-1">
-          <span class="flex items-center gap-1 text-gray-400">
-            <i data-lucide="file-image" class="w-3 h-3 text-gray-400"></i>
-            <span>Epoch 1 (2MASS 1.25μm)</span>
-          </span>
-          <span class="text-[9px] text-gray-400">1999-02</span>
-        </div>
-        <div class="pl-4 flex items-center justify-between py-0.5 hover:bg-blender-800/40 rounded px-1">
-          <span class="flex items-center gap-1 text-gray-400">
-            <i data-lucide="file-image" class="w-3 h-3 text-gray-400"></i>
-            <span>Epoch 2 (SPHEREx Co-add)</span>
-          </span>
-          <span class="text-[9px] text-gray-400">2025-05</span>
+        <div class="flex items-center gap-1.5">
+          <span id="sceneStatusBadge" class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60">LIVE STATE</span>
+          <button id="btnRefreshScene" class="p-1 hover:bg-blender-700 rounded text-gray-400 hover:text-white transition" title="Refresh Scene Collection">
+            <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+          </button>
         </div>
       </div>
 
-      <!-- SECTION 1: Transform & Celestial Coordinates (Blender Transform Style) -->
-      <div class="p-2.5 border-b border-blender-700 space-y-1.5">
-        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
-          <span class="flex items-center gap-1">
-            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
-            Transform (Celestial)
-          </span>
+      <!-- SCROLLABLE BODY (Flex Column, min-h-0 overflow-y-auto) -->
+      <div id="sceneContainer" class="flex-1 overflow-y-auto min-h-0 divide-y divide-blender-700/60">
+        
+        <!-- LOADING SKELETON -->
+        <div id="sceneSkeleton" class="p-3 space-y-2.5 hidden">
+          <div class="h-4 bg-blender-800 rounded animate-pulse w-3/4"></div>
+          <div class="h-14 bg-blender-800/60 rounded animate-pulse"></div>
+          <div class="h-20 bg-blender-800/40 rounded animate-pulse"></div>
         </div>
 
-        <div class="space-y-1 font-mono text-[10px]">
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
-            <span class="text-gray-400">RA (α):</span>
-            <span id="propRA" class="text-white font-bold">133.79513°</span>
+        <!-- ERROR BANNER WITH RETRY -->
+        <div id="sceneError" class="p-3 bg-red-950/60 border-b border-red-800/60 hidden">
+          <div class="flex items-center gap-2 text-red-300 font-medium text-[11px]">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400 shrink-0"></i>
+            <span id="sceneErrorMessage">Failed to load scene state.</span>
           </div>
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
-            <span class="text-gray-400">Dec (δ):</span>
-            <span id="propDec" class="text-white font-bold">-07.24515°</span>
-          </div>
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
-            <span class="text-gray-400">Field of View:</span>
-            <span id="propFOV" class="text-white">3.00 arcmin</span>
-          </div>
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
-            <span class="text-gray-400">Proper Motion (μ):</span>
-            <span id="propPM" class="text-blender-orange font-bold">8.12 "/yr</span>
-          </div>
-          <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
-            <span class="text-gray-400">Temperature:</span>
-            <span id="propTemp" class="text-cyan-300">~250 K</span>
+          <button id="btnRetryScene" class="mt-2 w-full py-1 bg-red-900/60 hover:bg-red-800 text-white rounded text-[10px] font-medium border border-red-700 flex items-center justify-center gap-1 transition">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+            <span>Retry Connection</span>
+          </button>
+        </div>
+
+        <!-- DYNAMIC DATA-DRIVEN CONTENT (Target, Epochs, Layers) -->
+        <div id="sceneContent" class="divide-y divide-blender-700/60">
+          <!-- Populated purely by renderSceneCollection(window.scene) -->
+        </div>
+
+        <!-- SECTION: SPHEREx 6 Detector Arrays & Photometry -->
+        <div class="p-2.5 space-y-1.5">
+          <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+            <span class="flex items-center gap-1">
+              <i data-lucide="activity" class="w-3 h-3 text-cyan-400"></i>
+              SPHEREx 6-Array Photometry
+            </span>
+            <span class="text-emerald-400 text-[9px] font-mono">4.12x Co-add SNR</span>
           </div>
 
-          <!-- TASK 3: WiseView 1-Click Verification Bridge -->
-          <div class="pt-1.5">
-            <a id="btnWiseView" href="http://byw.tools/wiseview#ra=133.79513&dec=-7.24515&size=150&band=3&linear=True&diff=True" target="_blank" rel="noopener noreferrer"
-               class="w-full py-1.5 px-2 rounded bg-blender-800 hover:bg-blender-750 border border-blender-700 hover:border-blender-orange text-amber-300 hover:text-amber-200 text-[10px] font-mono font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm"
-               title="Open celestial coordinates directly in NASA Backyard Worlds WiseView unbinned flipbook">
-              <i data-lucide="external-link" class="w-3 h-3 text-blender-orange"></i>
-              <span>Verify in NASA WiseView ↗</span>
-            </a>
+          <div class="grid grid-cols-3 gap-1 font-mono text-[9px] text-center">
+            <div class="bg-blender-850 p-1 rounded border border-blender-700">
+              <div class="text-gray-400">A1 (0.75μm)</div>
+              <div id="coaddA1" class="text-white font-bold">842 ct</div>
+            </div>
+            <div class="bg-blender-850 p-1 rounded border border-blender-700">
+              <div class="text-gray-400">A2 (1.20μm)</div>
+              <div id="coaddA2" class="text-white font-bold">1,210 ct</div>
+            </div>
+            <div class="bg-blender-850 p-1 rounded border border-blender-700">
+              <div class="text-gray-400">A3 (1.90μm)</div>
+              <div id="coaddA3" class="text-white font-bold">2,480 ct</div>
+            </div>
+            <div class="bg-blender-850 p-1 rounded border border-blender-700">
+              <div class="text-gray-400">A4 (2.42μm)</div>
+              <div id="coaddA4" class="text-white font-bold">3,910 ct</div>
+            </div>
+            <div class="bg-blender-850 p-1 rounded border border-blender-700">
+              <div class="text-gray-400">A5 (3.82μm)</div>
+              <div id="coaddA5" class="text-blender-orange font-bold">8,740 ct</div>
+            </div>
+            <div class="bg-blender-850 p-1 rounded border border-blender-700">
+              <div class="text-gray-400">A6 (4.42μm)</div>
+              <div id="coaddA6" class="text-blender-orange font-bold">12,190 ct</div>
+            </div>
           </div>
         </div>
+
+        <!-- SECTION: 102 Spectral Bands & Molecular Telemetry -->
+        <div class="p-2.5 space-y-1.5 flex flex-col min-h-[160px]">
+          <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+            <span class="flex items-center gap-1">
+              <i data-lucide="line-chart" class="w-3 h-3 text-cyan-400"></i>
+              102-Band Infrared Spectrum
+            </span>
+            <span class="text-cyan-300 text-[9px] font-mono">0.75 - 5.0 μm</span>
+          </div>
+
+          <!-- Chart canvas container -->
+          <div class="bg-blender-950 rounded border border-blender-700 p-1 relative min-h-[105px]">
+            <canvas id="spectrumChart"></canvas>
+          </div>
+
+          <!-- Molecular features detected -->
+          <div class="flex items-center justify-between font-mono text-[9px] text-gray-400 pt-0.5">
+            <span>Key Dips:</span>
+            <span class="text-cyan-300 font-medium">H₂O (1.4μm)</span>
+            <span class="text-emerald-400 font-medium">CH₄ (3.3μm)</span>
+            <span class="text-orange-400 font-medium">CO₂ (4.3μm)</span>
+          </div>
+        </div>
+
+        <!-- SECTION: External Bridges & Citizen Science Action -->
+        <div class="p-2.5 space-y-2 bg-blender-950/40">
+          <a id="btnWiseView" href="http://byw.tools/wiseview#ra=133.79513&dec=-7.24515&size=150&band=3&linear=True&diff=True" target="_blank" rel="noopener noreferrer"
+             class="w-full py-1.5 px-2 rounded bg-blender-800 hover:bg-blender-750 border border-blender-700 hover:border-amber-400/80 text-amber-300 hover:text-amber-200 text-[10px] font-mono font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm"
+             title="Open celestial coordinates directly in NASA Backyard Worlds WiseView unbinned flipbook">
+            <i data-lucide="external-link" class="w-3 h-3 text-amber-400"></i>
+            <span>Verify in NASA WiseView ↗</span>
+          </a>
+
+          <a id="btnCadcSearch" href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.jp/en/search/?collection=NEOSSAT" target="_blank" rel="noopener noreferrer"
+             class="w-full py-1.5 px-2 rounded bg-blender-800 hover:bg-blender-750 border border-blender-700 hover:border-blue-400/80 text-blue-300 hover:text-white text-[10px] font-mono font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm"
+             title="Search Canadian Astronomy Data Centre for NEOSSat observations">
+            <i data-lucide="satellite" class="w-3 h-3 text-blue-400"></i>
+            <span>CADC NEOSSat Archive ↗</span>
+          </a>
+
+          <button id="flagCandidateBtn" class="w-full py-1.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 hover:border-blender-orange text-white font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm">
+            <i data-lucide="flag" class="w-3.5 h-3.5 text-blender-orange"></i>
+            <span>Flag Candidate Discovery</span>
+          </button>
+        </div>
+
       </div>
-
-      <!-- SECTION 1B: Gaia DR3 Astrometry Cross-Match -->
-      <div class="p-2.5 border-b border-blender-700 space-y-1.5 bg-blender-950/30">
-        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
-          <span class="flex items-center gap-1">
-            <i data-lucide="sparkles" class="w-3 h-3 text-cyan-400"></i>
-            Gaia DR3 Astrometry
-          </span>
-          <span id="gaiaStarCount" class="text-cyan-400 text-[9px] font-mono">0 Stars</span>
-        </div>
-
-        <div class="space-y-1 font-mono text-[9px] bg-blender-900/60 p-1.5 rounded border border-blender-700/80">
-          <div class="flex items-center justify-between">
-            <span class="text-gray-400">Cross-Match:</span>
-            <span id="gaiaMatchStatus" class="text-cyan-300 font-semibold">Active</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-gray-400">Field Top PM:</span>
-            <span id="gaiaTopPM" class="text-blender-orange font-bold">--</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-gray-400">Nearest ID:</span>
-            <span id="gaiaNearestID" class="text-gray-200 truncate max-w-[110px]">None</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION 1C: CSA NEOSSat & CADC Asteroid Tracking (Task 4) -->
-      <div class="p-2.5 border-b border-blender-700 space-y-1.5 bg-blender-950/20">
-        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
-          <span class="flex items-center gap-1">
-            <i data-lucide="radar" class="w-3 h-3 text-red-400"></i>
-            <span>CSA NEOSSat Asteroids</span>
-          </span>
-          <span id="csaNeossatStatus" class="text-emerald-400 text-[9px] font-mono">CADC Active</span>
-        </div>
-
-        <div class="space-y-1 font-mono text-[9px] bg-blender-900/60 p-1.5 rounded border border-blender-700/80">
-          <div class="flex items-center justify-between">
-            <span class="text-gray-400">Tracked Object:</span>
-            <span id="csaTrackedAsteroid" class="text-yellow-300 font-semibold truncate max-w-[130px]">2014 QX39</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-gray-400">Diurnal Rate:</span>
-            <span id="csaAsteroidRate" class="text-red-400 font-bold">28.4 "/hr</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-gray-400">Planet X Prob:</span>
-            <span id="csaPlanetXProb" class="text-emerald-300 font-bold">98% (Sub-stellar)</span>
-          </div>
-          <div class="pt-1">
-            <a id="btnCadcSearch" href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.jp/en/search/?collection=NEOSSAT" target="_blank" rel="noopener noreferrer"
-               class="w-full py-1 px-1.5 rounded bg-blender-800 hover:bg-blender-750 border border-blender-700 hover:border-red-400/80 text-gray-300 hover:text-white text-[9px] flex items-center justify-center gap-1 transition-all"
-               title="Search Canadian Astronomy Data Centre for NEOSSat observations">
-              <i data-lucide="satellite" class="w-2.5 h-2.5 text-red-400"></i>
-              <span>CADC NEOSSat Archive ↗</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION 2: SPHEREx 6 Detector Arrays (Co-add Photon Photometry) -->
-      <div class="p-2.5 border-b border-blender-700 space-y-1.5">
-        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
-          <span class="flex items-center gap-1">
-            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
-            SPHEREx 6-Array Photometry
-          </span>
-          <span class="text-emerald-400 text-[9px]">4.12x SNR</span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-1 font-mono text-[9px] text-center">
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
-            <div class="text-gray-400">A1 (0.75μm)</div>
-            <div class="text-white font-bold">842 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
-            <div class="text-gray-400">A2 (1.20μm)</div>
-            <div class="text-white font-bold">1,210 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
-            <div class="text-gray-400">A3 (1.90μm)</div>
-            <div class="text-white font-bold">2,480 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
-            <div class="text-gray-400">A4 (2.42μm)</div>
-            <div class="text-white font-bold">3,910 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
-            <div class="text-gray-400">A5 (3.82μm)</div>
-            <div class="text-blender-orange font-bold">8,740 ct</div>
-          </div>
-          <div class="bg-blender-850 p-1 rounded border border-blender-700">
-            <div class="text-gray-400">A6 (4.42μm)</div>
-            <div class="text-blender-orange font-bold">12,190 ct</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECTION 3: 102 Spectral Bands & Molecular Telemetry -->
-      <div class="p-2.5 border-b border-blender-700 space-y-1.5 flex-1 flex flex-col min-h-[160px]">
-        <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
-          <span class="flex items-center gap-1">
-            <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
-            102-Band Infrared Spectrum
-          </span>
-          <span class="text-cyan-300 text-[9px]">0.75 - 5.0 μm</span>
-        </div>
-
-        <!-- Chart canvas container -->
-        <div class="flex-1 bg-blender-950 rounded border border-blender-700 p-1 relative min-h-[100px]">
-          <canvas id="spectrumChart"></canvas>
-        </div>
-
-        <!-- Molecular features detected -->
-        <div class="flex items-center justify-between font-mono text-[9px] text-gray-400 pt-0.5">
-          <span>Key Dips:</span>
-          <span class="text-cyan-300">H₂O (1.4μm)</span>
-          <span class="text-emerald-400">CH₄ (3.3μm)</span>
-          <span class="text-orange-400">CO₂ (4.3μm)</span>
-        </div>
-      </div>
-
-      <!-- SECTION 4: Citizen Science Discovery Candidate -->
-      <div class="p-2.5 space-y-1.5 bg-blender-950/40">
-        <button id="flagCandidateBtn" class="w-full py-1.5 rounded bg-blender-800 hover:bg-blender-700 border border-blender-700 text-white font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm">
-          <i data-lucide="flag" class="w-3.5 h-3.5 text-blender-orange"></i>
-          <span>Flag Candidate Discovery</span>
-        </button>
-      </div>
+    </aside>
     </aside>
   </div>
 
@@ -888,7 +798,11 @@
     let realEpoch1Img = null;
     let realEpoch2Img = null;
     let realDiffImg = null;
+    let realCoverageMaskImg = null;
     let activeCutoutData = null;
+
+    // SINGLE SOURCE OF TRUTH: SCENE STATE OBJECT
+    window.scene = null;
 
     // GAIA DR3 ASTROMETRIC STATE & CLIENT CACHE (NASA IRSA TAP)
     let gaiaOverlayEnabled = true;
@@ -1037,6 +951,408 @@
     }
 
     // =========================================================================
+    // DATA-DRIVEN LAYER MANAGER & SCENE COLLECTION STATE ENGINE
+    // =========================================================================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function getSceneLayer(layerId) {
+      if (!window.scene || !window.scene.layers) return null;
+      return window.scene.layers.find(l => l.id === layerId) || null;
+    }
+
+    function updateLayerVisibility(layerId, isVisible) {
+      const l = getSceneLayer(layerId);
+      if (l) {
+        l.visible = isVisible;
+        if (layerId === 'diff_image') {
+          diffMode = isVisible;
+          const wsDiff = document.getElementById('wsDiff');
+          if (wsDiff) {
+            if (isVisible) wsDiff.classList.add('blender-btn-active');
+            else wsDiff.classList.remove('blender-btn-active');
+          }
+        } else if (layerId === 'gaia_overlay') {
+          gaiaOverlayEnabled = isVisible;
+          const btnGaia = document.getElementById('toggleGaia');
+          if (btnGaia) {
+            if (isVisible) btnGaia.classList.add('blender-btn-active');
+            else btnGaia.classList.remove('blender-btn-active');
+          }
+        }
+        updateFrameLabel();
+        drawFrame();
+      }
+    }
+
+    function updateLayerOpacity(layerId, opacity) {
+      const l = getSceneLayer(layerId);
+      if (l) {
+        l.opacity = Math.max(0.0, Math.min(1.0, opacity));
+        drawFrame();
+      }
+    }
+
+    function setBlinkFrame(slot, epochId) {
+      if (!window.scene || !window.scene.epochs) return;
+      const ep = window.scene.epochs.find(e => e.id === epochId);
+      if (!ep) return;
+
+      if (!window.scene.active_blink_pair) {
+        window.scene.active_blink_pair = {};
+      }
+
+      if (slot === 'A') {
+        window.scene.active_blink_pair.frame_a_id = epochId;
+        const lA = getSceneLayer('base_epoch_a');
+        if (lA) {
+          lA.epoch_id = epochId;
+          lA.name = `Blink Frame A (${ep.survey} ${ep.band})`;
+          lA.info = `Base raster from ${ep.instrument} at MJD ${ep.mjd} (${ep.obs_date}). Units: ${ep.units}.`;
+        }
+        currentFrame = 1;
+      } else if (slot === 'B') {
+        window.scene.active_blink_pair.frame_b_id = epochId;
+        const lB = getSceneLayer('base_epoch_b');
+        if (lB) {
+          lB.epoch_id = epochId;
+          lB.name = `Blink Frame B (${ep.survey} ${ep.band})`;
+          lB.info = `Base raster from ${ep.instrument} at MJD ${ep.mjd} (${ep.obs_date}). Units: ${ep.units}.`;
+        }
+        currentFrame = 2;
+      }
+
+      // Check passband compatibility between Frame A and Frame B
+      const epA = window.scene.epochs.find(e => e.id === window.scene.active_blink_pair.frame_a_id);
+      const epB = window.scene.epochs.find(e => e.id === window.scene.active_blink_pair.frame_b_id);
+      const diffLayer = getSceneLayer('diff_image');
+
+      if (epA && epB && diffLayer) {
+        const isMatched = Math.abs(epA.wavelength_um - epB.wavelength_um) < 0.25;
+        window.scene.active_blink_pair.band_matched = isMatched;
+        diffLayer.valid_bands = isMatched;
+        diffLayer.status = isMatched ? "ready" : "disabled_mismatch";
+        diffLayer.tooltip = isMatched
+          ? "Direct numerical residual: Frame B - Frame A."
+          : `Band Mismatch: ${epA.band} (${epA.wavelength_um}μm) vs ${epB.band} (${epB.wavelength_um}μm). Difference imaging requires matched passbands.`;
+        if (!isMatched && diffMode) {
+          diffMode = false;
+          diffLayer.visible = false;
+          const wsDiff = document.getElementById('wsDiff');
+          if (wsDiff) wsDiff.classList.remove('blender-btn-active');
+        }
+      }
+
+      renderSceneCollection(window.scene);
+      updateFrameLabel();
+      drawFrame();
+    }
+
+    function selectEpochFrame(epochId) {
+      if (!window.scene || !window.scene.active_blink_pair) return;
+      if (window.scene.active_blink_pair.frame_a_id === epochId) {
+        currentFrame = 1;
+      } else if (window.scene.active_blink_pair.frame_b_id === epochId) {
+        currentFrame = 2;
+      } else {
+        setBlinkFrame('A', epochId);
+        currentFrame = 1;
+      }
+      diffMode = false;
+      const wsDiff = document.getElementById('wsDiff');
+      if (wsDiff) wsDiff.classList.remove('blender-btn-active');
+      renderSceneCollection(window.scene);
+      updateFrameLabel();
+      drawFrame();
+    }
+
+    function toggleEpochInfo(epochId) {
+      const el = document.getElementById(`epochInfo_${epochId}`);
+      if (el) el.classList.toggle('hidden');
+    }
+
+    function toggleLayerVisibility(layerId) {
+      const l = getSceneLayer(layerId);
+      if (!l) return;
+      if (layerId === 'diff_image' && !l.valid_bands) return;
+      l.visible = !l.visible;
+      updateLayerVisibility(layerId, l.visible);
+      renderSceneCollection(window.scene);
+    }
+
+    function onLayerOpacityChange(layerId, val) {
+      const opacity = parseFloat(val) / 100.0;
+      updateLayerOpacity(layerId, opacity);
+      const lbl = document.getElementById(`opacityLabel_${layerId}`);
+      if (lbl) lbl.innerText = `${Math.round(opacity * 100)}%`;
+    }
+
+    async function loadSceneState(targetKey = null, ra = null, dec = null, fov = 3.0) {
+      const skeleton = document.getElementById('sceneSkeleton');
+      const errorBanner = document.getElementById('sceneError');
+
+      if (skeleton) skeleton.classList.remove('hidden');
+      if (errorBanner) errorBanner.classList.add('hidden');
+
+      try {
+        let url = `${BACKEND_URL}/scene?fov=${fov}`;
+        if (targetKey) url += `&target=${encodeURIComponent(targetKey)}`;
+        if (ra !== null && dec !== null) {
+          url += `&ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}`;
+        }
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        const data = await res.json();
+        window.scene = data;
+
+        renderSceneCollection(window.scene);
+
+        // Update WiseView link
+        const btnWiseView = document.getElementById('btnWiseView');
+        if (btnWiseView && window.scene.target) {
+          const t = window.scene.target;
+          btnWiseView.href = `http://byw.tools/wiseview#ra=${t.ra_deg.toFixed(5)}&dec=${t.dec_deg.toFixed(5)}&size=150&band=3&linear=True&diff=True`;
+        }
+
+        // Update CADC search link
+        const btnCadc = document.getElementById('btnCadcSearch');
+        if (btnCadc && window.scene.target) {
+          const t = window.scene.target;
+          btnCadc.href = `https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.jp/en/search/?collection=NEOSSAT&target=${encodeURIComponent(t.ra_deg.toFixed(5) + ' ' + t.dec_deg.toFixed(5))}`;
+        }
+      } catch (err) {
+        console.error("Failed to load scene state:", err);
+        if (errorBanner) {
+          errorBanner.classList.remove('hidden');
+          const msg = document.getElementById('sceneErrorMessage');
+          if (msg) msg.innerText = `Scene Error: ${err.message}`;
+        }
+      } finally {
+        if (skeleton) skeleton.classList.add('hidden');
+      }
+    }
+
+    function renderSceneCollection(sceneData) {
+      const container = document.getElementById('sceneContent');
+      if (!container || !sceneData || !sceneData.target) return;
+
+      const t = sceneData.target;
+      const epochs = sceneData.epochs || [];
+      const layers = sceneData.layers || [];
+      const activePair = sceneData.active_blink_pair || {};
+
+      let tierColor = 'bg-gray-800 text-gray-300 border-gray-600';
+      let tierName = t.evidence_tier || 'UNKNOWN_MOVER';
+      if (t.evidence_tier === 'KNOWN_STELLAR_OR_BROWN_DWARF') {
+        tierColor = 'bg-emerald-950/80 text-emerald-300 border-emerald-600/80';
+      } else if (t.evidence_tier === 'KNOWN_SOLAR_SYSTEM') {
+        tierColor = 'bg-blue-950/80 text-blue-300 border-blue-600/80';
+      } else if (t.evidence_tier === 'SLOW_IR_EXCESS_CANDIDATE') {
+        tierColor = 'bg-purple-950/80 text-purple-300 border-purple-600/80';
+      } else if (t.evidence_tier === 'UNKNOWN_MOVER') {
+        tierColor = 'bg-amber-950/80 text-amber-300 border-amber-600/80';
+      }
+
+      const isConfirmed = t.confirmation_status && t.confirmation_status.includes('VERIFIED');
+      const confBadge = isConfirmed
+        ? `<span class="px-1.5 py-0.5 rounded text-[8px] font-mono bg-emerald-900/60 text-emerald-300 border border-emerald-600">CONFIRMED</span>`
+        : `<span class="px-1.5 py-0.5 rounded text-[8px] font-mono bg-amber-900/60 text-amber-300 border border-amber-600">NOT CONFIRMED</span>`;
+
+      // 1. Target Metadata Section
+      let html = `
+        <div class="p-2.5 space-y-2" role="treeitem" aria-expanded="true">
+          <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="target" class="w-3.5 h-3.5 text-blender-orange"></i>
+              <span id="targetSectionTitle">${escapeHtml(t.name)}</span>
+            </span>
+            <span class="text-[9px] font-mono px-1.5 py-0.2 rounded border ${tierColor}">${tierName}</span>
+          </div>
+
+          <div class="space-y-1 font-mono text-[10px]">
+            <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+              <span class="text-gray-400">Object Type:</span>
+              <span class="text-white font-medium truncate max-w-[170px]" title="${escapeHtml(t.object_type)}">${escapeHtml(t.object_type)}</span>
+            </div>
+            ${t.spectral_type ? `
+            <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+              <span class="text-gray-400">Spectral Class:</span>
+              <span class="text-cyan-300 font-bold">${escapeHtml(t.spectral_type)}</span>
+            </div>` : ''}
+            <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+              <span class="text-gray-400">RA (α):</span>
+              <span class="text-white font-bold">${t.ra_deg.toFixed(5)}°</span>
+            </div>
+            <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+              <span class="text-gray-400">Dec (δ):</span>
+              <span class="text-white font-bold">${t.dec_deg >= 0 ? '+' : ''}${t.dec_deg.toFixed(5)}°</span>
+            </div>
+            <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+              <span class="text-gray-400">Proper Motion (μ):</span>
+              <span class="text-blender-orange font-bold" title="${t.total_pm_mas_yr.toFixed(1)} mas/yr">${t.total_pm_arcsec_yr.toFixed(3)} "/yr <span class="text-[9px] text-gray-400 font-normal">(${t.total_pm_mas_yr.toFixed(0)} mas/yr)</span></span>
+            </div>
+            <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+              <span class="text-gray-400">Teff (Temp):</span>
+              <span class="text-cyan-300 font-bold">${t.effective_temp_k !== null ? '~' + Math.round(t.effective_temp_k) + ' K' : 'Unmeasured'}</span>
+            </div>
+            <div class="flex items-center justify-between bg-blender-850 px-2 py-0.5 rounded border border-blender-700">
+              <span class="text-gray-400">Distance / Plx:</span>
+              <span class="text-gray-200">${t.distance_pc !== null ? t.distance_pc.toFixed(2) + ' pc' : '--'} <span class="text-[9px] text-gray-400">(${t.parallax_mas !== null ? t.parallax_mas.toFixed(1) + ' mas' : '--'})</span></span>
+            </div>
+          </div>
+
+          <div class="bg-blender-950/60 p-2 rounded border border-blender-700/80 space-y-1.5 text-[9px]">
+            <div class="flex items-center justify-between">
+              <span class="font-semibold text-gray-300">Evidence Tier:</span>
+              ${confBadge}
+            </div>
+            <p class="text-gray-300 leading-snug font-sans text-[10px]">${escapeHtml(t.evidence_summary)}</p>
+            ${t.citations && t.citations.length > 0 ? `
+            <div class="pt-0.5 text-[8.5px] font-mono text-gray-400 truncate" title="${escapeHtml(t.citations.join('; '))}">
+              <i data-lucide="book-open" class="w-2.5 h-2.5 inline mr-0.5 text-blender-orange"></i>
+              Ref: ${escapeHtml(t.citations[0])}
+            </div>` : ''}
+          </div>
+        </div>
+      `;
+
+      // 2. Epochs Section (Tree Group)
+      html += `
+        <div class="p-2.5 space-y-2" role="group" aria-label="Observation Epochs Tree">
+          <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>Observation Epochs (${epochs.length})</span>
+            </span>
+            <span class="text-[9px] font-mono text-gray-400">Proper-Motion Aligned</span>
+          </div>
+
+          <div class="space-y-1.5">
+      `;
+
+      epochs.forEach((ep) => {
+        const isFrameA = (activePair.frame_a_id === ep.id);
+        const isFrameB = (activePair.frame_b_id === ep.id);
+        const isCurrentView = (currentFrame === 1 && isFrameA) || (currentFrame === 2 && isFrameB);
+
+        const borderClass = isCurrentView
+          ? 'border-blender-orange bg-blender-850/90 shadow-sm'
+          : 'border-blender-700/70 bg-blender-900/60 hover:bg-blender-850/60';
+
+        html += `
+          <div class="epoch-card rounded border p-1.5 transition-all cursor-pointer ${borderClass}" data-epoch-id="${ep.id}" onclick="selectEpochFrame('${ep.id}')">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1.5 flex-1" title="Click to view this epoch in canvas">
+                <span class="w-2 h-2 rounded-full ${ep.status === 'loaded' ? 'bg-emerald-400' : 'bg-amber-400'} shrink-0"></span>
+                <span class="font-bold text-gray-200 text-[10px]">${escapeHtml(ep.survey)}</span>
+                <span class="text-cyan-300 font-mono text-[9px]">${escapeHtml(ep.band)}</span>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button onclick="event.stopPropagation(); setBlinkFrame('A', '${ep.id}')" class="px-1.5 py-0.5 rounded text-[8px] font-mono font-bold transition-all ${isFrameA ? 'bg-blender-blue text-white ring-1 ring-white/40' : 'bg-blender-800 text-gray-400 hover:text-white'}" title="Assign as Blink Frame A">SET A</button>
+                <button onclick="event.stopPropagation(); setBlinkFrame('B', '${ep.id}')" class="px-1.5 py-0.5 rounded text-[8px] font-mono font-bold transition-all ${isFrameB ? 'bg-blender-orange text-white ring-1 ring-white/40' : 'bg-blender-800 text-gray-400 hover:text-white'}" title="Assign as Blink Frame B">SET B</button>
+                <button onclick="event.stopPropagation(); toggleEpochInfo('${ep.id}')" class="p-0.5 rounded hover:bg-blender-700 text-gray-400 hover:text-white" title="View Epoch Provenance Metadata">
+                  <i data-lucide="info" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-[9px] font-mono text-gray-400 mt-1 pl-3.5">
+              <span>${ep.obs_date} (MJD ${ep.mjd})</span>
+              <span class="text-blender-orange font-semibold">Δθ: ${ep.displacement_arcsec.toFixed(1)}"</span>
+            </div>
+
+            ${ep.exceeds_fov ? `
+            <div class="mt-1 pl-3.5 text-[8.5px] font-mono text-amber-300 flex items-center gap-1 bg-amber-950/40 p-1 rounded border border-amber-800/60" title="${escapeHtml(ep.warning || '')}">
+              <i data-lucide="alert-circle" class="w-3 h-3 text-amber-400 shrink-0"></i>
+              <span>Displacement exceeds ${ep.fov_arcmin}' FOV! Centered via space motion.</span>
+            </div>` : ''}
+
+            <div id="epochInfo_${ep.id}" class="hidden mt-1.5 p-1.5 bg-blender-950/90 rounded border border-blender-700/80 font-mono text-[8.5px] text-gray-300 space-y-0.5">
+              <div><span class="text-gray-400">Product ID:</span> ${escapeHtml(ep.product_id)}</div>
+              <div><span class="text-gray-400">Instrument:</span> ${escapeHtml(ep.instrument)}</div>
+              <div><span class="text-gray-400">Pixel Scale:</span> ${ep.pixel_scale_arcsec}"/px</div>
+              <div><span class="text-gray-400">Units:</span> ${escapeHtml(ep.units)}</div>
+              <div><span class="text-gray-400">Center:</span> RA ${ep.cutout_center.ra_deg.toFixed(5)}°, Dec ${ep.cutout_center.dec_deg.toFixed(5)}°</div>
+              ${ep.product_url ? `<a href="${ep.product_url}" target="_blank" rel="noopener" class="text-cyan-400 hover:underline block pt-0.5">Archive Product URL ↗</a>` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div></div>`;
+
+      // 3. Layers Hierarchy Section (Tree Group)
+      html += `
+        <div class="p-2.5 space-y-2" role="group" aria-label="Visual Layers Tree">
+          <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-3.5 h-3.5 text-blender-orange"></i>
+              <span>Layers (${layers.length})</span>
+            </span>
+            <span class="text-[9px] font-mono text-gray-400">Opacity &amp; Visibility</span>
+          </div>
+
+          <div class="space-y-1.5">
+      `;
+
+      layers.forEach((layer) => {
+        const isDiff = (layer.id === 'diff_image');
+        const isDisabledDiff = isDiff && !layer.valid_bands;
+
+        html += `
+          <div class="layer-item p-1.5 bg-blender-900/60 hover:bg-blender-850/60 rounded border border-blender-700/70 space-y-1">
+            <div class="flex items-center justify-between gap-1">
+              <div class="flex items-center gap-1.5">
+                <button onclick="toggleLayerVisibility('${layer.id}')"
+                        class="p-1 rounded hover:bg-blender-700 text-gray-300 hover:text-white transition ${isDisabledDiff ? 'opacity-40 cursor-not-allowed' : ''}"
+                        title="${layer.visible ? 'Hide Layer' : 'Show Layer'}"
+                        ${isDisabledDiff ? 'disabled' : ''}>
+                  <i data-lucide="${layer.visible ? 'eye' : 'eye-off'}" class="w-3 h-3 ${layer.visible ? 'text-blender-orange' : 'text-gray-500'}"></i>
+                </button>
+                <span class="font-medium text-gray-200 text-[10px] truncate max-w-[140px]" title="${escapeHtml(layer.name)}">${escapeHtml(layer.name)}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[8px] font-mono px-1 py-0.2 rounded bg-blender-800 text-gray-300 border border-blender-700">${escapeHtml(layer.type)}</span>
+                <span id="opacityLabel_${layer.id}" class="text-[9px] font-mono text-gray-400 w-7 text-right">${Math.round(layer.opacity * 100)}%</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pl-6 pr-1">
+              <input type="range" min="0" max="100" value="${Math.round(layer.opacity * 100)}"
+                     class="w-full h-1 bg-blender-750 rounded-lg appearance-none cursor-pointer accent-blender-orange"
+                     oninput="onLayerOpacityChange('${layer.id}', this.value)"
+                     ${isDisabledDiff ? 'disabled' : ''}>
+            </div>
+
+            ${isDisabledDiff ? `
+            <div class="pl-6 text-[8.5px] font-mono text-amber-300 bg-amber-950/40 p-1 rounded border border-amber-800/60 mt-1" title="${escapeHtml(layer.tooltip || '')}">
+              <i data-lucide="lock" class="w-2.5 h-2.5 inline mr-0.5 text-amber-400"></i>
+              Difference disabled: Passband mismatch between Frame A and Frame B.
+            </div>` : ''}
+
+            ${layer.info ? `
+            <div id="layerInfo_${layer.id}" class="hidden pl-6 text-[8.5px] font-mono text-gray-400 pt-0.5">
+              ${escapeHtml(layer.info)}
+            </div>` : ''}
+          </div>
+        `;
+      });
+
+      html += `</div></div>`;
+
+      container.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // =========================================================================
     // DRAW REAL ASTRONOMICAL FITS IMAGERY (Single Continuous Optical Telescope Lens)
     // =========================================================================
     function drawFrame() {
@@ -1044,8 +1360,6 @@
       const h = canvas.height;
 
       // Dynamic background based on active mode
-      // Blink Mode = Deep Space Black (#06080e)
-      // Difference Mode = Astrophotometric Neutral Baseline (#808080 mid-gray)
       ctx.fillStyle = diffMode ? '#808080' : '#06080e';
       ctx.fillRect(0, 0, w, h);
 
@@ -1058,10 +1372,22 @@
       const basePx = Math.min(w, h) * 0.90;
       const pixelsPerArcmin = basePx / 3.0;
 
+      // Query layer states from Scene
+      const layerA = getSceneLayer('base_epoch_a');
+      const layerB = getSceneLayer('base_epoch_b');
+      const diffLayer = getSceneLayer('diff_image');
+      const covLayer = getSceneLayer('coverage_mask');
+      const gaiaLayer = getSceneLayer('gaia_overlay');
+
+      const isFrameA = (currentFrame === 1);
+      const curLayer = isFrameA ? layerA : layerB;
+      const layerAlpha = curLayer ? curLayer.opacity : 1.0;
+      const isVisible = curLayer ? curLayer.visible : true;
+
       // 1. Draw base contiguous image (or previous tier during cross-fade)
       if (prevEpoch1Img && crossFadeAlpha < 1.0) {
         const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
-        if (prevImg && prevImg.complete) {
+        if (prevImg && prevImg.complete && isVisible) {
           const pfov = prevImg.fov || 3.0;
           const pw = pfov * pixelsPerArcmin;
           const ph = pfov * pixelsPerArcmin;
@@ -1070,20 +1396,46 @@
       }
 
       // 2. Draw current active master astronomical image centered at exact world coordinates
-      const activeImg = diffMode ? realDiffImg : (currentFrame === 1 ? realEpoch1Img : realEpoch2Img);
-      if (activeImg && activeImg.complete) {
-        const afov = activeImg.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
-        const rw = afov * pixelsPerArcmin;
-        const rh = afov * pixelsPerArcmin;
-        if (prevEpoch1Img && crossFadeAlpha < 1.0) {
-          ctx.globalAlpha = crossFadeAlpha;
+      if (diffMode) {
+        const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
+        const diffVis = diffLayer ? diffLayer.visible : true;
+        if (diffVis && realDiffImg && realDiffImg.complete) {
+          const afov = realDiffImg.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
+          const rw = afov * pixelsPerArcmin;
+          const rh = afov * pixelsPerArcmin;
+          ctx.globalAlpha = diffAlpha;
+          ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw, rh);
+          ctx.globalAlpha = 1.0;
         }
-        ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
+      } else {
+        const activeImg = currentFrame === 1 ? realEpoch1Img : realEpoch2Img;
+        if (isVisible && activeImg && activeImg.complete) {
+          const afov = activeImg.fov || ((currentLOD === 2) ? 8.0 : (currentLOD === 0 ? 1.5 : 3.0));
+          const rw = afov * pixelsPerArcmin;
+          const rh = afov * pixelsPerArcmin;
+          const effAlpha = (prevEpoch1Img && crossFadeAlpha < 1.0) ? (crossFadeAlpha * layerAlpha) : layerAlpha;
+          ctx.globalAlpha = effAlpha;
+          ctx.drawImage(activeImg, -rw / 2, -rh / 2, rw, rh);
+          ctx.globalAlpha = 1.0;
+        }
+      }
+
+      // 3. Draw Coverage Mask Overlay (transparent NaN / unobserved boundary mask)
+      if (covLayer && covLayer.visible && realCoverageMaskImg && realCoverageMaskImg.complete) {
+        const mfov = realCoverageMaskImg.fov || 3.0;
+        const mw = mfov * pixelsPerArcmin;
+        const mh = mfov * pixelsPerArcmin;
+        ctx.globalAlpha = covLayer.opacity;
+        ctx.drawImage(realCoverageMaskImg, -mw / 2, -mh / 2, mw, mh);
         ctx.globalAlpha = 1.0;
       }
 
-      // 3. Draw Gaia DR3 Astrometry Overlay (Target reticles, proper motion vectors, magnitude tags)
-      drawGaiaOverlay(ctx, pixelsPerArcmin);
+      // 4. Draw Gaia DR3 Astrometry Overlay (Target reticles, proper motion vectors, magnitude tags)
+      const gaiaVis = gaiaLayer ? gaiaLayer.visible : gaiaOverlayEnabled;
+      const gaiaAlpha = gaiaLayer ? gaiaLayer.opacity : 0.85;
+      if (gaiaVis) {
+        drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha);
+      }
 
       ctx.restore();
     }
@@ -1224,8 +1576,10 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    function drawGaiaOverlay(ctx, pixelsPerArcmin) {
-      if (!gaiaOverlayEnabled || !gaiaSources || gaiaSources.length === 0) return;
+    function drawGaiaOverlay(ctx, pixelsPerArcmin, opacity = 0.85) {
+      if (!gaiaOverlayEnabled || !gaiaSources || gaiaSources.length === 0 || opacity <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = opacity;
 
       const cosDec = Math.cos(camera.dec * Math.PI / 180.0);
       const zoom = camera.zoom;
@@ -1296,6 +1650,7 @@
         }
         ctx.fillText(tag, sx + ringRadius + (3 / zoom), sy - (4 / zoom));
       }
+      ctx.restore();
     }
 
     // =========================================================================
@@ -1313,19 +1668,7 @@
         const data = await res.json();
         csaNeossatData = data;
 
-        const tel = data.neossat_telemetry || {};
-        const elTrack = document.getElementById('csaTrackedAsteroid');
-        const elRate = document.getElementById('csaAsteroidRate');
-        const elProb = document.getElementById('csaPlanetXProb');
         const btnCadc = document.getElementById('btnCadcSearch');
-
-        if (elTrack) elTrack.innerText = tel.nearest_tracked_asteroid || 'None Detected';
-        if (elRate) elRate.innerText = `${tel.asteroid_hourly_motion_arcsec_hr || 0} "/hr`;
-        if (elProb) {
-          const p = Math.round((tel.sub_stellar_planet_x_probability || 0) * 100);
-          elProb.innerText = `${p}% (Sub-stellar)`;
-          elProb.className = p > 70 ? 'text-emerald-300 font-bold' : 'text-amber-300 font-bold';
-        }
         if (btnCadc && data.cadc_search_url) {
           btnCadc.href = data.cadc_search_url;
         }
@@ -1550,16 +1893,26 @@
         }
 
         // Seamless image decoding in memory before viewport swap (prevents blank screen!)
-        const [img1, img2, imgDiff] = await Promise.all([
+        const preloads = [
           preloadImage(data.epochs[0].image_data),
           preloadImage(data.epochs[1].image_data),
           preloadImage(data.difference_image.image_data)
-        ]);
+        ];
+        if (data.coverage_mask_image && data.coverage_mask_image.image_data) {
+          preloads.push(preloadImage(data.coverage_mask_image.image_data));
+        }
+
+        const loadedImgs = await Promise.all(preloads);
+        const img1 = loadedImgs[0];
+        const img2 = loadedImgs[1];
+        const imgDiff = loadedImgs[2];
+        const imgMask = loadedImgs[3] || null;
 
         const initFov = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : fov;
         if (img1) { img1.fov = initFov; realEpoch1Img = img1; }
         if (img2) { img2.fov = initFov; realEpoch2Img = img2; }
         if (imgDiff) { imgDiff.fov = initFov; realDiffImg = imgDiff; }
+        if (imgMask) { imgMask.fov = initFov; realCoverageMaskImg = imgMask; }
 
         const mosaicEl = document.getElementById('vpMosaicBadge');
         if (mosaicEl) {
@@ -1569,7 +1922,9 @@
 
         const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
         document.getElementById('vpTargetName').innerText = title;
-        document.getElementById('outlinerTarget').innerText = title;
+
+        // Fetch single source of truth Scene State
+        await loadSceneState(targetKey, camera.ra, camera.dec, camera.fov);
 
         updateFrameLabel();
         updateCoordinateReadouts();
@@ -1577,16 +1932,6 @@
 
         if (aladinInstance) {
           aladinInstance.gotoRaDec(camera.ra, camera.dec);
-        }
-
-        if (data.telemetry) {
-          document.getElementById('outlinerTargetType').innerText = data.telemetry.object_type || "Source";
-          if (data.telemetry.proper_motion_mas_yr !== undefined) {
-            document.getElementById('propPM').innerText = `${data.telemetry.proper_motion_mas_yr.toFixed(2)} "/yr`;
-          }
-          if (data.telemetry.estimated_temp_k) {
-            document.getElementById('propTemp').innerText = `~${data.telemetry.estimated_temp_k} K`;
-          }
         }
 
         // Live Gaia DR3 Cross-Match & Astrometry
@@ -1803,16 +2148,8 @@
       camera.zoom = 1.0;
 
       document.getElementById('vpTargetName').innerText = t.name;
-      document.getElementById('outlinerTarget').innerText = t.name;
-      document.getElementById('outlinerTargetType').innerText = t.type;
-      document.getElementById('temporalBaselineText').innerText = `Δt: ${t.baseline}`;
-
       document.getElementById('vpRA').innerText = `${t.raDeg.toFixed(5)}°`;
       document.getElementById('vpDec').innerText = `${t.decDeg.toFixed(5)}°`;
-      document.getElementById('propRA').innerText = `${t.raDeg.toFixed(5)}°`;
-      document.getElementById('propDec').innerText = `${t.decDeg.toFixed(5)}°`;
-      document.getElementById('propPM').innerText = t.pm;
-      document.getElementById('propTemp').innerText = t.temp;
 
       document.getElementById('inputRA').value = t.raDeg.toFixed(5);
       document.getElementById('inputDec').value = t.decDeg.toFixed(5);
@@ -2300,6 +2637,19 @@
     window.addEventListener('DOMContentLoaded', () => {
       resizeCanvas();
       initSpectrumChart();
+
+      const btnRefresh = document.getElementById('btnRefreshScene');
+      if (btnRefresh) {
+        btnRefresh.addEventListener('click', () => {
+          loadSceneState(currentTargetKey, camera.ra, camera.dec, camera.fov);
+        });
+      }
+      const btnRetry = document.getElementById('btnRetryScene');
+      if (btnRetry) {
+        btnRetry.addEventListener('click', () => {
+          loadSceneState(currentTargetKey, camera.ra, camera.dec, camera.fov);
+        });
+      }
 
       // Check URL parameters (e.g. ?ra=133.79513&dec=-7.24515&fov=3.0)
       const urlParams = new URLSearchParams(window.location.search);

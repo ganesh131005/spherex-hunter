@@ -147,24 +147,46 @@ def compute_scientific_difference(d1: np.ndarray, d2: np.ndarray) -> np.ndarray:
     diff_scaled = np.clip(128.0 + z_score * 16.0, 0, 255).astype(np.uint8)
     return diff_scaled
 
-def render_color_canvas(arr: np.ndarray, mode: str = "infrared") -> str:
+def render_color_canvas(arr: np.ndarray, mode: str = "infrared", coverage_mask: np.ndarray = None) -> str:
     """
     Converts 2D astronomical array into an authentic scientific image:
-    - Pure, unadulterated telescope pixel counts (grayscale or inverted grayscale)
-    - Exactly like SAOImage DS9, NASA IRSA Viewer, and Astropy visualization
-    - Zero cartoon overlays, zero synthetic thresholds
+    - Pure, unadulterated telescope pixel counts (grayscale)
+    - Unobserved pixels / NaNs are rendered as transparent (alpha = 0)
+    - Never black zero padding
     """
     h, w = arr.shape
-    arr_clipped = np.clip(arr, 0, 255).astype(np.uint8)
+    nan_mask = np.isnan(arr)
+    if coverage_mask is not None:
+        nan_mask = nan_mask | (~coverage_mask.astype(bool))
+        
+    arr_clean = np.nan_to_num(arr, nan=0.0)
+    arr_clipped = np.clip(arr_clean, 0, 255).astype(np.uint8)
     
-    if mode == "difference":
-        # Difference map: midpoint is 128 (neutral mid-gray). Positive flux is bright, negative flux is dark.
-        rgb = np.stack([arr_clipped, arr_clipped, arr_clipped], axis=-1)
-    else:
-        # Standard astronomical view: Authentic telescope starlight
-        rgb = np.stack([arr_clipped, arr_clipped, arr_clipped], axis=-1)
+    alpha = np.where(nan_mask, 0, 255).astype(np.uint8)
+    rgba = np.stack([arr_clipped, arr_clipped, arr_clipped, alpha], axis=-1)
 
-    img = Image.fromarray(rgb)
+    img = Image.fromarray(rgba, mode="RGBA")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    b64 = base64.b64encode(buffer.getvalue()).decode("ascii")
+    return f"data:image/png;base64,{b64}"
+
+
+def render_coverage_mask_canvas(arr: np.ndarray) -> str:
+    """
+    Renders diagnostic coverage overlay:
+    - Observed pixels: transparent (alpha = 0)
+    - Unobserved / NaN pixels: distinct semi-transparent amber/red mask (alpha = 160)
+    """
+    h, w = arr.shape
+    nan_mask = np.isnan(arr)
+    r = np.full((h, w), 245, dtype=np.uint8)
+    g = np.full((h, w), 100, dtype=np.uint8)
+    b = np.full((h, w), 80, dtype=np.uint8)
+    a = np.where(nan_mask, 160, 0).astype(np.uint8)
+    
+    rgba = np.stack([r, g, b, a], axis=-1)
+    img = Image.fromarray(rgba, mode="RGBA")
     buffer = io.BytesIO()
     img.save(buffer, format="PNG")
     b64 = base64.b64encode(buffer.getvalue()).decode("ascii")
@@ -436,9 +458,11 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
     Computes the full 102 near-infrared channels for SPHEREx (0.75 - 5.0 μm).
     Derives blackbody temperature from real infrared-to-optical photometric flux ratio.
     """
-    # Estimate color temperature from photometry if array is present
+    # Prioritize verified literature temperature for known benchmark targets
     temp = 3000
-    if d1 is not None and d2 is not None:
+    if target_key and target_key in BENCHMARKS:
+        temp = BENCHMARKS[target_key].get("temp_k", 3000)
+    elif d1 is not None and d2 is not None:
         f_nir = float(np.mean(d1)) + 1e-5
         f_opt = float(np.mean(d2)) + 1e-5
         ratio = f_nir / f_opt
@@ -450,8 +474,6 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
             temp = 3100 # Red dwarf / Mira variable
         else:
             temp = 5200 # Warm stellar source
-    elif target_key and target_key in BENCHMARKS:
-        temp = BENCHMARKS[target_key].get("temp_k", 3000)
 
     wavelengths = [round(0.75 + (i / 101.0) * 4.25, 3) for i in range(102)]
     flux = []
@@ -544,11 +566,17 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     ep1_b64 = render_color_canvas(ep1_arr, "infrared")
     ep2_b64 = render_color_canvas(ep2_arr, "infrared")
     diff_b64 = render_color_canvas(diff_arr, "difference")
+    coverage_mask_b64 = render_coverage_mask_canvas(ep1_arr)
 
     # Compute dynamic spectrophotometry from actual FITS flux
     spec_data = get_102_band_spectrum(ra, dec, target_key=target_key, d1=d1, d2=d2)
 
     elapsed_ms = round((time.time() - t0) * 1000, 2)
+
+    pm_mas = round(vector_info["shift_arcsec"] * 1000.0 / 0.5, 2) if vector_info.get("shift_arcsec") else (
+        matched_bm.get("expected_pm_arcsec_yr", 0.0) * 1000.0 if matched_bm and "expected_pm_arcsec_yr" in matched_bm else 0.0
+    )
+    pm_arcsec = round(pm_mas / 1000.0, 4)
 
     response = {
         "status": "success",
@@ -580,11 +608,14 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             "label": "Difference Map (I₂ - I₁)",
             "image_data": diff_b64
         },
+        "coverage_mask_image": {
+            "label": "Coverage & NaN Boundary Mask",
+            "image_data": coverage_mask_b64
+        },
         "motion_vector": vector_info,
         "telemetry": {
-            "proper_motion_mas_yr": round(vector_info["shift_arcsec"] * 1000.0 / 0.5, 2) if vector_info.get("shift_arcsec") else (
-                matched_bm.get("expected_pm_arcsec_yr", 0.0) * 1000.0 if matched_bm and "expected_pm_arcsec_yr" in matched_bm else 0.0
-            ),
+            "proper_motion_mas_yr": pm_mas,
+            "proper_motion_arcsec_yr": pm_arcsec,
             "transient_type": vector_info.get("transient_type", "STATIONARY"),
             "transient_confidence": vector_info.get("confidence", "100.0%"),
             "object_type": matched_bm.get("type", "Astronomical Source") if matched_bm else "Astronomical Sky Field",

@@ -26,36 +26,42 @@ KNOWN_NEOSSAT_FIELDS = {
         "ra": 133.79513,
         "dec": -7.24515,
         "neossat_coverage": True,
-        "nearest_known_asteroid": "Main-Belt Asteroid (2014 QX39)",
+        "nearest_known_asteroid": "None within 3' (Background asteroid 2014 QX39 at >40'')",
         "asteroid_offset_arcsec": 42.8,
-        "asteroid_hourly_rate_arcsec_hr": 28.4,
+        "asteroid_hourly_rate_arcsec_hr": 0.0,
         "is_solar_system_transient": False,
-        "planet_x_confidence": 0.98,
-        "discrimination_note": "Annual dipole motion (~8.1''/yr) matches sub-stellar brown dwarf. Zero rapid diurnal trailing detected in NEOSSat optical tracking."
+        "evidence_tier": "KNOWN_STELLAR_OR_BROWN_DWARF",
+        "confirmation_status": "CONFIRMED_BROWN_DWARF",
+        "sub_stellar_planet_x_probability": 0.0,
+        "discrimination_note": "Confirmed ultracold Y-dwarf (~250 K). Annual proper motion is 8.15 \"/yr (0.0009 \"/hr), completely ruling out an asteroid or Planet X."
     },
     "barnard": {
         "target_name": "Barnard's Star",
         "ra": 269.45208,
         "dec": 4.69339,
         "neossat_coverage": True,
-        "nearest_known_asteroid": "Apollo Near-Earth Asteroid (2020 BX12)",
+        "nearest_known_asteroid": "None in FOV (Nearest NEA 2020 BX12 is far off-target)",
         "asteroid_offset_arcsec": 118.2,
-        "asteroid_hourly_rate_arcsec_hr": 45.1,
+        "asteroid_hourly_rate_arcsec_hr": 0.0,
         "is_solar_system_transient": False,
-        "planet_x_confidence": 0.05,
-        "discrimination_note": "Confirmed high proper motion optical star (10.39''/yr) with parallax 546.98 mas. Unrelated to solar system asteroid tracks."
+        "evidence_tier": "KNOWN_STELLAR_OR_BROWN_DWARF",
+        "confirmation_status": "CONFIRMED_STAR",
+        "sub_stellar_planet_x_probability": 0.0,
+        "discrimination_note": "Confirmed M4.0V dwarf with parallax 547.45 mas and proper motion 10.36 \"/yr. High stellar motion, zero solar-system track."
     },
     "epsindi": {
         "target_name": "Epsilon Indi B",
         "ra": 331.04379,
         "dec": -56.78272,
         "neossat_coverage": True,
-        "nearest_known_asteroid": "Amor Asteroid (1998 ST27)",
+        "nearest_known_asteroid": "None in FOV (Amor Asteroid 1998 ST27 off-target)",
         "asteroid_offset_arcsec": 89.4,
-        "asteroid_hourly_rate_arcsec_hr": 33.6,
+        "asteroid_hourly_rate_arcsec_hr": 0.0,
         "is_solar_system_transient": False,
-        "planet_x_confidence": 0.95,
-        "discrimination_note": "Binary brown dwarf companion proper motion (4.70''/yr). Optical non-detection in NEOSSat validates sub-stellar thermal nature."
+        "evidence_tier": "KNOWN_STELLAR_OR_BROWN_DWARF",
+        "confirmation_status": "CONFIRMED_BROWN_DWARF",
+        "sub_stellar_planet_x_probability": 0.0,
+        "discrimination_note": "Confirmed binary brown dwarf companion (4.70 \"/yr). Optical non-detection in NEOSSat confirms sub-stellar infrared nature."
     }
 }
 
@@ -93,19 +99,23 @@ def query_csa_neossat(ra: float, dec: float, radius_arcmin: float = 3.0) -> dict
         offset_arcsec = matched_info["asteroid_offset_arcsec"]
         motion_rate = matched_info["asteroid_hourly_rate_arcsec_hr"]
         is_asteroid = matched_info["is_solar_system_transient"]
-        planet_x_prob = matched_info["planet_x_confidence"]
+        evidence_tier = matched_info["evidence_tier"]
+        confirmation_status = matched_info["confirmation_status"]
+        planet_x_prob = matched_info.get("sub_stellar_planet_x_probability", 0.0)
         notes = matched_info["discrimination_note"]
     else:
         # Dynamic coordinate evaluation
         # Near-Earth asteroids generally have hourly motion > 15 arcsec/hr
         # Brown dwarfs / Planet X have annual proper motion (0.1 - 10 arcsec/yr = ~0.001 arcsec/hr)
         observations_count = 4
-        nearest_asteroid = f"CADC Tracked Candidate (NEO-{int(ra*100)%9000+1000})"
-        offset_arcsec = round(float(25.0 + (abs(ra * 13) % 80.0)), 1)
-        motion_rate = round(float(18.0 + (abs(dec * 7) % 35.0)), 1)
+        nearest_asteroid = "No Known Asteroid Match"
+        offset_arcsec = 0.0
+        motion_rate = 0.0
         is_asteroid = False
-        planet_x_prob = 0.88
-        notes = "No fast diurnal asteroid streak detected across CADC NEOSSat epochs. Consistent with slow trans-Neptunian or sub-stellar proper motion."
+        evidence_tier = "UNKNOWN_MOVER"
+        confirmation_status = "NOT_CONFIRMED"
+        planet_x_prob = 0.0
+        notes = "No asteroid track or optical transient registered in CADC NEOSSat archive. Candidate requires follow-up verification."
 
     elapsed_ms = round((time.time() - t0) * 1000, 2)
 
@@ -126,6 +136,8 @@ def query_csa_neossat(ra: float, dec: float, radius_arcmin: float = 3.0) -> dict
             "asteroid_separation_arcsec": offset_arcsec,
             "asteroid_hourly_motion_arcsec_hr": motion_rate,
             "is_solar_system_asteroid": is_asteroid,
+            "evidence_tier": evidence_tier,
+            "confirmation_status": confirmation_status,
             "sub_stellar_planet_x_probability": planet_x_prob,
             "astrophysical_discriminator": notes
         },

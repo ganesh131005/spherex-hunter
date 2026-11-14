@@ -31,6 +31,7 @@ from backend.services.cutout_engine import (
 )
 from backend.services.gaia_service import query_gaia_dr3
 from backend.services.csa_neossat_service import query_csa_neossat
+from backend.services.scene_service import get_target_scene
 from backend.services.catalog_engine import (
     query_2mass_psc,
     query_simbad_metadata,
@@ -280,6 +281,36 @@ def get_csa_neossat(
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         rad = float(radius) if isinstance(radius, (int, float, str)) else 3.0
         return query_csa_neossat(ra=ra_deg, dec=dec_deg, radius_arcmin=rad)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/scene")
+def get_scene(
+    target: Optional[str] = Query(None, description="Preset target key (e.g. wise0855, barnard, epsindi)"),
+    ra: Optional[str] = Query(None, description="Right Ascension in decimal deg or sexagesimal"),
+    dec: Optional[str] = Query(None, description="Declination in decimal deg or sexagesimal"),
+    fov: float = Query(3.0, description="Field of view in arcminutes (0.5 to 15.0)")
+):
+    """
+    Returns the single source of truth 'scene' object:
+    Target Metadata, Propagated Epochs List, and Interactive Layers List.
+    """
+    try:
+        ra_val, dec_val = None, None
+        if isinstance(ra, str) and isinstance(dec, str):
+            ra_val, dec_val = parse_celestial_coords(ra, dec)
+        
+        target_key = target if isinstance(target, str) else None
+        fov_val = float(fov) if isinstance(fov, (int, float, str)) and type(fov).__name__ != 'Query' else 3.0
+        
+        return get_target_scene(
+            target_key=target_key,
+            ra=ra_val,
+            dec=dec_val,
+            fov_arcmin=fov_val
+        )
     except HTTPException:
         raise
     except Exception as e:
