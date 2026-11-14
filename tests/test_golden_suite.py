@@ -260,6 +260,85 @@ def test_ai_copilot_analyze_and_ask():
     assert any(tok in ask_data["answer"] for tok in ("CH4", "H2O", "CH₄", "H₂O"))
 
 
+def test_issue_23_scientific_cache_lifecycle_and_headers():
+    """Verifies Issue #23: X-Cache headers, cached_at provenance, quota telemetry, and refresh=true bypass."""
+    from unittest.mock import patch
+    from fastapi.testclient import TestClient
+    from backend.main import app
+    from backend.services.cutout_engine import clear_all_caches
+
+    client = TestClient(app)
+    clear_all_caches()
+
+    # Warm WISE 0855 from benchmark disk cache -> L2 hit, then L1 RAM hit
+    r1 = client.get("/api/cutout?target=wise0855&ra=133.79513&dec=-7.24515&lod=1")
+    assert r1.status_code == 200
+    assert r1.headers.get("X-Cache") in ("HIT", "MISS")
+    assert r1.headers.get("X-Cached-At")
+    d1 = r1.json()
+    assert d1.get("cached_at")
+    assert d1.get("is_stale") is False
+
+    r2 = client.get("/api/cutout?target=wise0855&ra=133.79513&dec=-7.24515&lod=1")
+    assert r2.status_code == 200
+    assert r2.headers.get("X-Cache") == "HIT"
+    assert r2.json().get("cache_hit") is True
+
+    # refresh=true bypasses L1/L2 caches and reports X-Cache: MISS
+    with patch("backend.services.cutout_engine.fetch_live_irsa_fits", return_value=None):
+        r_ref = client.get("/api/cutout?target=wise0855&ra=133.79513&dec=-7.24515&lod=1&refresh=true")
+        assert r_ref.status_code == 200
+        assert r_ref.headers.get("X-Cache") == "MISS"
+        assert r_ref.json().get("cache_hit") is False
+
+    stats_resp = client.get("/api/cache/stats")
+    assert stats_resp.status_code == 200
+    stats = stats_resp.json()
+    assert "quota_mb" in stats and stats["quota_mb"] == 500.0
+    assert "ttl_seconds" in stats and stats["ttl_seconds"] > 0
+    assert "spatial_bins_indexed" in stats
+
+    prune_resp = client.post("/api/cache/prune?max_mb=800&target_mb=400")
+    assert prune_resp.status_code == 200
+    prune_data = prune_resp.json()
+    assert prune_data.get("status") == "ok"
+    assert "pruned_files" in prune_data and "freed_mb" in prune_data
+
+
+def test_issue_28_resilient_cutout_fallback_on_irsa_502():
+    """Verifies Issue #28: graceful WCS + Gaia DR3 degraded fallback when upstream IRSA fails."""
+    from unittest.mock import patch
+    from fastapi.testclient import TestClient
+    from backend.main import app
+
+    sample_gaia = {
+        "status": "success",
+        "sources": [
+            {
+                "source_id": "test_180_15",
+                "ra": 180.0,
+                "dec": 15.0,
+                "pmra_mas_yr": 15.0,
+                "pmdec_mas_yr": -10.0,
+                "phot_g_mean_mag": 12.4,
+            }
+        ],
+    }
+    client = TestClient(app)
+    with patch("backend.services.cutout_engine.fetch_live_irsa_fits", return_value=None), \
+         patch("backend.services.gaia_service.query_gaia_dr3", return_value=sample_gaia):
+        resp = client.get("/api/cutout?ra=180.0&dec=15.0&refresh=true")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "fallback_simulated"
+        assert data["archive_reachability"] == "degraded"
+        assert data["is_authentic_fits"] is False
+        assert resp.headers.get("X-Archive-Reachability") == "degraded"
+        assert len(data["epochs"]) == 2
+        assert data["epochs"][0]["image_data"].startswith("data:image/png;base64,")
+        assert data["difference_image"]["image_data"].startswith("data:image/png;base64,")
+
+
 if __name__ == "__main__":
     for b in BENCHMARKS:
         test_nasa_benchmark_cutouts(*b)

@@ -8,7 +8,6 @@ import os
 import time
 
 from fastapi.testclient import TestClient
-from playwright.sync_api import sync_playwright
 
 from backend.main import app
 from backend.services.cutout_engine import (
@@ -89,6 +88,7 @@ def test_cache_api_endpoints():
 
 def test_issue_13_client_indexeddb_caching_e2e():
     """Verify client-side IndexedDB caching layer and in-flight abort handling."""
+    from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1440, "height": 900})
@@ -116,6 +116,7 @@ def test_issue_13_client_indexeddb_caching_e2e():
 
 def test_issue_14_user_friendly_inspector_panel_e2e():
     """Verify redesigned user-friendly Inspector Panel with clear sections and plain English."""
+    from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(viewport={"width": 1440, "height": 900})

@@ -64,6 +64,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve CDS HiPS properties descriptor cleanly so relative Aladin fallback probes return HTTP 200
+@app.get("/app/P/DSS2/color/properties")
+def get_dss2_hips_properties():
+    return Response(
+        content=(
+            "creator_did = ivo://CDS/P/DSS2/color\n"
+            "obs_title = DSS2 color\n"
+            "hips_frame = equatorial\n"
+            "hips_order = 3\n"
+            "hips_tile_width = 512\n"
+            "hips_tile_format = jpeg\n"
+            "hips_service_url = https://alasky.cds.unistra.fr/DSS/DSSColor\n"
+        ),
+        media_type="text/plain",
+    )
+
+
 # Mount frontend directory for same-origin browsing
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 if os.path.exists(FRONTEND_DIR):
@@ -181,6 +198,7 @@ def cache_stats():
 
 
 @app.get("/api/cache/prune")
+@app.post("/api/cache/prune")
 def prune_cache(
     max_mb: float = Query(500.0, description="Soft disk cache cap in MB before eviction"),
     target_mb: float = Query(350.0, description="Target disk usage in MB after pruning"),
@@ -219,12 +237,15 @@ def parse_celestial_coords(ra_input: str, dec_input: str) -> tuple[float, float]
 
 @app.get("/api/cutout")
 def get_cutout(
+    response: Response,
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal ('08h55m10.831s')"),
     dec: str = Query(..., description="Declination in decimal deg or sexagesimal ('-7d14m42.53s')"),
     fov: float = Query(3.0, description="Field of View in arcminutes"),
     target: Optional[str] = Query(None, description="Benchmark target key (wise0855, barnard, etc.)"),
     lod: int = Query(1, description="Game Level of Detail tier: 0 (Hero Deep), 1 (Standard Science), 2 (Wide Overview)"),
     force_refresh: bool = Query(False, description="Bypass all caches and force fresh NASA query"),
+    refresh: bool = Query(False, description="Alias for force_refresh to bypass caches"),
+    bypass_cache: bool = Query(False, description="Alias to bypass L1/L2 caches and force live query"),
     start_date: Optional[str] = Query(None, description="Optional temporal start filter (ISO UTC)"),
     end_date: Optional[str] = Query(None, description="Optional temporal end filter (ISO UTC)"),
     exact_date: Optional[str] = Query(None, description="Optional exact observation epoch target (ISO UTC)")
@@ -238,7 +259,7 @@ def get_cutout(
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         fov_val = float(fov) if isinstance(fov, (int, float, str)) else 3.0
         lod_val = int(lod) if isinstance(lod, (int, str)) else 1
-        is_refresh = bool(force_refresh) if isinstance(force_refresh, bool) else False
+        is_refresh = bool(force_refresh or refresh or bypass_cache)
         target_sanitized = sanitize_target_name(target) if target else None
         data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target_sanitized, lod=lod_val, force_refresh=is_refresh)
         if start_date or end_date or exact_date:
@@ -246,6 +267,10 @@ def get_cutout(
             data["temporal_filter"] = query_observation_timeline(
                 ra_deg, dec_deg, start_date=start_date, end_date=end_date, exact_date=exact_date
             )
+        response.headers["X-Cache"] = str(data.get("cache_status", "MISS"))
+        response.headers["X-Cache-Tier"] = str(data.get("cache_tier", "UNKNOWN"))
+        response.headers["X-Cached-At"] = str(data.get("cached_at", ""))
+        response.headers["X-Archive-Reachability"] = str(data.get("archive_reachability", "nominal"))
         return data
     except HTTPException:
         raise

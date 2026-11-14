@@ -665,7 +665,7 @@
           <span>FOV: <b id="vpFOV" class="text-gray-200">3.00'</b></span>
           <span>Zoom: <b id="vpZoom" class="text-gray-200">1.0x</b></span>
           <span class="pl-2 border-l border-space-700">LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
-          <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold truncate max-w-[160px]">FITS Master</span>
+          <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold truncate max-w-[45vw]" title="Optical Lens: Contiguous NASA FITS Master Field">🔭 FITS Master</span>
         </div>
 
         <!-- Bottom-Right Enlarged 36x36px Celestial Compass Rose & Dynamic Scale Bar (Issue #27) -->
@@ -2313,7 +2313,14 @@
       } finally {
         isSlewingToNewField = false;
         if (slewBadge) {
-          slewBadge.innerText = `Optical Lens: Contiguous NASA FITS Master Field`;
+          const isDegraded = activeCutoutData && (activeCutoutData.status === 'fallback_simulated' || activeCutoutData.archive_reachability === 'degraded');
+          if (isDegraded) {
+            slewBadge.innerText = "⚠️ IRSA Degraded: Gaia WCS";
+            slewBadge.title = "Upstream NASA IRSA archive degraded — showing WCS-calibrated detector noise floor with real Gaia DR3 stars";
+          } else {
+            slewBadge.innerText = "🔭 FITS Master";
+            slewBadge.title = "Optical Lens: Contiguous NASA FITS Master Field";
+          }
         }
       }
     }
@@ -3876,7 +3883,13 @@
         const mosaicEl = document.getElementById('vpMosaicBadge');
         if (mosaicEl) {
           mosaicEl.classList.remove('hidden');
-          mosaicEl.innerText = "Optical Lens: Contiguous NASA FITS Master Field";
+          if (data.status === 'fallback_simulated' || data.archive_reachability === 'degraded') {
+            mosaicEl.innerText = "⚠️ IRSA Degraded: Gaia WCS";
+            mosaicEl.title = "Upstream NASA IRSA archive degraded — showing WCS-calibrated detector noise floor with real Gaia DR3 stars";
+          } else {
+            mosaicEl.innerText = "🔭 FITS Master";
+            mosaicEl.title = "Optical Lens: Contiguous NASA FITS Master Field";
+          }
         }
 
         const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;

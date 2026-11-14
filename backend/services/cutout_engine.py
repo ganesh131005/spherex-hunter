@@ -14,7 +14,9 @@ import io
 import math
 import os
 import time
+import zlib
 from collections import OrderedDict
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -198,11 +200,17 @@ def render_coverage_mask_canvas(arr: np.ndarray) -> str:
 # =========================================================================
 # L1 IN-MEMORY RAM LRU CACHE, SPATIAL HASH BINNING & CACHE MANAGEMENT
 # =========================================================================
+DEFAULT_CACHE_TTL_SECONDS = 86400
+DEFAULT_DISK_QUOTA_MB = 500.0
+DEFAULT_PRUNE_TARGET_MB = 350.0
+
 _L1_MEMORY_CACHE = OrderedDict()
 _MAX_L1_CACHE_ENTRIES = 128
 
 _SPATIAL_HASH_CACHE = OrderedDict()
 _MAX_SPATIAL_HASH_ENTRIES = 128
+
+_L1_TIMESTAMPS: Dict[str, float] = {}
 
 
 def get_spatial_cell_id(ra: float, dec: float, bin_deg: float = 0.05) -> int:
@@ -210,6 +218,11 @@ def get_spatial_cell_id(ra: float, dec: float, bin_deg: float = 0.05) -> int:
     ra_norm = float(ra) % 360.0
     dec_clamped = max(-90.0, min(90.0, float(dec)))
     return int(math.floor(ra_norm / bin_deg)) * 10000 + int(math.floor((dec_clamped + 90.0) / bin_deg))
+
+
+def compute_spatial_hash(ra: float, dec: float, fov_arcmin: float = 3.0) -> str:
+    """Returns deterministic string spatial bin key for E2E cache verification."""
+    return f"bin_{get_spatial_cell_id(ra, dec)}"
 
 
 def _extract_fits_obs_time(header: Any, default_iso: str, default_mjd: float) -> tuple[str, float]:
@@ -249,6 +262,7 @@ def clear_all_caches(include_pinned: bool = False) -> dict:
     ram_count = len(_L1_MEMORY_CACHE) + len(_SPATIAL_HASH_CACHE)
     _L1_MEMORY_CACHE.clear()
     _SPATIAL_HASH_CACHE.clear()
+    _L1_TIMESTAMPS.clear()
 
     pinned_keys = ("wise0855", "barnard", "epsindi", "rwaur", "rdraconis")
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
@@ -293,7 +307,7 @@ def clear_all_caches(include_pinned: bool = False) -> dict:
 
 
 def get_cache_stats() -> dict:
-    """Returns current cache telemetry (L1 RAM entries, Spatial-Hash entries, L2 disk files, disk usage in MB)."""
+    """Returns current cache telemetry (L1 RAM, Spatial-Hash, L2 disk files, quota & TTL)."""
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
     file_count = 0
     disk_bytes = 0
@@ -305,11 +319,17 @@ def get_cache_stats() -> dict:
                     disk_bytes += os.path.getsize(os.path.join(cache_dir, fname))
                 except Exception:
                     pass
+    disk_mb = round(disk_bytes / (1024 * 1024), 2)
+    usage_pct = round((disk_mb / DEFAULT_DISK_QUOTA_MB) * 100.0, 2) if DEFAULT_DISK_QUOTA_MB > 0 else 0.0
     return {
         "l1_ram_entries": len(_L1_MEMORY_CACHE),
         "spatial_hash_entries": len(_SPATIAL_HASH_CACHE),
+        "spatial_bins_indexed": len(_SPATIAL_HASH_CACHE),
         "l2_disk_files": file_count,
-        "disk_usage_mb": round(disk_bytes / (1024 * 1024), 2)
+        "disk_usage_mb": disk_mb,
+        "quota_mb": DEFAULT_DISK_QUOTA_MB,
+        "usage_percent": usage_pct,
+        "ttl_seconds": DEFAULT_CACHE_TTL_SECONDS,
     }
 
 
@@ -374,6 +394,7 @@ def auto_prune_disk_cache(
                 files.append((atime, fpath, sz))
 
     pruned_count = 0
+    freed_bytes = 0
     max_bytes = max_mb * 1024.0 * 1024.0
     target_bytes = target_mb * 1024.0 * 1024.0
 
@@ -385,6 +406,7 @@ def auto_prune_disk_cache(
             try:
                 os.remove(fpath)
                 total_bytes -= sz
+                freed_bytes += sz
                 pruned_count += 1
             except OSError:
                 pass
@@ -395,6 +417,8 @@ def auto_prune_disk_cache(
         "total_mb": round(total_bytes / (1024.0 * 1024.0), 3),
         "pinned_count": pinned_count,
         "pruned_count": pruned_count,
+        "pruned_files": pruned_count,
+        "freed_mb": round(freed_bytes / (1024.0 * 1024.0), 3),
     }
 
 # =========================================================================
@@ -487,7 +511,10 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
     from scipy.ndimage import zoom
 
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
-    os.makedirs(cache_dir, exist_ok=True)
+    try:
+        os.makedirs(cache_dir, exist_ok=True)
+    except OSError:
+        pass
     cache_id = f"sky_{ra:.4f}_{dec:.4f}_{fov_arcmin:.1f}".replace("+", "").replace("-", "m")
     p1 = os.path.join(cache_dir, f"{cache_id}_2mass.fits")
     p2 = os.path.join(cache_dir, f"{cache_id}_dss2.fits")
@@ -495,24 +522,36 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
     d1, d2 = None, None
     hdr1, hdr2 = None, None
     cache_tier = "LIVE_IRSA_FETCH"
+    disk_cached_ts = time.time()
+    is_stale_disk = False
+    stale_fallback_paths = None
 
-    # L2 Exact Cache Check
+    # L2 Exact Cache Check (enforcing TTL freshness on unpinned files)
     if not force_refresh and os.path.exists(p1) and os.path.exists(p2):
         try:
-            with fits.open(p1) as h1:
-                d1 = np.nan_to_num(h1[0].data.astype(float))
-                hdr1 = h1[0].header.copy()
-            with fits.open(p2) as h2:
-                d2 = np.nan_to_num(h2[0].data.astype(float))
-                hdr2 = h2[0].header.copy()
-            cache_tier = "L2_SPATIAL_DISK"
+            mtime1 = os.path.getmtime(p1)
+            if (time.time() - mtime1) <= DEFAULT_CACHE_TTL_SECONDS:
+                with fits.open(p1) as h1:
+                    d1 = np.nan_to_num(h1[0].data.astype(float))
+                    hdr1 = h1[0].header.copy()
+                with fits.open(p2) as h2:
+                    d2 = np.nan_to_num(h2[0].data.astype(float))
+                    hdr2 = h2[0].header.copy()
+                cache_tier = "L2_SPATIAL_DISK"
+                disk_cached_ts = mtime1
+            else:
+                stale_fallback_paths = (p1, p2, mtime1)
         except Exception:
             d1, d2 = None, None
             hdr1, hdr2 = None, None
 
-    # L2 Spatial Overlap Check: Search for an existing master FITS covering this field
-    if (d1 is None or d2 is None) and not force_refresh:
-        for fname in os.listdir(cache_dir):
+    # L2 Spatial Overlap Check: Search for an existing fresh master FITS covering this field
+    if (d1 is None or d2 is None) and not force_refresh and os.path.exists(cache_dir):
+        try:
+            dir_entries = os.listdir(cache_dir)
+        except OSError:
+            dir_entries = []
+        for fname in dir_entries:
             if fname.endswith("_2mass.fits") and fname.startswith("sky_"):
                 parts = fname.replace("sky_", "").replace("_2mass.fits", "").split("_")
                 if len(parts) >= 3:
@@ -523,22 +562,24 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                         dra = (ra - c_ra) * np.cos(np.radians(dec)) * 60.0
                         ddec = (dec - c_dec) * 60.0
                         dist_arcmin = np.hypot(dra, ddec)
-                        # If offset is small and cached tile is wide enough, reuse it
-                        if dist_arcmin <= 1.2 and c_fov >= fov_arcmin:
-                            companion_p2 = os.path.join(cache_dir, fname.replace("_2mass.fits", "_dss2.fits"))
-                            if os.path.exists(companion_p2):
-                                with fits.open(os.path.join(cache_dir, fname)) as h1:
+                        p_ov1 = os.path.join(cache_dir, fname)
+                        companion_p2 = os.path.join(cache_dir, fname.replace("_2mass.fits", "_dss2.fits"))
+                        if dist_arcmin <= 1.2 and c_fov >= fov_arcmin and os.path.exists(companion_p2):
+                            ov_mtime = os.path.getmtime(p_ov1)
+                            if (time.time() - ov_mtime) <= DEFAULT_CACHE_TTL_SECONDS:
+                                with fits.open(p_ov1) as h1:
                                     d1 = np.nan_to_num(h1[0].data.astype(float))
                                     hdr1 = h1[0].header.copy()
                                 with fits.open(companion_p2) as h2:
                                     d2 = np.nan_to_num(h2[0].data.astype(float))
                                     hdr2 = h2[0].header.copy()
                                 cache_tier = "L2_SPATIAL_OVERLAP"
+                                disk_cached_ts = ov_mtime
                                 break
                     except Exception:
                         pass
 
-    # L2 Benchmark Static FITS Check (backend/cache/fits)
+    # L2 Benchmark Static FITS Check (backend/cache/fits — pinned benchmark reference)
     if (d1 is None or d2 is None) and not force_refresh:
         fits_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "fits")
         if os.path.exists(fits_dir):
@@ -557,21 +598,22 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                                 d2 = np.nan_to_num(h2[0].data.astype(float))
                                 hdr2 = h2[0].header.copy()
                             cache_tier = "L2_BENCHMARK_DISK"
+                            disk_cached_ts = os.path.getmtime(bp1)
                             break
                         except Exception:
                             d1, d2 = None, None
                             hdr1, hdr2 = None, None
 
-    # If not in cache, query NASA IRSA Caltech FinderChart API (up to 3 attempts)
+    # If not in fresh cache, query NASA IRSA Caltech FinderChart API (up to 2 attempts, 10s timeout)
     if d1 is None or d2 is None:
         last_err = None
-        for attempt in range(3):
+        for attempt in range(2):
             try:
                 ctx = ssl._create_unverified_context()
                 subset_size = max(1.0, min(15.0, float(fov_arcmin)))
                 url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
                 req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
-                xml_data = urllib.request.urlopen(req, context=ctx, timeout=25.0).read()
+                xml_data = urllib.request.urlopen(req, context=ctx, timeout=10.0).read()
                 root = ET.fromstring(xml_data)
 
                 url_2mass, url_dss = None, None
@@ -584,11 +626,15 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                         url_dss = u
 
                 if url_2mass and url_dss:
-                    raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=25.0).read()
-                    raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=25.0).read()
+                    raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=10.0).read()
+                    raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=10.0).read()
 
-                    with open(p1, "wb") as f: f.write(raw1)
-                    with open(p2, "wb") as f: f.write(raw2)
+                    try:
+                        with open(p1, "wb") as f: f.write(raw1)
+                        with open(p2, "wb") as f: f.write(raw2)
+                        auto_prune_disk_cache(max_mb=DEFAULT_DISK_QUOTA_MB, target_mb=DEFAULT_PRUNE_TARGET_MB)
+                    except OSError as disk_err:
+                        print(f"Cache disk write warning (non-fatal): {disk_err}")
 
                     with fits.open(io.BytesIO(raw1)) as h1:
                         d1 = np.nan_to_num(h1[0].data.astype(float))
@@ -597,11 +643,27 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                         d2 = np.nan_to_num(h2[0].data.astype(float))
                         hdr2 = h2[0].header.copy()
                     cache_tier = "LIVE_IRSA_FETCH"
+                    disk_cached_ts = time.time()
+                    is_stale_disk = False
                     break
             except Exception as err:
                 last_err = err
-                if attempt < 2:
-                    time.sleep(1.0)
+                if attempt < 1:
+                    time.sleep(0.5)
+        if (d1 is None or d2 is None) and stale_fallback_paths and not force_refresh:
+            sp1, sp2, smtime = stale_fallback_paths
+            try:
+                with fits.open(sp1) as h1:
+                    d1 = np.nan_to_num(h1[0].data.astype(float))
+                    hdr1 = h1[0].header.copy()
+                with fits.open(sp2) as h2:
+                    d2 = np.nan_to_num(h2[0].data.astype(float))
+                    hdr2 = h2[0].header.copy()
+                cache_tier = "L2_STALE_FALLBACK"
+                disk_cached_ts = smtime
+                is_stale_disk = True
+            except Exception:
+                d1, d2 = None, None
         if d1 is None or d2 is None:
             print(f"NASA IRSA live fetch fallback for RA {ra}, Dec {dec}: {last_err}")
             return None
@@ -675,6 +737,10 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
         "ep1_mjd": ep1_mjd,
         "ep2_date_obs": ep2_date_obs,
         "ep2_mjd": ep2_mjd,
+    }
+    vector_info["cache_meta"] = {
+        "cached_ts": float(disk_cached_ts),
+        "is_stale": bool(is_stale_disk),
     }
 
     lod_tag = "LOD 0 (Hero Deep 1024px)" if lod == 0 else ("LOD 2 (Wide Overview 360px)" if lod == 2 else "LOD 1 (Standard Science 720px)")
@@ -897,6 +963,143 @@ def get_102_band_spectrum(ra: float, dec: float, target_key: str = None, d1: np.
     }
 
 # =========================================================================
+# RESILIENT DEGRADED FALLBACK (ISSUE #28: WCS NOISE + REAL GAIA DR3 STARS)
+# =========================================================================
+def _utc_iso(ts: Optional[float] = None) -> str:
+    dt = datetime.fromtimestamp(time.time() if ts is None else float(ts), tz=timezone.utc)
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _build_degraded_gaia_wcs_fallback(
+    ra: float,
+    dec: float,
+    fov_arcmin: float = 3.0,
+    lod: int = 1
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str, float, np.ndarray, np.ndarray, str]:
+    """
+    Graceful degradation when upstream NASA IRSA / FinderChart returns HTTP 502 or times out.
+    Constructs a calibrated WCS tangent-plane detector noise canvas populated ONLY with
+    authentic Gaia DR3 astrometric star positions propagated to 1999.12 & 1992.28.
+    """
+    from astropy.wcs import WCS
+
+    dim = 1024 if lod == 0 else (360 if lod == 2 else 720)
+    actual_fov = 1.5 if lod == 0 else (8.0 if lod == 2 else float(fov_arcmin))
+    pixscale_deg = (actual_fov / 60.0) / float(dim)
+
+    seed = zlib.crc32(f"{ra:.4f},{dec:.4f},{actual_fov:.1f},{dim}".encode("utf-8"))
+    rng = np.random.default_rng(seed)
+
+    # Low-level calibrated thermal + sky-background detector noise floor (ADU counts)
+    d1 = rng.normal(loc=100.0, scale=2.5, size=(dim, dim)).astype(np.float32)
+    d2 = rng.normal(loc=100.0, scale=2.5, size=(dim, dim)).astype(np.float32)
+
+    wcs = WCS(naxis=2)
+    wcs.wcs.crpix = [dim / 2.0, dim / 2.0]
+    wcs.wcs.crval = [float(ra), float(dec)]
+    wcs.wcs.cdelt = [-pixscale_deg, pixscale_deg]
+    wcs.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+
+    gaia_sources: list[dict] = []
+    try:
+        from backend.services.gaia_service import query_gaia_dr3
+        gaia_res = query_gaia_dr3(float(ra), float(dec), radius_arcmin=max(2.0, actual_fov * 0.75))
+        if isinstance(gaia_res, dict):
+            gaia_sources = list(gaia_res.get("sources") or [])
+    except Exception as gaia_err:
+        print(f"Degraded Gaia fallback lookup warning: {gaia_err}")
+
+    cos_dec = max(0.05, math.cos(math.radians(float(dec))))
+    dt1_yr = 1999.12 - 2016.0
+    dt2_yr = 1992.28 - 2016.0
+
+    yy, xx = np.mgrid[0:dim, 0:dim] if dim <= 360 else (None, None)
+    del yy, xx  # Stamp per-star patches instead of full-frame grids for speed at 1024p
+
+    def _stamp_star(arr: np.ndarray, px: float, py: float, peak_flux: float, sigma_px: float = 2.1) -> None:
+        if not (0 <= px < dim and 0 <= py < dim):
+            return
+        r = max(4, int(math.ceil(sigma_px * 4.0)))
+        x0 = max(0, int(px) - r)
+        x1 = min(dim, int(px) + r + 1)
+        y0 = max(0, int(py) - r)
+        y1 = min(dim, int(py) + r + 1)
+        if x1 <= x0 or y1 <= y0:
+            return
+        patch_y, patch_x = np.ogrid[y0:y1, x0:x1]
+        psf = peak_flux * np.exp(-(((patch_x - px) ** 2 + (patch_y - py) ** 2) / (2.0 * sigma_px ** 2)))
+        arr[y0:y1, x0:x1] += psf.astype(np.float32)
+
+    for src in gaia_sources[:120]:
+        try:
+            s_ra = float(src["ra"])
+            s_dec = float(src["dec"])
+            pm_ra_mas = float(src.get("pmra_mas_yr") or 0.0)
+            pm_dec_mas = float(src.get("pmdec_mas_yr") or 0.0)
+            mag = src.get("phot_g_mean_mag")
+            mag_val = float(mag) if mag is not None else 15.0
+            flux = float(np.clip(850.0 * (10.0 ** (-0.4 * (mag_val - 12.0))), 25.0, 25000.0))
+
+            for target_arr, dt in ((d1, dt1_yr), (d2, dt2_yr)):
+                ra_ep = s_ra + (pm_ra_mas * dt) / (3600000.0 * cos_dec)
+                dec_ep = s_dec + (pm_dec_mas * dt) / 3600000.0
+                px, py = wcs.world_to_pixel_values(ra_ep, dec_ep)
+                _stamp_star(target_arr, float(px), float(py), flux)
+        except Exception:
+            continue
+
+    def _stretch_u8(arr: np.ndarray) -> np.ndarray:
+        med = float(np.median(arr))
+        std = float(np.std(arr)) + 1e-6
+        sub = arr - med
+        vmin = -1.5 * std
+        vmax = max(10.0 * std, float(np.percentile(sub, 99.5)))
+        norm = np.clip((sub - vmin) / (vmax - vmin), 0.0, 1.0)
+        return (AsinhStretch(a=0.1)(norm) * 255.0).astype(np.uint8)
+
+    ep1_clean = _stretch_u8(d1)
+    ep2_clean = _stretch_u8(d2)
+
+    try:
+        dim_sub = min(d1.shape[0], d2.shape[0])
+        psf_size = min(25, max(15, (dim_sub // 8) * 2 + 1))
+        psf = construct_gaussian_psf(size=psf_size, fwhm_pix=2.0)
+        var1 = np.maximum(d1, 1e-4)
+        var2 = np.maximum(d2, 1e-4)
+        _, s_corr, _ = zogy_subtraction(
+            image_new=d2, var_new=var2, psf_new=psf,
+            image_ref=d1, var_ref=var1, psf_ref=psf
+        )
+        zogy_scorr_max = float(np.nanmax(s_corr))
+        zogy_scorr_min = float(np.nanmin(s_corr))
+    except Exception:
+        D = d2 - d1
+        zogy_scorr_max = float(np.nanmax(D) / (np.nanstd(D) + 1e-6))
+        zogy_scorr_min = float(np.nanmin(D) / (np.nanstd(D) + 1e-6))
+
+    diff_scaled = compute_scientific_difference(d1, d2)
+    pixel_scale_arcsec = (actual_fov * 60.0) / dim
+    vector_info = detect_astronomical_transients(d1, d2, diff_scaled, pixel_scale_arcsec)
+    vector_info["zogy_scorr_max"] = zogy_scorr_max
+    vector_info["zogy_scorr_min"] = zogy_scorr_min
+    vector_info["gaia_stars_rendered"] = len(gaia_sources)
+    vector_info["obs_timestamps"] = {
+        "ep1_date_obs": "1999-02-14T08:24:19Z",
+        "ep1_mjd": 51223.35,
+        "ep2_date_obs": "1992-04-12T00:00:00Z",
+        "ep2_mjd": 48724.0,
+    }
+    vector_info["cache_meta"] = {
+        "cached_ts": time.time(),
+        "is_stale": False,
+    }
+
+    lbl1 = "Degraded Mode: WCS Detector Noise + Gaia DR3 Astrometry (Epoch ~1999.12; IRSA FITS Unavailable)"
+    lbl2 = "Degraded Mode: WCS Detector Noise + Gaia DR3 Astrometry (Epoch ~1992.28; IRSA FITS Unavailable)"
+    return ep1_clean, ep2_clean, diff_scaled, vector_info, lbl1, lbl2, actual_fov, d1, d2, "DEGRADED_GAIA_WCS_FALLBACK"
+
+
+# =========================================================================
 # UNIVERSAL COORDINATE ENTRY POINT (NO SHORTCUTS, NO BYPASSES)
 # =========================================================================
 def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key: str = None, lod: int = 1, force_refresh: bool = False) -> dict:
@@ -913,21 +1116,45 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     spatial_key = (cell_id, round(float(fov_arcmin), 1), int(lod), str(target_key or ""))
     spatial_key_generic = (cell_id, round(float(fov_arcmin), 1), int(lod), "")
 
-    # L1 In-Memory RAM Exact Cache Check (< 4ms)
+    # L1 In-Memory RAM Exact Cache Check (< 4ms, TTL-enforced)
+    now_ts = time.time()
     if not force_refresh and cache_key in _L1_MEMORY_CACHE:
-        _L1_MEMORY_CACHE.move_to_end(cache_key)
-        cached_entry = dict(_L1_MEMORY_CACHE[cache_key])
-        cached_entry["cache_tier"] = "L1_RAM"
-        cached_entry["spatial_cell_id"] = cell_id
-        cached_entry["telemetry"] = dict(cached_entry.get("telemetry", {}))
-        cached_entry["telemetry"]["cache_tier"] = "L1_RAM"
-        cached_entry["telemetry"]["spatial_cell_id"] = cell_id
-        cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 3)
-        return cached_entry
+        cached_ts = _L1_TIMESTAMPS.get(cache_key, now_ts)
+        if (now_ts - cached_ts) <= DEFAULT_CACHE_TTL_SECONDS:
+            _L1_MEMORY_CACHE.move_to_end(cache_key)
+            cached_entry = dict(_L1_MEMORY_CACHE[cache_key])
+            cached_entry["status"] = "success"
+            cached_entry["archive_reachability"] = "nominal"
+            cached_entry["cache_tier"] = "L1_RAM"
+            cached_entry["cache_hit"] = True
+            cached_entry["cache_status"] = "HIT"
+            cached_entry["cached_at"] = _utc_iso(cached_ts)
+            cached_entry["retrieved_at"] = _utc_iso(now_ts)
+            cached_entry["is_stale"] = False
+            cached_entry["spatial_cell_id"] = cell_id
+            cached_entry["telemetry"] = dict(cached_entry.get("telemetry", {}))
+            cached_entry["telemetry"]["cache_tier"] = "L1_RAM"
+            cached_entry["telemetry"]["cache_hit"] = True
+            cached_entry["telemetry"]["cache_status"] = "HIT"
+            cached_entry["telemetry"]["cached_at"] = cached_entry["cached_at"]
+            cached_entry["telemetry"]["is_stale"] = False
+            cached_entry["telemetry"]["archive_reachability"] = "nominal"
+            cached_entry["telemetry"]["spatial_cell_id"] = cell_id
+            cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 3)
+            return cached_entry
+        _L1_MEMORY_CACHE.pop(cache_key, None)
+        _L1_TIMESTAMPS.pop(cache_key, None)
 
-    # L1 Spatial-Hash Binning Cache Check (< 2ms for micro-offset camera pans <= 0.35')
+    # L1 Spatial-Hash Binning Cache Check (< 2ms for micro-offset camera pans <= 0.35', TTL-enforced)
     if not force_refresh:
         hit_skey = spatial_key if spatial_key in _SPATIAL_HASH_CACHE else (spatial_key_generic if spatial_key_generic in _SPATIAL_HASH_CACHE else None)
+        if hit_skey is not None:
+            sp_ts_key = f"sp:{hit_skey}"
+            sp_cached_ts = _L1_TIMESTAMPS.get(sp_ts_key, now_ts)
+            if (now_ts - sp_cached_ts) > DEFAULT_CACHE_TTL_SECONDS:
+                _SPATIAL_HASH_CACHE.pop(hit_skey, None)
+                _L1_TIMESTAMPS.pop(sp_ts_key, None)
+                hit_skey = None
         if hit_skey is not None:
             cand = _SPATIAL_HASH_CACHE[hit_skey]
             cand_coords = cand.get("coordinates", {})
@@ -936,6 +1163,8 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             dra_arcmin = (float(ra) - c_ra) * math.cos(math.radians(float(dec))) * 60.0
             ddec_arcmin = (float(dec) - c_dec) * 60.0
             if math.hypot(dra_arcmin, ddec_arcmin) <= 0.35:
+                sp_ts_key = f"sp:{hit_skey}"
+                sp_cached_ts = _L1_TIMESTAMPS.get(sp_ts_key, now_ts)
                 _SPATIAL_HASH_CACHE.move_to_end(hit_skey)
                 cached_entry = dict(cand)
                 cached_entry["coordinates"] = {
@@ -943,10 +1172,22 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
                     "dec_deg": float(dec),
                     "fov_arcmin": cand_coords.get("fov_arcmin", float(fov_arcmin)),
                 }
+                cached_entry["status"] = "success"
+                cached_entry["archive_reachability"] = "nominal"
                 cached_entry["cache_tier"] = "L1_SPATIAL_HASH"
+                cached_entry["cache_hit"] = True
+                cached_entry["cache_status"] = "HIT"
+                cached_entry["cached_at"] = _utc_iso(sp_cached_ts)
+                cached_entry["retrieved_at"] = _utc_iso(now_ts)
+                cached_entry["is_stale"] = False
                 cached_entry["spatial_cell_id"] = cell_id
                 cached_entry["telemetry"] = dict(cached_entry.get("telemetry", {}))
                 cached_entry["telemetry"]["cache_tier"] = "L1_SPATIAL_HASH"
+                cached_entry["telemetry"]["cache_hit"] = True
+                cached_entry["telemetry"]["cache_status"] = "HIT"
+                cached_entry["telemetry"]["cached_at"] = cached_entry["cached_at"]
+                cached_entry["telemetry"]["is_stale"] = False
+                cached_entry["telemetry"]["archive_reachability"] = "nominal"
                 cached_entry["telemetry"]["spatial_cell_id"] = cell_id
                 cached_entry["telemetry"]["fetch_time_ms"] = round((time.time() - t0) * 1000, 3)
                 return cached_entry
@@ -970,10 +1211,7 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
     fits_result = fetch_live_irsa_fits(ra, dec, fov_arcmin, lod=lod, force_refresh=force_refresh)
 
     if fits_result is None:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Authentic NASA FITS data could not be retrieved from NASA IRSA archive for coordinates (RA {ra:.4f}°, Dec {dec:+.4f}°). Procedural synthetic stars have been completely eliminated from this system to ensure 100% scientific integrity. Please verify your internet connection or inspect benchmark targets."
-        )
+        fits_result = _build_degraded_gaia_wcs_fallback(ra, dec, fov_arcmin, lod=lod)
 
     ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2, actual_fov, d1, d2, cache_tier = fits_result
 
@@ -1024,32 +1262,52 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         pm_arcsec = None
 
     obs_ts = vector_info.pop("obs_timestamps", {})
+    cache_meta = vector_info.pop("cache_meta", {})
+    cached_ts = float(cache_meta.get("cached_ts", time.time()))
+    is_stale_entry = bool(cache_meta.get("is_stale", False))
     ep1_date_obs = obs_ts.get("ep1_date_obs", "1999-02-14T08:24:19Z")
     ep1_mjd = obs_ts.get("ep1_mjd", 51223.35)
     ep2_date_obs = obs_ts.get("ep2_date_obs", "1992-04-12T00:00:00Z")
     ep2_mjd = obs_ts.get("ep2_mjd", 48724.0)
 
+    is_degraded = (cache_tier == "DEGRADED_GAIA_WCS_FALLBACK")
+    is_cache_hit = (not force_refresh) and (cache_tier in ("L1_RAM", "L1_SPATIAL_HASH", "L2_SPATIAL_DISK", "L2_SPATIAL_OVERLAP", "L2_BENCHMARK_DISK"))
+    cached_at_iso = _utc_iso(cached_ts)
+    retrieved_at_iso = _utc_iso()
+    provenance_text = (
+        "Degraded WCS-calibrated detector noise floor populated with authentic Gaia DR3 sources (upstream NASA IRSA unreachable)."
+        if is_degraded
+        else "2MASS J-band and DSS2 Red archival FITS. No SPHEREx, WISE, Gaia or CADC values are embedded in this response."
+    )
+
     response = {
-        "status": "success",
+        "status": "fallback_simulated" if is_degraded else "success",
+        "archive_reachability": "degraded" if (is_degraded or is_stale_entry) else "nominal",
         "target": display_name,
         "lod_tier": lod,
         "lod_label": "LOD 0 (Hero Deep 1024px Full-Res)" if lod == 0 else ("LOD 2 (Wide Overview 360px)" if lod == 2 else "LOD 1 (Standard Science 720px HD)"),
         "cache_tier": cache_tier,
+        "cache_hit": is_cache_hit,
+        "cache_status": "HIT" if is_cache_hit else "MISS",
+        "cached_at": cached_at_iso,
+        "retrieved_at": retrieved_at_iso,
+        "is_stale": is_stale_entry,
+        "ttl_seconds": DEFAULT_CACHE_TTL_SECONDS,
         "spatial_cell_id": cell_id,
         "coordinates": {
             "ra_deg": ra,
             "dec_deg": dec,
             "fov_arcmin": actual_fov
         },
-        "archive_survey": survey_title,
-        "is_authentic_fits": True,
+        "archive_survey": survey_title if not is_degraded else "Gaia DR3 Astrometry on WCS Detector Noise Floor (IRSA Fallback)",
+        "is_authentic_fits": not is_degraded,
         "epochs": [
             {
                 "index": 1,
                 "frame": 1,
-                "survey": "2MASS",
+                "survey": "Gaia DR3 WCS Fallback" if is_degraded else "2MASS",
                 "label": lbl1,
-                "date": f"{ep1_date_obs[:10]} (2MASS J)",
+                "date": f"{ep1_date_obs[:10]} (2MASS J)" if not is_degraded else f"{ep1_date_obs[:10]} (Gaia WCS Fallback)",
                 "date_obs": ep1_date_obs,
                 "mjd": ep1_mjd,
                 "image_data": ep1_b64
@@ -1057,9 +1315,9 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             {
                 "index": 2,
                 "frame": 2,
-                "survey": "DSS2",
+                "survey": "Gaia DR3 WCS Fallback" if is_degraded else "DSS2",
                 "label": lbl2,
-                "date": f"{ep2_date_obs[:10]} (DSS2 Red)",
+                "date": f"{ep2_date_obs[:10]} (DSS2 Red)" if not is_degraded else f"{ep2_date_obs[:10]} (Gaia WCS Fallback)",
                 "date_obs": ep2_date_obs,
                 "mjd": ep2_mjd,
                 "image_data": ep2_b64
@@ -1094,11 +1352,16 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
             "peak_significance_sigma": vector_info.get("peak_significance_sigma"),
             "object_type": matched_bm.get("type", "Astronomical Source") if matched_bm else "Astronomical Sky Field",
             "estimated_temp_k": spec_data.get("estimated_temp_k"),
-            "data_provenance": "2MASS J-band and DSS2 Red archival FITS. No SPHEREx, WISE, Gaia or CADC values are embedded in this response.",
+            "data_provenance": provenance_text,
+            "archive_reachability": "degraded" if (is_degraded or is_stale_entry) else "nominal",
             "cache_tier": cache_tier,
+            "cache_hit": is_cache_hit,
+            "cache_status": "HIT" if is_cache_hit else "MISS",
+            "cached_at": cached_at_iso,
+            "is_stale": is_stale_entry,
             "spatial_cell_id": cell_id,
             "fetch_time_ms": elapsed_ms,
-            "noise_filter": "Astropy ZScale & AsinhStretch (Authentic NASA FITS Data)"
+            "noise_filter": "WCS-Calibrated Noise + Gaia DR3 PSF" if is_degraded else "Astropy ZScale & AsinhStretch (Authentic NASA FITS Data)"
         },
         "adql_queries": {
             "irsa_spherex": (
@@ -1125,17 +1388,22 @@ def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key
         }
     }
 
-    # Store in L1 RAM and Spatial-Hash LRU caches
-    while len(_L1_MEMORY_CACHE) >= _MAX_L1_CACHE_ENTRIES:
-        _L1_MEMORY_CACHE.popitem(last=False)
-    _L1_MEMORY_CACHE[cache_key] = response
+    # Store fresh authentic FITS entries in L1 RAM and Spatial-Hash LRU caches
+    if not is_degraded and not is_stale_entry:
+        while len(_L1_MEMORY_CACHE) >= _MAX_L1_CACHE_ENTRIES:
+            evicted_key, _ = _L1_MEMORY_CACHE.popitem(last=False)
+            _L1_TIMESTAMPS.pop(evicted_key, None)
+        _L1_MEMORY_CACHE[cache_key] = response
+        _L1_TIMESTAMPS[cache_key] = cached_ts
 
-    for skey in (spatial_key, spatial_key_generic):
-        if skey in _SPATIAL_HASH_CACHE:
-            _SPATIAL_HASH_CACHE.move_to_end(skey)
-        while len(_SPATIAL_HASH_CACHE) >= _MAX_SPATIAL_HASH_ENTRIES:
-            _SPATIAL_HASH_CACHE.popitem(last=False)
-        _SPATIAL_HASH_CACHE[skey] = response
+        for skey in (spatial_key, spatial_key_generic):
+            if skey in _SPATIAL_HASH_CACHE:
+                _SPATIAL_HASH_CACHE.move_to_end(skey)
+            while len(_SPATIAL_HASH_CACHE) >= _MAX_SPATIAL_HASH_ENTRIES:
+                evicted_skey, _ = _SPATIAL_HASH_CACHE.popitem(last=False)
+                _L1_TIMESTAMPS.pop(f"sp:{evicted_skey}", None)
+            _SPATIAL_HASH_CACHE[skey] = response
+            _L1_TIMESTAMPS[f"sp:{skey}"] = cached_ts
 
     return response
 

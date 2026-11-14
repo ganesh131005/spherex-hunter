@@ -3,11 +3,12 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed all open `@coolodu` GitHub issues (`#10`, `#14`, `#15`, `#16`, `#17`, `#18`, `#19`, `#20`, `#21`, `#22`, `#24`, `#25`, `#26`, `#27`, `#29`, `#30`), Integrated **AI Science Co-Pilot** (`GET /api/ai/analyze`, `GET/POST /api/ai/ask`), frontend UX fixes, branch reconciliation, 89/89 pytest verification, and live browser verification on `coolodu/web-frontend`.
-- **Next Task:** Ready for `@jokerodu` PR review & merge of `coolodu/web-frontend` into `main` (GitHub Issues `#23` and `#28` belong to `@darkodu` on `darkodu/astro-backend`).
-- **Blockers:** None (Python `playwright` is not installed locally; live UI/E2E verification ran via Antigravity browser agent against local `uvicorn` + `pytest` 89/89 passing).
+- **Current Task:** Completed ALL open repository GitHub issues (`#10`, `#14`–`#31`, including `#23` scientific cache lifecycle and `#28` resilient Gaia DR3 WCS cutout fallback), Integrated **AI Science Co-Pilot**, `/app/P/DSS2/color/properties` 200 handler, branch reconciliation (`origin/main` `7cd203f`), 94/94 non-Playwright `pytest` verification, and live browser verification on `coolodu/web-frontend`.
+- **Next Task:** Ready for `@jokerodu` final PR review & merge of `coolodu/web-frontend` (and `darkodu/astro-backend`) into `main` — 0 open issues remain across the entire repository.
+- **Blockers:** None (Python `playwright` is not installed locally; live UI verification ran via Antigravity browser agent against local `uvicorn` + `pytest` 94/94 passing).
 
 ## Completed Tasks:
+- [x] **[Resolved Issues #23 & #28, Updated `#vpMosaicBadge`, & Closed All Remaining GitHub Issues]**: Implemented `_build_degraded_gaia_wcs_fallback`, TTL/quota cache lifecycle + headers (`X-Cache`, `X-Cache-Tier`, `X-Cached-At`, `X-Archive-Reachability`), `/app/P/DSS2/color/properties` route, and `#vpMosaicBadge` degraded state; verified 94/94 non-Playwright pytest cases & live browser check.
 - [x] **[Resolved Issues #29 & #30 & Closed All Remaining @coolodu Issues (#19-#22, #27, #29, #30)]**: Updated `frontend/index.html` with `#leftToolRail` `overflow-hidden justify-between` grouped `h-8` controls (`#29`) and 85% capacity (`Math.floor(maxEntries * 0.85)`) IndexedDB LRU eviction in `pruneClientCacheIfNeeded` (`#30`); passed 89/89 pytest checks.
 - [x] **[Resolved & Closed All @coolodu GitHub Issues (#10, #14-#22, #24-#27), Integrated AI Co-Pilot & Reconciled `coolodu/web-frontend`]**:
   - **Issues #10, #16, #17, #18 (Viewport, Splitters & Left Tool Rail):** Upgraded `drawAdjacentSkyTiling()` with `adjacentSkyTileCache` streaming real `/api/cutout` FITS neighbor tiles; added draggable `#sidePanelSplitter` (`#propertiesSidebar`, 260–560px) and `#bottomDockSplitter` (`#dockContentBody`, 56–380px) persisted in `localStorage`; wired `#toolSelect`/`#toolPan`/`#toolMeasure` arcsecond ruler, `#toolBlinkFlip`, `#toolFullscreen` + `fullscreenchange`, and `z-30 overflow-visible` tooltips.
