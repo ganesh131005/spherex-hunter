@@ -173,6 +173,12 @@
         <span class="text-emerald-300 font-semibold tracking-wide">NASA IRSA</span>
       </div>
 
+      <!-- Command Palette Pill (Ctrl+K) -->
+      <button id="cmdPaletteBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md blender-btn text-gray-400 hover:text-white border border-blender-700 text-[10px] font-mono transition-all shrink-0" title="Open Command Palette (Ctrl+K)">
+        <i data-lucide="search" class="w-3 h-3 text-blender-blue"></i>
+        <span class="hidden sm:inline">Ctrl+K</span>
+      </button>
+
       <!-- Toggle Properties Sidebar -->
       <button id="toggleSidebarBtn" class="w-7 h-7 flex items-center justify-center rounded-md blender-btn text-gray-300 hover:text-white" title="Toggle Properties Panel (N)">
         <i data-lucide="panel-right-close" class="w-3.5 h-3.5"></i>
@@ -542,6 +548,32 @@
       </span>
     </div>
   </footer>
+
+  <!-- ========================================================================= -->
+  <!-- 4. COMMAND PALETTE OVERLAY (Ctrl+K / Cmd+K)                              -->
+  <!-- ========================================================================= -->
+  <div id="cmdPaletteOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-[60] flex items-start justify-center pt-[12vh]" role="dialog" aria-modal="true" aria-label="Command Palette">
+    <div class="bg-blender-900 border border-blender-600 rounded-xl w-full max-w-xl shadow-2xl overflow-hidden font-mono text-xs" style="box-shadow: 0 0 0 1px rgba(43,118,201,0.3), 0 25px 50px rgba(0,0,0,0.8);">
+      <!-- Search Input -->
+      <div class="flex items-center gap-2.5 px-4 py-3 border-b border-blender-700">
+        <i data-lucide="search" class="w-4 h-4 text-blender-blue shrink-0"></i>
+        <input id="cmdInput" type="text"
+          class="flex-1 bg-transparent text-white placeholder-gray-500 text-sm focus:outline-none"
+          placeholder="Search targets, views, actions… (try 'brown dwarf' or 'blink')"
+          autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-controls="cmdResultsList">
+        <span class="text-[10px] text-gray-500 bg-blender-800 px-1.5 py-0.5 rounded border border-blender-700 shrink-0 font-sans">Esc</span>
+      </div>
+      <!-- Results list -->
+      <ul id="cmdResultsList" class="max-h-80 overflow-y-auto py-1" role="listbox"></ul>
+      <!-- Footer -->
+      <div class="flex items-center gap-4 px-4 py-2 border-t border-blender-700 text-[10px] text-gray-500">
+        <span class="flex items-center gap-1"><kbd class="bg-blender-800 px-1 rounded border border-blender-700">↑↓</kbd> navigate</span>
+        <span class="flex items-center gap-1"><kbd class="bg-blender-800 px-1 rounded border border-blender-700">↵</kbd> execute</span>
+        <span class="flex items-center gap-1"><kbd class="bg-blender-800 px-1 rounded border border-blender-700">Esc</kbd> close</span>
+        <span class="ml-auto text-blender-blue">SPHEREx Hunter</span>
+      </div>
+    </div>
+  </div>
 
   <!-- ========================================================================= -->
   <!-- 4. CITIZEN SCIENCE DISCOVERY MODAL                                        -->
@@ -1948,6 +1980,205 @@
         alert("Failed to submit candidate to backend archive.");
       }
     });
+
+    // =========================================================================
+    // COMMAND PALETTE (Ctrl+K / Cmd+K) — Issue #8 & #9
+    // Research verdict: YES with strict design constraints
+    // =========================================================================
+    (function initCommandPalette() {
+      const overlay    = document.getElementById('cmdPaletteOverlay');
+      const input      = document.getElementById('cmdInput');
+      const list       = document.getElementById('cmdResultsList');
+      const openBtn    = document.getElementById('cmdPaletteBtn');
+
+      // ---- Command Index (21 commands + natural language aliases) ----
+      const CMD_INDEX = [
+        // 🌟 Astronomical Targets
+        { group: '🌟 Targets', icon: 'crosshair', label: 'WISE 0855-0714 (Cold Y-Dwarf)', sub: 'RA 133.795°  Dec -7.245°  · 8.12"/yr', aliases: ['cold brown dwarf','planet x candidate','infrared only','y dwarf','wise 0855'], action: () => selectTarget('wise0855') },
+        { group: '🌟 Targets', icon: 'crosshair', label: "Barnard's Star (Proper Motion)", sub: 'RA 269.452°  Dec +4.693°  · 10.36"/yr', aliases: ['barnard','fast mover','red dwarf','proper motion','highest pm'], action: () => selectTarget('barnard') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'Epsilon Indi B (Binary Brown Dwarf)', sub: 'RA 331.044°  Dec -56.783°  · 4.70"/yr', aliases: ['eps indi','epsilon indi','binary','t dwarf','brown dwarf companion'], action: () => selectTarget('epsindi') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'RW Aurigae (Variable T-Tauri Star)', sub: 'RA 76.956°  Dec +30.401°  · Variable Flux', aliases: ['rw aur','variable star','t tauri','dimming','young star'], action: () => selectTarget('rwaur') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'R Draconis (Mira Pulsating Giant)', sub: 'RA 248.168°  Dec +66.755°  · 245-day cycle', aliases: ['r draconis','mira','pulsating','giant','periodic','red giant'], action: () => selectTarget('rdraconis') },
+
+        // 🗂️ Workspace Views
+        { group: '🗂️ Views', icon: 'split', label: 'View: Blink Comparator', sub: 'Multi-epoch flipbook animation (default)', aliases: ['blink','flipbook','animation','epochs','compare'], action: () => document.getElementById('wsBlink').click() },
+        { group: '🗂️ Views', icon: 'layers', label: 'View: Difference Imaging', sub: 'I₂ − I₁  Alard-Lupton subtraction', aliases: ['difference','diff','subtract','alard lupton','residual','dipole'], action: () => document.getElementById('wsDiff').click() },
+        { group: '🗂️ Views', icon: 'activity', label: 'View: 102-Band Spectra', sub: 'SPHEREx infrared SED 0.75–5.0 μm', aliases: ['spectra','spectrum','sed','infrared','band','102','wavelength'], action: () => document.getElementById('wsSpec').click() },
+        { group: '🗂️ Views', icon: 'globe', label: 'View: Aladin Sky Atlas', sub: 'CDS Strasbourg interactive sky map', aliases: ['aladin','atlas','sky map','cds','interactive','hips'], action: () => document.getElementById('wsAladin').click() },
+
+        // ⚡ Shading / Colormaps
+        { group: '⚡ Shading', icon: 'circle', label: 'Shading: Grayscale (Telescope Default)', sub: 'Authentic astronomical photometric gray', aliases: ['gray','grayscale','default','monochrome','standard'], action: () => document.getElementById('shadeGrayscale').click() },
+        { group: '⚡ Shading', icon: 'moon', label: 'Shading: Inverted (DS9 Print Style)', sub: 'Dark stars on light background', aliases: ['invert','inverted','ds9','print','white background','negative'], action: () => document.getElementById('shadeInverted').click() },
+        { group: '⚡ Shading', icon: 'thermometer', label: 'Shading: Thermal Infrared Color', sub: 'False-color heat-map rendering', aliases: ['thermal','heat','infrared','false color','colormap','fire'], action: () => document.getElementById('shadeThermal').click() },
+
+        // ⚡ Overlay Controls
+        { group: '⚡ Actions', icon: 'sparkles', label: 'Toggle Gaia DR3 Astrometry Overlay', sub: 'ESA proper motion vectors & optical cross-match', aliases: ['gaia','dr3','astrometry','proper motion','overlay','toggle gaia','esa','cross match'], action: () => document.getElementById('toggleGaia').click() },
+
+        // ⚡ Navigation
+        { group: '⚡ Navigation', icon: 'focus', label: 'Recenter on Target Object', sub: 'Reset pan — snap to field center', aliases: ['recenter','center','home','reset pan','snap','origin'], action: () => document.getElementById('toolRecenter').click() },
+        { group: '⚡ Navigation', icon: 'scan', label: 'Reset Zoom to 1:1', sub: 'Return to standard 1.0× zoom level', aliases: ['reset zoom','zoom','1x','1:1','zoom out','scale'], action: () => document.getElementById('toolResetZoom').click() },
+        { group: '⚡ Navigation', icon: 'gamepad-2', label: 'Enter Walk Navigation Mode', sub: 'WASD flight through the sky (Shift+`)', aliases: ['walk','wasd','fly','navigation','gamepad','3d fly'], action: () => document.getElementById('toolWalk').click() },
+
+        // ⚡ FOV Presets
+        { group: '⚡ FOV Presets', icon: 'zoom-in', label: "FOV 1.0' — Deep Core (Hero Mode)", sub: 'Unbinned sub-pixel 1024p — finest detail', aliases: ["fov 1","1 arcmin","deep","hero","1024p","sub pixel","micro arcsec"], action: () => { document.getElementById('selectFOV').value = '1.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+        { group: '⚡ FOV Presets', icon: 'circle-dot', label: "FOV 3.0' — Standard Science (Default)", sub: 'HD 720p science-grade · default view', aliases: ["fov 3","3 arcmin","standard","default fov","720p","science"], action: () => { document.getElementById('selectFOV').value = '3.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+        { group: '⚡ FOV Presets', icon: 'zoom-out', label: "FOV 5.0' — Medium Wide Field", sub: 'Wider context view for fast movers', aliases: ["fov 5","5 arcmin","wide","medium","context"], action: () => { document.getElementById('selectFOV').value = '5.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+        { group: '⚡ FOV Presets', icon: 'maximize', label: "FOV 15.0' — Galactic Transit (Max Wide)", sub: '360p overview · fast solar system scan', aliases: ["fov 15","15 arcmin","max","galactic","transit","360p","wide field","solar system"], action: () => { document.getElementById('selectFOV').value = '15.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+      ];
+
+      // ---- Fuzzy scoring ----
+      function fuzzyScore(cmd, query) {
+        const q = query.toLowerCase().trim();
+        if (!q) return 100; // show all when empty
+        const label   = cmd.label.toLowerCase();
+        const sub     = (cmd.sub || '').toLowerCase();
+        const aliases = (cmd.aliases || []).join(' ');
+        const full    = `${label} ${sub} ${aliases}`;
+        // Exact substring
+        if (label.includes(q)) return 90;
+        if (sub.includes(q)) return 70;
+        if (aliases.includes(q)) return 80;
+        // Token match
+        const tokens = q.split(/\s+/);
+        const matchCount = tokens.filter(t => full.includes(t)).length;
+        if (matchCount === tokens.length) return 60;
+        if (matchCount > 0) return 30 * (matchCount / tokens.length);
+        return 0;
+      }
+
+      let activeIndex = -1;
+      let filteredCmds = [];
+      let recentKeys = [];
+
+      function renderResults(query) {
+        list.innerHTML = '';
+        activeIndex = -1;
+
+        // Score and filter
+        filteredCmds = CMD_INDEX
+          .map(cmd => ({ cmd, score: fuzzyScore(cmd, query) }))
+          .filter(r => r.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .map(r => r.cmd);
+
+        if (filteredCmds.length === 0) {
+          list.innerHTML = `<li class="px-4 py-6 text-center text-gray-500 text-[11px]">
+            <i class="inline-block mb-1">🔭</i><br>No commands match "<span class="text-gray-400">${escHtml(query)}</span>"<br>
+            <span class="text-[10px]">Try: "blink", "barnard", "thermal", "gaia"</span></li>`;
+          return;
+        }
+
+        // Group rendering
+        let currentGroup = null;
+        filteredCmds.forEach((cmd, idx) => {
+          if (cmd.group !== currentGroup) {
+            currentGroup = cmd.group;
+            const groupEl = document.createElement('li');
+            groupEl.className = 'px-3 py-1 text-[9px] text-gray-500 uppercase tracking-wider font-semibold select-none';
+            groupEl.textContent = cmd.group;
+            list.appendChild(groupEl);
+          }
+          const li = document.createElement('li');
+          li.className = 'cmd-item flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors hover:bg-blender-800/70 rounded mx-1';
+          li.setAttribute('role', 'option');
+          li.setAttribute('data-idx', idx);
+          li.innerHTML = `
+            <i data-lucide="${cmd.icon}" class="w-3.5 h-3.5 text-blender-blue shrink-0"></i>
+            <div class="flex-1 min-w-0">
+              <div class="text-white text-[11px] font-medium truncate">${escHtml(cmd.label)}</div>
+              ${cmd.sub ? `<div class="text-gray-500 text-[9px] truncate">${escHtml(cmd.sub)}</div>` : ''}
+            </div>`;
+          li.addEventListener('mouseenter', () => setActive(idx));
+          li.addEventListener('click', () => executeCmd(idx));
+          list.appendChild(li);
+        });
+
+        // Re-render lucide icons inside palette
+        lucide.createIcons();
+        // Activate first item
+        if (filteredCmds.length > 0) setActive(0);
+      }
+
+      function escHtml(str) {
+        return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      function setActive(idx) {
+        list.querySelectorAll('.cmd-item').forEach(el => el.classList.remove('bg-blender-800', 'text-white'));
+        activeIndex = idx;
+        const items = list.querySelectorAll('.cmd-item');
+        if (items[idx]) {
+          items[idx].classList.add('bg-blender-800');
+          items[idx].scrollIntoView({ block: 'nearest' });
+        }
+      }
+
+      function executeCmd(idx) {
+        const cmd = filteredCmds[idx];
+        if (!cmd) return;
+        closePalette();
+        // Small delay to allow UI update before action fires
+        setTimeout(() => { try { cmd.action(); } catch(e) { console.warn('Command palette action error:', e); } }, 60);
+      }
+
+      function openPalette() {
+        overlay.classList.remove('hidden');
+        input.value = '';
+        renderResults('');
+        setTimeout(() => input.focus(), 30);
+      }
+
+      function closePalette() {
+        overlay.classList.add('hidden');
+        input.value = '';
+        list.innerHTML = '';
+      }
+
+      // Input handler
+      input.addEventListener('input', () => renderResults(input.value));
+
+      // Keyboard navigation inside palette
+      input.addEventListener('keydown', (e) => {
+        const items = list.querySelectorAll('.cmd-item');
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setActive(Math.min(activeIndex + 1, filteredCmds.length - 1));
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setActive(Math.max(activeIndex - 1, 0));
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          executeCmd(activeIndex);
+        } else if (e.key === 'Escape') {
+          closePalette();
+        }
+      });
+
+      // Click backdrop to close
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) closePalette(); });
+
+      // Open button
+      if (openBtn) openBtn.addEventListener('click', openPalette);
+
+      // Global Ctrl+K / Cmd+K shortcut
+      document.addEventListener('keydown', (e) => {
+        const isTypingInInput = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+        // Ctrl+K or Cmd+K
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          // Don't block if palette is already open and input is focused — that's normal typing
+          if (!overlay.classList.contains('hidden')) { closePalette(); return; }
+          e.preventDefault();
+          openPalette();
+          return;
+        }
+        // Escape always closes
+        if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
+          closePalette();
+        }
+      });
+
+      console.log('[SPHEREx Hunter] ✅ Command Palette initialized — 21 commands indexed. Press Ctrl+K to open.');
+    })();
 
     // Audio Toggle
     const toolMute = document.getElementById('toolMute');
