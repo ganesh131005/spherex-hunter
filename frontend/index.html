@@ -436,71 +436,73 @@
   <div class="flex-1 flex overflow-hidden relative">
 
     <!-- LEFT TOOL RAIL (56px / w-14) -->
-    <aside class="w-14 bg-space-900 border-r border-space-700 flex flex-col items-center py-2 gap-2 z-30 overflow-visible shrink-0 select-none text-[10px]">
+    <aside id="leftToolRail" class="w-14 h-full bg-space-900 border-r border-space-700 flex flex-col items-center justify-between py-1.5 z-30 overflow-hidden shrink-0 select-none text-[10px]">
 
-      <!-- Select / Inspect Tool -->
-      <button id="toolSelect" class="w-10 h-10 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Inspect / Reticle Target (V)">
-        <i data-lucide="mouse-pointer" class="w-4 h-4 text-cyan-400"></i>
-        <span class="text-[8px] font-mono">Select</span>
-      </button>
+      <div class="flex flex-col items-center gap-1 w-full">
+        <!-- Select / Inspect Tool -->
+        <button id="toolSelect" class="w-10 h-8 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Inspect / Reticle Target (V)">
+          <i data-lucide="mouse-pointer" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span class="text-[8px] font-mono leading-none">Select</span>
+        </button>
 
-      <!-- Pan Tool -->
-      <button id="toolPan" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Pan / Drag Telescope (H)">
-        <i data-lucide="hand" class="w-4 h-4 text-gray-300"></i>
-        <span class="text-[8px] font-mono">Pan</span>
-      </button>
+        <!-- Pan Tool -->
+        <button id="toolPan" class="w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Pan / Drag Telescope (H)">
+          <i data-lucide="hand" class="w-3.5 h-3.5 text-gray-300"></i>
+          <span class="text-[8px] font-mono leading-none">Pan</span>
+        </button>
 
-      <!-- Measure / Ruler Tool -->
-      <button id="toolMeasure" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Measure Distance in Arcseconds (M)">
-        <i data-lucide="ruler" class="w-4 h-4 text-emerald-400"></i>
-        <span class="text-[8px] font-mono">Dist</span>
-      </button>
+        <!-- Measure / Ruler Tool -->
+        <button id="toolMeasure" class="w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Measure Distance in Arcseconds (M)">
+          <i data-lucide="ruler" class="w-3.5 h-3.5 text-emerald-400"></i>
+          <span class="text-[8px] font-mono leading-none">Dist</span>
+        </button>
 
-      <!-- Blink A/B Flip Tool -->
-      <button id="toolBlinkFlip" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Flip Blink Frame A / B (Space / B)">
-        <i data-lucide="flip-horizontal" class="w-4 h-4 text-amber-400"></i>
-        <span class="text-[8px] font-mono">Flip</span>
-      </button>
+        <!-- Blink A/B Flip Tool -->
+        <button id="toolBlinkFlip" class="w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Flip Blink Frame A / B (Space / B)">
+          <i data-lucide="flip-horizontal" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span class="text-[8px] font-mono leading-none">Flip</span>
+        </button>
 
-      <div class="w-7 h-[1px] bg-space-700/80 my-1"></div>
+        <div class="w-7 h-[1px] bg-space-700/80 my-0.5"></div>
 
-      <!-- Gaia DR3 Astrometry Overlay -->
-      <button id="toggleGaia" class="w-10 h-10 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition" title="Toggle ESA/NASA Gaia DR3 Proper Motion Vectors (G)">
-        <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
-        <span class="text-[8px] font-mono">Gaia</span>
-      </button>
+        <!-- Gaia DR3 Astrometry Overlay -->
+        <button id="toggleGaia" class="w-10 h-8 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition" title="Toggle ESA/NASA Gaia DR3 Proper Motion Vectors (G)">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span class="text-[8px] font-mono leading-none">Gaia</span>
+        </button>
 
-      <!-- Recenter Viewport -->
-      <button id="toolRecenter" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Recenter on Target Coordinates (R)">
-        <i data-lucide="crosshair" class="w-4 h-4 text-blender-orange"></i>
-        <span class="text-[8px] font-mono">Center</span>
-      </button>
+        <!-- Recenter Viewport -->
+        <button id="toolRecenter" class="w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Recenter on Target Coordinates (R)">
+          <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange"></i>
+          <span class="text-[8px] font-mono leading-none">Center</span>
+        </button>
 
-      <!-- Reset Zoom 1:1 -->
-      <button id="toolResetZoom" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Reset Zoom to 1.0x (1)">
-        <i data-lucide="zoom-in" class="w-4 h-4 text-gray-300"></i>
-        <span class="text-[8px] font-mono">1:1</span>
-      </button>
+        <!-- Reset Zoom 1:1 -->
+        <button id="toolResetZoom" class="w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Reset Zoom to 1.0x (1)">
+          <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-gray-300"></i>
+          <span class="text-[8px] font-mono leading-none">1:1</span>
+        </button>
 
-      <!-- WASD Walk Navigation -->
-      <button id="toolWalk" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="WASD Spaceflight Walk Flight Navigation (W / Shift+`)">
-        <i data-lucide="gamepad-2" class="w-4 h-4 text-purple-400"></i>
-        <span class="text-[8px] font-mono">Walk</span>
-      </button>
+        <!-- WASD Walk Navigation -->
+        <button id="toolWalk" class="w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="WASD Spaceflight Walk Flight Navigation (W / Shift+`)">
+          <i data-lucide="gamepad-2" class="w-3.5 h-3.5 text-purple-400"></i>
+          <span class="text-[8px] font-mono leading-none">Walk</span>
+        </button>
+      </div>
 
-      <div class="flex-1"></div>
+      <div class="flex flex-col items-center gap-1 w-full pt-1 border-t border-space-700/80">
+        <!-- Fullscreen Viewport -->
+        <button id="toolFullscreen" class="w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Toggle Fullscreen Viewport (F)">
+          <i data-lucide="maximize" class="w-3.5 h-3.5 text-gray-300"></i>
+          <span class="text-[8px] font-mono leading-none">Full</span>
+        </button>
 
-      <!-- Fullscreen Viewport -->
-      <button id="toolFullscreen" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Toggle Fullscreen Viewport (F)">
-        <i data-lucide="maximize" class="w-4 h-4 text-gray-300"></i>
-        <span class="text-[8px] font-mono">Full</span>
-      </button>
-
-      <!-- Audio Mute -->
-      <button id="toolMute" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Toggle Synthesizer Audio">
-        <i id="muteIcon" data-lucide="volume-2" class="w-4 h-4 text-gray-300"></i>
-        <span class="text-[8px] font-mono">Sound</span>
-      </button>
+        <!-- Audio Mute -->
+        <button id="toolMute" class="w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Toggle Synthesizer Audio">
+          <i id="muteIcon" data-lucide="volume-2" class="w-3.5 h-3.5 text-gray-300"></i>
+          <span class="text-[8px] font-mono leading-none">Sound</span>
+        </button>
+      </div>
     </aside>
 
     <!-- CENTER OBSERVATORY VIEWPORT (Edge-to-Edge Pure Astronomy Canvas) -->
@@ -2160,7 +2162,8 @@
           const store = tx.objectStore(IDB_STORE);
           const countReq = store.count();
           countReq.onsuccess = () => {
-            if (countReq.result <= maxEntries) {
+            const capacityThreshold = Math.floor(maxEntries * 0.85);
+            if (countReq.result < capacityThreshold) {
               resolve();
               return;
             }

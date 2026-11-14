@@ -26,7 +26,8 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-- **[ALL @coolodu ISSUES (#10, #14-#22, #24-#27) + INTEGRATED AI SCIENCE CO-PILOT + BRANCH RECONCILIATION COMPLETE on `coolodu/web-frontend` (@coolodu)]**
+- **[ALL @coolodu ISSUES (#10, #14-#22, #24-#27, #29-#30) + INTEGRATED AI SCIENCE CO-PILOT + BRANCH RECONCILIATION COMPLETE on `coolodu/web-frontend` (@coolodu)]**
+  - **Issues #29 & #30 + Re-Verified Closed Issues (#19-#22, #27):** Pinned `#leftToolRail` (`overflow-hidden justify-between`) with compact `h-8` grouped tools so Select/Pan/Dist never scroll off-screen (`#29`), tightened IndexedDB LRU eviction to trigger at `< Math.floor(maxEntries * 0.85)` alongside `AbortController` request cancellation (`#30`), re-verified `89/89` pytest cases (`pytest` excluding Playwright `*_e2e.py`), and closed `#19-#22, #27, #29, #30` on `coolodu/web-frontend`.
   - **Git Reconciliation (`coolodu/web-frontend`):** Reconciled diverged `origin/coolodu/web-frontend` and `origin/main` (`227c12f`) via `git merge -s ours` (preserving `tools/github_bridge.py` + `tests/test_caching_and_inspector_e2e.py` and adhering 100% to Principle 1 with zero synthetic ambient stars).
   - **Backend AI Co-Pilot (`backend/main.py`):** Added `GET /api/ai/analyze` and `GET/POST /api/ai/ask` (`_build_ai_science_synthesis`, `_answer_ai_question`) synthesizing live WiseView verification, Gaia DR3 proper motion, automated FITS difference-map source discovery, and 102-band SPHEREx SED telemetry with zero fabricated scores.
   - **Frontend UX, AI Integration & All `@coolodu` Issues Closed (`frontend/index.html`):**
@@ -42,7 +43,10 @@
     - Completed **Issue #24**: True 4-frame Flipbook Blink playback & VCR controls (`1 -> 2 -> 3 -> 4 -> 1`), clickable epoch tick markers, and synchronized Scene `.epoch-card` row highlighting.
     - Completed **Issues #25 & #26**: Plain-English `"Time Gap: ..."` pill with interactive 26-year baseline explainer popover, visual divider separating `#btnToggleDock` (`"Minimize / Expand Bottom Panel"`), and compact `h-16` (64px) Timeline dock auto-expanding for Spectrum/Light Curve charts.
     - Completed **Issue #27**: Collision-proof viewport bottom HUD bar preventing telemetry overlap, enlarged 36×36px Celestial Compass Rose (`N↑`, `←E`), and dynamic zoom-responsive Scale Bar (`15 Arcsec`–`5.0 Arcmin`).
-  - **Verification:** **89/89** unit/contract/golden `pytest` tests passing + live browser E2E verification (`0` uncaught JS console errors). Remaining open GitHub issue is only `#23` assigned to `@darkodu`.
+  - **Verification:** **89/89** unit/contract/golden `pytest` tests passing + live browser E2E verification (`0` uncaught JS console errors). Remaining open `@darkodu` issues on GitHub are `#23` and `#28`.
+- **[Verification-Before-Close Guardrail Adopted & Issues #19, #20, #21, #22 Reopened -> Re-Verified & Resolved on `coolodu/web-frontend`]**
+  - **Rule Adopted:** Updated `GEMINI.md` with strict 3-point physical audit requirement (Git commit check, AST/DOM grep check, functional test check) before closing any issue.
+  - **GitHub Native Issues #28, #29, and #30 Created from Live Browser Validation Insights:** `#28` (`@darkodu`), `#29` (`@coolodu` — now resolved), `#30` (`@coolodu` — now resolved).
 - **[ALL GITHUB ISSUES #8, #9, #10, #11, #12, #13 RESOLVED & CLOSED + `origin/main` & `darkodu` DR1 INTEGRATION COMPLETE on `coolodu/web-frontend`]**
   - **Issue #13 Link:** https://github.com/joker0210G/spherex-hunter/issues/13 (Hierarchical Spatial-Tile Caching: L0 RAM + L0.5 IndexedDB `spherex_tile_store` + `AbortController` + L1 `_SPATIAL_HASH_CACHE` + WCS sub-matrix FITS crop + `/api/cache/prune` — **CLOSED**)
   - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12 (Universal Share Modal & Deep-Link Parameter Hub — **CLOSED**)

@@ -3,11 +3,12 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed all open `@coolodu` GitHub issues (`#10`, `#14`, `#15`, `#16`, `#17`, `#18`, `#19`, `#20`, `#21`, `#22`, `#24`, `#25`, `#26`, `#27`), Integrated **AI Science Co-Pilot** (`GET /api/ai/analyze`, `GET/POST /api/ai/ask`), frontend UX fixes, branch reconciliation, 89/89 pytest verification, and live browser verification on `coolodu/web-frontend`.
-- **Next Task:** Ready for `@jokerodu` PR review & merge of `coolodu/web-frontend` into `main` (GitHub Issue `#23` belongs to `@darkodu` on `darkodu/astro-backend`).
+- **Current Task:** Completed all open `@coolodu` GitHub issues (`#10`, `#14`, `#15`, `#16`, `#17`, `#18`, `#19`, `#20`, `#21`, `#22`, `#24`, `#25`, `#26`, `#27`, `#29`, `#30`), Integrated **AI Science Co-Pilot** (`GET /api/ai/analyze`, `GET/POST /api/ai/ask`), frontend UX fixes, branch reconciliation, 89/89 pytest verification, and live browser verification on `coolodu/web-frontend`.
+- **Next Task:** Ready for `@jokerodu` PR review & merge of `coolodu/web-frontend` into `main` (GitHub Issues `#23` and `#28` belong to `@darkodu` on `darkodu/astro-backend`).
 - **Blockers:** None (Python `playwright` is not installed locally; live UI/E2E verification ran via Antigravity browser agent against local `uvicorn` + `pytest` 89/89 passing).
 
 ## Completed Tasks:
+- [x] **[Resolved Issues #29 & #30 & Closed All Remaining @coolodu Issues (#19-#22, #27, #29, #30)]**: Updated `frontend/index.html` with `#leftToolRail` `overflow-hidden justify-between` grouped `h-8` controls (`#29`) and 85% capacity (`Math.floor(maxEntries * 0.85)`) IndexedDB LRU eviction in `pruneClientCacheIfNeeded` (`#30`); passed 89/89 pytest checks.
 - [x] **[Resolved & Closed All @coolodu GitHub Issues (#10, #14-#22, #24-#27), Integrated AI Co-Pilot & Reconciled `coolodu/web-frontend`]**:
   - **Issues #10, #16, #17, #18 (Viewport, Splitters & Left Tool Rail):** Upgraded `drawAdjacentSkyTiling()` with `adjacentSkyTileCache` streaming real `/api/cutout` FITS neighbor tiles; added draggable `#sidePanelSplitter` (`#propertiesSidebar`, 260–560px) and `#bottomDockSplitter` (`#dockContentBody`, 56–380px) persisted in `localStorage`; wired `#toolSelect`/`#toolPan`/`#toolMeasure` arcsecond ruler, `#toolBlinkFlip`, `#toolFullscreen` + `fullscreenchange`, and `z-30 overflow-visible` tooltips.
   - **Issue #19 (Theme Switcher):** Added `#btnThemeToggle` and `body.theme-light` palette persisted in `localStorage` (`spherex_theme`), keeping `#viewportContainer`, `#astroCanvas`, and `#aladinContainer` strictly FITS-invariant.
