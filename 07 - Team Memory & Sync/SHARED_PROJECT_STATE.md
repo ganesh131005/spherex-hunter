@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #7 Created — SPHEREx 102-Band Spectral Integration: 6-Array Selector & 17-Wavelength Stepper]**
+  - **Issue #7 Link:** https://github.com/joker0210G/spherex-hunter/issues/7
+  - **Track:** `feature-backend` | **Roles:** @darkodu (backend schema) + @coolodu (frontend selector/chart) + @astrodu (education modal)
+  - **Scope:** Delivers the full 6-array × 17-wavelength interactive selector, enhanced SED chart with color-coded A1–A6 regions and molecular absorption markers (H₂O, CH₄, CO₂, CO), `/api/bands` endpoint, and beginner-friendly 102-band science explainer modal.
 - **[GitHub Native Issue #6 Created & Assigned to @astrodu: Beginner-Friendly Celestial Coordinates Bar (RA/Dec/FOV)]**
   - **Issue #6 Link:** https://github.com/joker0210G/spherex-hunter/issues/6
   - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu`) | **Resource:** `resource:standard`
