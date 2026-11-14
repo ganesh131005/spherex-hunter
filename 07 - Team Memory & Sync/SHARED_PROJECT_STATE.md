@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #6 Created & Assigned to @astrodu: Beginner-Friendly Celestial Coordinates Bar (RA/Dec/FOV)]**
+  - **Issue #6 Link:** https://github.com/joker0210G/spherex-hunter/issues/6
+  - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu`) | **Resource:** `resource:standard`
+  - **Scope:** Upgrades cryptic celestial navigation bar (`RA`, `Dec`, `FOV`, `Fetch`) with educational tooltips, plain-English analogies (e.g. 3' = 1/10th Full Moon), coordinate format hints, and a quick-jump sky guide for non-astronomers and citizen scientists.
 - **[GitHub Native Issue #5 Created & Assigned to @astrodu: App Brand/Logo, Onboarding Tour & Mission Explainer]**
   - **Issue #5 Link:** https://github.com/joker0210G/spherex-hunter/issues/5
   - **Track:** `uiux-pitch` | **Role:** `@astrodu` (Collaborating with `@coolodu`) | **Resource:** `resource:standard`

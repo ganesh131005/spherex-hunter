@@ -3,7 +3,9 @@
 > **Branch:** `astrodu/ui-story-pitch`
 
 ## Personal Status:
-- **Current Task:** [Issue #5] Design Application Vector Logo, Brand Identity, Onboarding Tour & Mission Explainer (https://github.com/joker0210G/spherex-hunter/issues/5).
+- **Current Task:** 
+  - [Issue #5] Design Application Vector Logo, Brand Identity, Onboarding Tour & Mission Explainer (https://github.com/joker0210G/spherex-hunter/issues/5).
+  - [Issue #6] Beginner-Friendly Celestial Navigation Bar: Tooltips, Micro-Copy & Sky Scale Guides (https://github.com/joker0210G/spherex-hunter/issues/6).
 - **Next Task:** Design Citizen Science "Flag Candidate" modal & 7-slide pitch deck.
 - **Blockers:** None currently.
 
