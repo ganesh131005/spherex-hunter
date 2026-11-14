@@ -230,6 +230,36 @@ def test_auto_prune_disk_cache():
         assert not os.path.exists(old_sky_1)
 
 
+def test_ai_copilot_analyze_and_ask():
+    """Verifies Integrated AI Co-Pilot endpoints synthesize real telemetry with zero fabricated scores."""
+    from fastapi.testclient import TestClient
+    from backend.main import app
+    client = TestClient(app)
+    r_analyze = client.get("/api/ai/analyze?ra=133.79513&dec=-7.24515&fov=3.0&target=wise0855")
+    assert r_analyze.status_code == 200
+    data = r_analyze.json()
+    assert data["status"] == "success"
+    assert "score" not in data
+    assert "WISE" in data["target_name"] and "0855" in data["target_name"]
+    assert "plain_english_summary" in data and len(data["plain_english_summary"]) > 20
+    assert "scientist_technical_summary" in data and "ICRS" in data["scientist_technical_summary"]
+    assert isinstance(data["key_insights"], list) and len(data["key_insights"]) == 3
+    assert isinstance(data["checklist"], list) and len(data["checklist"]) >= 4
+
+    r_ask = client.post("/api/ai/ask", json={
+        "ra": "133.79513",
+        "dec": "-7.24515",
+        "fov": 3.0,
+        "target": "wise0855",
+        "question": "Explain 102-band molecular absorption dips"
+    })
+    assert r_ask.status_code == 200
+    ask_data = r_ask.json()
+    assert ask_data["status"] == "success"
+    assert ask_data["topic"] == "102-Band Infrared Spectroscopy"
+    assert any(tok in ask_data["answer"] for tok in ("CH4", "H2O", "CH₄", "H₂O"))
+
+
 if __name__ == "__main__":
     for b in BENCHMARKS:
         test_nasa_benchmark_cutouts(*b)
@@ -239,4 +269,5 @@ if __name__ == "__main__":
     test_wiseview_verification_bridge()
     test_neossat_and_cadc_tracking()
     test_resources_codex()
+    test_ai_copilot_analyze_and_ask()
     print("ALL GOLDEN SUITE TESTS PASSED!")

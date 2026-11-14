@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[INTEGRATED AI SCIENCE CO-PILOT + FRONTEND UX RECTIFICATION + ISSUES #14 & #15 VERIFIED COMPLETE on `coolodu/web-frontend` (@coolodu)]**
+  - **Backend AI Co-Pilot (`backend/main.py`):** Added `GET /api/ai/analyze` and `GET/POST /api/ai/ask` (`_build_ai_science_synthesis`, `_answer_ai_question`) synthesizing live WiseView verification, Gaia DR3 proper motion, automated FITS difference-map source discovery, and 102-band SPHEREx SED telemetry with zero fabricated scores.
+  - **UI Integration & UX Rectification (`frontend/index.html`):**
+    - Built `#aiCopilotModal` (field scan, 5-step checklist, candidate list, interactive Q&A) and Inspector `#inspectorPanelCandidates` AI Field Scanner card, plus `AI:SNR` reticle markers projected on canvas.
+    - Completed **Issue #15** (CLOSED): WCS Gnomonic (`TAN`) projection `projectSkyToTangentialArcmin()`, Gaia $J2016.0$ proper-motion epoch propagation `propagateGaiaEpoch()`, dynamic `getActivePixelsPerArcmin()`, and `getVisibleFrustumSkyBounds()` with `arcsecPerPixel`.
+    - Completed **Issue #14** (CLOSED): 6-section User-Friendly Inspector (`#inspectorPanelTarget`) with Moon-scale analogy, temperature thermometer, cosmic speed rating badge, `"What This Means"` card, and dynamic Beginner/Scientist mode switcher.
+    - Fixed duplicate `#cmdPaletteOverlay` / `Ctrl+K` bug (unified 24-command `#commandPaletteModal` with natural-language aliases), fixed `/api/observations` double-`/api` 404 in `applyTemporalQuery()`, populated `#shareTelemetryText` brief, replaced `alert()` in `#submitCandidateBtn` with `showToast()` + `loadDiscoveries()`, wired Left Tool Rail (`#toolSelect`, `#toolPan`, `#toolMeasure` arcsecond ruler, `#toolBlinkFlip`, `#toolFullscreen`) and RA/Dec validation hints (`#raValidationHint`, `#decValidationHint`).
+  - **Verification:** **89/89** unit/contract/golden `pytest` tests passing after fixing duplicate `elif gaia_match:` in `backend/services/verification_service.py` and adding `test_ai_copilot_analyze_and_ask` in `tests/test_golden_suite.py`; live server (`uvicorn`) + browser verification confirmed 0 runtime page errors and `200 OK` on `/api/ai/analyze` & `/api/ai/ask`. Remaining open `@coolodu` GitHub UI polish issues: `#10`, `#16`, `#17`, `#18` (`#17` ruler/`#18` click handlers implemented locally, tooltip clipping & `#16` draggable splitters still open).
 - **[ALL GITHUB ISSUES #8, #9, #10, #11, #12, #13 RESOLVED & CLOSED + `origin/main` & `darkodu` DR1 INTEGRATION COMPLETE on `coolodu/web-frontend`]**
   - **Issue #13 Link:** https://github.com/joker0210G/spherex-hunter/issues/13 (Hierarchical Spatial-Tile Caching: L0 RAM + L0.5 IndexedDB `spherex_tile_store` + `AbortController` + L1 `_SPATIAL_HASH_CACHE` + WCS sub-matrix FITS crop + `/api/cache/prune` — **CLOSED**)
   - **Issue #12 Link:** https://github.com/joker0210G/spherex-hunter/issues/12 (Universal Share Modal & Deep-Link Parameter Hub — **CLOSED**)

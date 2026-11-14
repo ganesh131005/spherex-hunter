@@ -171,7 +171,6 @@ def run_wiseview_verification(ra: float, dec: float, fov_arcmin: float = 3.0,
         evidence_tier = "KNOWN_STELLAR_OR_BROWN_DWARF"
         verdict_text = f"Catalogued high proper-motion star (Gaia DR3 {gaia_match['source_id']})."
     elif gaia_match:
-    elif gaia_match:
         evidence_tier = "KNOWN_STELLAR_OR_BROWN_DWARF"
         verdict_text = "Static optical star with a confirmed Gaia DR3 counterpart."
     elif is_dipole or is_infrared_exclusive_benchmark:

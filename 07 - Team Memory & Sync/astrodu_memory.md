@@ -3,11 +3,11 @@
 > **Branch:** `astrodu/ui-story-pitch`
 
 ## Personal Status:
-- **Current Task:** 
-  - [Issue #5] Design Application Vector Logo, Brand Identity, Onboarding Tour & Mission Explainer (https://github.com/joker0210G/spherex-hunter/issues/5).
-  - [Issue #6] Beginner-Friendly Celestial Navigation Bar: Tooltips, Micro-Copy & Sky Scale Guides (https://github.com/joker0210G/spherex-hunter/issues/6).
-- **Next Task:** Design Citizen Science "Flag Candidate" modal & 7-slide pitch deck.
+- **Current Task:** Slide deck & citizen-science pitch narrative (UI redesign work for Issues #5, #6, and #14 is implemented and verified).
+- **Next Task:** Design 7-slide pitch deck & demo walkthrough video script.
 - **Blockers:** None currently.
 
 ## Completed Tasks:
+- [x] **[Issue #14] User-Friendly Inspector Panel (`#inspectorPanelTarget`):** 6-section plain-English Citizen Science cards, Full Moon FOV analogy, visual temperature thermometer, speed rating badge, `"What This Means"` card, Beginner/Scientist switcher, and verified CLOSED on GitHub.
+- [x] **[Issues #5 & #6] Brand Logo, Onboarding Tour & Beginner Celestial Bar:** Verified and closed.
 - [x] Assigned role and received task prompts for Antigravity.
