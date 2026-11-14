@@ -31,5 +31,5 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
-          pytest tests/test_scene_and_metadata.py -v
+          pytest tests/test_validation.py tests/test_flag_bits.py tests/test_scene_and_metadata.py tests/test_motion_models.py tests/test_preprocessing.py tests/test_differencing.py tests/test_identification_and_evidence.py -v
 

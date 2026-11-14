@@ -80,3 +80,4 @@ Below is the verified exposure pairing audit across the 5 primary demonstration 
 | **RW Aurigae** | 77.107 | +30.401 | 2 | **1** | 1 | **ZOGY on S1/S2**; Variable star flux monitor |
 | **R Draconis** | 248.338 | +66.703 | 12 (NEP) | **>15** | 2 | **ZOGY Multi-Epoch Stack**; High cadence monitoring |
 | *Arbitrary Sky* | Any | Any | $0\text{--}1$ | 0 | 1 | **UI Notification:** Single epoch; Forward model or blink only |
+
