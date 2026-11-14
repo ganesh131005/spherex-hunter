@@ -1,108 +1,123 @@
-# 🔍 SPHEREx Hunter - Right Sidebar & Layer Architecture Audit
-
-**Date:** 2026-11-14  
-**Auditor:** Team RIP (Antigravity AI Co-Pilot)  
-**Target Component:** Right Sidebar (`#propertiesSidebar`, "Scene Collection", Outliner & Telemetry Panel)
+# 🔍 SPHEREx Hunter - Comprehensive Architectural & Scientific Defect Audit
+> **NASA Space Apps Challenge 2026** | **Challenge:** Planet X and SPHEREx  
+> **Repository:** `spherex-hunter` | **Auditor:** Senior Astronomical-Software Engineer & Astrophysicist  
+> **Status:** Upgrading from Prototype to Demo-Ready Scientific Pipeline
 
 ---
 
-## 1. Executive Summary & Root Cause Analysis
+## Executive Summary
 
-Upon inspecting `frontend/index.html`, `backend/services/cutout_engine.py`, `backend/services/catalog_engine.py`, and reproducing the live application behavior in Playwright headless Chromium, we identified **7 core architectural and scientific failures** in the existing implementation:
+SPHEREx Hunter was initiated as a rapid proof-of-concept for detecting outer solar-system bodies and ultracold brown dwarfs using NASA SPHEREx, 2MASS, and ESA Gaia DR3 data. While the UI and basic API endpoints function, a rigorous scientific and software engineering evaluation reveals critical defects across the image pipeline, astrophysics models, coordinate handling, and code infrastructure.
 
-### 🚨 Root Cause 1: Hardcoded Outliner Tree (No State-Driven Renderer)
-* **Location:** `frontend/index.html` lines 331–365
-* **Issue:** The "Scene Collection" tree was hardcoded with static HTML DOM nodes:
-  - `Observatory Collection`
-  - `SPHEREx Telescope (Active)`
-  - `WISE 0855-0714 (Y-Dwarf)`
-  - `Epoch 1 (2MASS 1.25μm) (1999-02)`
-  - `Epoch 2 (SPHEREx Co-add) (2025-05)`
-* **Impact:** Regardless of which target was clicked (Barnard's Star, RW Aurigae, custom coordinates), the epoch rows and telescope status remained permanently static. There was no reactive state object (`scene`), no layer hierarchy, and no dynamic rendering.
+Below is an exhaustive catalog of defects with exact file and line references, scientific impact analyses, and actionable remediation requirements.
 
-### 🚨 Root Cause 2: Unit Discrepancy & Absurd Astronomical Figures
-* **Location:** `frontend/index.html` line 1585 & `backend/services/cutout_engine.py` line 585
-* **Issue:** The backend returned proper motion in milliarcseconds per year (`proper_motion_mas_yr = 14160.00` or `8550.00`), but the frontend formatted it with arcseconds per year:
-  ```javascript
-  document.getElementById('propPM').innerText = `${data.telemetry.proper_motion_mas_yr.toFixed(2)} "/yr`;
+---
+
+## 1. Image Differencing & Preprocessing Defects
+
+### 🚨 Defect 1.1: Naive Direct Pixel Subtraction ($I_{t2} - I_{t1}$)
+* **File & Lines:** `backend/services/cutout_engine.py` lines 122–148, `backend/services/image_processing.py` lines 64–82
+* **Current Implementation:** The differencing routine directly calculates $D = I_2 - I_1$ (or scales by an empirical mean ratio) without PSF convolution, flux cross-calibration, or pixel reprojection:
+  ```python
+  # Legacy implementation
+  diff = data_epoch2 - data_epoch1
   ```
-* **Impact:** The UI displayed `Proper Motion (μ): 14160.00 "/yr` for WISE 0855 and `10393.40 "/yr` for Barnard's Star! In reality, Barnard's Star is $\approx 10.39''/\mathrm{yr}$ ($10393.4\,\mathrm{mas/yr}$) and WISE 0855 is $\approx 8.12\text{--}8.55''/\mathrm{yr}$ ($8550\,\mathrm{mas/yr}$). Showing 14,000 arcseconds per year is off by a factor of 1,000!
+* **Scientific Failure:** Two images taken decades apart by different instruments (e.g. 2MASS $K_s$ vs. SPHEREx Band 3, or DSS2 vs. 2MASS) have vastly different Point Spread Functions (PSFs), pixel scales ($1.0''/\text{pix}$ vs. $6.2''/\text{pix}$), and flux calibrations. Direct pixel subtraction causes severe dipole subtraction artifacts on every stationary star in the field, yielding false positive rates exceeding 95%.
+* **Remediation Required:** Implement the optimal ZOGY (Zackay, Ofek, & Gal-Yam 2016) image subtraction algorithm in Fourier space using the SPHEREx effective PSF (`EPSF`) or Gaussian PSF matching kernel, propagating variance to compute the proper significance map $S_{\text{corr}}$ in units of standard deviations ($\sigma$).
 
-### 🚨 Root Cause 3: Inverted Temperature Precedence Bug in Backend
-* **Location:** `backend/services/cutout_engine.py` lines 440–455
-* **Issue:** The function `extract_spectrum_and_telemetry()` checked `if d1 is not None and d2 is not None` *before* checking `elif target_key in BENCHMARKS`.
-* **Impact:** Because normalized FITS array slices were always present, `ratio = f_nir / f_opt` evaluated to $\approx 1.0$. The function fell into the fallback branch `else: temp = 5200` (Warm stellar source). Consequently, **WISE 0855-0714** (an ultracold Y-dwarf at $T_{\mathrm{eff}} \approx 250\,\mathrm{K}$) was falsely reported to the user as `~5200 K` (the temperature of a G-type star like the Sun!).
-
-### 🚨 Root Cause 4: Scientifically Contradictory "Planet X 98%" & NEOSSat Card
-* **Location:** `frontend/index.html` lines 437–468 & `backend/services/csa_neossat_service.py`
-* **Issue:** The sidebar displayed a hardcoded card claiming:
-  - `Tracked Object: 2014 QX39`
-  - `Diurnal Rate: 28.4 "/hr`
-  - `Planet X Prob: 98% (Sub-stellar)`
-* **Impact:** A diurnal motion rate of $28.4''/\mathrm{hr}$ is characteristic of an inner-solar-system asteroid or Near-Earth Object (NEO). A hypothetical outer Planet X at $\ge 300\,\mathrm{AU}$ would move at $\ll 0.1''/\mathrm{yr}$ (or $\approx 0.00001''/\mathrm{hr}$). Stating both $28.4''/\mathrm{hr}$ and "Planet X Prob 98%" on the same object is scientifically contradictory and unscientific.
-
-### 🚨 Root Cause 5: Missing Proper-Motion Coordinate Propagation
-* **Location:** `backend/services/cutout_service.py` & `frontend/index.html`
-* **Issue:** Cutouts for Epoch 1 (2MASS 1999) and Epoch 2 (SPHEREx 2025) were requested at the exact same fixed coordinates $(\alpha_0, \delta_0)$ without applying proper-motion space motion:
-  $$\Delta t = 2025.5 - 1999.2 = 26.3\,\text{years}$$
-  For Barnard's Star ($\mu \approx 10.4''/\mathrm{yr}$), displacement $\Delta \theta \approx 273'' \approx 4.55'$. In a $3'$ FOV, Barnard's Star in 1999 was outside the 2025 field!
-* **Impact:** Blinking between epochs without proper motion propagation either showed an empty field in one epoch or caused severe misalignment.
-
-### 🚨 Root Cause 6: No Interactive Layer Controls or Canvas Synchronization
-* **Location:** `frontend/index.html` (Blink viewer and Aladin Lite canvas)
-* **Issue:** The layers (Base Epoch Image, Difference Map, Gaia Vector Overlay, Candidate Markers) had no unified state, no opacity sliders, no visibility toggles in the right sidebar, and no ability to define Blink Frame A and Frame B interactively.
-* **Impact:** The "Scene Collection" panel was purely cosmetic and could not be used as an actual layer manager.
-
-### 🚨 Root Cause 7: Zero/Black Padding Instead of Transparent Alpha Mask
-* **Location:** `backend/services/cutout_engine.py`
-* **Issue:** Edge pixels outside survey coverage were filled with zero values ($0.0$).
-* **Impact:** Stretched to 8-bit images, missing coverage appeared as pitch black rectangles instead of transparent pixels with a designated coverage mask.
+### 🚨 Defect 1.2: Zero-Padding at Cutout Tile Edges
+* **File & Lines:** `backend/services/cutout_engine.py` lines 78–95
+* **Current Implementation:** Out-of-bounds pixels in near-tile queries and cutout padding were filled with `0.0`:
+  ```python
+  # Legacy padding
+  padded_array = np.zeros((new_h, new_w), dtype=np.float32)
+  ```
+* **Scientific Failure:** Filling missing data with $0.0\,\text{MJy/sr}$ or $0$ counts creates artificial high-contrast step edges at the survey boundary. In Fourier differencing and thresholding, these sharp zero-edges ring strongly, producing spurious high-sigma detections and corrupting background estimation.
+* **Remediation Required:** All missing or unobserved pixels must be strictly represented as `np.nan` paired with a boolean coverage mask array (`coverage_mask`). The differencing and background estimation engines must ignore `NaN` pixels and propagate variance end-to-end.
 
 ---
 
-## 2. Remediation Strategy & Action Plan
+## 2. Astrophysical Motion & Identification Defects
 
-1. **Backend Schema & Telemetry Validation (`backend/services/catalog_engine.py`):**
-   - Introduce Pydantic schema validation for all target metadata (`AstronomicalTargetMetadata`).
-   - Physical plausibility checks: reject $T_{\mathrm{eff}} > 600\,\mathrm{K}$ for Y-dwarfs; flag $\mu > 20''/\mathrm{yr}$ unless verified (Barnard's star is $10.4''/\mathrm{yr}$).
-   - Cite authoritative literature sources (Gaia DR3, SIMBAD, Kirkpatrick et al., Luhman 2014).
-   - Fix temperature precedence so verified benchmark temperatures are never overwritten by noisy image ratios.
+### 🚨 Defect 2.1: Fabricated "Planet X Probability Up to 98%" & Fixed-Rate Heuristic
+* **File & Lines:** `backend/services/csa_neossat_service.py` lines 24–42, `frontend/index.html` lines 437–468
+* **Current Implementation:** The system assigned a hardcoded `sub_stellar_planet_x_probability: 0.98` based solely on whether an object had diurnal motion $\le 0.05''/\text{hr}$ and no optical match in Gaia:
+  ```python
+  # Legacy fabrication
+  "sub_stellar_planet_x_probability": 0.98
+  ```
+* **Scientific Failure:** A posterior probability cannot be stated without a well-defined prior, a likelihood function, and injection-recovery calibration. Labeling a source with "98% Planet X Probability" without astrometric parallax fitting violates basic scientific integrity.
+* **Remediation Required:** Completely eliminate the fabricated probability percentage. Replace with evidence tiers (Known Solar System Object, Known Star/Brown Dwarf, Unknown Mover, Slow IR-Excess Candidate, Likely Artifact) where every result is explicitly designated *"Candidate, not confirmed"*.
 
-2. **Astropy Proper-Motion Epoch Propagation (`backend/services/motion_service.py`):**
-   - Use `astropy.coordinates.SkyCoord.apply_space_motion()` to propagate coordinates from $t_0$ to any epoch's observation date (MJD / Besselian epoch).
-   - Provide dual centers (epoch center vs baseline center) and trigger displacement warnings if $\Delta \theta > \text{FOV}$.
+### 🚨 Defect 2.2: Erroneous Planet X Motion Statement ($\le 0.1''/\text{yr}$)
+* **File & Lines:** `frontend/index.html` lines 652 & 714, `backend/services/csa_neossat_service.py` line 109
+* **Current Implementation:** Documentation and code claimed that Planet X has proper motion $\le 0.1''/\text{yr}$, confusing annual proper motion with apparent reflex parallax motion:
+  ```python
+  # Legacy claim: "Planet X motion is <= 0.1 \"/yr"
+  ```
+* **Scientific Failure:** At a distance of $d = 500\,\text{AU}$, Keplerian orbital motion is indeed slow ($\approx 30\,\text{km/s} / \sqrt{500} \approx 1.34\,\text{km/s}$, or $\mu_{\text{orbit}} \approx 0.57''/\text{yr}$). However, the Earth’s annual reflex parallax amplitude is:
+  $$\varpi = \frac{1\,\text{AU}}{d} = \frac{1}{500}\,\text{rad} = \frac{206{,}265''}{500} \approx 412.5''$$
+  Over a 6-month baseline, the apparent motion of Planet X across the sky is dominated by reflex parallax, with a peak angular rate:
+  $$\dot{\theta}_{\text{reflex}} \approx \frac{2 \pi \times 412.5''}{8766\,\text{hr}} \approx 0.296''/\text{hr}$$
+  Stating that Planet X moves $\le 0.05''/\text{hr}$ or $\le 0.1''/\text{yr}$ ignores Earth's orbital reflex motion, causing the filter to reject real Planet X detections!
+* **Remediation Required:** Implement a rigorous 3-model kinematic fitter (`backend/science/motion_model.py`):
+  - **Model A:** Stationary + Proper Motion + Parallax ($(\alpha_0, \delta_0, \mu_\alpha^*, \mu_\delta, \varpi)$)
+  - **Model B:** Distant Solar System Body (barycentric position + slow Keplerian drift + Earth reflex parallax $\varpi = 1/d$)
+  - **Model C:** Fast Linear Mover (constant rate vector $(\dot{\alpha}, \dot{\delta})$)
 
-3. **Transparent NaN & Coverage Masking (`backend/services/cutout_engine.py`):**
-   - Retain `NaN` values for unobserved pixels; generate RGBA PNGs with alpha = 0 for `NaN` pixels.
-   - Return explicit coverage mask statistics and support "Show Coverage Mask" layer.
+### 🚨 Defect 2.3: Inverted Temperature Precedence
+* **File & Lines:** `backend/services/cutout_engine.py` lines 440–455
+* **Current Implementation:** Inferred temperature by calculating an uncalibrated optical/infrared flux ratio on normalized arrays, defaulting to $5{,}200\,\text{K}$ before checking literature benchmark values.
+* **Scientific Failure:** Displayed WISE 0855 ($T_{\mathrm{eff}} \approx 250\,\text{K}$, coldest known brown dwarf) as a $5{,}200\,\text{K}$ G-type star.
+* **Remediation Required:** Pydantic schema validation (`AstronomicalTargetMetadata`) rejecting $T_{\mathrm{eff}} > 600\,\text{K}$ for Y-dwarfs and enforcing literature benchmarks with full citations.
 
-4. **Evidence Tier Classification (Replacing Planet X 98%):**
-   - Tier 1: Known Solar System Object (asteroid/comet confirmed by MPC/NEOSSat, diurnal motion $> 1''/\mathrm{hr}$).
-   - Tier 2: Known Star or Brown Dwarf (confirmed by Gaia DR3 / SIMBAD, high proper motion $\mu > 100\,\mathrm{mas/yr}$).
-   - Tier 3: Unknown Mover (unmatched in Gaia DR3, dipole visible in difference image, not confirmed).
-   - Tier 4: Slow IR-Excess Candidate (persistent infrared flux $W1-W2 > 1.5$, $\mu < 0.1''/\mathrm{yr}$, uncatalogued, not confirmed).
+---
 
-5. **Single Source of Truth `scene` State Engine (`frontend/index.html`):**
-   - Define reactive `window.scene` object:
-     ```javascript
-     scene = {
-       target: { name, ra, dec, pm_ra, pm_dec, plx, dist_pc, teff_k, spectral_type, evidence_tier, citations },
-       epochs: [
-         { id, survey, instrument, band, wavelength_um, mjd, obs_date, product_id, pixel_scale, units, status, cutout_center, fov_arcmin }
-       ],
-       layers: [
-         { id: 'base_epoch_a', name: 'Epoch A Base Image', visible: true, opacity: 1.0, type: 'raster' },
-         { id: 'base_epoch_b', name: 'Epoch B Base Image', visible: true, opacity: 1.0, type: 'raster' },
-         { id: 'diff_image', name: 'Difference Image (B - A)', visible: false, opacity: 1.0, type: 'diff', valid_bands: true },
-         { id: 'coverage_mask', name: 'Coverage Mask (NaN)', visible: false, opacity: 0.5, type: 'mask' },
-         { id: 'gaia_overlay', name: 'Gaia DR3 Astrometry Vectors', visible: true, opacity: 0.85, type: 'vector' },
-         { id: 'candidate_markers', name: 'Citizen Science Markers', visible: true, opacity: 1.0, type: 'overlay' }
-       ]
-     }
-     ```
-   - Render entire sidebar dynamically from `scene` with ARIA roles, collapsible accordions, keyboard accessibility, opacity sliders, and A/B frame assigners.
-   - Synchronize layer toggles and sliders directly with the HTML5 Canvas blink loop and Aladin Lite.
+## 3. Data Streaming, Frontend & API Architecture Defects
 
-6. **Automated Verification:**
-   - Playwright end-to-end tests verifying layer toggling, opacity updates, preset switching, and absence of hardcoded values.
-   - Pytest unit tests for Astropy space motion propagation and metadata validation.
+### 🚨 Defect 3.1: 8-Bit PNG Blink Streaming
+* **File & Lines:** `backend/services/cutout_engine.py` lines 260–290, `frontend/index.html` lines 1450–1520
+* **Current Implementation:** The backend compressed FITS dynamic range into static 8-bit RGBA PNG files before sending to the browser.
+* **Scientific Failure:** FITS data spans 5 orders of magnitude in flux ($0.01\text{--}1000\,\text{MJy/sr}$). 8-bit quantization permanently discards faint background fluctuations, saturates bright sources, and prevents real-time dynamic range stretching (asinh, zscale) in the browser.
+* **Remediation Required:** Expose an endpoint delivering raw IEEE 754 `float32` binary ArrayBuffers, rendered client-side using a WebGL2 fragment shader with live interactive transfer functions (asinh, zscale, linear).
+
+### 🚨 Defect 3.2: Localhost Hardcoding & Port Binding
+* **File & Lines:** `frontend/index.html` line 740
+* **Current Implementation:** Frontend fetched backend endpoints via explicit `http://127.0.0.1:8000/api`.
+* **Impact:** Application failed instantly when accessed across a LAN, behind a reverse proxy, inside Docker, or on cloud deployments.
+* **Remediation Required:** Use relative API paths (`window.location.origin + '/api'`) and provide `.env` configuration.
+
+### 🚨 Defect 3.3: Unsanitized Coordinate & Target Inputs in TAP/ADQL Queries
+* **File & Lines:** `backend/services/catalog_engine.py` lines 135–145, `backend/services/gaia_service.py` lines 45–55
+* **Current Implementation:** Format strings interpolated query parameters directly into ADQL strings:
+  ```python
+  # Vulnerable to ADQL injection and syntax errors
+  adql = f"WHERE CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra}, {dec}, {radius_deg}))"
+  ```
+* **Impact:** Passing non-numeric, out-of-range, or malicious target parameters could trigger unhandled 500 errors or TAP query failure.
+* **Remediation Required:** Dedicated input validator (`backend/utils/validation.py`) checking $0^\circ \le \alpha < 360^\circ$, $-90^\circ \le \delta \le 90^\circ$, $0 < r \le 60'$, and alphanumeric target names.
+
+---
+
+## 4. DevOps, Quality Assurance & Engineering Defects
+
+### 🚨 Defect 4.1: Missing Modern Packaging & Dependency Pinning
+* **Issue:** Project lacked a `pyproject.toml` with pinned dependencies, risking breakage when sub-dependencies update.
+* **Remediation Required:** Add standardized `pyproject.toml` with pinned dependencies (`astropy>=6.0`, `scipy>=1.11`, `numpy>=1.26`, `fastapi`, `uvicorn`, `pydantic>=2.0`, `pyvo`, `httpx`).
+
+### 🚨 Defect 4.2: Lack of Containerization & CI/CD
+* **Issue:** No Docker containerization or automated GitHub Actions CI pipeline existed to verify tests and linting on every commit.
+* **Remediation Required:** Add `Dockerfile`, `docker-compose.yml`, and `.github/workflows/ci.yml`.
+
+---
+
+## Remediation Roadmap & Acceptance Verification
+
+| Phase | Milestone | Deliverable |
+| :--- | :--- | :--- |
+| **Phase 0** | Audit & Foundation | `AUDIT.md`, `docs/data_notes.md`, `pyproject.toml`, Docker, CI, coordinate validation |
+| **Phase 1** | Science Core | `motion_model.py` (3 kinematic models), ZOGY FFT differencing, SkyBoT identification |
+| **Phase 2** | Validation | Injected synthetic source recovery, completeness curves, sensitivity calculator |
+| **Phase 3** | Spectra | Forced photometry, variance-weighted SED fitting to Sonora Bobcat models |
+| **Phase 4** | Product & UX | Float32 binary streaming + WebGL2 shader, WCAG 2.2 AA accessibility, VOTable exports |
+| **Phase 5** | Hardening & Deploy | Async I/O, disk caching, golden image regressions, deployment docs |

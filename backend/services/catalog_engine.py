@@ -13,6 +13,7 @@ Queries the official European Space Agency (ESA) Gaia DR3 catalog via TAP:
 import os
 import json
 import numpy as np
+from backend.utils.validation import validate_coordinates
 from typing import Optional
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache", "catalog_gaia")
@@ -108,6 +109,7 @@ def query_gaia_dr3(
     Queries ESA Gaia DR3 via Virtual Observatory TAP for stars within radius_arcmin of (ra, dec).
     Returns astrometric positions, proper motion vectors, parallax distances, and magnitudes.
     """
+    ra, dec, radius_arcmin = validate_coordinates(ra, dec, radius_arcmin)
     radius_arcmin = float(np.clip(radius_arcmin, 0.2, 15.0))
     radius_deg = radius_arcmin / 60.0
     limit = int(np.clip(limit, 1, 300))
@@ -346,6 +348,7 @@ def query_2mass_psc(
     Queries NASA IRSA 2MASS Point Source Catalog (fp_psc) for near-infrared J, H, Ks photometry.
     Calculates J-H, H-K, and J-K color indices with photometric quality flags.
     """
+    ra, dec, radius_arcmin = validate_coordinates(ra, dec, radius_arcmin)
     radius_arcmin = float(np.clip(radius_arcmin, 0.2, 15.0))
     radius_deg = radius_arcmin / 60.0
     limit = int(np.clip(limit, 1, 200))

@@ -10,6 +10,7 @@ parallax, and optical G-band magnitudes for astronomical cross-matching.
 import time
 import pyvo as vo
 import numpy as np
+from backend.utils.validation import validate_coordinates
 
 # Official NASA IRSA TAP Service URL hosting Gaia DR3 catalog
 IRSA_TAP_URL = "https://irsa.ipac.caltech.edu/TAP"
@@ -27,6 +28,7 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
     - search_center: (ra, dec, radius_arcmin)
     - telemetry: latency and cache tier
     """
+    ra, dec, radius_arcmin = validate_coordinates(ra, dec, radius_arcmin)
     t0 = time.time()
     cache_key = f"{round(ra, 4)}_{round(dec, 4)}_{round(radius_arcmin, 1)}"
 

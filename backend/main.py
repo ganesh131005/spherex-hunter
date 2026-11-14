@@ -132,14 +132,17 @@ def cache_stats():
 
 import astropy.units as u
 from astropy.coordinates import SkyCoord
+from backend.utils.validation import validate_coordinates, sanitize_target_name
 
 def parse_celestial_coords(ra_input: str, dec_input: str) -> tuple[float, float]:
     """
     Parses both decimal degrees ('133.79513', '-7.24515') and 
     standard sexagesimal notation ('08h55m10.831s', '-7d14m42.53s') via Astropy.
+    Validates physical celestial boundaries [0, 360) and [-90, +90].
     """
     try:
-        return float(ra_input), float(dec_input)
+        ra_val, dec_val = float(ra_input), float(dec_input)
+        return validate_coordinates(ra_val, dec_val)[:2]
     except ValueError:
         pass
         
@@ -148,7 +151,9 @@ def parse_celestial_coords(ra_input: str, dec_input: str) -> tuple[float, float]
         dec_clean = str(dec_input).strip()
         unit = (u.hourangle, u.deg) if 'h' in ra_clean.lower() else (u.deg, u.deg)
         sc = SkyCoord(ra_clean, dec_clean, unit=unit)
-        return float(round(sc.ra.deg, 5)), float(round(sc.dec.deg, 5))
+        return validate_coordinates(float(round(sc.ra.deg, 5)), float(round(sc.dec.deg, 5)))[:2]
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid celestial coordinates '{ra_input}', '{dec_input}': {e}")
 
@@ -171,7 +176,8 @@ def get_cutout(
         fov_val = float(fov) if isinstance(fov, (int, float, str)) else 3.0
         lod_val = int(lod) if isinstance(lod, (int, str)) else 1
         is_refresh = bool(force_refresh) if isinstance(force_refresh, bool) else False
-        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target, lod=lod_val, force_refresh=is_refresh)
+        target_sanitized = sanitize_target_name(target) if target else None
+        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target_sanitized, lod=lod_val, force_refresh=is_refresh)
         return data
     except HTTPException:
         raise
