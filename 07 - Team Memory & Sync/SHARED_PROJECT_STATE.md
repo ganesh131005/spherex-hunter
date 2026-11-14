@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[Verification-Before-Close Guardrail Adopted & Issues #19, #20, #21, #22 Reopened]**
+  - **Rule Adopted:** Updated `GEMINI.md` with strict 3-point physical audit requirement (Git commit check, AST/DOM grep check, functional test check) before closing any issue.
+  - **Issues Reopened:**
+    * **#19:** Add Dark and Light Theme Switching (https://github.com/joker0210G/spherex-hunter/issues/19)
+    * **#20:** Replace Cryptic Technical Diagnostics with Friendly Errors & Retry Controls (https://github.com/joker0210G/spherex-hunter/issues/20)
+    * **#21:** Implement 'Previous Analyses / My Investigations' Session Persistence (https://github.com/joker0210G/spherex-hunter/issues/21)
+    * **#22:** Add 'Save Analysis' Button with Session Naming & CRUD (https://github.com/joker0210G/spherex-hunter/issues/22)
+  - **Active Sequence:** Commencing implementation of Step 1 (Issue #18: Wire Dead Viewport Buttons).
 - **[GitHub Native Issues #28, #29, and #30 Created from Live Browser Validation Insights]**
   - **Issue #28 (Backend Stability):** [Resilient Fallback and Graceful Degradation for /api/cutout on Upstream IRSA 502 Gateway Errors](https://github.com/joker0210G/spherex-hunter/issues/28) (Role: `@darkodu`)
   - **Issue #29 (UI Layout):** [Fix Left Toolbar Vertical Scroll Overflow Pushing Primary Tools Off-Screen](https://github.com/joker0210G/spherex-hunter/issues/29) (Role: `@coolodu`)
