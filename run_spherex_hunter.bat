@@ -10,25 +10,20 @@ echo                 NASA Space Apps Challenge 2026 - Team RIP
 echo ==============================================================================
 echo.
 
-:: 1. Verify Python availability
-if exist .venv\Scripts\python.exe (
-    set PYTHON_CMD=.venv\Scripts\python.exe
-) else (
-    set PYTHON_CMD=python
-)
-%PYTHON_CMD% --version >nul 2>&1
+REM 1. Verify Python availability
+python --version >nul 2>&1
 if %errorlevel% neq 0 (
     color 0C
-    echo [ERROR] Python was not found in your system PATH or .venv!
+    echo [ERROR] Python was not found in your system PATH!
     echo Please install Python 3.10+ from https://www.python.org/ and check "Add to PATH".
     echo.
     pause
     exit /b 1
 )
 
-:: 2. Check and clean up orphaned port 8000 if already running
+REM 2. Check and clean up orphaned port 8000 if already running
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8000" ^| findstr "LISTENING"') do (
-    echo [INFO] Detected previous server instance on port 8000 (PID: %%a). Cleaning up...
+    echo [INFO] Detected previous server instance on port 8000 PID %%a. Cleaning up...
     taskkill /F /PID %%a >nul 2>&1
 )
 
@@ -45,11 +40,11 @@ echo.
 echo [NOTE] Keep this window OPEN while using the app. Press Ctrl+C to stop.
 echo.
 
-:: Launch browser in background after 2 seconds
+REM Launch browser in background after 2 seconds
 start "" cmd /c "timeout /t 2 /nobreak >nul & start http://localhost:8000/app/index.html"
 
-:: Run FastAPI uvicorn server
-%PYTHON_CMD% -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+REM Run FastAPI uvicorn server
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 
 echo.
 echo Server stopped.
