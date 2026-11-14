@@ -8,6 +8,13 @@
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Continuous Google-Maps-Style Progressive Multi-Resolution SPHEREx All-Sky Viewer:
+  - Eliminated single-tile bounding box and surrounding black voids by promoting the NASA IRSA SPHEREx DR1 all-sky cube (`spherex_allsky_cube` HiPS) to a primary view mode: `SPHEREx Map (Google Sky)`.
+  - Added Google Maps multi-resolution scale steppers: `🌌 180° All-Sky` (full sphere overview), `✨ 30° Wide`, `🔭 5° Field`, and `🔬 0.1° HD Native SPHEREx Resolution` (revealing individual stars, infrared point sources, and brown dwarfs).
+  - Integrated 102-channel step controls (`◀` and `▶`) and dropdown across $0.75\text{--}5.0\,\mu\text{m}$, updating the HiPS slice and displaying exact wavelength and LVF detector array.
+  - Added Google Maps style landmark pins for NASA targets (`🪐 WISE 0855`, `⭐ Barnard`, `🌟 Eps Indi`, `✨ RW Aur`, `🔴 R Drac`) with smooth fly-to and auto-zoom.
+  - Disabled disruptive pan-slew calls that previously popped up a black "Fetching Sky Tile" modal during mouse dragging.
+  - Automated E2E verification in `tests/test_google_maps_spherex_e2e.py` (passed); captured figures in `docs/figures/google_maps_spherex_180_allsky.png` and `google_maps_spherex_01_hd_stars.png`.
 - [x] Implemented Continuous Viewport Kinematics, Seamless Epoch Morphing & Feathered Edge Blending:
   - Eliminated discrete binary flipbook blink jumping: added `#btnToggleBlinkMorph` (Smooth Morph vs Snap Blink toggle) and `#epochBlendSlider` (0% to 100% continuous multi-epoch alpha blend).
   - In continuous morph mode, flipbook executes continuous sinusoidal crossfading ($I = (1-\alpha)I_1 + \alpha I_2$), enabling smooth visual glide of moving asteroids and brown dwarf proper motions.

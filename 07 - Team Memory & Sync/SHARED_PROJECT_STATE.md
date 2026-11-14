@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[CONTINUOUS GOOGLE-MAPS-STYLE ALL-SKY SPHEREx VIEWER DEPLOYED (@darkodu)]**
+  - **Solved Single-Tile Discontinuity & Black Voids:** Eliminated the isolated $3' \times 3'$ bounding box by promoting the NASA IRSA SPHEREx DR1 all-sky cube (`spherex_allsky_cube` HiPS) to a primary interactive mode: **`SPHEREx Map (Google Sky)`** directly in the top bar.
+  - **Google Maps Progressive Multi-Resolution Pyramid:** Implemented dedicated multi-resolution scale steppers: `🌌 180° All-Sky` (full cosmic sphere), `✨ 30° Wide Field`, `🔭 5° Intermediate Field`, and `🔬 0.1° HD Native SPHEREx Resolution` (Order 5 detail), allowing users to zoom from the entire Milky Way down to individual stars and cold brown dwarfs with progressive tile resolution increases.
+  - **102-Band Infrared Spectral Stepper:** Added `◀` and `▶` step controls and channel selector across all 102 SPHEREx wavelengths ($0.75\,\mu\text{m}$ to $5.0\,\mu\text{m}$), dynamically updating the HiPS slice and displaying wavelength & detector array information.
+  - **Google Maps Landmark Pins & Fast Navigation:** Added interactive landmark pins for key NASA targets (`🪐 WISE 0855`, `⭐ Barnard's Star`, `🌟 Epsilon Indi B`, `✨ RW Aurigae`, `🔴 R Draconis`), flying smoothly to target coordinates with auto-zoom and metadata synchronization.
+  - **Removed Disruptive Pan Interception:** Disabled automatic pan-slew triggers that previously covered the screen with a black "Fetching Sky Tile" modal during canvas drag.
+  - **Automated E2E Verification & CI Clean:** Built `tests/test_google_maps_spherex_e2e.py` (passed in 10.9s); all tests across the repository passing green. Captured verification screenshots in `docs/figures/google_maps_spherex_180_allsky.png` and `docs/figures/google_maps_spherex_01_hd_stars.png`.
 - **[CONTINUOUS VIEWPORT KINEMATICS, EPOCH MORPHING & AMBIENT STARFIELD DEPLOYED (@darkodu)]**
   - **Fluid Continuous Epoch Morphing:** Eliminated discrete binary 1/2 flipbook hopping. Added `#btnToggleBlinkMorph` (Smooth Morph vs Snap Blink toggle) and `#epochBlendSlider` (0% to 100% continuous multi-epoch alpha blend). In morph mode, the viewport executes sinusoidal continuous crossfades ($I = (1-\alpha)I_1 + \alpha I_2$), allowing moving solar system bodies and high proper-motion brown dwarfs to glide continuously between epochs.
   - **Soft Celestial Edge Feathering & Ambient Starfield:** Replaced discrete cutout box borders with soft 4-edge linear gradient vignette feathering (`drawFeatheredImage`) and an ambient cosmic background starfield (`drawAmbientSkyBackground`), creating a seamless, borderless telescope window.
