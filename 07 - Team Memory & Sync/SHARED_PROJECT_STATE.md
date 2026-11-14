@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #19 Created — Add Dark and Light Theme Switching with LocalStorage Persistence and FITS Invariance]**
+  - **Issue #19 Link:** https://github.com/joker0210G/spherex-hunter/issues/19
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Scope:** Adds theme switching (Deep Space Dark vs Observatory Light Mode) using CSS variables, ensures charts/menus adapt seamlessly, preserves pure scientific FITS pixel and viewport rendering invariance, and stores preference in `localStorage`.
 - **[GitHub Native Issue #10 Reopened — Continuous Raytracing-like Sky Tiling & Continuous Adaptive LOD Zoom Engine]**
   - **Issue #10 Link:** https://github.com/joker0210G/spherex-hunter/issues/10
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:compute-heavy`
