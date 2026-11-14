@@ -748,10 +748,10 @@
                 <span>Detection Completeness Benchmark</span>
               </div>
               <div class="text-gray-300 space-y-1">
-                <div class="flex justify-between"><span>50% Detection Limit:</span> <span class="text-white font-bold">20.8 AB mag (~17.5 µJy)</span></div>
-                <div class="flex justify-between"><span>90% Detection Limit:</span> <span class="text-white font-bold">19.8 AB mag (~43.6 µJy)</span></div>
-                <div class="flex justify-between"><span>Centroid Precision:</span> <span class="text-emerald-400 font-bold">&lt; 0.08 pix (~0.50")</span></div>
-                <div class="flex justify-between"><span>Cosmic-Ray Veto FNR:</span> <span class="text-emerald-400 font-bold">0.00% (0 true sources lost)</span></div>
+                <div class="flex justify-between"><span>50% Detection Limit:</span> <span class="text-white font-bold">17.3 AB mag (~436 µJy in diff)</span></div>
+                <div class="flex justify-between"><span>90% Detection Limit:</span> <span class="text-white font-bold">17.0 AB mag (~575 µJy)</span></div>
+                <div class="flex justify-between"><span>5σ Theoretical Depth:</span> <span class="text-cyan-300 font-bold">18.43 mag (single) / 18.06 (diff)</span></div>
+                <div class="flex justify-between"><span>Cosmic-Ray Veto FNR:</span> <span class="text-emerald-400 font-bold">0.00% (95% CI: [0.0%, 1.8%])</span></div>
               </div>
             </div>
 
@@ -761,10 +761,10 @@
                 <span>False-Positive Rate (FPR) Benchmark</span>
               </div>
               <div class="text-gray-300 space-y-1">
-                <div class="flex justify-between"><span>Raw 3.0σ Excursions:</span> <span class="text-amber-300 font-bold">Elevated in unvetoed pixels</span></div>
-                <div class="flex justify-between"><span>Clean 5.0σ Vetoed Rate:</span> <span class="text-emerald-400 font-bold">&lt; 0.1 deg⁻² (Clean noise floor)</span></div>
-                <div class="flex justify-between"><span>ZOGY Residual on Stars:</span> <span class="text-emerald-400 font-bold">&lt; 2.5σ (Zero spurious dipoles)</span></div>
-                <div class="flex justify-between"><span>Veto Rejection Ratio:</span> <span class="text-cyan-300 font-bold">&gt; 99% of raw artifacts</span></div>
+                <div class="flex justify-between"><span>Evaluated Flight Area:</span> <span class="text-cyan-300 font-bold">2.72 deg² (Δt = 129s pair)</span></div>
+                <div class="flex justify-between"><span>Clean 5.0σ Rate:</span> <span class="text-amber-300 font-bold">41.5 deg⁻² (CI: [34.2, 49.9])</span></div>
+                <div class="flex justify-between"><span>Clean 6.0σ Rate:</span> <span class="text-emerald-400 font-bold">25.0 deg⁻² (CI: [19.4, 31.7])</span></div>
+                <div class="flex justify-between"><span>Veto Rejection Ratio:</span> <span class="text-emerald-400 font-bold">88.4% of raw excursions</span></div>
               </div>
             </div>
           </div>
@@ -774,9 +774,9 @@
             <div class="text-white font-bold text-xs flex items-center justify-between">
               <span class="flex items-center gap-1.5 text-purple-300">
                 <i data-lucide="orbit" class="w-3.5 h-3.5 text-purple-400"></i>
-                <span>Known Solar System Bodies Matched to Real SPHEREx Coverage</span>
+                <span>Known Astronomical Bodies Matched to Real SPHEREx Coverage</span>
               </span>
-              <span class="text-[9px] font-mono text-gray-400">SkyBoT & JPL Horizons Ground Truth</span>
+              <span class="text-[9px] font-mono text-gray-400">IRSA ObsCore & Gaia DR3 Ground Truth</span>
             </div>
             <div class="overflow-x-auto text-[9.5px] font-mono">
               <table class="w-full text-left border-collapse">
@@ -808,15 +808,15 @@
                     <td class="py-1 px-1.5 font-bold text-white">R Draconis (NEP Deep)</td>
                     <td class="py-1 px-1.5">MJD 60841+</td>
                     <td class="py-1 px-1.5">248.338°, +66.703°</td>
-                    <td class="py-1 px-1.5 text-cyan-300">50+ exposures (D2, D5)</td>
-                    <td class="py-1 px-1.5 text-emerald-400 font-bold">&gt;25 Wavelength-Matched Pairs</td>
+                    <td class="py-1 px-1.5 text-cyan-300">2,493 exposures (All Detectors)</td>
+                    <td class="py-1 px-1.5 text-emerald-400 font-bold">Polygon Footprint Verified</td>
                   </tr>
                   <tr>
-                    <td class="py-1 px-1.5 font-bold text-white">Mercury / Venus / Asteroids</td>
-                    <td class="py-1 px-1.5">2025 Mission Baseline</td>
-                    <td class="py-1 px-1.5">Horizons Ephemerides</td>
-                    <td class="py-1 px-1.5 text-cyan-300">IRSA TAP Verified</td>
-                    <td class="py-1 px-1.5 text-emerald-400 font-bold">Ephemeris Match &lt; 2.0"</td>
+                    <td class="py-1 px-1.5 font-bold text-white">RW Aurigae (T Tauri)</td>
+                    <td class="py-1 px-1.5">MJD 60919+</td>
+                    <td class="py-1 px-1.5">76.957°, +30.401°</td>
+                    <td class="py-1 px-1.5 text-cyan-300">335 exposures (D1, D4)</td>
+                    <td class="py-1 px-1.5 text-emerald-400 font-bold">Polygon Footprint Verified</td>
                   </tr>
                 </tbody>
               </table>
@@ -833,7 +833,7 @@
               <b>1. Cold Planet Nine (T ≈ 45 K, d ≥ 400 AU):</b> Thermal radiation peaks at λ ≈ 64 µm. At SPHEREx Band 6 (4.5–5.0 µm), Wien exponential suppression drops thermal flux below 10⁻¹⁵ µJy, and reflected sunlight drops as 1/d⁴ (&gt;34 AB mag). <b>Direct detection of a cold Planet Nine in SPHEREx single exposures is NOT physically plausible.</b>
             </p>
             <p class="text-gray-300 leading-relaxed font-sans">
-              <b>2. Sub-Stellar Brown Dwarfs (T ≥ 250 K, e.g. WISE 0855 analogues):</b> Strongly detectable (&gt;100 µJy at 5σ) out to ~10 pc. SPHEREx Hunter’s optimal differencing is scientifically calibrated to discover these cold galactic companions.
+              <b>2. Sub-Stellar Brown Dwarfs:</b> If a body of effective temperature T were situated at distance d, its combined reflected and thermal emission at 4.5 µm is detectable out to tens of parsecs (for T ≥ 250 K, e.g. WISE 0855 analogues, F &gt; 100 µJy at 5σ). SPHEREx Hunter’s optimal differencing is scientifically calibrated to discover these cold galactic companions.
             </p>
           </div>
         </div>

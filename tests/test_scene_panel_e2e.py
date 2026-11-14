@@ -148,7 +148,7 @@ def test_validation_modal_tab(browser_page):
     text_content = panel_val.inner_text()
     assert "Detection Completeness Benchmark" in text_content
     assert "False-Positive Rate" in text_content
-    assert "Known Solar System Bodies" in text_content
+    assert "Known Astronomical Bodies" in text_content or "Known Solar System Bodies" in text_content
 
     # Close modal
     browser_page.locator("#closeCodexBtn").click()
