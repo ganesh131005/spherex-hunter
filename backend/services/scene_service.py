@@ -250,10 +250,5 @@ def get_target_scene(
             "frame_b_id": epoch_b["id"],
             "band_matched": band_matched,
             "band_mismatch_reason": mismatch_reason
-        },
-        "provenance": {
-            "source": "SPHEREx Hunter Scene State Engine",
-            "data_release": "DR1",
-            "pipeline_version": "2.1.0"
         }
     }

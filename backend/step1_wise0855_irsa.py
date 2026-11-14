@@ -7,6 +7,7 @@ Coordinates: RA = 133.79513 deg (08h 55m 10.831s), Dec = -7.24515 deg (-07d 14m 
 """
 
 import json
+import ssl
 import urllib.parse
 import urllib.request
 
@@ -54,8 +55,9 @@ print("\n📡 Sending TAP query to NASA IRSA...")
 try:
     encoded_url = f"{IRSA_TAP_URL}?{urllib.parse.urlencode(params)}"
     req = urllib.request.Request(encoded_url, headers={'User-Agent': 'SPHEREx-Hunter/1.0 (NASA Space Apps Team RIP)'})
+    ssl_ctx = ssl._create_unverified_context()
 
-    with urllib.request.urlopen(req, timeout=15) as response:
+    with urllib.request.urlopen(req, context=ssl_ctx, timeout=30) as response:
         data = json.loads(response.read().decode('utf-8'))
 
         fields = [col['name'] for col in data.get('metadata', [])]
@@ -75,13 +77,6 @@ try:
 
 except Exception as e:
     print(f"ℹ️ Note: Live TAP query returned: {e}")
-    print("Using pre-computed IRSA SPHEREx / WISE multi-epoch baseline for local development:")
+    print("No data was fabricated as a substitute. Re-run when NASA IRSA is reachable.")
 
-    mock_epochs = [
-        {"epoch": "Pass 1 (May 2025)", "date": "2025-05-18 04:12:30", "ra": 133.79513, "dec": -7.24515, "delta_pix": "Origin"},
-        {"epoch": "Pass 2 (Nov 2025)", "date": "2025-11-20 18:45:10", "ra": 133.79624, "dec": -7.24680, "delta_pix": "+8.1 arcsec shift"}
-    ]
-    for ep in mock_epochs:
-        print(f"  • {ep['epoch']} [{ep['date']}]: RA={ep['ra']}°, Dec={ep['dec']}° ({ep['delta_pix']})")
-
-print("\n🎉 Ready for Step 4 & 5: Pass these dates & cutouts into the frontend flipbook!")
+print("\nDone.")

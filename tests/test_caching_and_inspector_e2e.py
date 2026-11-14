@@ -6,17 +6,17 @@ E2E & Integration Test Suite for Issues #13 and #14:
 
 import os
 import time
-import pytest
+
 from fastapi.testclient import TestClient
 from playwright.sync_api import sync_playwright
 
 from backend.main import app
 from backend.services.cutout_engine import (
-    compute_spatial_hash,
     auto_prune_disk_cache,
-    get_cache_stats,
     clear_all_caches,
-    fetch_real_cutout
+    compute_spatial_hash,
+    fetch_real_cutout,
+    get_cache_stats,
 )
 
 BASE_URL = os.environ.get("SPHEREX_BASE_URL", "http://127.0.0.1:8000/app/index.html")

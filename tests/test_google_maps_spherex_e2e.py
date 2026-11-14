@@ -8,6 +8,7 @@ E2E Playwright test for Google-Maps-Style SPHEREx All-Sky Continuous Viewer:
 
 import os
 import time
+
 from playwright.sync_api import sync_playwright
 
 DOCS_FIGURES = os.path.join(os.path.dirname(__file__), "..", "docs", "figures")

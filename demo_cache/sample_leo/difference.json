@@ -24,8 +24,6 @@
   "provenance": {
     "source": "precomputed",
     "generated_at": "2026-11-14T10:31:24.298763+00:00",
-    "git_hash": "71a9daaaa9d8b27d415c2d79d1be389da460baff",
-    "data_release": "DR1",
-    "pipeline_version": "2.1.0"
+    "git_hash": "71a9daaaa9d8b27d415c2d79d1be389da460baff"
   }
 }
