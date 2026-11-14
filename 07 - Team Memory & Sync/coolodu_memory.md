@@ -3,11 +3,21 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed comprehensive fake and synthetic data audit across the entire repository in accordance with Team RIP Constitution Principle 1 (*Scientific Integrity Over Gimmicks: Real Data First*). Cleaned all procedural Gaussian/RNG stars, hardcoded mock catalogues, fabricated molecular detections, static DOM cards, and invented probabilities across frontend and backend.
-- **Next Task:** Final verification, commit, and push to `origin/coolodu/web-frontend`.
+- **Current Task:** Completed full synchronization with `origin/main` (integrating GitHub Issues #5, #6, #7 and consolidated batch scripts). Resolved merge conflicts in `run_spherex_hunter.bat` and `SHARED_PROJECT_STATE.md`, validated all 11 Golden Suite tests, and pushed merge commit `8428e72` to `origin/coolodu/web-frontend`.
+- **Next Task:** Execute frontend enhancements for GitHub Native Issues #5, #6, and #7 in collaboration with `@astrodu` and `@darkodu`:
+  - **Issue #5:** Custom SPHEREx infrared telescope SVG logo, mission tagline, and 5-step Citizen Science onboarding tour modal.
+  - **Issue #6:** Beginner-friendly celestial navigation bar with hover tooltips, real-world angular scale analogies (e.g. 3' = 1/10th Full Moon), and coordinate format hints.
+  - **Issue #7:** SPHEREx 102-band 6-array selector tabs (A1–A6), 17-channel wavelength stepper, and colored array bands + molecular markers (H₂O, CH₄, CO₂, CO) on the SED chart.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Git Merge & GitHub Native Updates Sync (`origin/main` -> `coolodu/web-frontend`)]**:
+  - Fetched all remote tracking branches (`git fetch --all --prune`).
+  - Merged latest `origin/main` into `coolodu/web-frontend`.
+  - Resolved conflict in `run_spherex_hunter.bat` preserving python virtual environment `.venv` detection and port cleanup.
+  - Resolved conflict in `07 - Team Memory & Sync/SHARED_PROJECT_STATE.md` consolidating team announcements and active issues.
+  - Verified Golden Test Suite: **ALL 11 GOLDEN SUITE TESTS PASSED**.
+  - Pushed merge commit `8428e72` to `origin/coolodu/web-frontend`.
 - [x] **[Comprehensive Repository Fake & Synthetic Data Audit & Removal]**:
   - **`backend/services/cutout_engine.py`:** Removed fabricated fields (`w1_w2_color`, `gaia_dr3`, `contamination_flags`, `cadc_neossat`) from `BENCHMARKS`. Replaced arbitrary `"confidence": "99.4%"` with measured `peak_significance_sigma`. Honest image labels (2MASS J vs DSS2 Red plates). Rewrote `get_102_band_spectrum()` to eliminate hash-derived fake temperatures and invented molecular detections; replaced with labeled theoretical Planck models for known benchmarks and `available: False` for uncatalogued coords. Removed fake `"coadd_snr_boost": "4.12x"`. Rewrote `run_automated_source_discovery()` to compute real Bramich difference residuals rather than spawning RNG candidates.
   - **`backend/services/catalog_engine.py`:** Removed `CURATED_BENCHMARK_GAIA` and `CURATED_BENCHMARK_2MASS` mock fallbacks. Removed procedural Gaia star generation (`SYNTH_` IDs with RNG). Replaced hardcoded `SIMBAD_KNOWLEDGEBASE` mock dictionary with live CDS SIMBAD cone searches with Harvard CfA mirror fallback and nearest-angular-separation matching.
