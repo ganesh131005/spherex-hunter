@@ -3,17 +3,32 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Step 4 (Spatially & Temporally Accurate Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry) of the Master Engineering Specification on `coolodu/web-frontend`. Propagated Gaia DR3 astrometry (reference epoch J2016.0) forward to exposure epoch `target_mjd` using `astropy.coordinates.SkyCoord.apply_space_motion()`, verified sub-pixel EPSF centroid residuals ($\le 0.5$ native detector pixel), wired `/api/v1/astrometry/gaia` endpoint, verified authentic target-specific historical baselines for all 5 NASA benchmarks (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis), and surfaced the live `#astrometricAlignmentBadge` and Inspector RMS telemetry (`"Astrometric RMS: 0.18″ (0.03 native px) | Gaia DR3 Verified"`). All 45 tests passing 100% green.
-- **Next Task:** Step 5 (Scoped Multi-Tier Caching & Quantized Coordinate Tile Store).
+- **Current Task:** Completed and verified Array A1 default alignment & single-row toolbar anchoring for the 102-Band Spectrum panel, Issue #42 (`Citizen Science Onboarding Redesign`), Step 4 (Multi-Epoch Placement, Narrowband Stacking & Gaia DR3), Step 3 (Sky Context Layer), and Issue #41 (Typography Scale & Readability).
+- **Next Task:** Step 5 (Scoped Multi-Tier Caching & Quantized Coordinate Tile Store) and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[102-Band Spectrum Array A1 Default Alignment & Toolbar Anchoring]**:
+  - Ensured Array A1 (`0.750 - 1.110 µm`, Channel 1, Band 1) is strictly the active default alignment on load, target slew, and dock tab activation.
+  - Unified toolbar into a non-wrapping horizontal layout with `overflow-x-auto`, anchoring the 102-Band selector, Array Tabs, and Channel Stepper on the left starting with Array A1.
+  - Eliminated vertical layout breaking, preserving full vertical height for the spectrum chart canvas and molecular reference sidebar.
+- [x] **[Issue #42] Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards**
+  - **GitHub Issue:** #42 (https://github.com/joker0210G/spherex-hunter/issues/42)
+  - **Scope:** Overhauled onboarding modal (`#onboardingModal`) from 5 dense textbook slides into a punchy 3-step 'Cosmic Quick-Start', integrated interactive mini-blink simulation graphic, added '🚀 Quick Start (15s)' immediate launch button, and verified 63/63 tests pass.
 - [x] **[Issue #41 / TASK-007] Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies**
   - **Ticket File:** `07 - Team Memory & Sync/TASK_DISPATCH/completed/TASK-007_coolodu.md`
   - **GitHub Issue:** #41 (https://github.com/joker0210G/spherex-hunter/issues/41)
   - **Scope:** Refactored `text-[9px]` & `text-[10px]` across SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`), molecular absorption reference table, viewport HUD time-step controls, and coordinate validation hints to accessible font scales ($\ge 11\text{px}$–$14\text{px}$) with comfortable click padding and WCAG AA contrast.
 
 ## Completed Tasks:
+- [x] **[Resolved Issue #42 — Citizen Science Onboarding Redesign & Quick-Start Polish]**:
+  - **Cosmic Quick-Start (3 Snappy Steps):**
+    - Step 1 (*The Infrared Secret*): Visual comparison cards contrasting optical black void against glowing 4.6 µm SPHEREx thermal dipoles.
+    - Step 2 (*Blink to Spot Movement*): Interactive mini-blink simulation graphic (`#tourMiniBlinkContainer`, `#tourMiniBlinkTarget`, `#btnTourToggleMiniBlink`) demonstrating dipole movement vs static background stars.
+    - Step 3 (*Flag Discoveries*): Clear cards highlighting automated Gaia DR3 optical matching, 102-band SED molecular absorption verification, and science ledger exporting.
+  - **15-Second Quick-Start Launch:** Added prominent `#btnTourQuickStart` in onboarding footer that closes modal, activates blinking, loads WISE 0855 benchmark, and surfaces instant feedback toast.
+  - **Truthful Bandpass Assertion Fix:** Resolved bandpass matching contract in `tests/test_scene_and_metadata.py` ensuring both WISE 0855 (matched 4.6 µm) and standard survey presets (2MASS 1.25 µm vs SPHEREx 2.1 µm mismatch) pass cleanly.
+  - **Verification:** Added `test_issue_42_citizen_science_onboarding_redesign_contract` to `tests/test_ui_contract.py`. All 15 contract tests and 63/63 CI unit tests pass 100% green.
 - [x] **[Step 4 Completed: Calibrated Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry]**:
   - **Target-Specific Historical Baselines:** Re-anchored WISE 0855 to AllWISE W2 ($4.6\,\mu\text{m}$, 2010 / unWISE) paired with SPHEREx narrowband stack ($4.6\,\mu\text{m}$, Band 6, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$) establishing true bandpass matching. Verified Barnard's Star ($10.36''/\text{yr}$), Epsilon Indi B ($4.70''/\text{yr}$), RW Aurigae, and R Draconis presets.
   - **Gaia Space Motion Propagation (`apply_space_motion`):** Implemented in `backend/services/gaia_service.py` using `astropy.coordinates.SkyCoord.apply_space_motion()` to propagate J2016.0 coordinates forward to exposure epoch `target_mjd`, accounting for proper motion, parallax, and radial velocity.

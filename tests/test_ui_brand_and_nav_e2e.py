@@ -47,12 +47,14 @@ def test_onboarding_modal_interactive_tour():
         # 1. Onboarding modal can be opened via Tour button
         modal = page.locator("#onboardingModal")
         if not modal.is_visible():
-            page.locator("#btnOpenOnboardingTour").click()
+            tour_btn = page.locator("#btnOpenOnboarding, #btnOpenOnboardingTour").first
+            tour_btn.click()
             page.wait_for_timeout(300)
 
         assert modal.is_visible()
         badge = page.locator("#onboardingStepBadge")
-        assert "Step 1 of 5" in badge.inner_text()
+        assert "Step 1 of 3" in badge.inner_text()
+        assert page.locator("#btnTourQuickStart").is_visible()
 
         # Screenshot Step 1
         modal.screenshot(path=os.path.join(DOCS_FIGURES, "onboarding_step1_mission.png"))
@@ -60,32 +62,20 @@ def test_onboarding_modal_interactive_tour():
         # Step 2: Click Next
         page.locator("#btnTourNext").click()
         page.wait_for_timeout(200)
-        assert "Step 2 of 5" in badge.inner_text()
+        assert "Step 2 of 3" in badge.inner_text()
         assert page.locator(".tour-slide[data-step='2']").is_visible()
 
         # Step 3: Click Next
         page.locator("#btnTourNext").click()
         page.wait_for_timeout(200)
-        assert "Step 3 of 5" in badge.inner_text()
+        assert "Step 3 of 3" in badge.inner_text()
         assert page.locator(".tour-slide[data-step='3']").is_visible()
-
-        # Step 4: Click Next
-        page.locator("#btnTourNext").click()
-        page.wait_for_timeout(200)
-        assert "Step 4 of 5" in badge.inner_text()
-        assert page.locator(".tour-slide[data-step='4']").is_visible()
-        modal.screenshot(path=os.path.join(DOCS_FIGURES, "onboarding_step4_presets.png"))
-
-        # Step 5: Click Next
-        page.locator("#btnTourNext").click()
-        page.wait_for_timeout(200)
-        assert "Step 5 of 5" in badge.inner_text()
-        assert page.locator(".tour-slide[data-step='5']").is_visible()
+        modal.screenshot(path=os.path.join(DOCS_FIGURES, "onboarding_step3_discoveries.png"))
 
         # Previous button
         page.locator("#btnTourPrev").click()
         page.wait_for_timeout(200)
-        assert "Step 4 of 5" in badge.inner_text()
+        assert "Step 2 of 3" in badge.inner_text()
 
         # Close modal
         page.locator("#btnCloseOnboardingModal").click()

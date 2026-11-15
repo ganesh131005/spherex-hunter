@@ -117,6 +117,12 @@ def test_scene_state_engine_truthful_values():
     assert "coverage_mask" in layers
     assert "gaia_overlay" in layers
 
-    # Band mismatch check between 2MASS (1.25um) and SPHEREx (2.1um)
-    assert layers["diff_image"]["valid_bands"] is False
-    assert "Band Mismatch" in layers["diff_image"]["tooltip"]
+    # Bandpass matching check for WISE 0855 (AllWISE W2 4.6um + SPHEREx Stack 4.6um are matched)
+    assert layers["diff_image"]["valid_bands"] is True
+    assert layers["diff_image"]["status"] == "ready"
+
+    # Band mismatch check on 2MASS (1.25um) vs SPHEREx (2.1um) using standard preset (e.g. Barnard)
+    scene_barnard = get_target_scene("barnard", fov_arcmin=3.0)
+    layers_barnard = {l["id"]: l for l in scene_barnard["layers"]}
+    assert layers_barnard["diff_image"]["valid_bands"] is False
+    assert "Band Mismatch" in layers_barnard["diff_image"]["tooltip"]
