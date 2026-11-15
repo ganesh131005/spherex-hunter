@@ -1,7 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
+  "framework": null,
   "outputDirectory": "frontend",
+  "buildCommand": null,
   "rewrites": [
     { "source": "/assets/(.*)", "destination": "/assets/$1" },
     { "source": "/vendor/(.*)", "destination": "/vendor/$1" },
