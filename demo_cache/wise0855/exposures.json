@@ -4,6 +4,25 @@
   "count_precomputed_used": 5,
   "exposures": [
     {
+      "exposure_id": "SPHEREx_stack_wise0855_4p6um",
+      "instrument": "SPHEREx",
+      "survey_release": "DR1",
+      "is_coadd": true,
+      "mjd": 60810.25,
+      "mjd_mean": 60810.25,
+      "mjd_min": 60807.12,
+      "mjd_max": 60813.38,
+      "detector": 6,
+      "wavelength_at_target_um": 4.60,
+      "wavelength_um": 4.60,
+      "channel_id": 85,
+      "band": "Band 6",
+      "n_exposures": 26,
+      "stack_snr": 5.82,
+      "matched_pair_id": "unwise_w2_wise0855",
+      "s_region": "POLYGON((133.2 -7.8, 134.4 -7.8, 134.4 -6.6, 133.2 -6.6))"
+    },
+    {
       "exposure_id": "2025W46_2A_0214_1",
       "mjd": 60993.505109,
       "detector": 6,

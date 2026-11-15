@@ -188,6 +188,16 @@ class ExposureItem(BaseModel):
     preview_url: Optional[str] = Field(None, description="Cached PNG cutout URL")
     matched_pair_id: Optional[str] = None
     s_region: Optional[str] = None
+    # Enhanced Fields for Multi-Epoch Archival Stacks (v2 Specification: Step 4 / Amendments A3, A4)
+    instrument: Optional[str] = Field("SPHEREx", description="Observing instrument (e.g. 'SPHEREx', '2MASS', 'WISE')")
+    survey_release: Optional[str] = Field("DR1", description="Survey data release (e.g. 'DR1', 'AllWISE', 'unWISE')")
+    is_coadd: Optional[bool] = Field(False, description="Whether product is a multi-exposure coadd or narrowband stack")
+    mjd_mean: Optional[float] = Field(None, description="Mean observation MJD")
+    mjd_min: Optional[float] = Field(None, description="Start MJD of observation range")
+    mjd_max: Optional[float] = Field(None, description="End MJD of observation range")
+    n_exposures: Optional[int] = Field(None, description="Number of stacked exposures if coadd/stack")
+    stack_snr: Optional[float] = Field(None, description="Combined stack signal-to-noise ratio")
+    channel_id: Optional[int] = Field(None, description="SPHEREx channel ID (1-102)")
 
 
 class ExposuresResponse(BaseModel):
