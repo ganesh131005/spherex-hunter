@@ -5549,8 +5549,7 @@
         btnPrev.onclick = () => {
           const cur = parseInt(selEl.value, 10) || 1;
           if (cur > 1) {
-            selEl.value = cur - 1;
-            switchHiPSChannel(cur - 1);
+            select102BandChannel(cur - 1);
           }
         };
       }
@@ -5558,8 +5557,7 @@
         btnNext.onclick = () => {
           const cur = parseInt(selEl.value, 10) || 1;
           if (cur < 102) {
-            selEl.value = cur + 1;
-            switchHiPSChannel(cur + 1);
+            select102BandChannel(cur + 1);
           }
         };
       }
