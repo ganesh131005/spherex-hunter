@@ -12,6 +12,8 @@ import os
 import time
 
 import pytest
+
+pytest.importorskip("playwright")
 from playwright.sync_api import sync_playwright
 
 FIGURES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "figures")

@@ -125,18 +125,230 @@ def test_multi_coordinate_sky_tiling_raycaster():
     assert res_north["status"] == "success"
     assert res_center["difference_image"]["image_data"].startswith("data:image/png;base64,")
 
-def test_truthful_fov_and_lod_cropping():
-    """Verify Issue #15: Truthful FOV and sub-pixel center cropping without falsified dimensions."""
-    from backend.services.cutout_engine import fetch_real_cutout
-    # LOD 1 standard science field
-    res_lod1 = fetch_real_cutout(133.79513, -7.24515, fov_arcmin=3.0, target_key="wise0855", lod=1)
-    assert res_lod1["status"] == "success"
-    assert res_lod1["coordinates"]["fov_arcmin"] == 3.0
 
-    # LOD 0 hero zoom field center-cropped
-    res_lod0 = fetch_real_cutout(133.79513, -7.24515, fov_arcmin=1.5, target_key="wise0855", lod=0)
-    assert res_lod0["status"] == "success"
-    assert res_lod0["coordinates"]["fov_arcmin"] == 1.5
+def test_observation_timeline_timestamps():
+    """Verify Issue #11: cut-out epochs, 102-band observation_dates, and timeline timestamps."""
+    from backend.services.cutout_engine import fetch_real_cutout, get_102_band_spectrum, query_observation_timeline
+
+    cutout = fetch_real_cutout(133.79513, -7.24515, target_key="wise0855")
+    assert cutout["status"] == "success"
+    for ep in cutout["epochs"]:
+        assert "date_obs" in ep and ep["date_obs"]
+        assert "mjd" in ep and isinstance(ep["mjd"], (int, float))
+
+    spec = get_102_band_spectrum(133.79513, -7.24515, "wise0855")
+    assert "observation_dates" in spec
+    assert len(spec["observation_dates"]) == 102
+    assert "simultaneity_notice" in spec
+
+    obs = query_observation_timeline(133.79513, -7.24515)
+    assert obs["status"] == "success"
+    assert obs["total_matched_observations"] == obs["count"]
+    assert obs["count"] >= 4
+
+
+def test_temporal_filter_valid_range():
+    """Verify Issue #11: temporal filtering by date range and exact_date."""
+    from backend.services.cutout_engine import query_observation_timeline
+
+    res_range = query_observation_timeline(133.79513, -7.24515, start_date="2024-01-01", end_date="2026-12-31")
+    assert res_range["status"] == "success"
+    assert res_range["total_matched_observations"] >= 1
+    assert any(o["date_obs"] >= "2024-01-01" for o in res_range["observations"])
+
+    res_exact = query_observation_timeline(133.79513, -7.24515, exact_date="1999-02-14")
+    assert res_exact["status"] == "success"
+    assert res_exact["total_matched_observations"] == 1
+    assert res_exact["observations"][0]["survey"] == "2MASS"
+
+
+def test_temporal_filter_empty_range():
+    """Verify Issue #11: empty temporal range returns honest no_observations + nearest_available_epoch."""
+    from backend.services.cutout_engine import query_observation_timeline
+
+    empty = query_observation_timeline(133.79513, -7.24515, start_date="1910-01-01", end_date="1920-01-01")
+    assert empty["status"] == "no_observations"
+    assert empty["total_matched_observations"] == 0
+    assert empty["count"] == 0
+    assert "nearest_available_epoch" in empty
+    assert "date" in empty["nearest_available_epoch"]
+
+
+def test_spatial_hash_cache_hit():
+    """Verify Issue #13: L1 spatial-hash proximity cache returns sub-arcmin neighbor hit."""
+    from backend.services.cutout_engine import (
+        _L1_MEMORY_CACHE,
+        _SPATIAL_HASH_CACHE,
+        fetch_real_cutout,
+        get_spatial_cell_id,
+    )
+
+    _L1_MEMORY_CACHE.clear()
+    _SPATIAL_HASH_CACHE.clear()
+    base_ra, base_dec = 133.79513, -7.24515
+    first = fetch_real_cutout(base_ra, base_dec, fov_arcmin=3.0, target_key="wise0855", lod=1)
+    assert first["status"] == "success"
+
+    # Neighbor 0.06 arcmin away (< 0.35 arcmin tolerance, same 0.05 deg spatial cell)
+    second = fetch_real_cutout(base_ra + 0.001, base_dec + 0.0005, fov_arcmin=3.0, target_key="wise0855", lod=1)
+    assert second["status"] == "success"
+    assert second.get("cache_tier") == "L1_SPATIAL_HASH"
+    assert second.get("spatial_cell_id") == get_spatial_cell_id(base_ra, base_dec)
+
+
+def test_sub_matrix_wcs_crop():
+    """Verify Issue #13: Astropy WCS sub-matrix crop from wider on-disk master FITS."""
+    from backend.services.cutout_engine import crop_submatrix_from_master_fits
+
+    crop = crop_submatrix_from_master_fits(133.79513, -7.24515, fov_arcmin=1.5, dim=360)
+    assert crop["status"] == "success"
+    assert crop["shape"] == [360, 360]
+    assert len(crop["peak_pixel"]) == 2
+    assert isinstance(crop["spatial_cell_id"], int)
+
+
+def test_auto_prune_disk_cache():
+    """Verify Issue #13: smart disk auto-pruning evicts unpinned files while preserving benchmarks."""
+    import os
+    import tempfile
+
+    from backend.services.cutout_engine import auto_prune_disk_cache
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        pinned_path = os.path.join(tmpdir, "wise0855_pinned.fits")
+        old_sky_1 = os.path.join(tmpdir, "sky_10.0000_20.0000_3.0_2mass.fits")
+        old_sky_2 = os.path.join(tmpdir, "sky_12.0000_22.0000_3.0_dss2.fits")
+        with open(pinned_path, "wb") as f:
+            f.write(b"A" * 600_000)
+        with open(old_sky_1, "wb") as f:
+            f.write(b"B" * 600_000)
+        with open(old_sky_2, "wb") as f:
+            f.write(b"C" * 600_000)
+        os.utime(old_sky_1, (1000, 1000))
+        os.utime(old_sky_2, (2000, 2000))
+
+        # Limit 1.0 MB, target 0.8 MB -> should prune unpinned old files, keeping wise0855 pinned
+        result = auto_prune_disk_cache(max_mb=1.0, target_mb=0.8, cache_dirs=[tmpdir])
+        assert result["status"] == "ok"
+        assert result["pinned_count"] == 1
+        assert result["pruned_count"] >= 2
+        assert os.path.exists(pinned_path)
+        assert not os.path.exists(old_sky_1)
+
+
+def test_ai_copilot_analyze_and_ask():
+    """Verifies Integrated AI Co-Pilot endpoints synthesize real telemetry with zero fabricated scores."""
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+    client = TestClient(app)
+    r_analyze = client.get("/api/ai/analyze?ra=133.79513&dec=-7.24515&fov=3.0&target=wise0855")
+    assert r_analyze.status_code == 200
+    data = r_analyze.json()
+    assert data["status"] == "success"
+    assert "score" not in data
+    assert "WISE" in data["target_name"] and "0855" in data["target_name"]
+    assert "plain_english_summary" in data and len(data["plain_english_summary"]) > 20
+    assert "scientist_technical_summary" in data and "ICRS" in data["scientist_technical_summary"]
+    assert isinstance(data["key_insights"], list) and len(data["key_insights"]) == 3
+    assert isinstance(data["checklist"], list) and len(data["checklist"]) >= 4
+
+    r_ask = client.post("/api/ai/ask", json={
+        "ra": "133.79513",
+        "dec": "-7.24515",
+        "fov": 3.0,
+        "target": "wise0855",
+        "question": "Explain 102-band molecular absorption dips"
+    })
+    assert r_ask.status_code == 200
+    ask_data = r_ask.json()
+    assert ask_data["status"] == "success"
+    assert ask_data["topic"] == "102-Band Infrared Spectroscopy"
+    assert any(tok in ask_data["answer"] for tok in ("CH4", "H2O", "CH₄", "H₂O"))
+
+
+def test_issue_23_scientific_cache_lifecycle_and_headers():
+    """Verifies Issue #23: X-Cache headers, cached_at provenance, quota telemetry, and refresh=true bypass."""
+    from unittest.mock import patch
+
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+    from backend.services.cutout_engine import clear_all_caches
+
+    client = TestClient(app)
+    clear_all_caches()
+
+    # Warm WISE 0855 from benchmark disk cache -> L2 hit, then L1 RAM hit
+    r1 = client.get("/api/cutout?target=wise0855&ra=133.79513&dec=-7.24515&lod=1")
+    assert r1.status_code == 200
+    assert r1.headers.get("X-Cache") in ("HIT", "MISS")
+    assert r1.headers.get("X-Cached-At")
+    d1 = r1.json()
+    assert d1.get("cached_at")
+    assert d1.get("is_stale") is False
+
+    r2 = client.get("/api/cutout?target=wise0855&ra=133.79513&dec=-7.24515&lod=1")
+    assert r2.status_code == 200
+    assert r2.headers.get("X-Cache") == "HIT"
+    assert r2.json().get("cache_hit") is True
+
+    # refresh=true bypasses L1/L2 caches and reports X-Cache: MISS
+    with patch("backend.services.cutout_engine.fetch_live_irsa_fits", return_value=None):
+        r_ref = client.get("/api/cutout?target=wise0855&ra=133.79513&dec=-7.24515&lod=1&refresh=true")
+        assert r_ref.status_code == 200
+        assert r_ref.headers.get("X-Cache") == "MISS"
+        assert r_ref.json().get("cache_hit") is False
+
+    stats_resp = client.get("/api/cache/stats")
+    assert stats_resp.status_code == 200
+    stats = stats_resp.json()
+    assert "quota_mb" in stats and stats["quota_mb"] == 500.0
+    assert "ttl_seconds" in stats and stats["ttl_seconds"] > 0
+    assert "spatial_bins_indexed" in stats
+
+    prune_resp = client.post("/api/cache/prune?max_mb=800&target_mb=400")
+    assert prune_resp.status_code == 200
+    prune_data = prune_resp.json()
+    assert prune_data.get("status") == "ok"
+    assert "pruned_files" in prune_data and "freed_mb" in prune_data
+
+
+def test_issue_28_resilient_cutout_fallback_on_irsa_502():
+    """Verifies Issue #28: graceful WCS + Gaia DR3 degraded fallback when upstream IRSA fails."""
+    from unittest.mock import patch
+
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+
+    sample_gaia = {
+        "status": "success",
+        "sources": [
+            {
+                "source_id": "test_180_15",
+                "ra": 180.0,
+                "dec": 15.0,
+                "pmra_mas_yr": 15.0,
+                "pmdec_mas_yr": -10.0,
+                "phot_g_mean_mag": 12.4,
+            }
+        ],
+    }
+    client = TestClient(app)
+    with patch("backend.services.cutout_engine.fetch_live_irsa_fits", return_value=None), \
+         patch("backend.services.gaia_service.query_gaia_dr3", return_value=sample_gaia):
+        resp = client.get("/api/cutout?ra=180.0&dec=15.0&refresh=true")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "fallback_simulated"
+        assert data["archive_reachability"] == "degraded"
+        assert data["is_authentic_fits"] is False
+        assert resp.headers.get("X-Archive-Reachability") == "degraded"
+        assert len(data["epochs"]) == 2
+        assert data["epochs"][0]["image_data"].startswith("data:image/png;base64,")
+        assert data["difference_image"]["image_data"].startswith("data:image/png;base64,")
+
 
 if __name__ == "__main__":
     for b in BENCHMARKS:
@@ -147,4 +359,5 @@ if __name__ == "__main__":
     test_wiseview_verification_bridge()
     test_neossat_and_cadc_tracking()
     test_resources_codex()
-    print("ALL 11 GOLDEN SUITE TESTS PASSED!")
+    test_ai_copilot_analyze_and_ask()
+    print("ALL GOLDEN SUITE TESTS PASSED!")

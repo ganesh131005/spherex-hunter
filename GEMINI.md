@@ -74,3 +74,17 @@ When a teammate hits token limits or hardware bottlenecks, or when the user says
 - `coolodu/web-frontend`: Owned by `coolodu` (works in `/frontend`).
 - `iceodu/image-math-ai`: Owned by `iceodu` (works in `/image_engine`).
 - `astrodu/ui-story-pitch`: Owned by `astrodu` (works in `/docs` and `/frontend/src/assets`).
+
+---
+
+## 🔒 VERIFICATION-BEFORE-CLOSE GUARDRAIL (Zero Ghost Closures)
+1. **Never Close an Issue on Verbal or Planned Intent:**
+   - No agent may close a GitHub Issue or mark a task `COMPLETED` based merely on planning to implement it or writing a completion message.
+2. **Mandatory 3-Point Codebase Audit Before Closing:**
+   An issue may ONLY be closed if all three criteria are physically verified:
+   - **Git Commit Check:** A specific git commit hash contains the diff implementing the feature (`git log -S "<symbol>" -n 1`).
+   - **AST / Grep Check:** The functions, DOM IDs, endpoints, or event listeners explicitly exist in the active codebase (`grep` / file search).
+   - **Functional / Test Check:** Targeted test suite or headless contract test passes, proving the implementation runs without regressions.
+3. **Audit & Reopen Protocol:**
+   - If an agent or human is reviewing claimed work and finds the claimed symbols/DOM elements missing from the actual checked-out branch, the agent must **immediately reopen the issue** with a factual audit report and schedule real implementation.
+

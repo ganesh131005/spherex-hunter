@@ -2,10 +2,8 @@
 🛰️ SPHEREx Hunter - CSA NEOSSat & CADC Asteroid Tracking Service (TASK-006 / Task 4)
 NASA Space Apps Challenge 2026 - Team RIP
 
-Two authentic, live data sources are combined to answer the single most important
-question a Planet X hunter must ask about every moving dipole:
-
-    "Is this just a known asteroid?"
+Two authentic, live data sources are combined to perform rigorous Solar System object vetoing:
+Is a detected candidate an already catalogued asteroid, comet, or near-Earth object?
 
 1. IMCCE SkyBoT cone search (ssp.imcce.fr) -> every KNOWN Solar System object
    (asteroids, comets, NEOs, trojans, TNOs) predicted inside the field of view at a

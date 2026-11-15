@@ -1,6 +1,6 @@
 {
   "target_id": "sample_leo",
-  "count_public_total": 35,
+  "count_public_total": 262,
   "count_precomputed_used": 2,
   "exposures": [
     {
@@ -24,6 +24,8 @@
   ],
   "provenance": {
     "source": "precomputed",
-    "git_hash": "71a9daaaa9d8b27d415c2d79d1be389da460baff"
+    "git_hash": "71a9daaaa9d8b27d415c2d79d1be389da460baff",
+    "data_release": "DR1",
+    "pipeline_version": "2.1.0"
   }
 }

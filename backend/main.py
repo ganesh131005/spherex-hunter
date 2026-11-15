@@ -15,17 +15,16 @@ import json
 import os
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Union
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from backend.api_v1 import make_request_id, router as api_v1_router
 from backend.models_v1 import ProblemDetails
-
 from backend.services.catalog_engine import (
     crossmatch_photometry,
     query_2mass_psc,
@@ -63,6 +62,43 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_FALLBACK_HIPS_JPEG_BYTES: Optional[bytes] = None
+
+
+def _get_fallback_hips_jpeg_bytes() -> bytes:
+    """Builds and caches a 64x64 dark-space JPEG tile for local Aladin HiPS fallback probes."""
+    global _FALLBACK_HIPS_JPEG_BYTES
+    if _FALLBACK_HIPS_JPEG_BYTES is None:
+        from PIL import Image
+        buf = io.BytesIO()
+        Image.new("RGB", (64, 64), (6, 10, 18)).save(buf, format="JPEG")
+        _FALLBACK_HIPS_JPEG_BYTES = buf.getvalue()
+    return _FALLBACK_HIPS_JPEG_BYTES
+
+
+# Serve CDS HiPS properties descriptor cleanly so relative Aladin fallback probes return HTTP 200
+@app.get("/app/P/DSS2/color/properties")
+def get_dss2_hips_properties():
+    return Response(
+        content=(
+            "creator_did = ivo://CDS/P/DSS2/color\n"
+            "obs_title = DSS2 color\n"
+            "hips_frame = equatorial\n"
+            "hips_order = 3\n"
+            "hips_tile_width = 512\n"
+            "hips_tile_format = jpeg\n"
+            "hips_service_url = https://alasky.cds.unistra.fr/DSS/DSSColor\n"
+        ),
+        media_type="text/plain",
+    )
+
+
+@app.get("/app/P/DSS2/color/{tile_path:path}")
+def get_dss2_hips_fallback_tile(tile_path: str):
+    """Serves a clean dark-space JPEG fallback tile so Aladin HiPS local probes never 404."""
+    return Response(content=_get_fallback_hips_jpeg_bytes(), media_type="image/jpeg")
+
 
 # Mount frontend directory for same-origin browsing
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
@@ -117,7 +153,10 @@ class DiscoveryCandidate(BaseModel):
     confidence: Optional[int] = 5
 
 @app.get("/")
-def root():
+def root(request: Request):
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and not accept.startswith("application/json"):
+        return RedirectResponse(url="/app/index.html", status_code=307)
     return {
         "service": "SPHEREx Hunter Astronomy Backend",
         "team": "RIP (Coimbatore, India)",
@@ -179,9 +218,14 @@ def cache_stats():
     """Returns current cache metrics."""
     return get_cache_stats()
 
+
+@app.get("/api/cache/prune")
 @app.post("/api/cache/prune")
-def prune_cache(max_mb: float = 500.0, target_mb: float = 350.0):
-    """Triggers smart auto-pruning of dynamic FITS cache based on soft storage quotas."""
+def prune_cache(
+    max_mb: float = Query(500.0, description="Soft disk cache cap in MB before eviction"),
+    target_mb: float = Query(350.0, description="Target disk usage in MB after pruning"),
+):
+    """Triggers smart disk auto-pruning daemon while keeping benchmark targets pinned."""
     return auto_prune_disk_cache(max_mb=max_mb, target_mb=target_mb)
 
 import astropy.units as u
@@ -215,12 +259,18 @@ def parse_celestial_coords(ra_input: str, dec_input: str) -> tuple[float, float]
 
 @app.get("/api/cutout")
 def get_cutout(
+    response: Response,
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal ('08h55m10.831s')"),
     dec: str = Query(..., description="Declination in decimal deg or sexagesimal ('-7d14m42.53s')"),
     fov: float = Query(3.0, description="Field of View in arcminutes"),
     target: Optional[str] = Query(None, description="Benchmark target key (wise0855, barnard, etc.)"),
     lod: int = Query(1, description="Game Level of Detail tier: 0 (Hero Deep), 1 (Standard Science), 2 (Wide Overview)"),
-    force_refresh: bool = Query(False, description="Bypass all caches and force fresh NASA query")
+    force_refresh: bool = Query(False, description="Bypass all caches and force fresh NASA query"),
+    refresh: bool = Query(False, description="Alias for force_refresh to bypass caches"),
+    bypass_cache: bool = Query(False, description="Alias to bypass L1/L2 caches and force live query"),
+    start_date: Optional[str] = Query(None, description="Optional temporal start filter (ISO UTC)"),
+    end_date: Optional[str] = Query(None, description="Optional temporal end filter (ISO UTC)"),
+    exact_date: Optional[str] = Query(None, description="Optional exact observation epoch target (ISO UTC)")
 ):
     """
     Universal Astronomical Pipeline:
@@ -231,9 +281,18 @@ def get_cutout(
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         fov_val = float(fov) if isinstance(fov, (int, float, str)) else 3.0
         lod_val = int(lod) if isinstance(lod, (int, str)) else 1
-        is_refresh = bool(force_refresh) if isinstance(force_refresh, bool) else False
+        is_refresh = bool(force_refresh or refresh or bypass_cache)
         target_sanitized = sanitize_target_name(target) if target else None
         data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target_sanitized, lod=lod_val, force_refresh=is_refresh)
+        if start_date or end_date or exact_date:
+            data = dict(data)
+            data["temporal_filter"] = query_observation_timeline(
+                ra_deg, dec_deg, start_date=start_date, end_date=end_date, exact_date=exact_date
+            )
+        response.headers["X-Cache"] = str(data.get("cache_status", "MISS"))
+        response.headers["X-Cache-Tier"] = str(data.get("cache_tier", "UNKNOWN"))
+        response.headers["X-Cached-At"] = str(data.get("cached_at", ""))
+        response.headers["X-Archive-Reachability"] = str(data.get("archive_reachability", "nominal"))
         return data
     except HTTPException:
         raise
@@ -246,14 +305,15 @@ def get_available_observations(
     dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
     start_date: Optional[str] = Query(None, description="Start date (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"),
     end_date: Optional[str] = Query(None, description="End date (ISO format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"),
+    exact_date: Optional[str] = Query(None, description="Optional specific observation epoch date (ISO UTC)"),
 ):
     """
     Returns authentic multi-epoch observation metadata covering celestial coordinates (RA, Dec)
-    within an optional temporal date/time filtering window [start_date, end_date].
+    within an optional temporal date/time filtering window [start_date, end_date] or exact_date.
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
-        return query_observation_timeline(ra_deg, dec_deg, start_date=start_date, end_date=end_date)
+        return query_observation_timeline(ra_deg, dec_deg, start_date=start_date, end_date=end_date, exact_date=exact_date)
     except HTTPException:
         raise
     except Exception as e:
@@ -447,6 +507,246 @@ def verify_candidate_wiseview(
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         return run_wiseview_verification(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class AIAskRequest(BaseModel):
+    ra: Union[float, str]
+    dec: Union[float, str]
+    fov: float = 3.0
+    target: Optional[str] = None
+    question: str = "Why is this target scientifically interesting?"
+
+
+def _build_ai_science_synthesis(ra_deg: float, dec_deg: float, fov: float, target: Optional[str]) -> dict:
+    """
+    Synthesizes real astronomical telemetry across source discovery, 5-step archival verification,
+    102-band spectrophotometry, and scene astrometry without fabricating synthetic scores.
+    """
+    discovery = run_automated_source_discovery(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
+    verification = run_wiseview_verification(ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=target)
+    spectrum = get_102_band_spectrum(ra=ra_deg, dec=dec_deg, target_key=target)
+    scene = get_target_scene(target_key=target, ra=ra_deg, dec=dec_deg, fov_arcmin=fov)
+
+    t_meta = scene.get("target") or {}
+    target_name = t_meta.get("name") or f"Field ({ra_deg:.4f}, {dec_deg:+.4f})"
+    object_type = t_meta.get("object_type") or "Celestial Field"
+    pm_arcsec = float(t_meta.get("total_pm_arcsec_yr") or 0.0)
+    dist_pc = t_meta.get("distance_pc")
+    teff_k = spectrum.get("temperature_k") or t_meta.get("effective_temp_k")
+    mol_features = spectrum.get("expected_features") or spectrum.get("detected_molecules") or []
+    candidates = discovery.get("candidates") or []
+    checklist = verification.get("checklist") or []
+    evidence_tier = verification.get("evidence_tier") or "INCONCLUSIVE"
+    verdict = verification.get("verdict") or evidence_tier
+    candidate_status = verification.get("candidate_status") or "Candidate, not confirmed"
+    wise_cp = spectrum.get("wise_counterpart") or {}
+    w1_w2 = wise_cp.get("w1_w2_color")
+    spherex_cov = spectrum.get("spherex_coverage") or {}
+
+    # Plain-English Citizen Scientist translation
+    if teff_k is not None:
+        celsius = round(float(teff_k) - 273.15)
+        if float(teff_k) <= 500:
+            temp_desc = f"around {round(float(teff_k))} K ({celsius}°C — colder than a home freezer, completely invisible to normal optical cameras)"
+        elif float(teff_k) <= 2500:
+            temp_desc = f"around {round(float(teff_k))} K ({celsius}°C — a cool substellar brown dwarf glowing mainly in infrared)"
+        else:
+            temp_desc = f"around {round(float(teff_k))} K ({celsius}°C — warm stellar photosphere)"
+    else:
+        temp_desc = "not yet constrained by archival photometry"
+
+    if pm_arcsec >= 5.0:
+        shift_26 = pm_arcsec * 26.2
+        speed_desc = (
+            f"rockets across the sky at {pm_arcsec:.2f} arcseconds/year "
+            f"(~{shift_26:.0f}\" over the 26-year 2MASS→SPHEREx baseline), proving it is in our close solar neighborhood"
+        )
+    elif pm_arcsec >= 0.5:
+        speed_desc = f"drifts noticeably at {pm_arcsec:.2f} arcseconds/year across multi-epoch images"
+    elif candidates and candidates[0].get("separation_arcsec"):
+        speed_desc = f"exhibits a measured difference-map shift of {candidates[0]['separation_arcsec']}\" ({candidates[0].get('classification', 'RESIDUAL')})"
+    else:
+        speed_desc = "remains nearly stationary relative to background stars"
+
+    mol_names = ", ".join(f"{m['molecule']} ({m['wavelength_um']} μm)" for m in mol_features[:3]) if mol_features else "continuum stellar profile"
+
+    plain_english_summary = (
+        f"{target_name} ({object_type}) {speed_desc}. "
+        f"Its infrared temperature is {temp_desc}. "
+        f"In SPHEREx's 102-band infrared spectrum, key molecular tracers for this temperature class include {mol_names}. "
+        f"Current multi-archive classification: {evidence_tier} ({candidate_status})."
+    )
+
+    cand_note = (
+        f"{len(candidates)} residual source(s) measured (peak {candidates[0].get('snr', 'N/A')}σ at {candidates[0].get('separation_arcsec', 'N/A')}\" sep)"
+        if candidates else "0 significant ZOGY/Bramich dipoles isolated in current field"
+    )
+    scientist_technical_summary = (
+        f"ICRS ({ra_deg:.5f}°, {dec_deg:+.5f}°), FOV={fov:.1f}': μ={pm_arcsec:.3f}\"/yr"
+        + (f", d={dist_pc} pc" if dist_pc else "")
+        + (f", Teff={round(float(teff_k))} K ({spectrum.get('data_type', 'NONE')})" if teff_k else "")
+        + (f", WISE W1-W2={w1_w2:+.2f} mag" if w1_w2 is not None else "")
+        + f". Source discovery: {cand_note}. Evidence tier: {evidence_tier} — {verification.get('evidence_summary', '')}"
+    )
+
+    key_insights = [
+        {
+            "category": "Kinematics & Difference Imaging",
+            "status": candidates[0]["classification"] if candidates else ("HIGH_PM" if pm_arcsec >= 1.0 else "STATIONARY"),
+            "detail": cand_note + f" | Proper motion μ = {pm_arcsec:.3f}\"/yr."
+        },
+        {
+            "category": "102-Band SPHEREx SED & Temperature",
+            "status": spectrum.get("data_type", "NONE"),
+            "detail": (
+                f"Teff = {round(float(teff_k))} K; Expected molecular features: {mol_names}."
+                if teff_k is not None else
+                "No infrared SED photometry anchors available at this exact sky locus."
+            )
+        },
+        {
+            "category": "Multi-Archive Vetting (Gaia DR3 + SkyBoT + SPHEREx)",
+            "status": evidence_tier,
+            "detail": (
+                f"{verification.get('evidence_summary', '')} "
+                f"SPHEREx archive coverage: {spherex_cov.get('coverage_type', 'CHECKED')} ({spherex_cov.get('count', 0)} plane(s))."
+            )
+        }
+    ]
+
+    return {
+        "status": "success",
+        "coordinates": {"ra_deg": round(ra_deg, 6), "dec_deg": round(dec_deg, 6), "fov_arcmin": float(fov)},
+        "target_name": target_name,
+        "object_type": object_type,
+        "evidence_tier": evidence_tier,
+        "verdict": verdict,
+        "candidate_status": candidate_status,
+        "plain_english_summary": plain_english_summary,
+        "scientist_technical_summary": scientist_technical_summary,
+        "key_insights": key_insights,
+        "source_discovery": discovery,
+        "verification": verification,
+        "molecular_signatures": mol_features,
+        "checklist": checklist,
+        "telemetry_metrics": {
+            "proper_motion_arcsec_yr": round(pm_arcsec, 4),
+            "temperature_k": teff_k,
+            "distance_pc": dist_pc,
+            "wise_w1_w2_color": w1_w2,
+            "spectrum_data_type": spectrum.get("data_type", "NONE"),
+            "spherex_coverage_type": spherex_cov.get("coverage_type"),
+            "candidates_found": len(candidates),
+        }
+    }
+
+
+def _answer_ai_question(synthesis: dict, question: str) -> dict:
+    q = (question or "").lower()
+    tname = synthesis["target_name"]
+    metrics = synthesis["telemetry_metrics"]
+    ver = synthesis["verification"]
+    disc = synthesis["source_discovery"]
+    cands = disc.get("candidates") or []
+    mols = synthesis.get("molecular_signatures") or []
+
+    if any(k in q for k in ("asteroid", "sso", "neossat", "gaia", "optical", "star")):
+        gaia_item = next((c for c in ver.get("checklist", []) if c.get("id") == "gaia"), {})
+        sso_item = next((c for c in ver.get("checklist", []) if c.get("id") == "sso"), {})
+        answer = (
+            f"Multi-archive optical & Solar System vetting for {tname}: "
+            f"(1) Gaia DR3 check [{gaia_item.get('status', 'n/a')}]: {gaia_item.get('evidence', 'Checked')}. "
+            f"(2) IMCCE SkyBoT / NEOSSat Solar System check [{sso_item.get('status', 'n/a')}]: {sso_item.get('evidence', 'Checked')}."
+        )
+        topic = "Optical & Asteroid Veto"
+    elif any(k in q for k in ("spectrum", "band", "102", "water", "methane", "ch4", "h2o", "co2", "molecule", "dip")):
+        mol_list = ", ".join(f"{m['molecule']} at {m['wavelength_um']} μm" for m in mols) if mols else "no specific narrow molecular absorption template matched"
+        answer = (
+            f"102-Band SPHEREx Spectroscopy (0.75–5.00 μm) for {tname}: "
+            f"Data provenance is {metrics.get('spectrum_data_type')}. "
+            + (f"Effective temperature Teff = {metrics['temperature_k']} K. " if metrics.get("temperature_k") else "")
+            + f"Expected molecular absorption bands for this thermal class: {mol_list}. "
+            + "Note: Band arrays A4 (2.42–3.82 μm), A5 (3.82–4.42 μm), and A6 (4.42–5.00 μm) probe H₂O ice, CH₄ methane, CO₂ ice, and CO."
+        )
+        topic = "102-Band Infrared Spectroscopy"
+    elif any(k in q for k in ("scan", "dipole", "motion", "move", "speed", "proper")):
+        cand_msg = (
+            f"Automated difference-map scan isolated {len(cands)} candidate(s): "
+            + "; ".join(f"{c['id']} ({c['classification']}, SNR={c.get('snr')}σ, sep={c.get('separation_arcsec')}\")" for c in cands)
+            if cands else
+            f"No isolated ZOGY dipole residual exceeded threshold ({disc.get('message') or 'stationary background'})."
+        )
+        answer = (
+            f"Motion & Dipole Analysis for {tname}: Proper motion μ = {metrics['proper_motion_arcsec_yr']}\" /yr. "
+            + cand_msg
+        )
+        topic = "Kinematics & Dipole Scan"
+    elif any(k in q for k in ("planet", "brown dwarf", "cold", "why", "explain", "what")):
+        answer = synthesis["plain_english_summary"]
+        topic = "Astrophysical Interpretation"
+    else:
+        answer = f"{synthesis['plain_english_summary']} Technical summary: {synthesis['scientist_technical_summary']}"
+        topic = "Co-Pilot Field Synthesis"
+
+    return {
+        "status": "success",
+        "question": question,
+        "topic": topic,
+        "answer": answer,
+        "evidence_tier": synthesis["evidence_tier"],
+        "verdict": synthesis["verdict"],
+        "candidate_status": synthesis["candidate_status"],
+        "synthesis": synthesis,
+    }
+
+
+@app.get("/api/ai/analyze")
+def ai_analyze_field(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    fov: float = Query(3.0, description="Field of View in arcminutes"),
+    target: Optional[str] = Query(None, description="Benchmark target key")
+):
+    """Integrated AI Science Co-Pilot: synthesizes real difference imaging, Gaia DR3, SkyBoT, and 102-band SED telemetry."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        return _build_ai_science_synthesis(ra_deg=ra_deg, dec_deg=dec_deg, fov=fov, target=target)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ai/ask")
+def ai_ask_get(
+    ra: str = Query(..., description="Right Ascension"),
+    dec: str = Query(..., description="Declination"),
+    fov: float = Query(3.0, description="Field of View in arcminutes"),
+    target: Optional[str] = Query(None, description="Benchmark target key"),
+    question: str = Query("Explain this object in plain English", description="Natural-language science question")
+):
+    """Interactive AI Science Co-Pilot Q&A backed 100% by real NASA/ESA archive telemetry."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        synthesis = _build_ai_science_synthesis(ra_deg=ra_deg, dec_deg=dec_deg, fov=fov, target=target)
+        return _answer_ai_question(synthesis, question)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/ai/ask")
+def ai_ask_post(payload: AIAskRequest):
+    """Interactive AI Science Co-Pilot Q&A (POST) backed 100% by real NASA/ESA archive telemetry."""
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(payload.ra, payload.dec)
+        synthesis = _build_ai_science_synthesis(ra_deg=ra_deg, dec_deg=dec_deg, fov=payload.fov, target=payload.target)
+        return _answer_ai_question(synthesis, payload.question)
     except HTTPException:
         raise
     except Exception as e:

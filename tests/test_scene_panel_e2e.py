@@ -11,6 +11,8 @@ Tests:
 import time
 
 import pytest
+
+pytest.importorskip("playwright")
 from playwright.sync_api import sync_playwright
 
 

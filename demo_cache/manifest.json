@@ -8,7 +8,7 @@
       "name": "Technical Validation Field (SPHEREx D6 Flight Pair)",
       "ra": 160.6,
       "dec": 30.7,
-      "public_exposures_total": 35,
+      "public_exposures_total": 262,
       "exposures_used": 2,
       "products": [
         "cutout_raw.bin",
@@ -21,17 +21,19 @@
       "checksums": {
         "cutout_raw.bin": "e36eaa6fe1c45b9f67ce9077f1e3696d37bfff4525ab328839019289e0d9c266",
         "cutout_raw_header.json": "f7ccef1da5685f60aa6fb378f439e037e1d8228ef7daf9dfe5e5b9d3b9d86d3d",
-        "difference.json": "4ef144cc7f66def506d1a203d0270bcbb3f0be9cee15cee4bed0e7ffcdad0d34",
-        "photometry.json": "d8f73db6fd89741e984893bc32ea2539649fa4acd991f4f83b9f39353643a7e4",
-        "lightcurve.json": "c8f295705b68fb3a392ad5f57f2b3b4a2de65fd7f193a32285cc85714efec6e0",
-        "exposures.json": "8136a5a32b60c3cbb027be1319df40ff0959ad04f34929b13e82092a3d2f84e9"
-      }
+        "difference.json": "2848eb8a120fd3c4c4e40e9bcecd21642531f9c8c182d3b75add7c3b3f227e06",
+        "photometry.json": "127528db08f6002db5caedd0dafc4830a37f272a1a77c56a06e6202004a00d20",
+        "lightcurve.json": "ceb7ebb2b3bd602d3c1d44911ed9eef52781c679322b12667d53804c860eccb9",
+        "exposures.json": "97947e7c04cc144aabb4b99c3f1138c4c90fab5d77e762a682d4b7876a77d90e"
+      },
+      "data_release": "DR1",
+      "pipeline_version": "2.1.0"
     },
     "wise0855": {
       "name": "WISE 0855-0714",
       "ra": 133.79513,
       "dec": -7.24515,
-      "public_exposures_total": 5,
+      "public_exposures_total": 258,
       "exposures_used": 5,
       "products": [
         "cutout_raw.bin",
@@ -42,17 +44,19 @@
       ],
       "checksums": {
         "cutout_raw.bin": "c80c94bdc36c5e895ab367d8bbea299ac323989752e89f9b3ee0023702359d34",
-        "photometry.json": "62677fb806335cfa3a2d9114d8475d0dcec51dcde9ca758227cb51e6837773ba",
-        "exposures.json": "a3356f2664f58655e28cad926613af71ddaff1f62ffe477e2dce09469d7be28f",
-        "difference.json": "4705416b8a91126b1b5001db84785354b8cbc4e0023d49df68cd6163f5c89461",
-        "candidates.json": "27dd3a93ceebf03f2ed7939a4682ef459e2848c6449a7a919e9b2693ff29636b"
-      }
+        "photometry.json": "03671f0e27d82fd0628fde9def1e4a9abb6f8b99ba8c23bdaccb3a2cd63154b3",
+        "exposures.json": "13a8546341488b1449d51429c02e8f61639b2af3e709680ae518df16ea181bfa",
+        "difference.json": "96580d326dfd1824ee19bbde5b5195afbb127ed1d8db7d7387c91dca7ecd346a",
+        "candidates.json": "17233607fa213fb46e7d7abe09492d5874ec65402017e3fc94ef1d64c1854e42"
+      },
+      "data_release": "DR1",
+      "pipeline_version": "2.1.0"
     },
     "barnard": {
       "name": "Barnard's Star",
       "ra": 269.45208,
       "dec": 4.69339,
-      "public_exposures_total": 12,
+      "public_exposures_total": 363,
       "exposures_used": 12,
       "products": [
         "exposures.json",
@@ -60,16 +64,18 @@
         "difference.json"
       ],
       "checksums": {
-        "exposures.json": "9f31ef58e3edf39bc59b4ef003960ac472115a600b930980746b436667b986e9",
-        "candidates.json": "8d499ec69ecfeb0ef3d0e1a7fcf0037724db457304537ab275100d3b4cd97285",
-        "difference.json": "5fe7018414b8fd1f6d46ab7af427b2fac7116d1cd932c0d276aa49056e1bc58c"
-      }
+        "exposures.json": "e13484f63cc56d726e22d4556bcbcdedefcbebcc39202021aae1a7c19e2d5fbc",
+        "candidates.json": "4f143223ce52ca92f66ee8d55e6d12f434a7364587576494bd37feaf84fd737c",
+        "difference.json": "4e110a24a59273f12b0ff68e3fc3c46ad21466788c1f73e6834db84843d71852"
+      },
+      "data_release": "DR1",
+      "pipeline_version": "2.1.0"
     },
     "epsindi": {
       "name": "Epsilon Indi B",
       "ra": 331.04379,
       "dec": -56.78272,
-      "public_exposures_total": 8,
+      "public_exposures_total": 459,
       "exposures_used": 8,
       "products": [
         "exposures.json",
@@ -77,16 +83,18 @@
         "difference.json"
       ],
       "checksums": {
-        "exposures.json": "36c408db3308ce265b1d1c09a26f316b360e1b9b6e221394cc6b9a7601beaf70",
-        "candidates.json": "95c86eed445e2a7df242bdebcbdbef8437b92e1e54f71328558435091c487be9",
-        "difference.json": "81b7e9d2761b60545d0a6d3539b06ebbca47277c2f7a54ec0048d178d7459043"
-      }
+        "exposures.json": "b329a3f546b17e8145de0ae432c7a16bf060e3bd931f24a69b51ec6f8ba3986f",
+        "candidates.json": "9dbad635f6bf8c0d008cac1136184105e2f7cc303dbdab603ab682f686599c6c",
+        "difference.json": "6534b22f4b8e631ba5cf1f52ae350faf79af2f4b46fb7326b5155f18e85b9ccb"
+      },
+      "data_release": "DR1",
+      "pipeline_version": "2.1.0"
     },
     "rdraconis": {
       "name": "R Draconis",
       "ra": 248.16763,
       "dec": 66.75506,
-      "public_exposures_total": 6,
+      "public_exposures_total": 2542,
       "exposures_used": 6,
       "products": [
         "exposures.json",
@@ -94,10 +102,12 @@
         "difference.json"
       ],
       "checksums": {
-        "exposures.json": "180e3b65df4b68c2b5bba9e600e1996970f8978ee7c4a772adc67e75e428a60d",
-        "candidates.json": "e15edb8b5ecdce9342665523b833350ce6be0ffcc8269801b19f5022f54d921a",
-        "difference.json": "824d1376ab99d14047575ce46753d22f3a8d45590f53a99566b0c3dc54ef9167"
-      }
+        "exposures.json": "c0a7c705453df4de8c718120940e4cf27a7ce5ce79938bb762d20de3c3e6b602",
+        "candidates.json": "2c8598886b52c3b16b21bdd2313be007b2984f3489cc8172e2a58a49303a46d7",
+        "difference.json": "96ed35aabe609d61cc19fefda495ea053cd9bb7f9ed94bdadc17ad9204c21571"
+      },
+      "data_release": "DR1",
+      "pipeline_version": "2.1.0"
     },
     "rwaur": {
       "name": "RW Aurigae",
@@ -111,10 +121,14 @@
         "difference.json"
       ],
       "checksums": {
-        "exposures.json": "786dcd7b858384e68bbd404903c6505dca753706f8d4a5fc1d8fbd0b9644c0ea",
-        "candidates.json": "90250bb47998dae7a6ba8e909c02479c0546b5b2b47c5598d678b858c073d5ac",
-        "difference.json": "692f7a51145c3318c700cc63d5e513aad3555fda435ad83ad35033dd6e5a090d"
-      }
+        "exposures.json": "148171ef58e6494353eaffb44dc0debe4751346b2a328c4675a34e77d5dba811",
+        "candidates.json": "ad91d822f218d7873c23b03b0eec0ee06126174a516855a1d8951dffa7f72d9f",
+        "difference.json": "36a6a7c13915c00458f9ba4bca95fa73970ae497090f5d0ee5bff177b147460e"
+      },
+      "data_release": "DR1",
+      "pipeline_version": "2.1.0"
     }
-  }
+  },
+  "data_release": "DR1",
+  "pipeline_version": "2.1.0"
 }

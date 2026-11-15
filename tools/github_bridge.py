@@ -192,6 +192,19 @@ def close_issue(issue_number, comment=None):
     else:
         print(f"✅ Issue #{issue_number} successfully closed on GitHub!")
 
+def reopen_issue(issue_number, comment=None):
+    token = get_github_token()
+    if not token:
+        print("❌ Cannot reopen issue without GitHub token.")
+        return
+    if comment:
+        _request(f"/issues/{issue_number}/comments", method="POST", data={"body": comment})
+    res = _request(f"/issues/{issue_number}", method="PATCH", data={"state": "open"})
+    if isinstance(res, dict) and res.get("error"):
+        print(f"❌ Failed to reopen issue #{issue_number}: {res.get('message')}")
+    else:
+        print(f"✅ Issue #{issue_number} successfully reopened on GitHub!")
+
 def main():
     parser = argparse.ArgumentParser(description="Team RIP GitHub Issues Bridge")
     subparsers = parser.add_subparsers(dest="command")
@@ -214,6 +227,11 @@ def main():
     close_parser.add_argument("--issue", type=int, required=True, help="Issue number")
     close_parser.add_argument("--comment", default=None, help="Closing comment")
 
+    # reopen
+    reopen_parser = subparsers.add_parser("reopen", help="Reopen a closed issue with optional comment")
+    reopen_parser.add_argument("--issue", type=int, required=True, help="Issue number")
+    reopen_parser.add_argument("--comment", default=None, help="Reopening comment")
+
     # create
     create_parser = subparsers.add_parser("create", help="Create a new task issue")
     create_parser.add_argument("--title", required=True, help="Issue title")
@@ -231,6 +249,8 @@ def main():
         view_issue(args.issue)
     elif args.command == "close":
         close_issue(args.issue, comment=args.comment)
+    elif args.command == "reopen":
+        reopen_issue(args.issue, comment=args.comment)
     elif args.command == "create":
         create_issue(args.title, args.track, args.role, args.resource, args.body)
     else:
