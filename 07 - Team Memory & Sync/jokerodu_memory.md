@@ -23,6 +23,10 @@
 - [x] Guide darkodu, coolodu, iceodu, and astrodu to fetch repository and execute forwarded tasks.
 - [x] Review upcoming feature PRs from team branches into `main`.
 - [x] **[Release Integration Complete (`coolodu/web-frontend` -> `main`)]**: Merged verified `coolodu/web-frontend` work (Issues `#8`–`#31`, Integrated AI Science Co-Pilot, resilient IRSA 502 fallback, scientific cache lifecycle, `/app/P/DSS2/color/*` local HiPS fallback route, `94/94` non-Playwright `pytest` verification) into `main` and pushed to `origin/main` (0 open GitHub issues remaining).
+- [x] **[102-Band Spectrum Popups & Labels Fixed Across All Branches (Commit `9a3880c`)]**:
+  - Resolved missing popups/tooltips on 102-band spectrum chart points (WISE W2, catalog photometry, and molecular markers) by adding `interaction: { mode: 'index', intersect: false, axis: 'x' }` and tooltip filtering.
+  - Added permanent canvas labels for catalog photometry points (`WISE W2`, `2MASS Ks`) and overflow-guarded molecular line text.
+  - Synchronized and pushed all 5 branches (`main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`) to GitHub at `9a3880c` with 26/26 tests passing.
 - [x] **[Master Release Integrated & Verified Live (`coolodu/web-frontend` -> `main`)]**: Merged `coolodu/web-frontend` into `main` with Issue #38 UI/UX resolution, Viewport Overhaul v2, 102 IRSA channels, and Gaia EPSF astrometry. All 41 unit, golden, and contract tests verified 100% green. Pushed to `origin/main`.
 - [x] **[Master Release Verification Complete on `main` (Issues #39 & #40 Resolved)]**:
   - Validated and reviewed incoming commits (`b1c9aea`, `fade6f9`, `4166da6`, `7c13eff`) resolving Issue #39 (Backend cutout NoneType guard, FOV clamp to [1.0, 15.0], diagnostic error detail extraction) and Issue #40 (Viewport HUD time-step deconfliction to `top-14`, tool rail nebula styling, Gaia DR3 canvas click-to-inspect).

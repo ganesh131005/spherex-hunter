@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🔬 102-BAND SPECTRUM TOOLTIPS, INTERACTION POPUPS & LABELS FIXED (Commit `9a3880c`)]**
+  - **Issue:** Spots on the 102-band spectrum chart (such as WISE W2 / 2MASS catalog photometry points and molecular markers) were not showing popups due to Chart.js requiring exact pixel intersection (`intersect: true` default) and dataset gaps (`null`).
+  - **Fix Implemented:**
+    1. Configured responsive horizontal interaction (`interaction: { mode: 'index', intersect: false, axis: 'x' }`), enabling instant tooltip popups anywhere along the wavelength slice.
+    2. Added `pointRadius: 2` to the 102-band SED curve and expanded hover hit radius.
+    3. Rendered permanent, high-contrast cyan catalog photometry labels (e.g. `WISE W2`, `2MASS Ks`) directly next to the diamonds in `spherexArrayPlugin`.
+    4. Added horizontal overflow prevention and Y-clamping for molecular labels (e.g. `CO (4.67µm)`).
+  - **Verification:** 26/26 tests passed. All 5 branches synchronized and pushed to GitHub at `9a3880c`.
 - **[🎉 ISSUE #42 RESOLVED & VERIFIED: CITIZEN SCIENCE ONBOARDING OVERHAUL (@coolodu)]**
   - **Issue:** [#42: Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards](https://github.com/joker0210G/spherex-hunter/issues/42)
   - **Owner:** `@coolodu` (Frontend Lead) | **Branch:** `coolodu/web-frontend`
