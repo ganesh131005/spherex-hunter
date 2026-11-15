@@ -54,6 +54,10 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [
     "ignore:Unknown config option.*asyncio.*:pytest.PytestConfigWarning",
+    "ignore:.*starlette.testclient.*",
+    "ignore:.*ERFA function.*yielded.*:UserWarning",
+    "ignore:.*dubious year.*:UserWarning",
+    "ignore:.*distance overridden.*:UserWarning",
 ]
 
 [tool.ruff]
