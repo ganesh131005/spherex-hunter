@@ -1116,6 +1116,35 @@ def test_target_presets_single_tool_icon_and_collective_popup_contract():
     assert "btnTargetPresetsTrigger" in html, "btnTargetPresetsTrigger must be bound in JavaScript"
 
 
+def test_viewport_draw_frame_canvas_transform_hygiene_and_cosdec_contract():
+    """
+    Contract test ensuring zero linear replicas or ghost image duplicates on #astroCanvas:
+    1. drawFrame explicitly resets the physical transform with ctx.setTransform(1, 0, 0, 1, 0, 0)
+       prior to fillRect to guarantee 100% full-viewport clearing on every frame.
+    2. drawFrame safely declares cosDec before passing to celestial overlay renderers.
+    3. drawFrame wraps transformed rendering in a try { ... } finally { ctx.restore(); } block
+       to guarantee that runtime errors never leak un-restored transforms or compound scales.
+    4. drawAutoIdentificationOverlay defensively falls back if cosDec is omitted or non-finite.
+    """
+    html_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "index.html")
+    with open(html_path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    # 1. Transform reset and full clear
+    assert "ctx.setTransform(1, 0, 0, 1, 0, 0);" in html, "drawFrame must reset canvas transform before clearing"
+
+    # 2. cosDec declared in drawFrame
+    assert "const cosDec = Math.cos((camera.dec * Math.PI) / 180.0)" in html, "drawFrame must define cosDec"
+
+    # 3. try/finally block around ctx.restore()
+    assert "ctx.save();\n      try {" in html or "ctx.save();\r\n      try {" in html, "drawFrame must wrap canvas transform in try block"
+    assert "} finally {\n        ctx.restore();\n      }" in html or "} finally {\r\n        ctx.restore();\r\n      }" in html, "drawFrame must restore canvas transform in finally block"
+
+    # 4. Defensive cosDec fallback in drawAutoIdentificationOverlay
+    assert "const safeCosDec = (typeof cosDec === 'number' && Number.isFinite(cosDec))" in html, "drawAutoIdentificationOverlay must defensively guard cosDec"
+
+
+
 
 
 

@@ -315,16 +315,16 @@
       <!-- Single Collective View Modes Tool with Popup Option (Blink, Difference, Spectra, Aladin Sky) -->
       <div class="relative shrink-0" id="viewModesMenuContainer">
         <!-- The Single View Modes Tool Button -->
-        <button id="btnViewModesTrigger" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to toggle Blink / open collective popup toolbar)">
-          <span id="viewModeActiveIconWrapper" class="flex items-center justify-center">
+        <button id="btnViewModesTrigger" onclick="window.toggleViewModesPopup && window.toggleViewModesPopup(); event.stopPropagation();" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective popup toolbar)">
+          <span id="viewModeActiveIconWrapper" class="flex items-center justify-center pointer-events-none">
             <i id="viewModeActiveIcon" data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
           </span>
-          <span id="viewModeActiveLabel" class="font-bold text-white tracking-wide">Blink</span>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" id="viewModeChevron"></i>
+          <span id="viewModeActiveLabel" class="font-bold text-white tracking-wide pointer-events-none">Blink</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200 pointer-events-none" id="viewModeChevron"></i>
         </button>
 
         <!-- Collective Popup Display Menu (Flyout anchored below the tool icon) -->
-        <div id="viewModesPopup" class="absolute top-full left-0 mt-2 w-72 bg-space-900/98 backdrop-blur-xl border border-cyan-500/60 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] p-2.5 z-50 flex flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
+        <div id="viewModesPopup" class="hidden absolute top-full left-0 mt-2 w-72 bg-space-900/98 backdrop-blur-xl border border-cyan-500/60 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] p-2.5 z-50 flex flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
           <div class="flex items-center justify-between px-2 py-1 text-[10px] text-gray-300 uppercase tracking-wider font-sans font-bold border-b border-space-800 pb-1.5 mb-1">
             <span class="flex items-center gap-1.5 text-cyan-300"><i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i> View Modes Toolbar</span>
             <div class="flex items-center gap-2">
@@ -1763,28 +1763,8 @@
         </button>
       </div>
 
-      <!-- Quick Playback Telemetry & Disambiguated Collapse Toggle (Issue #25) -->
-      <div class="flex items-center gap-2 relative">
-        <button id="btnTimeGapExplainer" type="button" class="px-2.5 py-0.5 rounded-full bg-emerald-950/60 hover:bg-emerald-900/70 border border-emerald-500/40 text-emerald-300 font-bold font-mono text-[11px] hidden sm:inline-flex items-center gap-1.5 transition" title="Why does a 26-year time gap matter for finding moving worlds? Click to learn">
-          <i data-lucide="clock" class="w-3 h-3 text-emerald-400"></i>
-          <span id="temporalBaselineText">Time Gap: 26.3 Years (1999 → 2025)</span>
-          <i data-lucide="help-circle" class="w-3 h-3 text-emerald-400/80"></i>
-        </button>
-
-        <!-- Educational Popover for Time Gap Baseline (Issue #25) -->
-        <div id="timeGapPopover" class="hidden absolute bottom-9 right-16 w-80 p-3 rounded-xl bg-space-900 border border-emerald-500/50 shadow-2xl text-[11px] text-gray-200 font-sans z-50 space-y-1.5">
-          <div class="flex items-center justify-between font-bold text-emerald-300">
-            <span>Why a 26-Year Time Gap Matters</span>
-            <button id="btnCloseTimeGapPopover" type="button" class="text-gray-400 hover:text-white text-xs">✕</button>
-          </div>
-          <p class="leading-relaxed text-gray-300">
-            Distant background stars appear stationary over human lifetimes, but nearby cold brown dwarfs and outer solar system objects (<strong class="text-white">Planet X candidates</strong>) noticeably shift position across a <strong class="text-emerald-300">26-year baseline</strong> between 2MASS (1999), WISE (2010–2014), and SPHEREx (2025).
-          </p>
-        </div>
-
-        <!-- Visual Separator between Time Gap pill and Panel Collapse button -->
-        <div class="h-4 w-px bg-space-700 mx-1 hidden sm:block"></div>
-
+      <!-- Panel Collapse Toggle -->
+      <div class="flex items-center gap-2">
         <button id="btnToggleDock" class="p-1 rounded blender-btn text-gray-300 hover:text-white flex items-center justify-center transition" title="Minimize / Expand Bottom Panel">
           <i id="dockCollapseIcon" data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
         </button>
@@ -4480,116 +4460,122 @@
       const w = canvas.width;
       const h = canvas.height;
 
+      // Always reset transform first so fillRect is guaranteed to clear the full physical canvas
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
       // Dynamic background based on active mode
       ctx.fillStyle = diffMode ? '#808080' : '#06080e';
       ctx.fillRect(0, 0, w, h);
 
+      const cosDec = Math.cos((camera.dec * Math.PI) / 180.0) || 1.0;
+
       ctx.save();
-      // Continuous camera transform (Pan & Zoom)
-      ctx.translate(w / 2 + camera.panX, h / 2 + camera.panY);
-      ctx.scale(camera.zoom, camera.zoom);
-      ctx.imageSmoothingEnabled = !isNativePixelsMode;
+      try {
+        // Continuous camera transform (Pan & Zoom)
+        ctx.translate(w / 2 + camera.panX, h / 2 + camera.panY);
+        ctx.scale(camera.zoom, camera.zoom);
+        ctx.imageSmoothingEnabled = !isNativePixelsMode;
 
-      const pixelsPerArcmin = getActivePixelsPerArcmin(w, h);
+        const pixelsPerArcmin = getActivePixelsPerArcmin(w, h);
 
-      // Query layer states from Scene
-      const layerA = getSceneLayer('base_epoch_a');
-      const layerB = getSceneLayer('base_epoch_b');
-      const diffLayer = getSceneLayer('diff_image');
-      const covLayer = getSceneLayer('coverage_mask');
-      const gaiaLayer = getSceneLayer('gaia_overlay');
+        // Query layer states from Scene
+        const layerA = getSceneLayer('base_epoch_a');
+        const layerB = getSceneLayer('base_epoch_b');
+        const diffLayer = getSceneLayer('diff_image');
+        const covLayer = getSceneLayer('coverage_mask');
+        const gaiaLayer = getSceneLayer('gaia_overlay');
 
-      const isFrameA = (currentFrame === 1);
-      const curLayer = isFrameA ? layerA : layerB;
-      const layerAlpha = curLayer ? curLayer.opacity : 1.0;
-      const isVisible = curLayer ? curLayer.visible : true;
+        const isFrameA = (currentFrame === 1);
+        const curLayer = isFrameA ? layerA : layerB;
+        const layerAlpha = curLayer ? curLayer.opacity : 1.0;
+        const isVisible = curLayer ? curLayer.visible : true;
 
-      // 1. Draw base contiguous image (or previous tier during cross-fade)
-      if (prevEpoch1Img && crossFadeAlpha < 1.0) {
-        const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
-        if (prevImg && prevImg.complete && isVisible) {
-          const pfov = prevImg.fov || getActiveFovArcmin();
-          const pw = pfov * pixelsPerArcmin;
-          const ph = pfov * pixelsPerArcmin;
-          drawFeatheredImage(ctx, prevImg, -pw / 2, -ph / 2, pw, ph, (1.0 - crossFadeAlpha) * layerAlpha);
+        // 1. Draw base contiguous image (or previous tier during cross-fade)
+        if (prevEpoch1Img && crossFadeAlpha < 1.0) {
+          const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
+          if (prevImg && prevImg.complete && isVisible) {
+            const pfov = prevImg.fov || getActiveFovArcmin();
+            const pw = pfov * pixelsPerArcmin;
+            const ph = pfov * pixelsPerArcmin;
+            drawFeatheredImage(ctx, prevImg, -pw / 2, -ph / 2, pw, ph, (1.0 - crossFadeAlpha) * layerAlpha);
+          }
         }
-      }
 
-      // 2. Draw current active master astronomical image centered at exact world coordinates
-      const masterFov = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin();
-      const rw = masterFov * pixelsPerArcmin;
-      const rh = masterFov * pixelsPerArcmin;
+        // 2. Draw current active master astronomical image centered at exact world coordinates
+        const masterFov = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin();
+        const rw = masterFov * pixelsPerArcmin;
+        const rh = masterFov * pixelsPerArcmin;
 
-      if (diffMode) {
-        const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
-        const diffVis = diffLayer ? diffLayer.visible : true;
-        if (diffVis && realDiffImg && realDiffImg.complete) {
-          ctx.globalAlpha = diffAlpha;
-          ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw + 0.5, rh + 0.5);
+        if (diffMode) {
+          const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
+          const diffVis = diffLayer ? diffLayer.visible : true;
+          if (diffVis && realDiffImg && realDiffImg.complete) {
+            ctx.globalAlpha = diffAlpha;
+            ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw + 0.5, rh + 0.5);
+            ctx.globalAlpha = 1.0;
+          }
+        } else {
+          const visA = layerA ? layerA.visible : true;
+          const visB = layerB ? layerB.visible : true;
+          const opacityA = layerA ? layerA.opacity : 1.0;
+          const opacityB = layerB ? layerB.opacity : 1.0;
+          const lodFade = (prevEpoch1Img && crossFadeAlpha < 1.0) ? crossFadeAlpha : 1.0;
+
+          // Continuous Epoch Morphing & Blending
+          const alphaA = (1.0 - epochBlend) * opacityA * lodFade;
+          const alphaB = epochBlend * opacityB * lodFade;
+
+          if (visA && realEpoch1Img && realEpoch1Img.complete && alphaA > 0.005) {
+            drawFeatheredImage(ctx, realEpoch1Img, -rw / 2, -rh / 2, rw, rh, alphaA, false);
+          }
+
+          if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
+            drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB, false);
+          }
+
+          if ((!realEpoch1Img || !realEpoch1Img.complete) && (!realEpoch2Img || !realEpoch2Img.complete)) {
+            drawNoCoverageHatch(ctx, -rw / 2, -rh / 2, rw, rh, 'Loading SPHEREx Calibrated Exposure...');
+          }
+        }
+
+        // 3. Issue #10: Continuous Raytracing Sky Tiling & dynamic frustum fill (seamless adjacent coverage)
+        drawAdjacentSkyTiling(ctx, pixelsPerArcmin);
+
+        // Auto-Identification of Motion Dipoles & Transients Overlay
+        if (autoDetectEnabled && autoDetectedChanges.length > 0) {
+          drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec);
+        }
+
+        // 4. Draw Coverage Mask Overlay (transparent NaN / unobserved boundary mask)
+        if (covLayer && covLayer.visible && realCoverageMaskImg && realCoverageMaskImg.complete) {
+          const mfov = realCoverageMaskImg.fov || getActiveFovArcmin();
+          const mw = mfov * pixelsPerArcmin;
+          const mh = mfov * pixelsPerArcmin;
+          ctx.globalAlpha = covLayer.opacity;
+          ctx.drawImage(realCoverageMaskImg, -mw / 2, -mh / 2, mw, mh);
           ctx.globalAlpha = 1.0;
         }
-      } else {
-        const visA = layerA ? layerA.visible : true;
-        const visB = layerB ? layerB.visible : true;
-        const opacityA = layerA ? layerA.opacity : 1.0;
-        const opacityB = layerB ? layerB.opacity : 1.0;
-        const lodFade = (prevEpoch1Img && crossFadeAlpha < 1.0) ? crossFadeAlpha : 1.0;
 
-        // Continuous Epoch Morphing & Blending
-        const alphaA = (1.0 - epochBlend) * opacityA * lodFade;
-        const alphaB = epochBlend * opacityB * lodFade;
-
-        if (visA && realEpoch1Img && realEpoch1Img.complete && alphaA > 0.005) {
-          drawFeatheredImage(ctx, realEpoch1Img, -rw / 2, -rh / 2, rw, rh, alphaA, false);
+        // 5. Draw Gaia DR3 Astrometry Overlay (Epoch-propagated + WCS TAN projected)
+        const gaiaVis = gaiaLayer ? gaiaLayer.visible : gaiaOverlayEnabled;
+        const gaiaAlpha = gaiaLayer ? gaiaLayer.opacity : 0.85;
+        if (gaiaVis) {
+          drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha);
         }
 
-        if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
-          drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB, false);
-        }
+        // 6. AI Field Scanner Dipole Markers & Angular Distance Ruler
+        drawAiDetectedCandidates(ctx, pixelsPerArcmin);
+        drawMeasurementRuler(ctx, pixelsPerArcmin);
+        drawSelectedPointReticle(ctx, pixelsPerArcmin);
 
-        if ((!realEpoch1Img || !realEpoch1Img.complete) && (!realEpoch2Img || !realEpoch2Img.complete)) {
-          drawNoCoverageHatch(ctx, -rw / 2, -rh / 2, rw, rh, 'Loading SPHEREx Calibrated Exposure...');
-        }
+        // 7. Step 2: Level 2 Exposure Footprint Boundaries (EXP_ID, detector, MJD)
+        drawExposureFootprintOverlay(ctx, pixelsPerArcmin);
+
+        // 8. Step 2: Equatorial Coordinate Grid (RA/Dec lines)
+        drawCoordinateGrid(ctx, pixelsPerArcmin);
+      } finally {
+        ctx.restore();
       }
-
-      // 3. Issue #10: Continuous Raytracing Sky Tiling & dynamic frustum fill (seamless adjacent coverage)
-      drawAdjacentSkyTiling(ctx, pixelsPerArcmin);
-
-      // Auto-Identification of Motion Dipoles & Transients Overlay
-      if (autoDetectEnabled && autoDetectedChanges.length > 0) {
-        drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec);
-      }
-
-
-      // 4. Draw Coverage Mask Overlay (transparent NaN / unobserved boundary mask)
-      if (covLayer && covLayer.visible && realCoverageMaskImg && realCoverageMaskImg.complete) {
-        const mfov = realCoverageMaskImg.fov || getActiveFovArcmin();
-        const mw = mfov * pixelsPerArcmin;
-        const mh = mfov * pixelsPerArcmin;
-        ctx.globalAlpha = covLayer.opacity;
-        ctx.drawImage(realCoverageMaskImg, -mw / 2, -mh / 2, mw, mh);
-        ctx.globalAlpha = 1.0;
-      }
-
-      // 5. Draw Gaia DR3 Astrometry Overlay (Epoch-propagated + WCS TAN projected)
-      const gaiaVis = gaiaLayer ? gaiaLayer.visible : gaiaOverlayEnabled;
-      const gaiaAlpha = gaiaLayer ? gaiaLayer.opacity : 0.85;
-      if (gaiaVis) {
-        drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha);
-      }
-
-      // 6. AI Field Scanner Dipole Markers & Angular Distance Ruler
-      drawAiDetectedCandidates(ctx, pixelsPerArcmin);
-      drawMeasurementRuler(ctx, pixelsPerArcmin);
-      drawSelectedPointReticle(ctx, pixelsPerArcmin);
-
-      // 7. Step 2: Level 2 Exposure Footprint Boundaries (EXP_ID, detector, MJD)
-      drawExposureFootprintOverlay(ctx, pixelsPerArcmin);
-
-      // 8. Step 2: Equatorial Coordinate Grid (RA/Dec lines)
-      drawCoordinateGrid(ctx, pixelsPerArcmin);
-
-      ctx.restore();
     }
 
     // =========================================================================
@@ -5796,26 +5782,7 @@
     if (btnViewModesTrigger) {
       btnViewModesTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        // 1. Toggle popup toolbar visibility
         toggleViewModesPopup();
-
-        // 2. Make the Blink icon in top horizontal toolbar fully functional:
-        if (wsBlink) {
-          if (diffMode || !wsBlink.classList.contains('blender-btn-active')) {
-            // Activate Blink mode cleanly
-            wsBlink.click();
-          } else {
-            // Already in Blink mode: toggle flipbook play/pause & keep HUD active
-            if (typeof flipbookInterval !== 'undefined' && flipbookInterval) {
-              stopFlipbook();
-            } else {
-              startFlipbook();
-            }
-            if (typeof toggleBlinkHUD === 'function') toggleBlinkHUD(true);
-            drawFrame();
-            updateFrameLabel();
-          }
-        }
       });
     }
 
@@ -8927,28 +8894,6 @@
     }
     if (btnToggleDock) btnToggleDock.addEventListener('click', () => toggleDockCollapse());
 
-    // Issue #25: Time Gap Baseline Explainer Popover
-    const btnTimeGapExplainer = document.getElementById('btnTimeGapExplainer');
-    const timeGapPopover = document.getElementById('timeGapPopover');
-    const btnCloseTimeGapPopover = document.getElementById('btnCloseTimeGapPopover');
-    if (btnTimeGapExplainer && timeGapPopover) {
-      btnTimeGapExplainer.addEventListener('click', (e) => {
-        e.stopPropagation();
-        timeGapPopover.classList.toggle('hidden');
-      });
-      if (btnCloseTimeGapPopover) {
-        btnCloseTimeGapPopover.addEventListener('click', (e) => {
-          e.stopPropagation();
-          timeGapPopover.classList.add('hidden');
-        });
-      }
-      document.addEventListener('click', (e) => {
-        if (!timeGapPopover.classList.contains('hidden') && !timeGapPopover.contains(e.target) && e.target !== btnTimeGapExplainer) {
-          timeGapPopover.classList.add('hidden');
-        }
-      });
-    }
-
     // =========================================================================
     // DRAGGABLE LAYOUT SPLITTERS (Issue #16: Inspector & Bottom Dock)
     // =========================================================================
@@ -11813,11 +11758,14 @@
     function drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec) {
       const time = performance.now() / 1000;
       const pulse = 1.0 + 0.08 * Math.sin(time * 4.0);
+      const safeCosDec = (typeof cosDec === 'number' && Number.isFinite(cosDec))
+        ? cosDec
+        : (Math.cos((camera.dec * Math.PI) / 180.0) || 1.0);
 
       for (let i = 0; i < autoDetectedChanges.length; i++) {
         const chg = autoDetectedChanges[i];
 
-        const draCenter = (chg.raCenter - camera.ra) * 60.0 * cosDec;
+        const draCenter = (chg.raCenter - camera.ra) * 60.0 * safeCosDec;
         const ddecCenter = (chg.decCenter - camera.dec) * 60.0;
         const cx = - draCenter * pixelsPerArcmin;
         const cy = - ddecCenter * pixelsPerArcmin;
