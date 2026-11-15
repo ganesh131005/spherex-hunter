@@ -1076,60 +1076,71 @@
       <!-- Interactive CDS Strasbourg Aladin Lite Container -->
       <div id="aladinContainer" class="absolute inset-0 hidden z-10 w-full h-full"></div>
 
-      <!-- SPHEREx DR1 HiPS Context Controls Overlay (Google Maps Style Multi-Resolution Navigator) -->
+      <!-- SPHEREx DR1 HiPS Context Controls Overlay (Compact, Non-Intrusive, Bottom-Docked) -->
       <div id="aladinContextBar"
-        class="absolute top-14 left-1/2 -translate-x-1/2 z-20 hidden flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700/90 shadow-2xl text-xs select-none max-w-[95%]"
+        class="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 hidden flex-nowrap items-center gap-2 bg-space-900/95 backdrop-blur-xl px-3 py-1 rounded-full border border-cyan-500/50 shadow-[0_8px_32px_rgba(0,0,0,0.85)] text-xs select-none max-w-[95vw] overflow-x-auto scrollbar-none transition-all duration-200"
         role="region" aria-label="SPHEREx DR1 HiPS Context Controls">
+
         <!-- Google Maps Multi-Resolution Zoom Stepper -->
-        <div class="flex items-center gap-1 bg-space-950/90 px-1.5 py-0.5 rounded border border-space-800">
-          <span class="text-gray-300 text-xs uppercase font-mono mr-0.5 font-medium">Scale:</span>
-          <button id="btnZoomAllSky"
-            class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono"
-            title="180° All-Sky Overview (Full Cosmic Sphere)">🌌 180°</button>
-          <button id="btnZoomWide"
-            class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono"
-            title="30° Wide Constellation View">✨ 30°</button>
-          <button id="btnZoomField"
-            class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono"
-            title="5° Intermediate Sky Field">🔭 5°</button>
-          <button id="btnZoomCore"
-            class="px-2 py-0.5 rounded bg-cyan-900/70 hover:bg-cyan-800 border border-cyan-500/50 text-xs text-cyan-200 hover:text-white transition font-mono font-semibold"
-            title="0.1° / 6' Native SPHEREx High-Resolution (Order 5 Detail)">🔬 0.1° HD</button>
+        <div class="flex items-center gap-1 bg-space-950/90 px-1.5 py-0.5 rounded-full border border-space-800 shrink-0">
+          <span class="text-gray-400 text-[10px] uppercase font-mono mr-0.5 font-medium">Scale:</span>
+          <button id="btnZoomAllSky" class="px-2 py-0.5 rounded-full bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono" title="180° All-Sky Overview">🌌 180°</button>
+          <button id="btnZoomWide" class="px-2 py-0.5 rounded-full bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono" title="30° Wide Constellation View">✨ 30°</button>
+          <button id="btnZoomField" class="px-2 py-0.5 rounded-full bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono" title="5° Intermediate Sky Field">🔭 5°</button>
+          <button id="btnZoomCore" class="px-2 py-0.5 rounded-full bg-cyan-900/70 hover:bg-cyan-800 border border-cyan-500/50 text-xs text-cyan-200 hover:text-white transition font-mono font-semibold" title="0.1° / 6' Native SPHEREx High-Resolution (Order 5 Detail)">🔬 0.1° HD</button>
         </div>
-        <div class="h-4 w-px bg-space-700"></div>
+
+        <div class="h-4 w-px bg-space-700 shrink-0"></div>
+
         <!-- 102-Channel Selector with Step Controls -->
-        <div class="flex items-center gap-1.5 text-xs">
-          <span class="text-gray-300 text-xs uppercase font-mono font-medium">λ:</span>
-          <button id="btnHipsPrevCh" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-200 hover:text-white transition text-xs font-mono" title="Previous Spectral Channel (Lower Wavelength)">◀</button>
-          <select id="hipsChannelSelect" class="bg-space-950 text-cyan-300 border border-space-700 rounded px-2 py-0.5 text-xs font-mono focus:outline-none focus:border-cyan-500 cursor-pointer max-w-[140px]"></select>
-          <button id="btnHipsNextCh" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-200 hover:text-white transition text-xs font-mono" title="Next Spectral Channel (Higher Wavelength)">▶</button>
-          <span id="hipsWavelengthDisplay" class="font-mono text-cyan-300 font-bold text-xs whitespace-nowrap">0.753 μm (Band 1)</span>
+        <div class="flex items-center gap-1 text-xs shrink-0 bg-space-950/90 px-1.5 py-0.5 rounded-full border border-space-800">
+          <span class="text-gray-400 text-[10px] uppercase font-mono font-medium">λ:</span>
+          <button id="btnHipsPrevCh" class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-200 hover:text-white transition text-xs font-mono" title="Previous Spectral Channel">◀</button>
+          <select id="hipsChannelSelect" class="bg-space-950 text-cyan-300 border border-space-700 rounded px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:border-cyan-500 cursor-pointer max-w-[130px]"></select>
+          <button id="btnHipsNextCh" class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-200 hover:text-white transition text-xs font-mono" title="Next Spectral Channel">▶</button>
+          <span id="hipsWavelengthDisplay" class="font-mono text-cyan-300 font-bold text-xs whitespace-nowrap hidden sm:inline">0.753 μm</span>
         </div>
-        <div class="h-4 w-px bg-space-700"></div>
-        <!-- NASA Landmark Target Pins (Google Maps Style) -->
-        <div class="hidden lg:flex items-center gap-1">
-          <span class="text-gray-300 text-xs uppercase font-mono mr-0.5 font-medium">Pins:</span>
-          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="wise0855" title="WISE 0855-0714 (Coldest Y-Dwarf / Planet X Analog)">🪐 WISE 0855</button>
-          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="barnard" title="Barnard's Star (High Proper Motion Red Dwarf)">⭐ Barnard</button>
-          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">🌟 Eps Indi</button>
-          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="rwaur" title="RW Aurigae (Eruptive Variable Star)">✨ RW Aur</button>
-          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="rdraconis" title="R Draconis (Pulsating Mira Variable)">🔴 R Drac</button>
+
+        <div class="h-4 w-px bg-space-700 shrink-0 hidden md:block"></div>
+
+        <!-- NASA Landmark Target Pins -->
+        <div class="hidden xl:flex items-center gap-1 shrink-0">
+          <span class="text-gray-400 text-[10px] uppercase font-mono mr-0.5 font-medium">Pins:</span>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded-full bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="wise0855" title="WISE 0855-0714">🪐 WISE 0855</button>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded-full bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="barnard" title="Barnard's Star">⭐ Barnard</button>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded-full bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="epsindi" title="Epsilon Indi B">🌟 Eps Indi</button>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded-full bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="rwaur" title="RW Aurigae">✨ RW Aur</button>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded-full bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="rdraconis" title="R Draconis">🔴 R Drac</button>
         </div>
-        <div class="h-4 w-px bg-space-700"></div>
-        <!-- Label, Attribution and Honesty Notice (Step 3 Specification) -->
-        <div class="flex items-center gap-1.5 text-amber-400 font-medium">
-          <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
-          <span id="aladinContextNotice" class="text-xs font-semibold text-amber-300 truncate max-w-[340px]" title="DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection | DR1 Co-Added Context (Blurs Movers)">DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="px-2 py-0.5 rounded bg-space-800 border border-space-700 text-gray-300 text-xs font-mono shrink-0 hidden md:inline" title="Authentic Data Source: NASA/JPL-Caltech/IPAC SPHEREx DR1 (NASA/JPL/IPAC)">NASA/JPL-Caltech/IPAC (SPHEREx DR1)</span>
-          <span id="aladinLayerStatus" class="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 font-mono font-bold text-xs">DR1 HiPS Ready</span>
+
+        <div class="h-4 w-px bg-space-700 shrink-0"></div>
+
+        <!-- Status & Attribution -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <span id="aladinLayerStatus" class="px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 font-mono font-bold text-[10px]">DR1 HiPS Ready</span>
+          <span id="aladinContextNotice" class="text-amber-400 cursor-help" title="DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection"><i data-lucide="info" class="w-3.5 h-3.5"></i></span>
           <div id="aladinFallbackAlert" class="hidden text-xs text-amber-200 bg-amber-950/80 px-2.5 py-0.5 rounded border border-amber-600/60 flex items-center gap-1.5">
             <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
-            <span id="aladinFallbackMsg">HiPS unreachable; fallback to local survey active.</span>
+            <span id="aladinFallbackMsg">Fallback active</span>
           </div>
         </div>
+
+        <div class="h-4 w-px bg-space-700 shrink-0"></div>
+
+        <!-- Collapse / Minimize Button -->
+        <button id="btnCollapseAladinContext" type="button" class="w-5 h-5 rounded-full bg-space-800 hover:bg-space-700 active:bg-space-600 text-gray-400 hover:text-white transition flex items-center justify-center text-xs shrink-0" title="Hide HiPS Controls">
+          ✕
+        </button>
       </div>
+
+      <!-- Minimized HiPS Floating Pill (Shown when collapsed) -->
+      <button id="btnExpandAladinContext" type="button"
+        class="absolute bottom-14 left-1/2 -translate-x-1/2 z-20 hidden items-center gap-1.5 bg-space-900/90 hover:bg-space-850 backdrop-blur-md px-3 py-1 rounded-full border border-cyan-500/50 shadow-xl text-xs font-mono text-cyan-300 hover:text-white transition select-none cursor-pointer"
+        title="Open SPHEREx DR1 HiPS Context Controls">
+        <i data-lucide="globe" class="w-3.5 h-3.5 text-cyan-400"></i>
+        <span>HiPS Controls</span>
+        <i data-lucide="chevron-up" class="w-3 h-3 text-gray-400"></i>
+      </button>
 
       <!-- LOADING OVERLAY -->
       <div id="loadingOverlay" class="absolute inset-0 bg-black/70 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 pointer-events-none opacity-0">
@@ -5844,6 +5855,11 @@
         contextBar.classList.add('hidden');
         contextBar.classList.remove('flex');
       }
+      const btnExpand = document.getElementById('btnExpandAladinContext');
+      if (btnExpand) {
+        btnExpand.classList.add('hidden');
+        btnExpand.classList.remove('flex');
+      }
       document.getElementById('astroCanvas').classList.remove('hidden');
     }
 
@@ -5887,6 +5903,11 @@
       if (contextBar) {
         contextBar.classList.remove('hidden');
         contextBar.classList.add('flex');
+      }
+      const btnExpand = document.getElementById('btnExpandAladinContext');
+      if (btnExpand) {
+        btnExpand.classList.add('hidden');
+        btnExpand.classList.remove('flex');
       }
       const tour = document.getElementById('guidedTourBanner');
       if (tour) tour.classList.add('hidden');
@@ -7428,6 +7449,28 @@
           }
         };
       });
+
+      const btnCollapse = document.getElementById('btnCollapseAladinContext');
+      const btnExpand = document.getElementById('btnExpandAladinContext');
+      const contextBar = document.getElementById('aladinContextBar');
+
+      if (btnCollapse && contextBar && btnExpand) {
+        btnCollapse.onclick = (e) => {
+          e.stopPropagation();
+          contextBar.classList.add('hidden');
+          contextBar.classList.remove('flex');
+          btnExpand.classList.remove('hidden');
+          btnExpand.classList.add('flex');
+        };
+
+        btnExpand.onclick = (e) => {
+          e.stopPropagation();
+          btnExpand.classList.add('hidden');
+          btnExpand.classList.remove('flex');
+          contextBar.classList.remove('hidden');
+          contextBar.classList.add('flex');
+        };
+      }
     }
 
     bindAladinContextBarControls();
