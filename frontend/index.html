@@ -409,11 +409,10 @@
     <!-- Center: Curated Target Selector & Quick Search -->
     <div class="flex items-center gap-2 shrink-0">
 
-      <!-- Command Palette / Target Switcher Button -->
-      <button id="btnOpenCommandPalette" class="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-space-950 hover:bg-space-850 px-2.5 py-1.5 rounded-lg border border-space-700 transition shadow-inner" title="Search targets and coordinates (Ctrl+K)">
-        <i data-lucide="search" class="w-2.5 h-2.5 text-cyan-400 shrink-0"></i>
-        <span id="activeTargetBadgeName" class="font-semibold text-white truncate max-w-[100px] sm:max-w-[120px]">WISE 0855</span>
-        <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-gray-400 border border-white/10">Ctrl+K</kbd>
+      <!-- Command Palette Search Icon Button (Single Icon with Full Search & Ctrl+K) -->
+      <button id="btnOpenCommandPalette" type="button" class="flex items-center justify-center p-1.5 rounded-lg bg-space-950 hover:bg-space-850 text-cyan-400 hover:text-cyan-300 border border-space-700 transition shadow-inner shrink-0 cursor-pointer" title="Search targets, coordinates, and tools (Ctrl+K)" aria-label="Search targets and coordinates (Ctrl+K)">
+        <i data-lucide="search" class="w-3.5 h-3.5 pointer-events-none"></i>
+        <span id="activeTargetBadgeName" class="sr-only">WISE 0855</span>
       </button>
 
       <!-- Single Collective Target Presets Tool with Popup Option (wise0855, barnard, epsindi, rwaur, etc.) -->
