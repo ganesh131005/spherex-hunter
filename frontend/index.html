@@ -3387,7 +3387,6 @@
 
           let entry = adjacentSkyTileCache.get(tileKey);
           if (!entry || !entry.loaded) {
-            // Check fallback LODs in cache so we never show empty void while high-res tile loads
             const fallbackKeyLOD1 = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_1`;
             const fallbackKeyLOD2 = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_2`;
             const fallbackKeyLOD0 = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_0`;
@@ -3870,6 +3869,8 @@
           await saveTileToClientCache(cacheKey, data);
         }
         activeCutoutData = data;
+        runAutoIdentification(data);
+        updateTimeStepHUD(data);
 
         const fovArcmin = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : reqFov;
 
@@ -5237,6 +5238,32 @@
       isDragging = true;
       lastMouseX = e.clientX;
       lastMouseY = e.clientY;
+    });
+
+    canvas.addEventListener('click', (e) => {
+      if (autoDetectEnabled && autoDetectedChanges.length > 0) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const w = canvas.width;
+        const h = canvas.height;
+        const worldX = (mouseX - (w / 2 + camera.panX)) / camera.zoom;
+        const worldY = (mouseY - (h / 2 + camera.panY)) / camera.zoom;
+        const basePx = Math.min(w, h) * 0.90;
+        const pixelsPerArcmin = basePx / camera.fov;
+        const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+
+        for (const chg of autoDetectedChanges) {
+          const draCenter = (chg.raCenter - camera.ra) * 60.0 * cosDec;
+          const ddecCenter = (chg.decCenter - camera.dec) * 60.0;
+          const cx = - draCenter * pixelsPerArcmin;
+          const cy = - ddecCenter * pixelsPerArcmin;
+          if (Math.hypot(worldX - cx, worldY - cy) <= 35 / camera.zoom) {
+            lockOntoDetectedChange(chg);
+            return;
+          }
+        }
+      }
     });
 
     window.addEventListener('mouseup', () => {
@@ -8114,7 +8141,6 @@
           const x2 = - dra2 * pixelsPerArcmin;
           const y2 = - ddec2 * pixelsPerArcmin;
 
-          // Dashed vector line
           ctx.setLineDash([4 / camera.zoom, 3 / camera.zoom]);
           ctx.strokeStyle = '#06b6d4';
           ctx.lineWidth = 1.8 / camera.zoom;
@@ -8124,7 +8150,6 @@
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // Arrowhead pointing towards t2
           const angle = Math.atan2(y2 - y1, x2 - x1);
           const headLen = 7 / camera.zoom;
           ctx.fillStyle = '#ea7600';
@@ -8135,7 +8160,6 @@
           ctx.closePath();
           ctx.fill();
 
-          // Epoch 1 marker: Cyan [-]
           ctx.fillStyle = 'rgba(6, 182, 212, 0.25)';
           ctx.strokeStyle = '#06b6d4';
           ctx.lineWidth = 1.5 / camera.zoom;
@@ -8150,7 +8174,6 @@
           ctx.textBaseline = 'middle';
           ctx.fillText('-', x1, y1);
 
-          // Epoch 2 marker: Orange [+]
           ctx.fillStyle = 'rgba(234, 118, 0, 0.35)';
           ctx.strokeStyle = '#ea7600';
           ctx.lineWidth = 1.5 / camera.zoom;
@@ -8194,7 +8217,7 @@
 
     function lockOntoDetectedChange(chg) {
       if (!chg) return;
-      camera.targetZoom = 2.2;
+      camera.zoom = 2.2;
 
       const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
       const basePx = Math.min(canvas.width, canvas.height) * 0.90;
@@ -8204,10 +8227,10 @@
       const targetX = - draCenter * pixelsPerArcmin;
       const targetY = - ddecCenter * pixelsPerArcmin;
 
-      camera.targetPanX = - targetX;
-      camera.targetPanY = - targetY;
-
-      if (typeof playTargetLockChime === 'function') playTargetLockChime();
+      camera.panX = - targetX;
+      camera.panY = - targetY;
+      updateCoordinateReadouts();
+      drawFrame();
 
       const strip = document.getElementById('candidateAlertStrip');
       const alertText = document.getElementById('candidateAlertText');
@@ -8274,7 +8297,6 @@
       const hudAutoDetectLabel = document.getElementById('hudAutoDetectLabel');
       const hudAutoDetectDot = document.getElementById('hudAutoDetectDot');
       const toolAutoDetect = document.getElementById('toolAutoDetect');
-      const btnAutoDetectPill = document.getElementById('btnAutoDetectPill');
 
       if (hudAutoDetectLabel) {
         hudAutoDetectLabel.innerText = autoDetectEnabled ? 'Auto-ID: Active' : 'Auto-ID: Paused';
