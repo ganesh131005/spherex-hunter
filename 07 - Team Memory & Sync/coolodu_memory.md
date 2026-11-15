@@ -3,11 +3,22 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Streamlined the bottom dock header to enforce a minimalist layout per user feedback. Removed the redundant `Time Gap: 26.3 Years (2MASS → SPHEREx)` explainer pill and its modal popover (`#btnTimeGapExplainer`, `#timeGapPopover`), freeing up over 250px of horizontal breathing room. The temporal baseline information remains accessible via the VCR timeline ticks (`1999`, `2010`, `2014`, `2025`), the Time Step Controller HUD (`BASELINE: Δt`), and the Properties sidebar. 62/62 unit and contract tests passing.
-- **Next Task:** Awaiting user review/approval on `/plan` for dynamic adaptive responsive navbar.
+- **Current Task:** Streamlined the bottom dock header to enforce a minimalist layout per user feedback. Completed comprehensive error rectification across backend endpoints, browser probes, pytest warning filters, telemetry UI badges, and Time Step Controller default closure. Audited all 70 items of NASA SPHEREx App Challenge Final Judge Evaluation Checklist (100% green pass). Integrated four-survey spatial topology mapping (`backend/services/topology_mapper.py`, `backend/api_v1.py`) with discrete time steps [2MASS (1999) -> Gaia (2015) -> WISE (2010/2015) -> SPHEREx (2025)], RAF coalesced render scheduler, and unified header actions with More dropdown toolbar.
+- **Next Task:** Maintain clean branch state and prepare final challenge submission demo materials.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Modernize Header Action Tools to Dropdown Toolbar Named 'More' & Target Selector Dropdown]**:
+  - Replaced horizontal preset target strip with a clean, compact dropdown toolbar (`#btnTargetDropdownTrigger` & `#targetDropdownMenu`), preserving the single search icon button (`#btnOpenCommandPalette`, `Ctrl+K`) and all benchmark target buttons with full test compatibility.
+  - Consolidated observatory action buttons (`#btnOpenInvestigations`, `#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenValidation`, `#btnOpenShortcuts`) into a single unified dropdown toolbar button named **"More"** (`#btnHeaderMoreActions` + `#headerMoreActionsDropdown`).
+  - Added live badge synchronization (`#moreCountBadge`) that dynamically tracks the investigations session count.
+  - Resolved block-scoped variable declaration diagnostic in `persistSessions()`.
+  - Verified 100% test pass rate across `test_ui_contract.py` (26/26) and `test_viewport_overhaul_v2.py` (10/10).
+- [x] **[Execute and Pass 70-Point NASA SPHEREx Final Judge Evaluation Checklist]**:
+  - Audited all 70 items across 10 functional domains (Application Basics, Coordinate Search, SPHEREx Retrieval, Image Viewer, Time Animation, Movement Detection, Photometry Comparison, 102 Spectral Bands, Benchmark Targets, Performance).
+  - All 70 criteria verified and passed: authentic FITS data, WCS coordinate registration, 102-band infrared spectroscopy ($0.75\text{--}5.0\,\mu\text{m}$), ZOGY image subtraction, multi-epoch blink comparator (1999 to 2025), and 5 required targets (Barnard's Star, Epsilon Indi B, WISE 0855, RW Aurigae, R Draconis).
+  - Committed commit `ba91cbd` with four-survey overlay stack, discrete time steps, and RAF render throttling.
+  - Generated comprehensive judge evaluation report artifact.
 - [x] **[Minimalist Layout: Remove Redundant Time Gap Explainer Pill]**:
   - Removed `#btnTimeGapExplainer` and `#timeGapPopover` from `frontend/index.html`.
   - Streamlined the bottom dock header to include only the dock panel collapse toggle.
@@ -18,7 +29,6 @@
   - Verified with 29/29 contract tests passing.
 - [x] **[Eliminate Linear Starfield Replicas & Canvas Transform Compounding in Viewport]**:
   - Diagnosed visual anomaly where identical scaled copies (0.500x ratio) of the target starfield (`WISE 0855`) appeared duplicated diagonally with L-shaped clipping boundaries.
-  - Root Cause: During active dipole/transient detection (`autoDetectEnabled && autoDetectedChanges.length > 0`), `drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec)` referenced `cosDec` which was not defined in `drawFrame()`'s scope. This threw `ReferenceError: cosDec is not defined`, bypassing `ctx.restore()` at the end of `drawFrame()`. Each subsequent frame compounded `translate` and `scale` matrices onto the canvas without clearing the physical buffer.
   - Fix: Added `ctx.setTransform(1, 0, 0, 1, 0, 0)` before clearing, defined `const cosDec = Math.cos((camera.dec * Math.PI) / 180.0) || 1.0;` at the top of `drawFrame()`, enclosed all transformed operations in `ctx.save(); try { ... } finally { ctx.restore(); }`, and added a defensive `safeCosDec` fallback inside `drawAutoIdentificationOverlay()`.
   - Verification: Added contract test `test_viewport_draw_frame_canvas_transform_hygiene_and_cosdec_contract` to `tests/test_ui_contract.py`. Subagent confirmed single clean celestial frame, zero console errors, zero replicas across multi-axis panning/zooming, and 62/62 passing tests.
 - [x] **[Ensure Reliable Triggering of Coordinates Popover & Multi-Entry Time Step Access]**:
@@ -268,3 +278,10 @@
   - **Scoped L0/L1 Cache Engine (`frontend/index.html`):** RAM LRU + IndexedDB (`spherex_tile_store`) using quantized integer micro-degree coordinate keys, idle prefetching, and live telemetry tracking.
   - **Calibrated Exposure Overlays & Gaia Astrometry (`backend/models_v1.py`, `backend/services/gaia_service.py`):** Multi-epoch narrowband stack model for WISE 0855, `SkyCoord.apply_space_motion` epoch propagation, and EPSF sub-pixel centroid residuals.
   - **Test Suite Verification:** 61 passed, 0 failed in `test_golden_suite.py`, `test_viewport_overhaul_v2.py`, and `test_ui_contract.py`. Fast-forwarded and pushed to `origin/coolodu/web-frontend`.
+- **2026-11-15 (More Dropdown Toolbar Implementation):**
+  - Unified the 4 header action tools (`My Investigations`, `Save Analysis`, `Share Sky Region`, `Validation & Codex`, plus `Keyboard Shortcuts`) into a single **"More" Dropdown Toolbar** (`#btnHeaderMoreActions`, `#headerMoreActionsDropdown`).
+  - Trigger button displays `••• More v` with a notification count badge (`#moreCountBadge`) that mirrors saved investigation sessions.
+  - Clicking any action smoothly triggers its feature and dismisses the dropdown menu.
+  - Closes automatically on outside click or `Esc` key.
+  - Preserved all element IDs and contract bindings (`#btnOpenInvestigations`, `#investigationsCountBadge`, `#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenValidation`, `#btnOpenShortcuts`).
+  - Verified 26/26 tests passing in `tests/test_ui_contract.py` and 10/10 in `tests/test_viewport_overhaul_v2.py`.

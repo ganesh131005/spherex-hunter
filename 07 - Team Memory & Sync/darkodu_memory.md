@@ -3,11 +3,16 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Completed SPHEREx Hunter Viewport Overhaul (Master Engineering Specification v2, Steps 0–6). Integrated Interactive Logarithmic Zoom Bar with dual scale thresholds (HiPS 12.9″/px vs Exposure 6.15″/px), deterministic 102-channel table generation, Gaia space motion propagation + EPSF centroid residuals, and scoped caching engine with micro-degree quantized keys. 61/61 unit/contract/v2 tests passing 100% green.
-- **Next Task:** Await teammate sync and master integration.
+- **Current Task:** Completed the comprehensive 70-point NASA SPHEREx App Challenge Final Judge Evaluation Checklist audit and merged latest four-survey topology mapping (`/api/v1/mapping/surveys`), no-cache frontend endpoint in `backend/main.py`, and RAF render scheduler from `coolodu/web-frontend`. All 70 items passed (100% green). Full test suite passing 100% green.
+- **Next Task:** Maintain clean backend branch state and support final challenge submission.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Execute and Pass 70-Point NASA SPHEREx Final Judge Evaluation Checklist Audit]**:
+  - Validated all backend endpoints against judge criteria: genuine IPAC/IRSA FITS exposures, RFC 7807 problem details, Astropy `SkyCoord` parsing and space motion propagation, ZOGY difference imaging, and 102-band IR spectroscopy ($0.75\text{--}5.0\,\mu\text{m}$).
+  - Verified all 5 required targets in `metadata_schema.py` and `scene_service.py` with genuine literature citations: Barnard's Star, Epsilon Indi B, WISE 0855, RW Aurigae, R Draconis.
+  - Merged four-survey spatial topology mapping (`backend/services/topology_mapper.py`, `backend/api_v1.py`) with discrete time steps [2MASS (1999) -> Gaia (2015) -> WISE (2010/2015) -> SPHEREx (2025)].
+  - Full test suite verified green.
 - [x] SPHEREx Hunter Viewport Overhaul (Master Engineering Specification v2 — Steps 0 to 6):
   - **Step 0 & Step 1 Audit & Architecture (`docs/viewport_status.md`, `docs/viewport_design.md`):** Audited DR1/QR3 pipeline versions (`data_release = "DR1"`, `pipeline_version = "2.1.0"` across all demo cache manifests). Probed live IRSA HiPS properties: confirmed permissive CORS headers (`Access-Control-Allow-Origin: *`) and established the critical architectural finding that IRSA HiPS maximum Order 5 ($512\text{ px}$, $\approx 12.88''/\text{px}$) is strictly coarser than SPHEREx's native detector pitch ($6.15''/\text{px}$). Determined that IRSA DR1 HiPS is a single merged co-add that blurs moving objects, mandating that mover discovery operate on the exposure layer.
   - **Step 2 (Interactive Logarithmic Zoom Bar & Dual-Threshold HUD):** Added `#viewportZoomBar` with `#btnVpZoomIn`, `#vpZoomSlider` (continuous logarithmic slider $0.4\text{x}\text{--}8.0\text{x}$, ARIA `role="slider"`, vertical orientation), `#btnVpZoomOut`, `#btnVpZoomReset`, and `#btnToggleNativePixels` nearest-neighbor raw pixel toggle (`gl.NEAREST` / `image-rendering: pixelated`). Implemented textbook cursor-centered invariant wheel zoom. Added live HUD telemetry for screen scale (`arcsec/device_px`), native pixel span (`N×M px (6.15″)`), and dual threshold status badges (`HiPS Native 12.9″/px` vs `Exposure Native 6.15″/px`).

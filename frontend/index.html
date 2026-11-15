@@ -315,7 +315,7 @@
       <!-- Single Collective View Modes Tool with Popup Option (Blink, Difference, Spectra, Aladin Sky) -->
       <div class="relative shrink-0" id="viewModesMenuContainer">
         <!-- The Single View Modes Tool Button -->
-        <button id="btnViewModesTrigger" onclick="window.toggleViewModesPopup && window.toggleViewModesPopup(); event.stopPropagation();" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective popup toolbar)">
+        <button id="btnViewModesTrigger" type="button" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective popup toolbar)">
           <span id="viewModeActiveIconWrapper" class="flex items-center justify-center pointer-events-none">
             <i id="viewModeActiveIcon" data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
           </span>
@@ -529,7 +529,7 @@
 
       <!-- Compact Coordinates Popover Trigger -->
       <div class="relative">
-        <button id="btnToggleCoordsPopover" onclick="window.toggleCoordsPopover && window.toggleCoordsPopover(); event.stopPropagation();" class="cursor-pointer flex items-center gap-1.5 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
+        <button id="btnToggleCoordsPopover" type="button" class="cursor-pointer flex items-center gap-1.5 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
           <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange pointer-events-none"></i>
           <span id="quickCoordsLabel" class="text-[11px] hidden sm:inline pointer-events-none">133.795°, -7.245°</span>
           <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400 pointer-events-none"></i>
@@ -633,68 +633,47 @@
         <span id="userModeLabel" class="hidden md:inline">Beginner</span>
       </button>
 
-      <!-- Save Analysis Snapshot Button (Issue #22) -->
-      <button id="btnSaveAnalysis" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-emerald-300 hover:text-white border border-emerald-500/40 text-[10px] font-mono transition-all shrink-0 hidden lg:flex" title="Save Current Analysis Session Snapshot">
-        <i data-lucide="bookmark-plus" class="w-2.5 h-2.5 text-emerald-400 shrink-0"></i>
-        <span class="hidden xl:inline">Save Analysis</span>
-      </button>
-
-      <!-- Share Sky Region Button (Issue #12) -->
-      <button id="btnShareModal" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden xl:flex" title="Share Sky Region & Deep-Link URL">
-        <i data-lucide="share-2" class="w-2.5 h-2.5 text-cyan-400 shrink-0"></i>
-        <span>Share</span>
-      </button>
-
-      <!-- Command Palette Pill (Ctrl+K) -->
-      <button id="cmdPaletteBtn" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden 2xl:flex" title="Open Command Palette (Ctrl+K)">
-        <i data-lucide="search" class="w-2.5 h-2.5 text-cyan-400 shrink-0"></i>
-        <span>Ctrl+K</span>
-      </button>
-
-      <!-- Mission Codex & Phase 2 Validation Button -->
-      <button id="btnOpenValidation" class="p-1.5 rounded blender-btn text-cyan-300 hover:text-white items-center gap-1 text-xs hidden 2xl:flex" title="Open Official NASA/CSA Codex & Phase 2 Scientific Validation Benchmark">
-        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
-        <span class="hidden md:inline">Validation</span>
-      </button>
-
-      <!-- Keyboard Shortcuts Trigger -->
-      <button id="btnOpenShortcuts" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white hidden 2xl:flex" title="Keyboard Shortcuts Cheat Sheet (?)">
-        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
-      </button>
-
-      <!-- Responsive Overflow Menu Button (Issue #32) -->
-      <div class="relative inline-block 2xl:hidden">
-        <button id="btnHeaderMoreActions" class="p-1.5 rounded blender-btn text-gray-400 hover:text-white shrink-0" title="More Observatory Tools">
-          <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+      <!-- Dropdown Toolbar named 'More' (Issue #32: Investigations, Save, Share, Validation, Shortcuts) -->
+      <div class="relative inline-block shrink-0" id="moreActionsContainer">
+        <button id="btnHeaderMoreActions" type="button" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg blender-btn text-gray-200 hover:text-white border border-space-700 hover:border-cyan-500/50 transition-all select-none shadow-sm shrink-0" title="More Observatory Tools (Investigations, Save, Share, Validation)">
+          <i data-lucide="more-horizontal" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span class="font-medium text-xs">More</span>
+          <span id="moreCountBadge" class="hidden px-1 min-w-[14px] h-[14px] rounded-full bg-purple-600 text-white text-[8px] font-bold items-center justify-center leading-none">0</span>
+          <i data-lucide="chevron-down" id="moreChevron" class="w-3 h-3 text-gray-400 transition-transform"></i>
         </button>
-        <div id="headerMoreActionsDropdown" class="hidden absolute right-0 top-10 mt-1 w-52 bg-space-900 border border-space-700 rounded-lg p-2 shadow-2xl z-50 space-y-1 text-xs font-mono">
-          <button id="dropdownOpenInvestigations" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-purple-300 transition">
-            <i data-lucide="folder-clock" class="w-3.5 h-3.5 text-purple-400"></i>
-            <span>My Investigations</span>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div id="headerMoreActionsDropdown" class="hidden absolute right-0 top-full mt-1.5 w-56 bg-space-900/98 backdrop-blur-xl border border-space-700 rounded-xl p-1.5 shadow-2xl z-50 space-y-1 text-xs font-mono select-none animate-in fade-in slide-in-from-top-1 duration-150">
+          <div class="px-2 py-1 text-[10px] text-gray-400 font-sans font-bold uppercase tracking-wider border-b border-space-800 flex items-center justify-between">
+            <span class="flex items-center gap-1 text-cyan-400"><i data-lucide="sliders" class="w-3 h-3"></i> More Tools</span>
+            <kbd class="text-[9px] text-gray-500 font-mono">Esc</kbd>
+          </div>
+          <button id="btnOpenInvestigations" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-purple-300 transition">
+            <div class="flex items-center gap-2">
+              <i data-lucide="folder-clock" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span class="font-sans font-medium text-white">My Investigations</span>
+            </div>
+            <span id="investigationsCountBadge" class="px-1.5 py-0.2 rounded-full bg-purple-900/80 text-purple-200 text-[9px] font-bold">0</span>
           </button>
-          <button id="dropdownSaveAnalysis" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-emerald-300 transition">
+          <button id="btnSaveAnalysis" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-emerald-300 transition">
             <i data-lucide="bookmark-plus" class="w-3.5 h-3.5 text-emerald-400"></i>
-            <span>Save Analysis</span>
+            <span class="font-sans font-medium text-white">Save Analysis</span>
           </button>
-          <button id="dropdownShare" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-cyan-300 transition">
+          <button id="btnShareModal" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-cyan-300 transition">
             <i data-lucide="share-2" class="w-3.5 h-3.5 text-cyan-400"></i>
-            <span>Share Sky Region</span>
+            <span class="font-sans font-medium text-white">Share Sky Region</span>
           </button>
-          <button id="dropdownOpenValidation" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-cyan-300 transition">
+          <button id="btnOpenValidation" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-cyan-300 transition">
             <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
-            <span>Validation &amp; Codex</span>
+            <span class="font-sans font-medium text-white">Validation &amp; Codex</span>
           </button>
-          <button id="dropdownOpenShortcuts" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-gray-300 transition">
+          <button id="btnOpenShortcuts" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-gray-300 transition">
             <i data-lucide="help-circle" class="w-3.5 h-3.5 text-gray-400"></i>
-            <span>Keyboard Shortcuts</span>
+            <span class="font-sans font-medium text-white">Keyboard Shortcuts</span>
           </button>
         </div>
       </div>
-
-      <!-- Toggle Right Inspector Panel -->
-      <button id="toggleSidebarBtn" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white shrink-0" title="Toggle Inspector Sidebar">
-        <i data-lucide="sidebar" class="w-3.5 h-3.5"></i>
-      </button>
     </div>
   </header>
 
@@ -732,7 +711,7 @@
         </button>
 
         <!-- Time Step Controller Tool with Popup Option (User Request) -->
-        <button id="toolTimeStep" onclick="window.toggleTimeStepHUD && window.toggleTimeStepHUD(); event.stopPropagation();" class="cursor-pointer w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
+        <button id="toolTimeStep" type="button" class="cursor-pointer w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400 pointer-events-none"></i>
           <span class="text-[8px] font-mono leading-none pointer-events-none">Step</span>
         </button>
@@ -1363,8 +1342,17 @@
       </div>
     </main>
 
-    <!-- SIDE PANEL RESIZE SPLITTER (Issue #16) -->
-    <div id="sidePanelSplitter" class="w-1.5 bg-space-800 hover:bg-cyan-500/60 active:bg-cyan-400 cursor-col-resize shrink-0 z-30 transition-colors" title="Drag to resize Inspector Panel (Double-click to reset)"></div>
+    <!-- SIDE PANEL RESIZE SPLITTER & CAD-STYLE HIDE/SHOW AREA BUTTON (Issue #16 & User Request) -->
+    <div id="sidePanelSplitter" class="relative w-1.5 bg-space-800 hover:bg-cyan-500/60 active:bg-cyan-400 cursor-col-resize shrink-0 z-30 transition-colors" title="Drag to resize Inspector Panel (Double-click to reset)">
+      <!-- SolidWorks/CAD-Style Hide/Show Area Button -->
+      <button id="toggleSidebarBtn" type="button"
+        class="absolute -left-3.5 top-1/2 -translate-y-1/2 w-4 h-14 bg-space-850 hover:bg-space-800 active:bg-space-700 border-y border-l border-space-600 hover:border-cyan-500/60 rounded-l-md flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-cyan-300 shadow-xl cursor-pointer z-40 transition-all select-none group"
+        title="Hide Inspector Sidebar (Scene Collection)"
+        aria-label="Toggle Inspector Sidebar Area">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 group-hover:bg-cyan-300 shadow-[0_0_6px_rgba(6,182,212,0.8)] transition-all"></span>
+        <i data-lucide="chevron-right" id="toggleSidebarChevron" class="w-3 h-3 text-gray-400 group-hover:text-cyan-300 transition-transform"></i>
+      </button>
+    </div>
 
     <!-- RIGHT INSPECTOR (380px, Data-Driven Tabbed Interface) -->
     <aside id="propertiesSidebar" class="w-96 bg-space-900 border-l border-space-700 flex flex-col shrink-0 min-h-0 z-20 text-xs select-none shadow-xl" role="region" aria-label="Scene Collection and Layer Manager">
@@ -4075,7 +4063,7 @@
       ctx.save();
       ctx.globalAlpha = Math.max(0.0, Math.min(1.0, alpha));
       ctx.imageSmoothingEnabled = !isNativePixelsMode;
-      ctx.imageSmoothingQuality = isNativePixelsMode ? 'low' : 'high';
+      ctx.imageSmoothingQuality = isNativePixelsMode ? 'low' : 'medium';
       ctx.drawImage(img, x, y, w + 0.5, h + 0.5);
 
       // Smooth edge vignette: softly blends borders into continuous space when standalone
@@ -4456,6 +4444,19 @@
       ctx.restore();
     }
 
+    // High-performance RAF coalesced render scheduler (prevents locking up on integrated GPUs)
+    let renderFrameScheduled = false;
+    function requestRender() {
+      if (!renderFrameScheduled) {
+        renderFrameScheduled = true;
+        requestAnimationFrame(() => {
+          renderFrameScheduled = false;
+          drawFrame();
+        });
+      }
+    }
+    window.requestRender = requestRender;
+
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
@@ -4733,11 +4734,11 @@
       const minWorldY = (0 - (h / 2 + camera.panY)) / camera.zoom;
       const maxWorldY = (h - (h / 2 + camera.panY)) / camera.zoom;
 
-      // Determine visible column & row grid range with a 1-tile buffer
-      const minCol = Math.max(-6, Math.floor((minWorldX - tileSize / 2) / tileSize) - 1);
-      const maxCol = Math.min(6, Math.ceil((maxWorldX + tileSize / 2) / tileSize) + 1);
-      const minRow = Math.max(-6, Math.floor((minWorldY - tileSize / 2) / tileSize) - 1);
-      const maxRow = Math.min(6, Math.ceil((maxWorldY + tileSize / 2) / tileSize) + 1);
+      // Determine visible column & row grid range (clamped to radius 1 for high performance on integrated GPUs)
+      const minCol = Math.max(-1, Math.floor((minWorldX - tileSize / 2) / tileSize));
+      const maxCol = Math.min(1, Math.ceil((maxWorldX + tileSize / 2) / tileSize));
+      const minRow = Math.max(-1, Math.floor((minWorldY - tileSize / 2) / tileSize));
+      const maxRow = Math.min(1, Math.ceil((maxWorldY + tileSize / 2) / tileSize));
 
       const visibleTileKeys = new Set();
       ctx.save();
@@ -5997,7 +5998,6 @@
     // Export helpers to window for tests & global access
     window.toggleTargetPresetsPopup = toggleTargetPresetsPopup;
     window.closeTargetPresetsPopup = closeTargetPresetsPopup;
-
     document.querySelectorAll('.target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-target');
@@ -6067,6 +6067,7 @@
       document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-btn-active'));
       const activeBtn = document.querySelector(`[data-target="${key}"]`);
       if (activeBtn) activeBtn.classList.add('blender-btn-active');
+      toggleTargetDropdown(false);
 
       playTargetLockChime();
       loadSceneState(key, t.raDeg, t.decDeg, targetFov);
@@ -7803,7 +7804,7 @@
         camera.panX += dx;
         camera.panY += dy;
         updateCoordinateReadouts();
-        drawFrame();
+        requestRender();
       } else if (!isWalkNav && gaiaOverlayEnabled && gaiaSources.length > 0) {
         // Interactive Gaia Star Hover Inspection (Epoch-propagated + WCS TAN projected)
         const rect = canvas.getBoundingClientRect();
@@ -7837,12 +7838,12 @@
           if (nearest !== hoveredGaiaStar) {
             hoveredGaiaStar = nearest;
             updateGaiaPropertyTelemetry(nearest);
-            drawFrame();
+            requestRender();
           }
         } else if (hoveredGaiaStar !== null) {
           hoveredGaiaStar = null;
           updateGaiaPropertyTelemetry(null);
-          drawFrame();
+          requestRender();
         }
       }
     });
@@ -7867,7 +7868,7 @@
         camera.panY = mouseY - (h / 2) - worldY * newZoom;
         camera.zoom = newZoom;
         updateCoordinateReadouts();
-        drawFrame();
+        requestRender();
       }
     }, { passive: false });
 
@@ -7995,9 +7996,55 @@
     // =========================================================================
     const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
     const propertiesSidebar = document.getElementById('propertiesSidebar');
-    toggleSidebarBtn.addEventListener('click', () => {
-      propertiesSidebar.classList.toggle('hidden');
-    });
+    const toggleSidebarChevron = document.getElementById('toggleSidebarChevron');
+    const sidePanelSplitterEl = document.getElementById('sidePanelSplitter');
+
+    function updateSidebarToggleState() {
+      if (!propertiesSidebar) return;
+      const isHidden = propertiesSidebar.classList.contains('hidden');
+      if (toggleSidebarChevron) {
+        toggleSidebarChevron.classList.toggle('rotate-180', isHidden);
+      }
+      if (toggleSidebarBtn) {
+        if (isHidden) {
+          toggleSidebarBtn.title = 'Show Inspector Sidebar (Scene Collection)';
+          toggleSidebarBtn.setAttribute('aria-label', 'Show Inspector Sidebar Area');
+        } else {
+          toggleSidebarBtn.title = 'Hide Inspector Sidebar (Scene Collection)';
+          toggleSidebarBtn.setAttribute('aria-label', 'Hide Inspector Sidebar Area');
+        }
+      }
+      if (sidePanelSplitterEl) {
+        if (isHidden) {
+          sidePanelSplitterEl.classList.remove('cursor-col-resize');
+          sidePanelSplitterEl.classList.add('cursor-default');
+        } else {
+          sidePanelSplitterEl.classList.add('cursor-col-resize');
+          sidePanelSplitterEl.classList.remove('cursor-default');
+        }
+      }
+      if (typeof resizeCanvas === 'function') {
+        resizeCanvas();
+      }
+    }
+
+    if (toggleSidebarBtn && propertiesSidebar) {
+      toggleSidebarBtn.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+      });
+      toggleSidebarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        propertiesSidebar.classList.toggle('hidden');
+        updateSidebarToggleState();
+      });
+    }
+
+    if (window.MutationObserver && propertiesSidebar) {
+      const sidebarObserver = new MutationObserver(() => {
+        updateSidebarToggleState();
+      });
+      sidebarObserver.observe(propertiesSidebar, { attributes: true, attributeFilter: ['class'] });
+    }
 
     const flagCandidateBtn = document.getElementById('flagCandidateBtn');
     const flagModal = document.getElementById('flagModal');
@@ -8918,6 +8965,8 @@
         let draggingSide = false;
 
         sideSplitter.addEventListener('mousedown', (e) => {
+          if (sidebarEl.classList.contains('hidden')) return;
+          if (e.target.closest('#toggleSidebarBtn')) return;
           e.preventDefault();
           draggingSide = true;
           document.body.style.cursor = 'col-resize';
@@ -11089,37 +11138,34 @@
       // Header More Actions Dropdown (Issue #32)
       const btnHeaderMore = document.getElementById('btnHeaderMoreActions');
       const headerMoreDropdown = document.getElementById('headerMoreActionsDropdown');
+      const moreChevron = document.getElementById('moreChevron');
       if (btnHeaderMore && headerMoreDropdown) {
         btnHeaderMore.addEventListener('click', (e) => {
           e.stopPropagation();
+          const willOpen = headerMoreDropdown.classList.contains('hidden');
           headerMoreDropdown.classList.toggle('hidden');
+          if (moreChevron) moreChevron.classList.toggle('rotate-180', willOpen);
         });
         document.addEventListener('click', (e) => {
           if (!e.target.closest('#headerMoreActionsDropdown') && !e.target.closest('#btnHeaderMoreActions')) {
             headerMoreDropdown.classList.add('hidden');
+            if (moreChevron) moreChevron.classList.remove('rotate-180');
+          }
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && !headerMoreDropdown.classList.contains('hidden')) {
+            headerMoreDropdown.classList.add('hidden');
+            if (moreChevron) moreChevron.classList.remove('rotate-180');
           }
         });
       }
 
-      document.getElementById('dropdownOpenInvestigations')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnOpenInvestigations')?.click();
-      });
-      document.getElementById('dropdownSaveAnalysis')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnSaveAnalysis')?.click();
-      });
-      document.getElementById('dropdownShare')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnShareModal')?.click();
-      });
-      document.getElementById('dropdownOpenValidation')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnOpenValidation')?.click();
-      });
-      document.getElementById('dropdownOpenShortcuts')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnOpenShortcuts')?.click();
+      ['btnOpenInvestigations', 'btnSaveAnalysis', 'btnShareModal', 'btnOpenValidation', 'btnOpenShortcuts',
+       'dropdownOpenInvestigations', 'dropdownSaveAnalysis', 'dropdownShare', 'dropdownOpenValidation', 'dropdownOpenShortcuts'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', () => {
+          headerMoreDropdown?.classList.add('hidden');
+          if (moreChevron) moreChevron.classList.remove('rotate-180');
+        });
       });
 
       if (btnHeader) btnHeader.addEventListener('click', () => openAiCopilotModal(true));
@@ -11391,6 +11437,17 @@
       function persistSessions(sessions) {
         localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions.slice(0, 40)));
         if (investigationsBadge) investigationsBadge.innerText = String(sessions.length);
+        const moreCountBadge = document.getElementById('moreCountBadge');
+        if (moreCountBadge) {
+          moreCountBadge.innerText = String(sessions.length);
+          if (sessions.length > 0) {
+            moreCountBadge.classList.remove('hidden');
+            moreCountBadge.classList.add('inline-flex');
+          } else {
+            moreCountBadge.classList.add('hidden');
+            moreCountBadge.classList.remove('inline-flex');
+          }
+        }
       }
 
       function getCurrentStretchMode() {
@@ -11429,6 +11486,17 @@
       function renderInvestigationsList() {
         const sessions = loadSessions();
         if (investigationsBadge) investigationsBadge.innerText = String(sessions.length);
+        const moreCountBadge = document.getElementById('moreCountBadge');
+        if (moreCountBadge) {
+          moreCountBadge.innerText = String(sessions.length);
+          if (sessions.length > 0) {
+            moreCountBadge.classList.remove('hidden');
+            moreCountBadge.classList.add('inline-flex');
+          } else {
+            moreCountBadge.classList.add('hidden');
+            moreCountBadge.classList.remove('inline-flex');
+          }
+        }
         if (btnUpdateSelectedSession) {
           const hasActive = Boolean(activeSessionId && sessions.some(s => s.id === activeSessionId));
           btnUpdateSelectedSession.classList.toggle('hidden', !hasActive);
@@ -12484,7 +12552,7 @@
         });
       }
 
-      // Multi-Epoch Direct Jump Chips
+      // Multi-Epoch Direct Jump Chips (Re-centers view to eliminate stuck/offset tiles on low-end PCs)
       document.querySelectorAll('.hud-epoch-chip').forEach(chip => {
         chip.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -12492,9 +12560,14 @@
           isPlaying = false;
           const f = parseInt(chip.getAttribute('data-frame'), 10) || 1;
           currentFrame = f;
-          const blends = { 1: 0.25, 2: 0.50, 3: 0.75, 4: 1.00 };
-          epochBlend = blends[f] || 0.25;
+          const blends = { 1: 0.0, 2: 0.33, 3: 0.66, 4: 1.00 };
+          epochBlend = blends[f] !== undefined ? blends[f] : 0.0;
           targetEpochBlend = epochBlend;
+
+          // Performance & Alignment: Reset camera pan and zoom to 1.0x so target exposure cleanly fills view
+          camera.panX = 0;
+          camera.panY = 0;
+          camera.zoom = 1.0;
 
           const bottomSlider = document.getElementById('epochBlendSlider');
           if (bottomSlider) bottomSlider.value = String(Math.round(epochBlend * 100));
@@ -12503,7 +12576,8 @@
 
           updateFrameLabel();
           updateTimeStepHUD();
-          drawFrame();
+          updateCoordinateReadouts();
+          requestRender();
         });
       });
 
@@ -12514,15 +12588,19 @@
           diffMode = false;
           isPlaying = false;
           currentFrame = 1;
-          targetEpochBlend = 0.25;
-          epochBlend = 0.25;
+          targetEpochBlend = 0.0;
+          epochBlend = 0.0;
+          camera.panX = 0;
+          camera.panY = 0;
+          camera.zoom = 1.0;
           const slider = document.getElementById('epochBlendSlider');
-          if (slider) slider.value = '25';
+          if (slider) slider.value = '0';
           const lbl = document.getElementById('epochBlendLabel');
-          if (lbl) lbl.innerText = '25%';
+          if (lbl) lbl.innerText = '0%';
           updateFrameLabel();
           updateTimeStepHUD();
-          drawFrame();
+          updateCoordinateReadouts();
+          requestRender();
         });
       }
 
@@ -12535,13 +12613,17 @@
           currentFrame = totalFrames;
           targetEpochBlend = 1.0;
           epochBlend = 1.0;
+          camera.panX = 0;
+          camera.panY = 0;
+          camera.zoom = 1.0;
           const slider = document.getElementById('epochBlendSlider');
           if (slider) slider.value = '100';
           const lbl = document.getElementById('epochBlendLabel');
           if (lbl) lbl.innerText = '100%';
           updateFrameLabel();
           updateTimeStepHUD();
-          drawFrame();
+          updateCoordinateReadouts();
+          requestRender();
         });
       }
 
