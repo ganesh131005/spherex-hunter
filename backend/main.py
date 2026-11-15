@@ -138,6 +138,19 @@ if os.path.exists(LOCAL_HIPS_FIXTURE):
 
 # Mount frontend directory for same-origin browsing
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
+
+@app.get("/app/index.html")
+def get_app_index_no_cache():
+    """Serves the main application with no-cache headers to ensure updates apply immediately."""
+    index_file = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.exists(index_file):
+        response = FileResponse(index_file, media_type="text/html")
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+    raise HTTPException(status_code=404, detail="index.html not found")
+
 if os.path.exists(FRONTEND_DIR):
     app.mount("/app", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
     ASSETS_DIR = os.path.join(FRONTEND_DIR, "assets")

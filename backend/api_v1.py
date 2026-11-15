@@ -581,6 +581,23 @@ def get_target(target_id: str, request: Request):
 # 3. SCENE GRAPH & SPACE MOTION PROPAGATION
 # ==============================================================================
 
+@router.get("/mapping/surveys")
+def get_survey_topology_mapping_v1(
+    target_id: Optional[str] = Query(None, description="Benchmark target identifier"),
+    ra: Optional[float] = Query(None, ge=0.0, le=360.0),
+    dec: Optional[float] = Query(None, ge=-90.0, le=90.0),
+    fov_arcmin: float = Query(3.0, ge=0.5, le=60.0)
+):
+    """
+    Returns individual survey mappings (2MASS, Gaia, WISE, SPHEREx) with discrete time steps,
+    shared spatial topology and continuity graph, and the stacked multi-layer overlay
+    strictly ordered: [2MASS -> Gaia -> WISE -> SPHEREx] with matched ICRS coordinates.
+    """
+    from backend.services.topology_mapper import generate_multi_survey_topology_and_overlay_mapping
+    return generate_multi_survey_topology_and_overlay_mapping(
+        target_key=target_id, ra=ra, dec=dec, fov_arcmin=fov_arcmin
+    )
+
 @router.get("/targets/{target_id}/scene", response_model=SceneResponse)
 def get_target_scene_v1(target_id: str, request: Request, fov_arcmin: float = Query(3.0, ge=0.5, le=30.0)):
     """
