@@ -374,22 +374,22 @@
           <div class="space-y-2 text-xs">
             <div>
               <div class="flex items-center justify-between mb-0.5">
-                <label class="block text-[10px] text-gray-400 font-sans">Right Ascension α (Sky Longitude):</label>
-                <span id="raValidationHint" class="text-[9px] text-emerald-400 font-mono">Valid (0°–360°)</span>
+                <label class="block text-xs text-gray-300 font-sans font-medium">Right Ascension α (Sky Longitude):</label>
+                <span id="raValidationHint" class="text-xs text-emerald-400 font-mono">Valid (0°–360°)</span>
               </div>
               <input id="inputRA" type="text" value="133.79513" placeholder="e.g. 133.79513 or 08h 55m 10.8s" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
             </div>
             <div>
               <div class="flex items-center justify-between mb-0.5">
-                <label class="block text-[10px] text-gray-400 font-sans">Declination δ (Sky Latitude):</label>
-                <span id="decValidationHint" class="text-[9px] text-emerald-400 font-mono">Valid (-90°–+90°)</span>
+                <label class="block text-xs text-gray-300 font-sans font-medium">Declination δ (Sky Latitude):</label>
+                <span id="decValidationHint" class="text-xs text-emerald-400 font-mono">Valid (-90°–+90°)</span>
               </div>
               <input id="inputDec" type="text" value="-7.24515" placeholder="e.g. -7.24515 or -07d 14m 42s" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
             </div>
             <div>
               <div class="flex items-center justify-between mb-0.5">
-                <label class="block text-[10px] text-gray-400 font-sans">Field of View (Sky Zoom):</label>
-                <span class="text-[9px] text-amber-400 cursor-help" title="Field of View (Sky Zoom): Angular diameter in arcminutes (1' = 1/60th deg). Full Moon is ~30' wide, so 3.0' is 1/10th the width of the Full Moon.">Moon Scale [?]</span>
+                <label class="block text-xs text-gray-300 font-sans font-medium">Field of View (Sky Zoom):</label>
+                <span class="text-xs text-amber-300 cursor-help font-mono" title="Field of View (Sky Zoom): Angular diameter in arcminutes (1' = 1/60th deg). Full Moon is ~30' wide, so 3.0' is 1/10th the width of the Full Moon.">Moon Scale [?]</span>
               </div>
               <select id="selectFOV" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
                 <option value="1.0">1.0' (Deep Core / Micro-Arcsec Dipoles)</option>
@@ -609,29 +609,30 @@
       <canvas id="astroCanvas" class="w-full h-full block filter-grayscale"></canvas>
 
       <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Continuous Mapping & Change Detection: Issue #40 Deconflicted) -->
+      <!-- Viewport Time Step Controller HUD (Positioned at top-14 for permanent deconfliction with top telemetry) -->
       <div id="viewportTimeStepHUD"
-        class="absolute top-14 left-1/2 -translate-x-1/2 z-20 flex flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none max-w-[90vw]">
+        class="absolute top-14 left-1/2 -translate-x-1/2 z-20 flex flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none max-w-[90vw]">
         <!-- Time Step Indicator -->
         <div class="flex items-center gap-1.5 text-cyan-300 font-bold border-r border-space-700 pr-2">
-          <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
-          <span class="text-[10px] uppercase text-gray-400">Time Step:</span>
-          <span id="hudTimeStepDelta" class="text-white bg-cyan-950/80 border border-cyan-700/60 px-1.5 py-0.5 rounded text-[11px] font-semibold">Δt = 26.8 yr</span>
+          <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+          <span class="text-xs uppercase text-gray-300 font-medium">Time Step:</span>
+          <span id="hudTimeStepDelta" class="text-white bg-cyan-950/80 border border-cyan-700/60 px-2 py-0.5 rounded text-xs font-semibold">Δt = 26.8 yr</span>
         </div>
 
         <!-- Stepper Buttons: Frame 1, Blend/Morph, Frame 2, Difference -->
-        <div class="flex items-center gap-1 bg-space-950/80 p-0.5 rounded-lg border border-space-800">
-          <button id="btnHudStepPrev" class="px-2 py-0.5 rounded text-[10px] text-gray-300 hover:text-white hover:bg-space-800 transition font-mono" title="View Epoch 1: 1999 (2MASS Baseline)">
+        <div class="flex items-center gap-1.5 bg-space-950/80 p-0.5 rounded-lg border border-space-800">
+          <button id="btnHudStepPrev" class="px-2.5 py-1 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium" title="View Epoch 1: 1999 (2MASS Baseline)">
             ◀ t₁ (1999)
           </button>
-          <button id="btnHudBlinkMorph" class="px-2 py-0.5 rounded text-[10px] bg-blender-blue text-white font-semibold shadow transition font-mono flex items-center gap-1" title="Continuous Smooth Morph across Δt">
-            <i data-lucide="play" class="w-2.5 h-2.5" id="hudPlayIcon"></i>
+          <button id="btnHudBlinkMorph" class="px-2.5 py-1 rounded-md text-xs bg-blender-blue text-white font-semibold shadow transition font-mono flex items-center gap-1.5" title="Continuous Smooth Morph across Δt">
+            <i data-lucide="play" class="w-3 h-3" id="hudPlayIcon"></i>
             <span id="hudBlinkText">t₁ ↔ t₂</span>
           </button>
-          <button id="btnHudStepNext" class="px-2 py-0.5 rounded text-[10px] text-gray-300 hover:text-white hover:bg-space-800 transition font-mono" title="View Epoch 2: 2025 (SPHEREx Survey)">
+          <button id="btnHudStepNext" class="px-2.5 py-1 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium" title="View Epoch 2: 2025 (SPHEREx Survey)">
             t₂ (2025) ▶
           </button>
-          <div class="h-3 w-px bg-space-700 mx-0.5"></div>
-          <button id="btnHudDiffMode" class="px-2 py-0.5 rounded text-[10px] text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold" title="Numerical Difference Map (Δ = I₂ - I₁)">
+          <div class="h-3.5 w-px bg-space-700 mx-0.5"></div>
+          <button id="btnHudDiffMode" class="px-2.5 py-1 rounded-md text-xs text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold" title="Numerical Difference Map (Δ = I₂ - I₁)">
             ⚡ Diff (Δ)
           </button>
         </div>
@@ -640,7 +641,7 @@
 
         <!-- Auto-Detect Status Pill & Target Lock -->
         <div class="flex items-center gap-1.5">
-          <button id="btnAutoDetectPill" class="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-space-950 hover:bg-space-800 border border-space-700 text-gray-300 hover:text-white transition font-mono" title="Toggle Auto-Identification of Motion Dipoles & Transients">
+          <button id="btnAutoDetectPill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-200 hover:text-white transition font-mono" title="Toggle Auto-Identification of Motion Dipoles & Transients">
             <span id="hudAutoDetectDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
             <span id="hudAutoDetectLabel">Auto-ID: Active</span>
           </button>
@@ -655,53 +656,52 @@
       <div id="aladinContextBar"
         class="absolute top-14 left-1/2 -translate-x-1/2 z-20 hidden flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700/90 shadow-2xl text-xs select-none max-w-[95%]"
         role="region" aria-label="SPHEREx DR1 HiPS Context Controls">
-        role="region" aria-label="SPHEREx DR1 HiPS Context Controls">
         <!-- Google Maps Multi-Resolution Zoom Stepper -->
         <div class="flex items-center gap-1 bg-space-950/90 px-1.5 py-0.5 rounded border border-space-800">
-          <span class="text-gray-400 text-[10px] uppercase font-mono mr-0.5">Scale:</span>
+          <span class="text-gray-300 text-xs uppercase font-mono mr-0.5 font-medium">Scale:</span>
           <button id="btnZoomAllSky"
-            class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-[10px] text-gray-200 hover:text-white transition font-mono"
+            class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono"
             title="180° All-Sky Overview (Full Cosmic Sphere)">🌌 180°</button>
           <button id="btnZoomWide"
-            class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-[10px] text-gray-200 hover:text-white transition font-mono"
+            class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono"
             title="30° Wide Constellation View">✨ 30°</button>
           <button id="btnZoomField"
-            class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-[10px] text-gray-200 hover:text-white transition font-mono"
+            class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-xs text-gray-200 hover:text-white transition font-mono"
             title="5° Intermediate Sky Field">🔭 5°</button>
           <button id="btnZoomCore"
-            class="px-1.5 py-0.5 rounded bg-cyan-900/70 hover:bg-cyan-800 border border-cyan-500/50 text-[10px] text-cyan-200 hover:text-white transition font-mono font-semibold"
+            class="px-2 py-0.5 rounded bg-cyan-900/70 hover:bg-cyan-800 border border-cyan-500/50 text-xs text-cyan-200 hover:text-white transition font-mono font-semibold"
             title="0.1° / 6' Native SPHEREx High-Resolution (Order 5 Detail)">🔬 0.1° HD</button>
         </div>
         <div class="h-4 w-px bg-space-700"></div>
         <!-- 102-Channel Selector with Step Controls -->
-        <div class="flex items-center gap-1 text-[11px]">
-          <span class="text-gray-400 text-[10px] uppercase font-mono">λ:</span>
-          <button id="btnHipsPrevCh" class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-300 hover:text-white transition text-[10px] font-mono" title="Previous Spectral Channel (Lower Wavelength)">◀</button>
-          <select id="hipsChannelSelect" class="bg-space-950 text-cyan-300 border border-space-700 rounded px-1.5 py-0.5 text-[11px] font-mono focus:outline-none focus:border-cyan-500 cursor-pointer max-w-[130px]"></select>
-          <button id="btnHipsNextCh" class="px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-300 hover:text-white transition text-[10px] font-mono" title="Next Spectral Channel (Higher Wavelength)">▶</button>
-          <span id="hipsWavelengthDisplay" class="font-mono text-cyan-400 font-bold text-[10px] whitespace-nowrap">0.753 μm (Band 1)</span>
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="text-gray-300 text-xs uppercase font-mono font-medium">λ:</span>
+          <button id="btnHipsPrevCh" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-200 hover:text-white transition text-xs font-mono" title="Previous Spectral Channel (Lower Wavelength)">◀</button>
+          <select id="hipsChannelSelect" class="bg-space-950 text-cyan-300 border border-space-700 rounded px-2 py-0.5 text-xs font-mono focus:outline-none focus:border-cyan-500 cursor-pointer max-w-[140px]"></select>
+          <button id="btnHipsNextCh" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-gray-200 hover:text-white transition text-xs font-mono" title="Next Spectral Channel (Higher Wavelength)">▶</button>
+          <span id="hipsWavelengthDisplay" class="font-mono text-cyan-300 font-bold text-xs whitespace-nowrap">0.753 μm (Band 1)</span>
         </div>
         <div class="h-4 w-px bg-space-700"></div>
         <!-- NASA Landmark Target Pins (Google Maps Style) -->
         <div class="hidden lg:flex items-center gap-1">
-          <span class="text-gray-400 text-[10px] uppercase font-mono mr-0.5">Pins:</span>
-          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="wise0855" title="WISE 0855-0714 (Coldest Y-Dwarf / Planet X Analog)">🪐 WISE 0855</button>
-          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="barnard" title="Barnard's Star (High Proper Motion Red Dwarf)">⭐ Barnard</button>
-          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">🌟 Eps Indi</button>
-          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="rwaur" title="RW Aurigae (Eruptive Variable Star)">✨ RW Aur</button>
-          <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="rdraconis" title="R Draconis (Pulsating Mira Variable)">🔴 R Drac</button>
+          <span class="text-gray-300 text-xs uppercase font-mono mr-0.5 font-medium">Pins:</span>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="wise0855" title="WISE 0855-0714 (Coldest Y-Dwarf / Planet X Analog)">🪐 WISE 0855</button>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="barnard" title="Barnard's Star (High Proper Motion Red Dwarf)">⭐ Barnard</button>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">🌟 Eps Indi</button>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="rwaur" title="RW Aurigae (Eruptive Variable Star)">✨ RW Aur</button>
+          <button class="hips-landmark-btn px-2 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-xs text-gray-200 border border-space-700 transition" data-target="rdraconis" title="R Draconis (Pulsating Mira Variable)">🔴 R Drac</button>
         </div>
         <div class="h-4 w-px bg-space-700"></div>
         <!-- Label, Attribution and Honesty Notice (Step 3 Specification) -->
-        <div class="flex items-center gap-1 text-amber-400 font-medium">
-          <i data-lucide="info" class="w-3 h-3 text-amber-400 shrink-0"></i>
-          <span id="aladinContextNotice" class="text-[10px] font-semibold text-amber-300 truncate max-w-[280px]" title="DR1 all-sky mosaic: Co-added context only (blurs moving objects) — not used for transient/mover detection">DR1 Co-Added Context (Blurs Movers)</span>
+        <div class="flex items-center gap-1.5 text-amber-400 font-medium">
+          <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+          <span id="aladinContextNotice" class="text-xs font-semibold text-amber-300 truncate max-w-[280px]" title="DR1 all-sky mosaic: Co-added context only (blurs moving objects) — not used for transient/mover detection">DR1 Co-Added Context (Blurs Movers)</span>
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="px-1.5 py-0.5 rounded bg-space-800 border border-space-700 text-gray-400 text-[9px] font-mono shrink-0 hidden md:inline" title="Authentic Data Source: NASA/JPL-Caltech/IPAC SPHEREx DR1">NASA/JPL/IPAC</span>
-          <span id="aladinLayerStatus" class="px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 font-mono font-bold text-[9px]">DR1 HiPS Ready</span>
-          <div id="aladinFallbackAlert" class="hidden text-[10px] text-amber-200 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-600/60 flex items-center gap-1">
-            <i data-lucide="alert-triangle" class="w-3 h-3 text-amber-400 shrink-0"></i>
+          <span class="px-2 py-0.5 rounded bg-space-800 border border-space-700 text-gray-300 text-xs font-mono shrink-0 hidden md:inline" title="Authentic Data Source: NASA/JPL-Caltech/IPAC SPHEREx DR1">NASA/JPL/IPAC</span>
+          <span id="aladinLayerStatus" class="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 font-mono font-bold text-xs">DR1 HiPS Ready</span>
+          <div id="aladinFallbackAlert" class="hidden text-xs text-amber-200 bg-amber-950/80 px-2.5 py-0.5 rounded border border-amber-600/60 flex items-center gap-1.5">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
             <span id="aladinFallbackMsg">HiPS unreachable; fallback to local survey active.</span>
           </div>
         </div>
@@ -1389,48 +1389,48 @@
           </div>
 
           <!-- Blink Speed Slider -->
-          <div class="flex items-center gap-1.5">
-            <span class="text-gray-400 text-[10px]">Speed:</span>
-            <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0" class="w-16 h-1.5 bg-space-700 rounded cursor-pointer">
-            <span id="speedLabel" class="text-gray-200 text-[10px] w-12 font-mono">2.0 FPS</span>
+          <div class="flex items-center gap-2">
+            <span class="text-gray-300 text-xs font-medium">Speed:</span>
+            <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0" class="w-20 h-2 bg-space-700 rounded cursor-pointer">
+            <span id="speedLabel" class="text-gray-200 text-xs w-14 font-mono font-semibold">2.0 FPS</span>
           </div>
         </div>
       </div>
 
       <!-- PANEL 2: SPECTRUM (102-Band SPHEREx Spectrophotometry with 6-Array Selector & 17-Wavelength Stepper) -->
-      <div id="dockPanelSpectrum" class="h-full hidden px-3 py-1.5 flex flex-col justify-between gap-1">
+      <div id="dockPanelSpectrum" class="h-full hidden px-3.5 py-2 flex flex-col justify-between gap-1.5">
         <!-- Top Toolbar: Array Tabs, Channel Stepper & Science Guide -->
-        <div class="flex items-center justify-between gap-2 shrink-0 border-b border-space-800 pb-1 text-[11px] font-mono flex-wrap">
-          <!-- 6-Array Tabs -->
-          <div class="flex items-center gap-1" id="arrayTabsContainer">
-            <span class="text-[10px] text-gray-400 uppercase font-sans font-semibold mr-1">Array:</span>
-            <button class="array-tab blender-btn blender-btn-active px-2 py-0.5 rounded text-[10px] transition" data-array="A1" title="A1: 0.75-1.11 µm (Optical boundary, stellar continuum)">A1</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition" data-array="A2" title="A2: 1.11-1.64 µm (2MASS J/H overlap, photospheres)">A2</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition" data-array="A3" title="A3: 1.64-2.42 µm (2MASS Ks overlap, circumstellar dust)">A3</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-amber-300" data-array="A4" title="A4: 2.42-3.82 µm (H₂O Ice 3.05 µm, CH₄ 3.30 µm)">A4 🔬</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-orange-300" data-array="A5" title="A5: 3.82-4.42 µm (CO₂ Ice 4.27 µm, Planet X thermal peak)">A5 🔬</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-rose-300" data-array="A6" title="A6: 4.42-5.00 µm (CO 4.67 µm, Organics)">A6 🔬</button>
+        <div class="flex items-center justify-between gap-3 shrink-0 border-b border-space-700/80 pb-2 text-xs font-mono flex-wrap">
+          <!-- 6-Array Tabs: Enriched visual contrast & enlarged target sizing -->
+          <div class="flex items-center gap-1.5 p-1.5 rounded-xl bg-space-950 border border-space-700/80 shadow-md" id="arrayTabsContainer">
+            <span class="text-xs text-gray-200 uppercase font-sans font-bold px-1.5">Array:</span>
+            <button class="array-tab blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm" data-array="A1" title="A1: 0.75-1.11 µm (Optical boundary, stellar continuum)">A1</button>
+            <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-cyan-300" data-array="A2" title="A2: 1.11-1.64 µm (2MASS J/H overlap, photospheres)">A2</button>
+            <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-emerald-300" data-array="A3" title="A3: 1.64-2.42 µm (2MASS Ks overlap, circumstellar dust)">A3</button>
+            <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-amber-300" data-array="A4" title="A4: 2.42-3.82 µm (H₂O Ice 3.05 µm, CH₄ 3.30 µm)">A4 🔬</button>
+            <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-orange-300" data-array="A5" title="A5: 3.82-4.42 µm (CO₂ Ice 4.27 µm, Planet X thermal peak)">A5 🔬</button>
+            <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-rose-300" data-array="A6" title="A6: 4.42-5.00 µm (CO 4.67 µm, Organics)">A6 🔬</button>
           </div>
 
-          <!-- 17-Wavelength Stepper within Array -->
-          <div class="flex items-center gap-1.5 bg-space-950 px-2 py-0.5 rounded border border-space-800 shadow-inner">
-            <button id="chanPrev" class="blender-btn px-1.5 py-0.2 rounded hover:text-white" title="Previous Spectral Channel (Left Arrow)">◀</button>
-            <span id="chanDisplay" class="text-white font-semibold text-[10px] min-w-[150px] text-center">Ch 1 / 17 — λ = 0.750 µm</span>
-            <button id="chanNext" class="blender-btn px-1.5 py-0.2 rounded hover:text-white" title="Next Spectral Channel (Right Arrow)">▶</button>
-            <input type="range" id="chanSlider" min="1" max="17" value="1" class="w-20 h-1.5 bg-space-700 rounded cursor-pointer accent-amber-500">
-            <span id="chanFluxBadge" class="text-amber-400 font-mono text-[9px]">1.00 rel</span>
+          <!-- 17-Wavelength Channel Stepper & Variation Toolbar: Sized up for easy legibility and control -->
+          <div class="flex items-center gap-2.5 bg-space-950 px-3.5 py-1.5 rounded-xl border border-space-700/80 shadow-md">
+            <button id="chanPrev" class="blender-btn w-8 h-8 rounded-lg flex items-center justify-center text-base font-bold hover:text-white transition" title="Previous Spectral Channel (Left Arrow)">◀</button>
+            <span id="chanDisplay" class="text-white font-bold text-sm min-w-[220px] text-center tracking-wide">Ch 1 / 17 — λ = 0.750 µm</span>
+            <button id="chanNext" class="blender-btn w-8 h-8 rounded-lg flex items-center justify-center text-base font-bold hover:text-white transition" title="Next Spectral Channel (Right Arrow)">▶</button>
+            <input type="range" id="chanSlider" min="1" max="17" value="1" class="w-36 h-3 bg-space-700 rounded-lg cursor-pointer accent-amber-400">
+            <span id="chanFluxBadge" class="text-amber-300 font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-amber-950/80 border border-amber-500/50 shadow-sm">1.00 rel</span>
           </div>
 
           <!-- Non-simultaneous observations honesty notice for variable stars -->
           <div id="spectrumNonSimultaneousNotice"
-            class="text-[10px] text-amber-300/90 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40 flex items-center gap-1.5 shrink-0 select-none">
-            <i data-lucide="info" class="w-3 h-3 shrink-0 text-amber-400"></i>
-            <span>Notice: Spectra assembled from different observation dates across the 6 arrays are not simultaneous for variable stars (e.g. RW Aurigae, R Draconis).</span>
+            class="text-xs font-medium text-amber-200 bg-amber-950/80 px-3 py-1.5 rounded-lg border border-amber-500/60 flex items-center gap-2 shrink-0 select-none hidden lg:flex shadow-sm">
+            <i data-lucide="info" class="w-4 h-4 shrink-0 text-amber-400"></i>
+            <span>Notice: Observation dates vary across arrays (e.g. RW Aur, R Dra).</span>
           </div>
 
           <!-- 102-Band Science Explainer Trigger -->
-          <button id="btnOpenBandScience" class="flex items-center gap-1 px-2 py-0.5 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-cyan-300 hover:text-white transition text-[10px]" title="Open SPHEREx 102-Band Science Explainer Modal">
-            <i data-lucide="info" class="w-3 h-3 text-cyan-400"></i>
+          <button id="btnOpenBandScience" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-space-850 hover:bg-space-800 border border-cyan-400/50 text-cyan-200 hover:text-white transition text-xs font-bold shadow" title="Open SPHEREx 102-Band Science Explainer Modal">
+            <i data-lucide="info" class="w-4 h-4 text-cyan-400"></i>
             <span>102-Band Science</span>
           </button>
         </div>
@@ -1441,16 +1441,16 @@
             <canvas id="spectrumChart"></canvas>
           </div>
           <!-- Molecular Reference Sidebar -->
-          <div class="w-52 bg-space-950 p-2 rounded border border-space-800 font-mono text-[9px] space-y-1 shrink-0 shadow-inner">
-            <div class="text-gray-400 font-bold uppercase text-[9px] text-cyan-400 border-b border-space-800 pb-0.5 flex justify-between">
+          <div class="w-64 bg-space-950/95 p-3 rounded-xl border border-space-700/80 font-mono text-xs space-y-2 shrink-0 shadow-md">
+            <div class="font-bold uppercase text-xs text-cyan-300 border-b border-space-700/80 pb-1.5 flex justify-between tracking-wider">
               <span>Molecular Signatures</span>
-              <span class="text-gray-500 font-normal">λ (µm)</span>
+              <span class="text-gray-400 font-normal">λ (µm)</span>
             </div>
-            <div class="flex justify-between items-center"><span class="text-sky-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block"></span>H₂O / Vapor:</span><span class="text-gray-300 font-bold">1.40 µm</span></div>
-            <div class="flex justify-between items-center"><span class="text-sky-300 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-300 inline-block"></span>H₂O Ice:</span><span class="text-gray-300 font-bold">3.05 µm</span></div>
-            <div class="flex justify-between items-center"><span class="text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>CH₄ Methane:</span><span class="text-gray-300 font-bold">3.30 µm</span></div>
-            <div class="flex justify-between items-center"><span class="text-orange-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-orange-400 inline-block"></span>CO₂ Ice:</span><span class="text-gray-300 font-bold">4.27 µm</span></div>
-            <div class="flex justify-between items-center"><span class="text-rose-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block"></span>CO Monoxide:</span><span class="text-gray-300 font-bold">4.67 µm</span></div>
+            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-sky-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block shadow-sm"></span>H₂O / Vapor:</span><span class="text-gray-100 font-bold">1.40 µm</span></div>
+            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-cyan-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-cyan-300 inline-block shadow-sm"></span>H₂O Ice:</span><span class="text-gray-100 font-bold">3.05 µm</span></div>
+            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-emerald-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-sm"></span>CH₄ Methane:</span><span class="text-gray-100 font-bold">3.30 µm</span></div>
+            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-amber-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow-sm"></span>CO₂ Ice:</span><span class="text-gray-100 font-bold">4.27 µm</span></div>
+            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-rose-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block shadow-sm"></span>CO Monoxide:</span><span class="text-gray-100 font-bold">4.67 µm</span></div>
           </div>
         </div>
       </div>
@@ -4791,12 +4791,12 @@
     let activeChannelInArray = 1;
 
     const SPHEREX_ARRAY_DEFS = {
-      A1: { name: "Array 1", range_um: "0.750 - 1.110", min_um: 0.750, max_um: 1.110, start_band: 1, color: 'rgba(99, 102, 241, 0.14)', stroke: '#6366f1' },
-      A2: { name: "Array 2", range_um: "1.110 - 1.640", min_um: 1.110, max_um: 1.640, start_band: 18, color: 'rgba(6, 182, 212, 0.14)', stroke: '#06b6d4' },
-      A3: { name: "Array 3", range_um: "1.640 - 2.420", min_um: 1.640, max_um: 2.420, start_band: 35, color: 'rgba(16, 185, 129, 0.14)', stroke: '#10b981' },
-      A4: { name: "Array 4", range_um: "2.420 - 3.820", min_um: 2.420, max_um: 3.820, start_band: 52, color: 'rgba(245, 158, 11, 0.16)', stroke: '#f59e0b' },
-      A5: { name: "Array 5", range_um: "3.820 - 4.420", min_um: 3.820, max_um: 4.420, start_band: 69, color: 'rgba(249, 115, 22, 0.18)', stroke: '#f97316' },
-      A6: { name: "Array 6", range_um: "4.420 - 5.000", min_um: 4.420, max_um: 5.000, start_band: 86, color: 'rgba(239, 68, 68, 0.18)', stroke: '#ef4444' }
+      A1: { name: "Array 1", range_um: "0.750 - 1.110", min_um: 0.750, max_um: 1.110, start_band: 1, color: 'rgba(129, 140, 248, 0.22)', stroke: '#818cf8', highlight: '#c7d2fe' },
+      A2: { name: "Array 2", range_um: "1.110 - 1.640", min_um: 1.110, max_um: 1.640, start_band: 18, color: 'rgba(34, 211, 238, 0.22)', stroke: '#22d3ee', highlight: '#a5f3fc' },
+      A3: { name: "Array 3", range_um: "1.640 - 2.420", min_um: 1.640, max_um: 2.420, start_band: 35, color: 'rgba(52, 211, 153, 0.22)', stroke: '#34d399', highlight: '#a7f3d0' },
+      A4: { name: "Array 4", range_um: "2.420 - 3.820", min_um: 2.420, max_um: 3.820, start_band: 52, color: 'rgba(251, 191, 36, 0.24)', stroke: '#fbbf24', highlight: '#fde68a' },
+      A5: { name: "Array 5", range_um: "3.820 - 4.420", min_um: 3.820, max_um: 4.420, start_band: 69, color: 'rgba(251, 146, 60, 0.26)', stroke: '#fb923c', highlight: '#fed7aa' },
+      A6: { name: "Array 6", range_um: "4.420 - 5.000", min_um: 4.420, max_um: 5.000, start_band: 86, color: 'rgba(248, 113, 113, 0.26)', stroke: '#f87171', highlight: '#fecaca' }
     };
 
     const MOLECULAR_ANNOTATIONS = [
@@ -4863,7 +4863,7 @@
           if (!chartArea) return;
           const { top, bottom, left, right, width, height } = chartArea;
 
-          // 1. Draw 6 Array Color Backgrounds
+          // 1. Draw 6 Array Color Backgrounds with Vivid Contrast
           const arrayKeys = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'];
           arrayKeys.forEach(key => {
             const def = SPHEREX_ARRAY_DEFS[key];
@@ -4874,17 +4874,23 @@
             ctx.fillStyle = def.color;
             ctx.fillRect(startX, top, endX - startX, height);
 
-            // Active array subtle outline / glow
+            // Active array distinct neon bounding box
             if (key === activeArray) {
               ctx.strokeStyle = def.stroke;
-              ctx.lineWidth = 1.5;
+              ctx.lineWidth = 2.0;
+              ctx.shadowColor = def.stroke;
+              ctx.shadowBlur = 8;
+              ctx.strokeRect(startX, top, endX - startX, height);
+            } else {
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+              ctx.lineWidth = 1.0;
               ctx.strokeRect(startX, top, endX - startX, height);
             }
 
-            // Array Label at top
-            ctx.fillStyle = def.stroke;
-            ctx.font = 'bold 9px "JetBrains Mono", monospace';
-            ctx.fillText(key, startX + 4, top + 11);
+            // Array Label at top with bright pill text
+            ctx.fillStyle = (key === activeArray) ? (def.highlight || '#ffffff') : def.stroke;
+            ctx.font = 'bold 11px "JetBrains Mono", monospace';
+            ctx.fillText(key, startX + 6, top + 14);
             ctx.restore();
           });
 
@@ -4962,25 +4968,27 @@
             {
               label: '102-Band SED (µJy)',
               data: [],
-              borderColor: '#ea7600',
-              backgroundColor: 'rgba(234, 118, 0, 0.15)',
+              borderColor: '#f59e0b',
+              backgroundColor: 'rgba(245, 158, 11, 0.28)',
               fill: true,
-              borderWidth: 2,
+              borderWidth: 2.5,
               pointRadius: 0,
-              pointHoverRadius: 4,
+              pointHoverRadius: 6,
               pointHoverBackgroundColor: '#ffffff',
+              pointHoverBorderColor: '#f59e0b',
+              pointHoverBorderWidth: 2,
               tension: 0.25
             },
             {
               label: 'Catalog Photometry (µJy)',
               data: [],
               borderColor: '#ffffff',
-              backgroundColor: '#22d3ee',
+              backgroundColor: '#00f0ff',
               fill: false,
               showLine: false,
-              borderWidth: 1.5,
-              pointRadius: 6,
-              pointHoverRadius: 8,
+              borderWidth: 2.0,
+              pointRadius: 7,
+              pointHoverRadius: 9,
               pointStyle: 'rectRot',
               spanGaps: false
             }
@@ -5011,13 +5019,13 @@
           scales: {
             x: {
               display: true,
-              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 12 },
-              grid: { color: 'rgba(255,255,255,0.03)' }
+              ticks: { color: '#cbd5e1', font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, maxTicksLimit: 12 },
+              grid: { color: 'rgba(255,255,255,0.08)' }
             },
             y: {
               display: true,
-              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 }, maxTicksLimit: 4 },
-              grid: { color: 'rgba(255,255,255,0.03)' }
+              ticks: { color: '#cbd5e1', font: { family: 'JetBrains Mono', size: 10, weight: 'bold' }, maxTicksLimit: 4 },
+              grid: { color: 'rgba(255,255,255,0.08)' }
             }
           },
           plugins: {
@@ -6038,10 +6046,10 @@
         const val = parseFloat(inputRA.value.trim());
         if (inputRA.value.trim() === '' || Number.isNaN(val) || val < 0 || val > 360) {
           raHint.innerText = 'Must be 0° to 360°';
-          raHint.className = 'text-[9px] font-mono text-rose-400 mt-0.5';
+          raHint.className = 'text-xs font-mono text-rose-400 mt-0.5';
         } else {
           raHint.innerText = 'Valid ICRS RA';
-          raHint.className = 'text-[9px] font-mono text-emerald-400 mt-0.5';
+          raHint.className = 'text-xs font-mono text-emerald-400 mt-0.5';
         }
       }
 
@@ -6050,10 +6058,10 @@
         const val = parseFloat(inputDec.value.trim());
         if (inputDec.value.trim() === '' || Number.isNaN(val) || val < -90 || val > 90) {
           decHint.innerText = 'Must be -90° to +90°';
-          decHint.className = 'text-[9px] font-mono text-rose-400 mt-0.5';
+          decHint.className = 'text-xs font-mono text-rose-400 mt-0.5';
         } else {
           decHint.innerText = 'Valid ICRS Dec';
-          decHint.className = 'text-[9px] font-mono text-emerald-400 mt-0.5';
+          decHint.className = 'text-xs font-mono text-emerald-400 mt-0.5';
         }
       }
 
@@ -6676,11 +6684,13 @@
 
     const TIMELINE_COMPACT_HEIGHT = 64;
     let activeDockTabMode = 'timeline';
-    let savedDockBodyHeight = Math.max(156, Math.min(380, parseInt(localStorage.getItem('spherex_bottom_dock_height') || '168', 10) || 168));
+    let savedDockBodyHeight = Math.max(156, Math.min(420, parseInt(localStorage.getItem('spherex_bottom_dock_height') || '240', 10) || 240));
     let isDockCollapsed = false;
 
     function getTargetOpenDockHeight() {
-      return (activeDockTabMode === 'timeline') ? TIMELINE_COMPACT_HEIGHT : Math.max(156, savedDockBodyHeight);
+      if (activeDockTabMode === 'timeline') return TIMELINE_COMPACT_HEIGHT;
+      if (activeDockTabMode === 'spectrum') return Math.max(240, savedDockBodyHeight);
+      return Math.max(156, savedDockBodyHeight);
     }
 
     function switchDockTab(activeBtn, activePanel) {
@@ -6693,7 +6703,7 @@
       if (activeBtn) activeBtn.classList.add('blender-btn-active');
       if (activePanel) activePanel.classList.remove('hidden');
 
-      activeDockTabMode = (activePanel === dockPanelTimeline) ? 'timeline' : 'chart';
+      activeDockTabMode = (activePanel === dockPanelTimeline) ? 'timeline' : ((activePanel === dockPanelSpectrum) ? 'spectrum' : 'chart');
       isDockCollapsed = false;
       if (dockCollapseIcon) dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
       if (dockContentBody) {
@@ -6824,7 +6834,7 @@
 
         window.addEventListener('mousemove', (e) => {
           if (!draggingBottom) return;
-          const newHeight = Math.max(56, Math.min(380, window.innerHeight - e.clientY - 36));
+          const newHeight = Math.max(56, Math.min(420, window.innerHeight - e.clientY - 36));
           if (isDockCollapsed) {
             isDockCollapsed = false;
             if (dockCollapseIcon) {
@@ -6851,9 +6861,9 @@
 
         bottomSplitter.addEventListener('dblclick', () => {
           isDockCollapsed = false;
-          savedDockBodyHeight = 168;
+          savedDockBodyHeight = (activeDockTabMode === 'spectrum') ? 240 : 168;
           dockContentBody.style.height = `${getTargetOpenDockHeight()}px`;
-          localStorage.setItem('spherex_bottom_dock_height', '168');
+          localStorage.setItem('spherex_bottom_dock_height', String(savedDockBodyHeight));
           if (dockCollapseIcon) {
             dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
             if (window.lucide) lucide.createIcons();
@@ -8963,30 +8973,30 @@
 
       if (btnHudDiffMode) {
         if (diffMode) {
-          btnHudDiffMode.className = "px-2 py-0.5 rounded text-[10px] bg-orange-600 text-white font-mono font-bold shadow";
+          btnHudDiffMode.className = "px-2.5 py-1 rounded-md text-xs bg-orange-600 text-white font-mono font-bold shadow";
         } else {
-          btnHudDiffMode.className = "px-2 py-0.5 rounded text-[10px] text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold";
+          btnHudDiffMode.className = "px-2.5 py-1 rounded-md text-xs text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold";
         }
       }
 
       if (btnHudStepPrev) {
         btnHudStepPrev.className = (!diffMode && currentFrame === 1 && epochBlend < 0.2)
-          ? "px-2 py-0.5 rounded text-[10px] bg-blender-blue text-white font-bold font-mono shadow"
-          : "px-2 py-0.5 rounded text-[10px] text-gray-300 hover:text-white hover:bg-space-800 transition font-mono";
+          ? "px-2.5 py-1 rounded-md text-xs bg-blender-blue text-white font-bold font-mono shadow"
+          : "px-2.5 py-1 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium";
       }
 
       if (btnHudStepNext) {
         btnHudStepNext.className = (!diffMode && currentFrame === 2 && epochBlend > 0.8)
-          ? "px-2 py-0.5 rounded text-[10px] bg-cyan-600 text-white font-bold font-mono shadow"
-          : "px-2 py-0.5 rounded text-[10px] text-gray-300 hover:text-white hover:bg-space-800 transition font-mono";
+          ? "px-2.5 py-1 rounded-md text-xs bg-cyan-600 text-white font-bold font-mono shadow"
+          : "px-2.5 py-1 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium";
       }
 
       if (btnHudBlinkMorph && hudPlayIcon) {
         if (isPlaying && !diffMode) {
-          btnHudBlinkMorph.className = "px-2 py-0.5 rounded text-[10px] bg-blender-orange text-white font-semibold shadow transition font-mono flex items-center gap-1";
+          btnHudBlinkMorph.className = "px-2.5 py-1 rounded-md text-xs bg-blender-orange text-white font-semibold shadow transition font-mono flex items-center gap-1.5";
           hudPlayIcon.setAttribute('data-lucide', 'pause');
         } else {
-          btnHudBlinkMorph.className = "px-2 py-0.5 rounded text-[10px] bg-space-800 text-gray-300 hover:text-white hover:bg-space-700 transition font-mono flex items-center gap-1";
+          btnHudBlinkMorph.className = "px-2.5 py-1 rounded-md text-xs bg-space-800 text-gray-200 hover:text-white hover:bg-space-700 transition font-mono flex items-center gap-1.5";
           hudPlayIcon.setAttribute('data-lucide', 'play');
         }
         if (window.lucide) lucide.createIcons();

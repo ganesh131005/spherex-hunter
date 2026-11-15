@@ -355,3 +355,70 @@ def test_issue_40_viewport_hud_deconfliction_contract():
     cand_alert = soup.find(id="candidateAlertStrip")
     assert cand_alert is not None and "top-28" in cand_alert.get("class", []), "Candidate alert strip must be at top-28"
 
+
+def test_issue_41_typography_scale_and_readability_contract():
+    """Validates Issue #41 / TASK-007: Enlarge microscopic typography to accessible scales (>=11px-14px)."""
+    html, soup = _get_html_and_soup()
+
+    # 1. #dockPanelSpectrum exists and eliminates microscopic text-[9px] and text-[10px]
+    spectrum_panel = soup.find(id="dockPanelSpectrum")
+    assert spectrum_panel is not None, "Missing #dockPanelSpectrum"
+    spectrum_html = str(spectrum_panel)
+    assert "text-[9px]" not in spectrum_html, "Microscopic text-[9px] must not exist in #dockPanelSpectrum"
+    assert "text-[10px]" not in spectrum_html, "Microscopic text-[10px] must not exist in #dockPanelSpectrum"
+
+    # 2. Wavelength stepper channel display is enlarged to text-sm font-bold min-w-[220px]
+    chan_display = spectrum_panel.find(id="chanDisplay")
+    assert chan_display is not None, "Missing #chanDisplay"
+    cd_classes = chan_display.get("class", [])
+    assert "text-sm" in cd_classes and "font-bold" in cd_classes and "min-w-[220px]" in cd_classes, (
+        f"#chanDisplay must be enlarged to text-sm font-bold min-w-[220px], got {cd_classes}"
+    )
+
+    # 3. Flux badge has accessible text-xs font-mono font-bold and comfortable padding
+    chan_flux = spectrum_panel.find(id="chanFluxBadge")
+    assert chan_flux is not None, "Missing #chanFluxBadge"
+    cf_classes = chan_flux.get("class", [])
+    assert "text-xs" in cf_classes and "font-bold" in cf_classes, (
+        f"#chanFluxBadge must be text-xs font-bold, got {cf_classes}"
+    )
+
+    # 4. Channel stepper buttons #chanPrev and #chanNext have comfortable touch targets w-8 h-8
+    for btn_id in ["chanPrev", "chanNext"]:
+        btn = spectrum_panel.find(id=btn_id)
+        assert btn is not None, f"Missing #{btn_id}"
+        btn_classes = btn.get("class", [])
+        assert "w-8" in btn_classes and "h-8" in btn_classes, f"#{btn_id} must be w-8 h-8, got {btn_classes}"
+
+    # 5. Non-simultaneous notice uses text-xs font-medium with comfortable padding
+    notice = spectrum_panel.find(id="spectrumNonSimultaneousNotice")
+    assert notice is not None, "Missing #spectrumNonSimultaneousNotice"
+    notice_classes = notice.get("class", [])
+    assert "text-xs" in notice_classes and "font-medium" in notice_classes, (
+        f"#spectrumNonSimultaneousNotice must be text-xs font-medium, got {notice_classes}"
+    )
+
+    # 6. Molecular reference sidebar is expanded to w-64 with text-xs font-mono
+    mol_sidebar = spectrum_panel.find("div", class_=lambda c: c and "w-64" in c)
+    assert mol_sidebar is not None, "Molecular reference sidebar must have width w-64"
+    mol_classes = mol_sidebar.get("class", [])
+    assert "text-xs" in mol_classes and "font-mono" in mol_classes, (
+        f"Molecular sidebar must use text-xs font-mono, got {mol_classes}"
+    )
+
+    # 7. Viewport HUD time-step controls use accessible text-xs styling
+    hud = soup.find(id="viewportTimeStepHUD")
+    assert hud is not None, "Missing #viewportTimeStepHUD"
+    for hud_btn_id in ["btnHudStepPrev", "btnHudStepNext", "btnHudDiffMode"]:
+        btn = hud.find(id=hud_btn_id)
+        assert btn is not None, f"Missing #{hud_btn_id}"
+        btn_classes = btn.get("class", [])
+        assert "text-xs" in btn_classes, f"#{hud_btn_id} must have text-xs, got {btn_classes}"
+
+    # 8. RA/Dec validation hints use text-xs font-mono
+    ra_hint = soup.find(id="raValidationHint")
+    dec_hint = soup.find(id="decValidationHint")
+    assert ra_hint is not None and "text-xs" in ra_hint.get("class", []), "#raValidationHint must be text-xs"
+    assert dec_hint is not None and "text-xs" in dec_hint.get("class", []), "#decValidationHint must be text-xs"
+
+

@@ -3,28 +3,35 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Assigned TASK-007 (`Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies`) via `tools/task_forwarder.py`.
-- **Next Task:** Refactor spectral HUD and molecular reference sidebar typography in `frontend/index.html` to $\ge 11\text{px}$–$13\text{px}$, verify DOM contract tests, and close task.
+- **Current Task:** Completed and verified Issue #41 / TASK-007 (`Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies`).
+- **Next Task:** Monitor GitHub Issues board for incoming tasks and maintain clean test suites.
 - **Blockers:** None.
 
 ## Assigned Tasks:
-- [ ] **[TASK-007] Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies**
-  - **Ticket File:** `07 - Team Memory & Sync/TASK_DISPATCH/inbox/TASK-007_coolodu.md`
-  - **GitHub URL:** https://github.com/joker0210G/spherex-hunter/issues/new?title=Improve+UI%2FUX+Readability+%26+Typography+Scale%3A+Enlarge+Microscopic+9px%2F10px+Text+for+Researchers+%26+Newbies&labels=track%3Aweb-frontend%2Crole%3Acoolodu%2Cresource%3Astandard%2Cstatus%3Aneeds-refinement
-  - **Scope:** Refactor `text-[9px]` & `text-[10px]` in SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`) and molecular absorption reference table to readable accessible scales ($\ge 11\text{px}$–$13\text{px}$) with comfortable click padding and WCAG AA contrast.
+- [x] **[Issue #41 / TASK-007] Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies**
+  - **Ticket File:** `07 - Team Memory & Sync/TASK_DISPATCH/completed/TASK-007_coolodu.md`
+  - **GitHub Issue:** #41 (https://github.com/joker0210G/spherex-hunter/issues/41)
+  - **Scope:** Refactored `text-[9px]` & `text-[10px]` across SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`), molecular absorption reference table, viewport HUD time-step controls, and coordinate validation hints to accessible font scales ($\ge 11\text{px}$–$14\text{px}$) with comfortable click padding and WCAG AA contrast.
 
 ## Completed Tasks:
+- [x] **[Resolved Issue #41 / TASK-007 — UI/UX Readability & Typography Scale Optimization]**:
+  - **SPHEREx Spectral Bar:**
+    - Enlarged `#chanDisplay` from 12px to `text-sm font-bold min-w-[220px]` (14px) for clear channel and wavelength readouts.
+    - Sized `#chanFluxBadge` to `text-xs font-mono font-bold px-2.5 py-1` with solid contrast badge background.
+    - Sized navigation steppers `#chanPrev` and `#chanNext` to `w-8 h-8 rounded-lg text-base font-bold` for comfortable touch and click targets.
+    - Enlarged `#chanSlider` track and thumb (`w-36 h-3`).
+    - Upgraded `#spectrumNonSimultaneousNotice` from `text-[11px]` to `text-xs font-medium px-3 py-1.5` with WCAG AA compliant contrast.
+    - Enhanced `#btnOpenBandScience` to `px-3.5 py-1.5 rounded-lg text-xs font-bold`.
+  - **Molecular Absorption Reference Sidebar:**
+    - Expanded width to `w-64` and container styling to `bg-space-950/95 p-3 rounded-xl border border-space-700/80`.
+    - Eliminated microscopic `text-[9px]`, replacing with `text-xs font-mono` and `font-bold` header.
+    - Enlarged signature color dots from 1.5px to `w-2.5 h-2.5 rounded-full` and upgraded labels to high-contrast colors (`text-sky-300`, `text-cyan-300`, `text-emerald-300`, `text-amber-300`, `text-rose-300`) with bold white wavelengths.
+  - **Viewport HUD & Coordinate Inputs:**
+    - Upgraded time-step buttons (`#btnHudStepPrev`, `#btnHudStepNext`, `#btnHudDiffMode`, `#btnHudBlinkMorph`) to `text-xs` across both HTML markup and `updateTimeStepHUD` JavaScript state transitions.
+    - Upgraded `#raValidationHint`, `#decValidationHint`, and FOV zoom indicator to `text-xs font-mono`.
+    - Removed duplicate `role="region" aria-label="SPHEREx DR1 HiPS Context Controls"` attribute on `#aladinContextBar`.
+  - **Verification:** Added `test_issue_41_typography_scale_and_readability_contract` to `tests/test_ui_contract.py`. All 13 contract tests and 58/58 CI unit tests pass 100% green. Clean ruff checks.
 - [x] **[Resolved Issues #39 & #40 — Backend NoneType Guard, FOV Clamping, Diagnostics & Viewport HUD Deconfliction]**:
-  - Re-positioned `#viewportTimeStepHUD` and `#aladinContextBar` to `top-14` with 56px clearance.
-  - Positioned dismissible alert banners (`#guidedTourBanner`, `#candidateAlertStrip`, `#noObsBanner`) to `top-28`.
-  - Verified 47/47 CI unit and contract tests pass 100% green. Pushed to `origin/coolodu/web-frontend`.
-- [ ] **[TASK-007] Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies**
-  - **Ticket File:** `07 - Team Memory & Sync/TASK_DISPATCH/inbox/TASK-007_coolodu.md`
-  - **GitHub URL:** https://github.com/joker0210G/spherex-hunter/issues/new?title=Improve+UI%2FUX+Readability+%26+Typography+Scale%3A+Enlarge+Microscopic+9px%2F10px+Text+for+Researchers+%26+Newbies&labels=track%3Aweb-frontend%2Crole%3Acoolodu%2Cresource%3Astandard%2Cstatus%3Aneeds-refinement
-  - **Scope:** Refactor `text-[9px]` & `text-[10px]` in SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`) and molecular absorption reference table to readable accessible scales ($\ge 11\text{px}$–$13\text{px}$) with comfortable click padding and WCAG AA contrast.
-
-## Completed Tasks:
-- [x] **[Resolved Issues #39 & #40 — Backend NoneType Guard, FOV Clamping, Diagnostic Details, & Viewport HUD Deconfliction]**:
   - **Issue #39 (Backend NoneType Crash & Error Details):**
     - In `backend/main.py`, guarded `fetch_real_cutout()` return value against `None`, raising structured HTTP 404 problem detail instead of throwing `AttributeError: 'NoneType' object has no attribute 'get'` on `response.headers["X-Cache"]`.
     - Added HTTP 400 validation when `fov > 15.0` arcmin explaining the limit.

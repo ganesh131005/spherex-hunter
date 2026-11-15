@@ -51,13 +51,14 @@
     3. Re-positioned dismissible alert banners (`#guidedTourBanner`, `#candidateAlertStrip`, `#noObsBanner`) to `top-28` to prevent stacking on the time-step HUD.
     4. Verified in `tests/test_ui_contract.py::test_issue_40_viewport_hud_deconfliction_contract`.
   - **Verification:** 47/47 CI unit and contract tests passing; clean ruff checks. Closed on GitHub.
-- **[🎨 TASK DISPATCHED: IMPROVE UI/UX READABILITY & TYPOGRAPHY SCALE (@coolodu)]**
-  - **Issue / Ticket:** [TASK-007](file:///m:/NASA%20Space%20Apps/07%20-%20Team%20Memory%20&%20Sync/TASK_DISPATCH/inbox/TASK-007_coolodu.md) | [1-Click GitHub Issue Submission](https://github.com/joker0210G/spherex-hunter/issues/new?title=Improve+UI%2FUX+Readability+%26+Typography+Scale%3A+Enlarge+Microscopic+9px%2F10px+Text+for+Researchers+%26+Newbies&labels=track%3Aweb-frontend%2Crole%3Acoolodu%2Cresource%3Astandard%2Cstatus%3Aneeds-refinement)
-  - **Requester:** `@jokerodu` / Citizen Feedback | **Assigned To:** `@coolodu` (`coolodu/web-frontend`)
-  - **Core Focus:**
-    - Refactor microscopic typography (`text-[9px]` & `text-[10px]`) in the SPHEREx spectral control bar, observation honesty notice banner, and molecular absorption reference table.
-    - Provide comfortable $\ge 11\text{px}$–$13\text{px}$ accessible font scales, enhanced contrast ratios, ergonomic touch/click padding (`px-3 py-1.5`), and responsive flexbox wrapping so researchers can clearly read quantitative wavelengths/fluxes and citizen science newcomers are not overwhelmed.
-  - **Status:** Dispatched to `@coolodu` inbox (`TASK-007_coolodu.md`). Under strict team guardrails, assigned directly to `@coolodu` for execution.
+- **[🎉 ISSUE #41 / TASK-007 RESOLVED: UI/UX READABILITY & TYPOGRAPHY SCALE OPTIMIZATION (@coolodu)]**
+  - **Issue / Ticket:** [Issue #41](https://github.com/joker0210G/spherex-hunter/issues/41) | [TASK-007](file:///d:/Nasa_space_apps/07%20-%20Team%20Memory%20&%20Sync/TASK_DISPATCH/completed/TASK-007_coolodu.md)
+  - **Resolution Highlights:**
+    1. **SPHEREx Spectral Bar:** Enlarged `#chanDisplay` to `text-sm font-bold min-w-[220px]` (14px), `#chanFluxBadge` to `text-xs font-mono font-bold px-2.5 py-1`, `#chanPrev` and `#chanNext` to `w-8 h-8 rounded-lg text-base font-bold`, `#chanSlider` to `w-36 h-3`, and `#btnOpenBandScience` to `px-3.5 py-1.5 text-xs font-bold`.
+    2. **Molecular Absorption Reference Sidebar:** Eliminated microscopic `text-[9px]`, expanding container to `w-64 bg-space-950/95 p-3 rounded-xl border border-space-700/80 font-mono text-xs space-y-2`, signature color indicators to `w-2.5 h-2.5`, and labels to accessible high-contrast palettes (`text-sky-300`, `text-cyan-300`, `text-emerald-300`, `text-amber-300`, `text-rose-300`).
+    3. **Observation Honesty Notice:** Upgraded `#spectrumNonSimultaneousNotice` from `text-[11px]` to `text-xs font-medium text-amber-200 bg-amber-950/80 px-3 py-1.5` with WCAG AA compliance.
+    4. **Viewport HUD & Coordinate Validation Hints:** Modernized time-step buttons (`#btnHudStepPrev`, `#btnHudStepNext`, `#btnHudDiffMode`, `#btnHudBlinkMorph`) to `text-xs` in both HTML and JS state transitions; upgraded `#raValidationHint`, `#decValidationHint`, and FOV hint to `text-xs`.
+  - **Verification:** Added `test_issue_41_typography_scale_and_readability_contract` to `tests/test_ui_contract.py`. All 13 contract tests and 58/58 unit tests passed 100% green. Clean ruff checks.
 - **[🎉 MASTER INTEGRATION COMPLETE ON `main`: `coolodu/web-frontend` MERGED & 100% GREEN TESTS]**
   - **Commit:** Integrated `coolodu/web-frontend` into `main` (commit `0a879ee`).
   - **Capabilities Integrated:**
