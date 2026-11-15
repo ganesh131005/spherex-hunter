@@ -3,11 +3,24 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed comprehensive error rectification across backend endpoints, browser probes, pytest warning filters, telemetry UI badges, and Time Step Controller default closure. Added direct `/index.html` and `/favicon.ico` route handling to prevent 404s, configured deprecation warning filters in `pyproject.toml` for 100% clean test runs, closed Time Step Controller on initial load to keep canvas unobstructed, and re-styled high proper motion auto-centering badges to active cyan telemetry badges. Verified with 100% green test passes and 0 console errors.
-- **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
+- **Current Task:** Streamlined the bottom dock header to enforce a minimalist layout per user feedback. Removed the redundant `Time Gap: 26.3 Years (2MASS → SPHEREx)` explainer pill and its modal popover (`#btnTimeGapExplainer`, `#timeGapPopover`), freeing up over 250px of horizontal breathing room. The temporal baseline information remains accessible via the VCR timeline ticks (`1999`, `2010`, `2014`, `2025`), the Time Step Controller HUD (`BASELINE: Δt`), and the Properties sidebar. 62/62 unit and contract tests passing.
+- **Next Task:** Awaiting user review/approval on `/plan` for dynamic adaptive responsive navbar.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Minimalist Layout: Remove Redundant Time Gap Explainer Pill]**:
+  - Removed `#btnTimeGapExplainer` and `#timeGapPopover` from `frontend/index.html`.
+  - Streamlined the bottom dock header to include only the dock panel collapse toggle.
+  - Verified 100% test pass rate across all suites with 0 regressions.
+- [x] **[Ensure Reliable Triggering of View Modes ("Blink ⌵") Dropdown]**:
+  - Diagnosed issue where clicking `#btnViewModesTrigger` ("Blink ⌵") immediately triggered `wsBlink.click()`, which invoked `updateActiveViewModeIndicator()` and instantly closed the menu in the same event tick.
+  - Removed conflicting internal click trigger, added `hidden` class by default to `#viewModesPopup`, added direct inline `onclick="window.toggleViewModesPopup && window.toggleViewModesPopup(); event.stopPropagation();"` and `pointer-events-none` on children.
+  - Verified with 29/29 contract tests passing.
+- [x] **[Eliminate Linear Starfield Replicas & Canvas Transform Compounding in Viewport]**:
+  - Diagnosed visual anomaly where identical scaled copies (0.500x ratio) of the target starfield (`WISE 0855`) appeared duplicated diagonally with L-shaped clipping boundaries.
+  - Root Cause: During active dipole/transient detection (`autoDetectEnabled && autoDetectedChanges.length > 0`), `drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec)` referenced `cosDec` which was not defined in `drawFrame()`'s scope. This threw `ReferenceError: cosDec is not defined`, bypassing `ctx.restore()` at the end of `drawFrame()`. Each subsequent frame compounded `translate` and `scale` matrices onto the canvas without clearing the physical buffer.
+  - Fix: Added `ctx.setTransform(1, 0, 0, 1, 0, 0)` before clearing, defined `const cosDec = Math.cos((camera.dec * Math.PI) / 180.0) || 1.0;` at the top of `drawFrame()`, enclosed all transformed operations in `ctx.save(); try { ... } finally { ctx.restore(); }`, and added a defensive `safeCosDec` fallback inside `drawAutoIdentificationOverlay()`.
+  - Verification: Added contract test `test_viewport_draw_frame_canvas_transform_hygiene_and_cosdec_contract` to `tests/test_ui_contract.py`. Subagent confirmed single clean celestial frame, zero console errors, zero replicas across multi-axis panning/zooming, and 62/62 passing tests.
 - [x] **[Ensure Reliable Triggering of Coordinates Popover & Multi-Entry Time Step Access]**:
   - Bound direct inline `onclick="window.toggleCoordsPopover()"` and `onclick="window.toggleTimeStepHUD()"` handlers, adding `pointer-events-none` to nested text and icons so child elements never swallow clicks.
   - Added dedicated `Tool 5: Time Step Controller` entry inside the top View Modes dropdown (`#viewModesPopup`), enabling users to open the Time Step Controller from either the left vertical toolbar (`Step` button / Hotkey `T`) or the top View Modes menu.
