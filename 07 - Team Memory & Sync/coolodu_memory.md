@@ -3,7 +3,7 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Streamlined the viewport HUD by seamlessly merging the active blink frame and survey indicator into the bottom telemetry bar and consolidating redundant resolution/LOD indicators into a compact, unified readout.
+- **Current Task:** Streamlined the viewport HUD by seamlessly merging the active blink frame and survey indicator into the bottom telemetry bar and consolidating redundant resolution/LOD indicators into a compact, unified readout. Captured and verified high-resolution application screenshots for scientific validation, NASA flight exposure benchmark verification, and Aladin Sky view with non-intrusive bottom context bar (`docs/screenshots/`). Updated memory logs and team state.
 - **Next Task:** Maintain clean branch state and prepare final challenge submission demo materials.
 - **Blockers:** None.
 
@@ -16,6 +16,12 @@
     2. Consolidated the 4 resolution metrics (`#vpLOD`, `#vpDeviceScale`, `#vpNativeSpan`, `#vpScaleStatusBadge`) into a single, cohesive optical scale block with rich hover tooltips, cutting horizontal bar bloat by ~40%.
     3. Removed the orphan separator pipe `|` in `#vpTopTargetCard` when no target name is populated (`#vpTargetDivider`).
     4. Verified all 62 automated tests (`test_ui_contract.py`, `test_golden_suite.py`, `test_viewport_overhaul_v2.py`) pass 100% green.
+- [x] **[Capture High-Resolution Application Screenshots for Validation & Aladin Sky Mode]**:
+  - Developed automated headless Playwright capture script (`scripts/capture_validation_screenshots.py`) bypassing onboarding tour intercepts.
+  - Captured `01_wise0855_observatory_blink.png`: Authentic multi-epoch FITS data for WISE 0855-0714 with auto-identified proper motion dipole annotation, telemetry HUD, coordinate overlay, and multi-epoch timeline.
+  - Captured `02_scientific_validation_modal.png`: Phase 2 Scientific Validation Benchmark & Mission Codex modal showing verified NASA SPHEREx flight exposure metrics (completeness at $m_{\text{AB}} \approx 17.3$, false-positive rate 29.02/deg², 54 IMCCE SkyBoT bodies, EPSF 0.666" astrometry).
+  - Captured `03_aladin_sky_hips_view.png`: CDS Strasbourg Aladin Lite interactive HiPS view with the new bottom-docked `#aladinContextBar`.
+  - Stored in `docs/screenshots/` and copied to conversation artifact directory.
 - [x] **[Modernize Header Action Tools to Dropdown Toolbar Named 'More' & Target Selector Dropdown]**:
   - Replaced horizontal preset target strip with a clean, compact dropdown toolbar (`#btnTargetDropdownTrigger` & `#targetDropdownMenu`), preserving the single search icon button (`#btnOpenCommandPalette`, `Ctrl+K`) and all benchmark target buttons with full test compatibility.
   - Consolidated observatory action buttons (`#btnOpenInvestigations`, `#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenValidation`, `#btnOpenShortcuts`) into a single unified dropdown toolbar button named **"More"** (`#btnHeaderMoreActions` + `#headerMoreActionsDropdown`).

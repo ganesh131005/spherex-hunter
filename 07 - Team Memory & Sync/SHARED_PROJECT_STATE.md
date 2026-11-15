@@ -1,4 +1,4 @@
-# 🌐 SHARED PROJECT STATE (Team RIP Central Ledger)
+﻿# 🌐 SHARED PROJECT STATE (Team RIP Central Ledger)
 > **Last Updated:** Hackathon Phase 2 Integration | **Status:** SPHEREx DR1 All-Sky HiPS Context Layer & Holdings Deployed
 > **Rule:** Whenever ANY teammate's Antigravity agent finishes a feature or hits a blocker, append a short note here and commit!
 
@@ -33,6 +33,13 @@
     2. **Consolidated Resolution Group:** Unified the 4 resolution tags into a sleek, compact optical scale group with hover tooltips, reducing horizontal footprint by ~40% while preserving all DOM IDs for automated contract tests.
     3. **Target Divider Cleanliness:** Fixed orphan pipe divider (`#vpTargetDivider`) so it only displays when a target name is explicitly populated.
   - **Verification:** 100% green pass rate across `test_ui_contract.py` (29/29), `test_golden_suite.py` (23/23), and `test_viewport_overhaul_v2.py` (10/10) — 62/62 tests passing.
+
+- **[📸 SCIENTIFIC VALIDATION & ALADIN SKY HIGH-RES SCREENSHOTS CAPTURED (@coolodu)]**
+  - **Captures Generated & Verified (`docs/screenshots/` & Artifact Dir):**
+    1. `01_wise0855_observatory_blink.png`: Primary Observatory Blink view displaying authentic multi-epoch FITS data (WISE 0855-0714 with auto-identified proper motion dipole annotation, telemetry HUD, coordinate overlay, and multi-epoch timeline).
+    2. `02_scientific_validation_modal.png`: Phase 2 Scientific Validation Benchmark & Mission Codex modal showing verified NASA SPHEREx flight exposure benchmarks (detection completeness at $m_{\text{AB}} \approx 17.3$, false-positive rate 29.02/deg² with Gaia DR3 star masking, 54 IMCCE SkyBoT bodies, EPSF 0.666" astrometry).
+    3. `03_aladin_sky_hips_view.png`: CDS Strasbourg Aladin Lite interactive HiPS view with the new bottom-docked `#aladinContextBar`.
+  - **Automation:** Created `scripts/capture_validation_screenshots.py` using Playwright with onboarding modal suppression.
 - **[🔭 102-BAND SPECTRUM TOOLBAR RESPONSIVE OVERHAUL & ALL-BRANCH SYNC (@jokerodu / Team RIP)]**
   - **Identified Resolution Issue:** The 102-Band Spectrum top toolbar in `#dockPanelSpectrum` previously forced ~2,000px of fixed `shrink-0` controls into a rigid `whitespace-nowrap overflow-y-hidden` row. On standard 1080p laptop displays (125%/150% scaling) or with the Scene Collection sidebar expanded, the right cluster (`specHorizontalZoomBar`, `btnOpenBandScience`, and zoom reset) was pushed off-screen or clipped.
   - **Responsive Architectural Fixes:**
