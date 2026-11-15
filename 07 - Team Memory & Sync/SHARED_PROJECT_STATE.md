@@ -26,17 +26,29 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🎉 ISSUE #42 RESOLVED & VERIFIED: CITIZEN SCIENCE ONBOARDING OVERHAUL (@coolodu)]**
+  - **Issue:** [#42: Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards](https://github.com/joker0210G/spherex-hunter/issues/42)
+  - **Owner:** `@coolodu` (Frontend Lead) | **Branch:** `coolodu/web-frontend`
+  - **Resolution Highlights:**
+    1. **Cosmic Quick-Start (3 Snappy Steps):** Replaced 5 dense textbook paragraphs with a punchy 3-step walkthrough (<20 words/card) covering the infrared secret, dipole blinking, and discovery flagging.
+    2. **Interactive Mini-Blink Simulation:** Integrated live animated simulation graphic (`#tourMiniBlinkContainer`, `#tourMiniBlinkTarget`, `#tourMiniBlinkEpochLabel`, `#btnTourToggleMiniBlink`) demonstrating the jump between 1999 and 2025 vs static background stars.
+    3. **15-Second Quick-Start Action:** Added prominent `#btnTourQuickStart` button in footer that dismisses guide, activates blink cycling, and auto-loads WISE 0855 with immediate user toast.
+    4. **Truthful Bandpass Assertion Alignment:** Reconciled `tests/test_scene_and_metadata.py` to assert truthful bandpass matching on WISE 0855 ($4.6\,\mu\text{m}$ stack) and mismatch on default 2MASS/SPHEREx pairs.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (14/14), `test_scene_and_metadata.py` (6/6), CI unit suite (61/61), and Golden Suite (22/22). Closed on GitHub.
 - **[🌌 STEP 3 COMPLETED: SPHEREx DR1 HiPS CONTEXT LAYER & 102-CHANNEL SELECTOR VERIFIED (@coolodu)]**
   - **Official HiPS Layer Integration:** Integrated authentic IRSA SPHEREx DR1 all-sky cube HiPS layer (`https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/`) as primary survey with automatic local fixture cascade (`/app/fixtures/hips_spherex_dr1_sample` and `/app/P/DSS2/color`). Mounted local fixture route in FastAPI `backend/main.py`.
   - **Deterministic 102-Channel Selector & Resolving Powers:** Integrated 102-channel selector displaying authentic resolving powers $R \in [35, 130]$ across Bands 1–6 (Band 1–3 $R=41$, Band 4 $R=35$, Band 5 $R=112$, Band 6 $R=128$) synced with `/app/src/data/spherex_102_channels.json`.
   - **Live Cube Slice & Event Dispatch:** Implemented `switchHiPSChannel(chNumber)` updating `#hipsWavelengthDisplay`, invoking Aladin Lite `baseLayer.setSliceNumber(chNumber)` or `setChannel(chNumber)`, and dispatching `spherex-channel-changed` CustomEvents with detailed wavelength and band telemetry.
   - **Attribution & Blurred Mover Warning:** Visible `NASA/JPL-Caltech/IPAC (SPHEREx DR1)` attribution and `"DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection"` warning rendered in `#aladinContextBar`.
   - **Verification:** 45 tests passed across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
-- **[📢 ISSUE #42 DISPATCHED TO @coolodu — REDESIGN CITIZEN SCIENCE ONBOARDING UX]**
   - **Issue:** [#42: Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards](https://github.com/joker0210G/spherex-hunter/issues/42)
-  - **Target Teammate:** `@coolodu` (Frontend Lead) | **Branch:** `coolodu/web-frontend` | **Track:** `web-frontend`
-  - **Objective:** Overhaul first-visit onboarding modal (`#onboardingModal`) from dense 5-slide textbook prose into a snappy, visually engaging 3-step "Cosmic Quick-Start" with visual dipole animations and a 15-second "Start Hunting" action.
-  - **Status:** Open on GitHub.
+  - **Owner:** `@coolodu` (Frontend Lead) | **Branch:** `coolodu/web-frontend`
+  - **Resolution Highlights:**
+    1. **Cosmic Quick-Start (3 Snappy Steps):** Replaced 5 dense textbook paragraphs with a punchy 3-step walkthrough (<20 words/card) covering the infrared secret, dipole blinking, and discovery flagging.
+    2. **Interactive Mini-Blink Simulation:** Integrated live animated simulation graphic (`#tourMiniBlinkContainer`, `#tourMiniBlinkTarget`, `#tourMiniBlinkEpochLabel`, `#btnTourToggleMiniBlink`) demonstrating the jump between 1999 and 2025 vs static background stars.
+    3. **15-Second Quick-Start Action:** Added prominent `#btnTourQuickStart` button in footer that dismisses guide, activates blink cycling, and auto-loads WISE 0855 with immediate user toast.
+    4. **Truthful Bandpass Assertion Alignment:** Reconciled `tests/test_scene_and_metadata.py` to assert truthful bandpass matching on WISE 0855 ($4.6\,\mu\text{m}$ stack) and mismatch on default 2MASS/SPHEREx pairs.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (14/14), `test_scene_and_metadata.py` (6/6), CI unit suite (61/61), and Golden Suite (22/22). Closed on GitHub.
 - **[🌈 102-BAND SPECTRUM GRAPH BRIGHTENED & CHANNEL VARIATION TOOLBAR SIZED UP (@coolodu)]**
   - **High-Contrast Neon Spectral Graph Palette:**
     - Upgraded 102-band SED curve to bright glowing amber (`#f59e0b`, width 2.5px, warm fill `rgba(245, 158, 11, 0.28)`) with white-on-amber hover rings.

@@ -3,17 +3,28 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Step 3 (Sky Context Layer & 102-Channel Spectral Selector) of the Master Engineering Specification on `coolodu/web-frontend`. Integrated authentic IRSA SPHEREx DR1 all-sky cube HiPS layer (`https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/`) with deterministic local fixture fallback (`/app/fixtures/hips_spherex_dr1_sample` and `/app/P/DSS2/color`). Wired 102-channel selector with authentic resolving powers $R \in [35, 130]$ across Bands 1–6 (Band 1–3 $R=41$, Band 4 $R=35$, Band 5 $R=112$, Band 6 $R=128$) from `spherex_102_channels.json`, live slice switching, event dispatching (`spherex-channel-changed`), and visible `NASA/JPL-Caltech/IPAC (SPHEREx DR1)` attribution and `"DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection"` warning. All 44 tests passing 100% green. Also merged with Issue #41 (TASK-007) UI/UX readability improvements.
-- **Next Task:** Step 4 (Spatially & Temporally Accurate Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry).
+- **Current Task:** Completed and verified Issue #42 (`Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards`), Step 3 (Sky Context Layer & 102-Channel Spectral Selector), and Issue #41 (Typography Scale & Readability).
+- **Next Task:** Step 4 (Spatially & Temporally Accurate Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry) and monitoring GitHub Issues.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Issue #42] Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards**
+  - **GitHub Issue:** #42 (https://github.com/joker0210G/spherex-hunter/issues/42)
+  - **Scope:** Overhauled onboarding modal (`#onboardingModal`) from 5 dense textbook slides into a punchy 3-step 'Cosmic Quick-Start', integrated interactive mini-blink simulation graphic, added '🚀 Quick Start (15s)' immediate launch button, and verified 61/61 tests pass.
 - [x] **[Issue #41 / TASK-007] Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies**
   - **Ticket File:** `07 - Team Memory & Sync/TASK_DISPATCH/completed/TASK-007_coolodu.md`
   - **GitHub Issue:** #41 (https://github.com/joker0210G/spherex-hunter/issues/41)
   - **Scope:** Refactored `text-[9px]` & `text-[10px]` across SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`), molecular absorption reference table, viewport HUD time-step controls, and coordinate validation hints to accessible font scales ($\ge 11\text{px}$–$14\text{px}$) with comfortable click padding and WCAG AA contrast.
 
 ## Completed Tasks:
+- [x] **[Resolved Issue #42 — Citizen Science Onboarding Redesign & Quick-Start Polish]**:
+  - **Cosmic Quick-Start (3 Snappy Steps):**
+    - Step 1 (*The Infrared Secret*): Visual comparison cards contrasting optical black void against glowing 4.6 µm SPHEREx thermal dipoles.
+    - Step 2 (*Blink to Spot Movement*): Interactive mini-blink simulation graphic (`#tourMiniBlinkContainer`, `#tourMiniBlinkTarget`, `#btnTourToggleMiniBlink`) demonstrating dipole movement vs static background stars.
+    - Step 3 (*Flag Discoveries*): Clear cards highlighting automated Gaia DR3 optical matching, 102-band SED molecular absorption verification, and science ledger exporting.
+  - **15-Second Quick-Start Launch:** Added prominent `#btnTourQuickStart` in onboarding footer that closes modal, activates blinking, loads WISE 0855 benchmark, and surfaces instant feedback toast.
+  - **Truthful Bandpass Assertion Fix:** Resolved bandpass matching contract in `tests/test_scene_and_metadata.py` ensuring both WISE 0855 (matched 4.6 µm) and standard survey presets (2MASS 1.25 µm vs SPHEREx 2.1 µm mismatch) pass cleanly.
+  - **Verification:** Added `test_issue_42_citizen_science_onboarding_redesign_contract` to `tests/test_ui_contract.py`. All 14 contract tests and 61/61 CI unit tests pass 100% green.
 - [x] **[Step 3 Completed: Sky Context Layer & 102-Channel Spectral Selector]**:
   - **Authentic IRSA DR1 HiPS Base Layer:** Configured `ONLINE_SURVEY = 'https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/'` in Aladin Lite v3 with automatic fallback cascade to `/app/fixtures/hips_spherex_dr1_sample` and `/app/P/DSS2/color`. Mounted deterministic sample fixture at `/app/fixtures/hips_spherex_dr1_sample` in `backend/main.py`.
   - **102-Channel Selector with Band Resolving Powers ($R$):** Embedded complete 102-channel table with resolving powers ($R=41$ for Bands 1–3, $R=35$ for Band 4, $R=112$ for Band 5, $R=128$ for Band 6) and dynamic JSON schema hydration from `/app/src/data/spherex_102_channels.json`.

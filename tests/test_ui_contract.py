@@ -422,3 +422,79 @@ def test_issue_41_typography_scale_and_readability_contract():
     assert dec_hint is not None and "text-xs" in dec_hint.get("class", []), "#decValidationHint must be text-xs"
 
 
+def test_issue_42_citizen_science_onboarding_redesign_contract():
+    """Validates Issue #42: Redesigned snappy 3-step Cosmic Quick-Start tour, mini-blink simulation, and 15s quick start action."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Onboarding modal exists with redesigned Cosmic Quick-Start branding
+    modal = soup.find(id="onboardingModal")
+    assert modal is not None, "Missing #onboardingModal"
+    assert "Cosmic Quick-Start" in modal.get_text(), "Onboarding modal must display 'Cosmic Quick-Start' branding"
+
+    # 2. Step badge indicates 3 snappy steps (not 5 dense textbook slides)
+    step_badge = modal.find(id="onboardingStepBadge")
+    assert step_badge is not None, "Missing #onboardingStepBadge"
+    assert "Step" in step_badge.get_text() and "of 3" in step_badge.get_text(), (
+        f"Onboarding step badge must indicate 3 steps, got '{step_badge.get_text()}'"
+    )
+
+    # 3. Step indicator dots container has exactly 3 steps
+    dots_container = modal.find(id="tourDotsContainer")
+    assert dots_container is not None, "Missing #tourDotsContainer"
+    dots = dots_container.find_all("span")
+    assert len(dots) == 3, f"Expected 3 tour indicator dots, got {len(dots)}"
+
+    # 4. Quick Start 15s button exists in onboarding footer
+    quick_start_btn = modal.find(id="btnTourQuickStart")
+    assert quick_start_btn is not None, "Missing #btnTourQuickStart"
+    assert "Quick Start" in quick_start_btn.get_text(), "Quick Start button must display 'Quick Start'"
+
+    # 5. Guide trigger button exists in top navigation
+    btn_open = soup.find(id="btnOpenOnboarding")
+    assert btn_open is not None, "Missing #btnOpenOnboarding header trigger"
+
+    # 6. JavaScript verifies 3-step tour configuration and interactive mini-blink simulation
+    assert "const TOTAL_TOUR_STEPS = 3;" in html, "JavaScript must configure TOTAL_TOUR_STEPS = 3"
+    assert "toggleMiniBlinkSimulation" in html, "JavaScript must provide toggleMiniBlinkSimulation"
+    assert "launchQuickStart" in html, "JavaScript must provide launchQuickStart"
+    assert "tourMiniBlinkTarget" in html, "JavaScript must provide tourMiniBlinkTarget"
+    assert "tourMiniBlinkEpochLabel" in html, "JavaScript must provide tourMiniBlinkEpochLabel"
+    assert "tour-slide" in html, "JavaScript must assign .tour-slide class with data-step for slide inspection"
+
+
+def test_spectrum_array_a1_default_alignment_contract():
+    """Validates that SPHEREx 102-Band Spectrum toolbar anchors on Array A1 by default and aligns toolbar controls."""
+    html, soup = _get_html_and_soup()
+
+    # 1. #dockPanelSpectrum exists and groups Array Tabs + Channel Stepper on the left starting with Array A1
+    panel = soup.find(id="dockPanelSpectrum")
+    assert panel is not None, "Missing #dockPanelSpectrum"
+
+    array_tabs = panel.find(id="arrayTabsContainer")
+    assert array_tabs is not None, "Missing #arrayTabsContainer"
+
+    # Array A1 button has active state by default
+    a1_btn = array_tabs.find("button", attrs={"data-array": "A1"})
+    assert a1_btn is not None, "Missing Array A1 button"
+    assert "blender-btn-active" in a1_btn.get("class", []), "Array A1 button must have blender-btn-active by default"
+
+    # 2. Both Array Tabs and Channel Stepper are grouped together in a unified left cluster
+    chan_prev = panel.find(id="chanPrev")
+    assert chan_prev is not None, "Missing #chanPrev"
+    parent_stepper = chan_prev.find_parent("div")
+    assert parent_stepper is not None, "Missing channel stepper container"
+
+    # Both array_tabs and parent_stepper share a common parent flex container
+    common_parent = array_tabs.find_parent("div")
+    assert common_parent is not None, "Missing left cluster parent container"
+    assert parent_stepper in common_parent.find_all("div"), "Channel stepper must be aligned in the same cluster with arrayTabsContainer"
+
+    # 3. JavaScript defines resetSpectrumToDefaultA1Alignment and maintains Array A1 default state
+    assert "resetSpectrumToDefaultA1Alignment" in html, "Missing resetSpectrumToDefaultA1Alignment function"
+    assert "window.resetSpectrumToDefaultA1Alignment" in html, "resetSpectrumToDefaultA1Alignment must be exported to window"
+    assert "activeArray = 'A1'" in html, "Default activeArray must be 'A1'"
+    assert "activeChannelInArray = 1" in html, "Default activeChannelInArray must be 1"
+
+
+
+
