@@ -5583,18 +5583,20 @@
     });
 
     canvas.addEventListener('click', (e) => {
-      if (autoDetectEnabled && autoDetectedChanges.length > 0) {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        const w = canvas.width;
-        const h = canvas.height;
-        const worldX = (mouseX - (w / 2 + camera.panX)) / camera.zoom;
-        const worldY = (mouseY - (h / 2 + camera.panY)) / camera.zoom;
-        const basePx = Math.min(w, h) * 0.90;
-        const pixelsPerArcmin = basePx / camera.fov;
-        const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+      // 1. If Select / Inspect Tool is active: check for nearest Gaia star or detected change
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      const w = canvas.width;
+      const h = canvas.height;
+      const worldX = (mouseX - (w / 2 + camera.panX)) / camera.zoom;
+      const worldY = (mouseY - (h / 2 + camera.panY)) / camera.zoom;
+      const basePx = Math.min(w, h) * 0.90;
+      const pixelsPerArcmin = basePx / camera.fov;
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
 
+      // Check auto-detected changes first
+      if (autoDetectEnabled && autoDetectedChanges.length > 0) {
         for (const chg of autoDetectedChanges) {
           const draCenter = (chg.raCenter - camera.ra) * 60.0 * cosDec;
           const ddecCenter = (chg.decCenter - camera.dec) * 60.0;
@@ -5605,6 +5607,46 @@
             return;
           }
         }
+      }
+
+      // Check Gaia DR3 stars if Gaia overlay is enabled
+      if (gaiaOverlayEnabled && gaiaSources.length > 0) {
+        const obsEpochYr = getActiveObservationEpochYear();
+        let nearestStar = null;
+        let nearestDist = 28 / camera.zoom;
+
+        for (let i = 0; i < gaiaSources.length; i++) {
+          const src = gaiaSources[i];
+          const prop = propagateGaiaEpoch(src, obsEpochYr);
+          const proj = projectSkyToTangentialArcmin(prop.ra, prop.dec, camera.ra, camera.dec);
+          const sx = -proj.xiArcmin * pixelsPerArcmin;
+          const sy = -proj.etaArcmin * pixelsPerArcmin;
+          const dist = Math.hypot(worldX - sx, worldY - sy);
+          if (dist < nearestDist) {
+            nearestDist = dist;
+            nearestStar = src;
+          }
+        }
+
+        if (nearestStar) {
+          hoveredGaiaStar = nearestStar;
+          updateGaiaPropertyTelemetry(nearestStar);
+          // Switch to Target inspector tab to show details
+          const tabT = document.getElementById('tabTargetBtn');
+          if (tabT) tabT.click();
+          playTargetLockChime();
+          const pmStr = nearestStar.total_pm_mas_yr ? `${(nearestStar.total_pm_mas_yr / 1000).toFixed(2)}″/yr` : '0.00″/yr';
+          showToast(`Inspecting Gaia Source ...${nearestStar.source_id.slice(-6)} (G: ${nearestStar.phot_g_mag !== null ? nearestStar.phot_g_mag.toFixed(1) : '?'}, μ: ${pmStr})`, 'info');
+          drawFrame();
+          return;
+        }
+      }
+
+      // If user clicked empty space with select tool, report sky coordinate
+      if (activeTool === 'select') {
+        const clickRa = camera.ra - (worldX / pixelsPerArcmin / cosDec) / 60.0;
+        const clickDec = camera.dec - (worldY / pixelsPerArcmin) / 60.0;
+        showToast(`Reticle Selected: α = ${clickRa.toFixed(5)}°, δ = ${clickDec.toFixed(5)}°`, 'info');
       }
     });
 
