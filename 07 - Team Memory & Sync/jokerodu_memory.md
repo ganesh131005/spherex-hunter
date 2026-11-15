@@ -3,6 +3,14 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Backend Rate-Limit Prevention & Interactive 102-Band Spectrum Spots]**:
+  - Optimized backend by decoupling `/api/cutout` from `get_102_band_spectrum()` via `include_spectrum=False`, dropping external TAP queries per viewport pan from ~120 to 0.
+  - Implemented `threading.BoundedSemaphore(4)` concurrency limiter and 15s transient negative cache for upstream 502/timeouts in `cutout_engine.py`.
+  - Added 3.5s tight timeout to `query_gaia_dr3` in `gaia_service.py` to prevent 12s stalls.
+  - Added `MAX_CONCURRENT_TILE_REQUESTS = 3` priority queue and `AbortController` cancellation for off-screen tiles in `frontend/index.html`.
+  - Minimized bottom dock collapse button (`#btnToggleDock`) to dropdown chevron only without text.
+  - Mounted interactive `Molecular Signatures` dataset (Dataset 2) with color-coded diamonds, 25px hit radius, proximity fallback in tooltip `afterBody`, and 1-click wavelength jumping in `onClick`.
+  - Verified 100% green pass rate across `test_ui_contract.py` (26/26), `test_viewport_overhaul_v2.py`, `test_bands_spectrum.py` (3/3), `test_golden_suite.py` (28/28), `test_continuous_viewport_e2e.py` (14/14), and `test_api_v1_contract.py` (10/10). Pushed cleanly across all 5 branches.
 - [x] **[Permanent CI & Pytest Fix Across Suites]**:
   - Configured `asyncio_mode = "auto"` and `asyncio_default_fixture_loop_scope = "function"` in `pyproject.toml`, resolving `PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset` in GitHub Actions.
   - Aligned `test_scene_state_engine_truthful_values` in `tests/test_scene_and_metadata.py` with physical reality (WISE 0855 AllWISE W2 4.6um + SPHEREx Stack 4.6um are valid matched bands `valid_bands is True`, while checking band mismatch on Barnard's Star 2MASS vs SPHEREx).

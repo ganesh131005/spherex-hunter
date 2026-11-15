@@ -680,51 +680,46 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
 
         if not is_neg_cached:
             with _IRSA_FETCH_SEMAPHORE:
-                for attempt in range(2):
-                    try:
-                        ctx = ssl._create_unverified_context()
-                        subset_size = max(1.0, min(15.0, float(fov_arcmin)))
-                        url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
-                        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
-                        xml_data = urllib.request.urlopen(req, context=ctx, timeout=8.0).read()
-                        root = ET.fromstring(xml_data)
+                try:
+                    ctx = ssl._create_unverified_context()
+                    subset_size = max(1.0, min(15.0, float(fov_arcmin)))
+                    url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
+                    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
+                    xml_data = urllib.request.urlopen(req, context=ctx, timeout=3.5).read()
+                    root = ET.fromstring(xml_data)
 
-                        url_2mass, url_dss = None, None
-                        for elem in root.iter('fitsurl'):
-                            u = elem.text
-                            if not u: continue
-                            if 'survey=2mass' in u and 'twomass_bands=j' in u and not url_2mass:
-                                url_2mass = u
-                            if 'survey=dss' in u and ('poss2ukstu_red' in u or 'poss1_red' in u) and not url_dss:
-                                url_dss = u
+                    url_2mass, url_dss = None, None
+                    for elem in root.iter('fitsurl'):
+                        u = elem.text
+                        if not u: continue
+                        if 'survey=2mass' in u and 'twomass_bands=j' in u and not url_2mass:
+                            url_2mass = u
+                        if 'survey=dss' in u and ('poss2ukstu_red' in u or 'poss1_red' in u) and not url_dss:
+                            url_dss = u
 
-                        if url_2mass and url_dss:
-                            raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=8.0).read()
-                            raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=8.0).read()
+                    if url_2mass and url_dss:
+                        raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=3.5).read()
+                        raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=3.5).read()
 
-                            try:
-                                with open(p1, "wb") as f: f.write(raw1)
-                                with open(p2, "wb") as f: f.write(raw2)
-                                auto_prune_disk_cache(max_mb=DEFAULT_DISK_QUOTA_MB, target_mb=DEFAULT_PRUNE_TARGET_MB)
-                            except OSError as disk_err:
-                                print(f"Cache disk write warning (non-fatal): {disk_err}")
+                        try:
+                            with open(p1, "wb") as f: f.write(raw1)
+                            with open(p2, "wb") as f: f.write(raw2)
+                            auto_prune_disk_cache(max_mb=DEFAULT_DISK_QUOTA_MB, target_mb=DEFAULT_PRUNE_TARGET_MB)
+                        except OSError as disk_err:
+                            print(f"Cache disk write warning (non-fatal): {disk_err}")
 
-                            with fits.open(io.BytesIO(raw1)) as h1:
-                                d1 = np.nan_to_num(h1[0].data.astype(float))
-                                hdr1 = h1[0].header.copy()
-                            with fits.open(io.BytesIO(raw2)) as h2:
-                                d2 = np.nan_to_num(h2[0].data.astype(float))
-                                hdr2 = h2[0].header.copy()
-                            cache_tier = "LIVE_IRSA_FETCH"
-                            disk_cached_ts = time.time()
-                            is_stale_disk = False
-                            _TRANSIENT_NEGATIVE_CACHE.pop(cache_id, None)
-                            break
-                    except Exception as err:
-                        last_err = err
-                        if attempt < 1:
-                            time.sleep(0.3)
-                if d1 is None or d2 is None:
+                        with fits.open(io.BytesIO(raw1)) as h1:
+                            d1 = np.nan_to_num(h1[0].data.astype(float))
+                            hdr1 = h1[0].header.copy()
+                        with fits.open(io.BytesIO(raw2)) as h2:
+                            d2 = np.nan_to_num(h2[0].data.astype(float))
+                            hdr2 = h2[0].header.copy()
+                        cache_tier = "LIVE_IRSA_FETCH"
+                        disk_cached_ts = time.time()
+                        is_stale_disk = False
+                        _TRANSIENT_NEGATIVE_CACHE.pop(cache_id, None)
+                except Exception as err:
+                    last_err = err
                     if len(_TRANSIENT_NEGATIVE_CACHE) >= _MAX_NEGATIVE_CACHE:
                         _TRANSIENT_NEGATIVE_CACHE.popitem(last=False)
                     _TRANSIENT_NEGATIVE_CACHE[cache_id] = time.time()
@@ -1313,8 +1308,12 @@ def fetch_real_cutout(
     diff_b64 = render_color_canvas(diff_arr, "difference")
     coverage_mask_b64 = render_coverage_mask_canvas(ep1_arr)
 
-    # Compute dynamic spectrophotometry from actual FITS flux
-    spec_data = get_102_band_spectrum(ra, dec, target_key=target_key, d1=d1, d2=d2)
+    # Compute dynamic spectrophotometry only when explicitly requested (avoids 6 external TAP queries per background tile)
+    if include_spectrum:
+        spec_data = get_102_band_spectrum(ra, dec, target_key=target_key, d1=d1, d2=d2)
+        estimated_temp = spec_data.get("estimated_temp_k")
+    else:
+        estimated_temp = matched_bm.get("temp_k") if matched_bm else None
 
     elapsed_ms = round((time.time() - t0) * 1000, 2)
 
@@ -1443,7 +1442,7 @@ def fetch_real_cutout(
             "transient_type": vector_info.get("transient_type", "STATIONARY"),
             "peak_significance_sigma": vector_info.get("peak_significance_sigma"),
             "object_type": matched_bm.get("type", "Astronomical Source") if matched_bm else "Astronomical Sky Field",
-            "estimated_temp_k": spec_data.get("estimated_temp_k"),
+            "estimated_temp_k": estimated_temp,
             "data_provenance": provenance_text,
             "archive_reachability": "degraded" if (is_degraded or is_stale_entry) else "nominal",
             "cache_tier": cache_tier,

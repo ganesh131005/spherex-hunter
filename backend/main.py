@@ -15,9 +15,18 @@ import io
 import json
 import os
 import uuid
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Union
+
+# Silence erfa dubious year warnings on sub-millisecond MJD conversions
+try:
+    from erfa import ErfaWarning
+    warnings.filterwarnings("ignore", category=ErfaWarning)
+except ImportError:
+    pass
+warnings.filterwarnings("ignore", message=".*dubious year.*")
 
 # Load local .env if present
 env_path = Path(__file__).resolve().parent.parent / ".env"
@@ -297,6 +306,7 @@ def get_cutout(
     force_refresh: bool = Query(False, description="Bypass all caches and force fresh NASA query"),
     refresh: bool = Query(False, description="Alias for force_refresh to bypass caches"),
     bypass_cache: bool = Query(False, description="Alias to bypass L1/L2 caches and force live query"),
+    include_spectrum: bool = Query(False, description="Compute full 102-band multi-survey spectrophotometry (False for fast tile rendering)"),
     start_date: Optional[str] = Query(None, description="Optional temporal start filter (ISO UTC)"),
     end_date: Optional[str] = Query(None, description="Optional temporal end filter (ISO UTC)"),
     exact_date: Optional[str] = Query(None, description="Optional exact observation epoch target (ISO UTC)")
@@ -317,7 +327,15 @@ def get_cutout(
         lod_val = int(lod) if isinstance(lod, (int, str)) else 1
         is_refresh = bool(force_refresh or refresh or bypass_cache)
         target_sanitized = sanitize_target_name(target) if target else None
-        data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target_sanitized, lod=lod_val, force_refresh=is_refresh)
+        data = fetch_real_cutout(
+            ra=ra_deg,
+            dec=dec_deg,
+            fov_arcmin=fov_val,
+            target_key=target_sanitized,
+            lod=lod_val,
+            force_refresh=is_refresh,
+            include_spectrum=include_spectrum
+        )
         if not data or not isinstance(data, dict):
             raise HTTPException(
                 status_code=404,

@@ -59,7 +59,7 @@ def _parse_gaia_rows(res) -> list[dict]:
     return parsed
 
 
-def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit: int = 50) -> dict:
+def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit: int = 50, timeout: float = 3.5) -> dict:
     """
     Executes an astronomical ADQL cone search on Gaia DR3 via ESA Gaia TAP
     with automatic NASA IRSA `gaia_dr3_source` fallback and L1/L2 disk caching.
@@ -107,7 +107,7 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
 
     # 3. Primary: ESA Gaia TAP -> Fallback: NASA IRSA TAP -> Fallback: Local catalog_gaia cache
     try:
-        esa_svc = vo.dal.TAPService(ESA_GAIA_TAP_URL, session=_make_timeout_session(6.0))
+        esa_svc = vo.dal.TAPService(ESA_GAIA_TAP_URL, session=_make_timeout_session(timeout))
         res = esa_svc.run_sync(f"{select_cols}\nFROM gaiadr3.gaia_source\n{where_clause}")
         sources = _parse_gaia_rows(res)
     except Exception as esa_err:
@@ -115,7 +115,7 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
         try:
             archive_host = "NASA/IPAC Infrared Science Archive (IRSA TAP)"
             cache_tier = "LIVE_IRSA_TAP"
-            irsa_svc = vo.dal.TAPService(IRSA_TAP_URL, session=_make_timeout_session(6.0))
+            irsa_svc = vo.dal.TAPService(IRSA_TAP_URL, session=_make_timeout_session(timeout))
             res = irsa_svc.run_sync(f"{select_cols}\nFROM gaia_dr3_source\n{where_clause}")
             sources = _parse_gaia_rows(res)
         except Exception as irsa_err:

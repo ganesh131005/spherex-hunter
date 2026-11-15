@@ -3580,8 +3580,48 @@
     let autoDetectEnabled = true;
     let autoDetectedChanges = [];
 
+    // In-flight concurrency limiter and AbortController pool for viewport tiles (prevents backend/IRSA saturation)
+    const MAX_CONCURRENT_TILE_REQUESTS = 3;
+    let activeTileRequestCount = 0;
+    const pendingTileRequestQueue = [];
+    const inFlightTileControllers = new Map(); // tileKey -> AbortController
+
+    function processNextTileInQueue() {
+      if (activeTileRequestCount >= MAX_CONCURRENT_TILE_REQUESTS || pendingTileRequestQueue.length === 0) {
+        return;
+      }
+      const nextTask = pendingTileRequestQueue.shift();
+      activeTileRequestCount++;
+      nextTask().finally(() => {
+        activeTileRequestCount = Math.max(0, activeTileRequestCount - 1);
+        processNextTileInQueue();
+      });
+    }
+
+    function queueTileFetch(tileKey, tileRA, tileDec, tileFovArcmin, lod, distanceSq) {
+      if (pendingTileRequestQueue.some(t => t.tileKey === tileKey) || inFlightTileControllers.has(tileKey)) {
+        return;
+      }
+      const task = async () => {
+        await fetchAndDecodeAdjacentTile(tileKey, tileRA, tileDec, tileFovArcmin, lod);
+      };
+      task.tileKey = tileKey;
+      task.distanceSq = distanceSq;
+
+      // Insert prioritized by distance from camera center (closest tiles loaded first)
+      const insertIdx = pendingTileRequestQueue.findIndex(t => t.distanceSq > distanceSq);
+      if (insertIdx === -1) {
+        pendingTileRequestQueue.push(task);
+      } else {
+        pendingTileRequestQueue.splice(insertIdx, 0, task);
+      }
+      processNextTileInQueue();
+    }
 
     async function fetchAndDecodeAdjacentTile(tileKey, tileRA, tileDec, tileFovArcmin, lod) {
+      const controller = new AbortController();
+      inFlightTileControllers.set(tileKey, controller);
+
       try {
         const cacheKey = (typeof getClientSpatialKey === 'function')
           ? getClientSpatialKey(parseFloat(tileRA), parseFloat(tileDec), tileFovArcmin, lod, null)
@@ -3589,8 +3629,8 @@
         let data = (typeof getTileFromClientCache === 'function') ? await getTileFromClientCache(cacheKey) : null;
 
         if (!data) {
-          const url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(tileRA)}&dec=${encodeURIComponent(tileDec)}&fov=${tileFovArcmin}&lod=${lod}`;
-          const res = await fetch(url);
+          const url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(tileRA)}&dec=${encodeURIComponent(tileDec)}&fov=${tileFovArcmin}&lod=${lod}&include_spectrum=false`;
+          const res = await fetch(url, { signal: controller.signal });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           data = await res.json();
           if (typeof saveTileToClientCache === 'function') {
@@ -3612,7 +3652,13 @@
         adjacentSkyTileCache.set(tileKey, { loading: false, loaded: true, img1, img2, imgDiff });
         drawFrame();
       } catch (err) {
-        adjacentSkyTileCache.set(tileKey, { loading: false, loaded: false, failed: true });
+        if (err.name !== 'AbortError') {
+          adjacentSkyTileCache.set(tileKey, { loading: false, loaded: false, failed: true });
+        } else {
+          adjacentSkyTileCache.delete(tileKey);
+        }
+      } finally {
+        inFlightTileControllers.delete(tileKey);
       }
     }
 
@@ -3650,6 +3696,7 @@
       const minRow = Math.max(-6, Math.floor((minWorldY - tileSize / 2) / tileSize) - 1);
       const maxRow = Math.min(6, Math.ceil((maxWorldY + tileSize / 2) / tileSize) + 1);
 
+      const visibleTileKeys = new Set();
       ctx.save();
 
       for (let col = minCol; col <= maxCol; col++) {
@@ -3676,6 +3723,7 @@
           const tileRA = rawRA.toFixed(3);
           const tileDec = Math.max(-89.9, Math.min(89.9, rawDec)).toFixed(3);
           const tileKey = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${currentLOD}`;
+          visibleTileKeys.add(tileKey);
 
           let entry = adjacentSkyTileCache.get(tileKey);
           let activeTexture = (entry && entry.loaded) ? entry : null;
@@ -3719,8 +3767,24 @@
               if (oldestKey) adjacentSkyTileCache.delete(oldestKey);
             }
             adjacentSkyTileCache.set(tileKey, { loading: true, loaded: false });
-            fetchAndDecodeAdjacentTile(tileKey, tileRA, tileDec, tileFovArcmin, currentLOD);
+            const distSq = col * col + row * row;
+            queueTileFetch(tileKey, tileRA, tileDec, tileFovArcmin, currentLOD, distSq);
           }
+        }
+      }
+
+      // Cancel in-flight requests that have scrolled out of the visible frustum
+      for (const [key, ctrl] of inFlightTileControllers.entries()) {
+        if (!visibleTileKeys.has(key)) {
+          ctrl.abort();
+          inFlightTileControllers.delete(key);
+        }
+      }
+      // Prune pending queue tasks for tiles that scrolled off-screen
+      for (let i = pendingTileRequestQueue.length - 1; i >= 0; i--) {
+        if (!visibleTileKeys.has(pendingTileRequestQueue[i].tileKey)) {
+          adjacentSkyTileCache.delete(pendingTileRequestQueue[i].tileKey);
+          pendingTileRequestQueue.splice(i, 1);
         }
       }
 
@@ -4905,11 +4969,11 @@
     };
 
     const MOLECULAR_ANNOTATIONS = [
-      { label: "H₂O (1.40µm)", wavelength: 1.40, color: "#38bdf8" },
-      { label: "H₂O Ice (3.05µm)", wavelength: 3.05, color: "#7dd3fc" },
-      { label: "CH₄ (3.30µm)", wavelength: 3.30, color: "#34d399" },
-      { label: "CO₂ Ice (4.27µm)", wavelength: 4.27, color: "#fb923c" },
-      { label: "CO (4.67µm)", wavelength: 4.67, color: "#f87171" }
+      { label: "H₂O (1.40µm)", wavelength: 1.40, color: "#38bdf8", channel: 28, desc: "Atmospheric water vapor absorption" },
+      { label: "H₂O Ice (3.05µm)", wavelength: 3.05, color: "#7dd3fc", channel: 60, desc: "Interstellar & planetary water frost" },
+      { label: "CH₄ (3.30µm)", wavelength: 3.30, color: "#34d399", channel: 63, desc: "Methane band in brown dwarfs & outer planets" },
+      { label: "CO₂ Ice (4.27µm)", wavelength: 4.27, color: "#fb923c", channel: 81, desc: "Diagnostic CO₂ ice for cold trans-Neptunian surfaces & Planet X" },
+      { label: "CO (4.67µm)", wavelength: 4.67, color: "#f87171", channel: 93, desc: "Carbon monoxide fundamental absorption" }
     ];
 
     function getChannelWavelength(arrayId, channelIndex1to17) {
@@ -5045,19 +5109,21 @@
               ctx.lineTo(molX, bottom);
               ctx.stroke();
 
-              // Draw distinctive molecular diamond pinned to the SED curve
-              ctx.setLineDash([]);
-              ctx.fillStyle = mol.color;
-              ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = 1;
-              ctx.beginPath();
-              ctx.moveTo(molX, molY - 4);
-              ctx.lineTo(molX + 4, molY);
-              ctx.lineTo(molX, molY + 4);
-              ctx.lineTo(molX - 4, molY);
-              ctx.closePath();
-              ctx.fill();
-              ctx.stroke();
+              // Draw distinctive molecular diamond pinned to the SED curve (fallback if dataset not yet mounted)
+              if (!chart.data.datasets[2] || !chart.data.datasets[2].data || chart.data.datasets[2].data.length === 0) {
+                ctx.setLineDash([]);
+                ctx.fillStyle = mol.color;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(molX, molY - 4);
+                ctx.lineTo(molX + 4, molY);
+                ctx.lineTo(molX, molY + 4);
+                ctx.lineTo(molX - 4, molY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+              }
 
               // Label badge pinned neatly above the diamond (with horizontal overflow guard)
               ctx.fillStyle = mol.color;
@@ -5112,7 +5178,9 @@
       };
 
       let spectrumPointMeta = {};
+      let molPointMeta = {};
       window._setSpectrumPointMeta = (m) => { spectrumPointMeta = m || {}; };
+      window._setMolPointMeta = (m) => { molPointMeta = m || {}; };
 
       specChart = new Chart(ctxChart, {
         type: 'line',
@@ -5144,6 +5212,24 @@
               borderWidth: 2.0,
               pointRadius: 7,
               pointHoverRadius: 10,
+              pointHitRadius: 25,
+              pointStyle: 'rectRot',
+              spanGaps: false
+            },
+            {
+              label: 'Molecular Signatures',
+              data: [],
+              borderColor: '#ffffff',
+              backgroundColor: (ctx) => {
+                const mol = molPointMeta[ctx.dataIndex];
+                return mol ? mol.color : '#fb923c';
+              },
+              fill: false,
+              showLine: false,
+              borderWidth: 2.0,
+              pointRadius: 7,
+              pointHoverRadius: 11,
+              pointHitRadius: 25,
               pointStyle: 'rectRot',
               spanGaps: false
             }
@@ -5165,7 +5251,14 @@
             const ratio = (clickX - chartArea.left) / chartArea.width;
             const clickedWl = 0.75 + Math.max(0, Math.min(1, ratio)) * (5.00 - 0.75);
 
-            // Determine which array and channel
+            // 1. Check if clicked near a molecular feature spot
+            const clickedMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - clickedWl) <= 0.08);
+            if (clickedMol && clickedMol.channel && typeof select102BandChannel === 'function') {
+              select102BandChannel(clickedMol.channel);
+              return;
+            }
+
+            // 2. Otherwise determine which array and channel
             for (const [k, def] of Object.entries(SPHEREX_ARRAY_DEFS)) {
               if (clickedWl >= def.min_um && clickedWl <= def.max_um) {
                 activeArray = k;
@@ -5200,7 +5293,7 @@
                   if (!items || !items.length) return '';
                   const wl = items[0].label;
                   const numWl = parseFloat(wl);
-                  const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - numWl) < 0.08);
+                  const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - numWl) < 0.10);
                   if (nearMol) {
                     return `λ = ${wl} µm • ${nearMol.label}`;
                   }
@@ -5209,9 +5302,38 @@
                 label: (item) => {
                   if (item.datasetIndex === 1) {
                     const meta = spectrumPointMeta[item.dataIndex];
-                    return meta ? `💎 ${meta.band} (${meta.survey}): ${Number(meta.flux_ujy).toFixed(1)} µJy (${meta.mag} mag)` : `Catalog Flux: ${item.raw} µJy`;
+                    return meta ? `💎 Photometry Spot: ${meta.band} (${meta.survey}) — ${Number(meta.flux_ujy).toFixed(1)} µJy (${meta.mag} mag)` : `💎 Catalog Spot: ${item.raw} µJy`;
+                  }
+                  if (item.datasetIndex === 2) {
+                    const mol = molPointMeta[item.dataIndex];
+                    return mol ? `🧊 Molecular Spot: ${mol.label} — ${mol.desc || 'Absorption Signature'}` : `🧊 Feature Spot: ${item.raw} µJy`;
                   }
                   return `📈 SPHEREx SED: ${Number(item.raw).toFixed(1)} µJy`;
+                },
+                afterBody: (items) => {
+                  if (!items || !items.length) return [];
+                  const wl = parseFloat(items[0].label);
+                  const extra = [];
+
+                  // Proximity fallback for molecular spots (if not directly hovered on dataset 2)
+                  const hasMolItem = items.some(it => it.datasetIndex === 2);
+                  if (!hasMolItem) {
+                    const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - wl) <= 0.12);
+                    if (nearMol) {
+                      extra.push(`🧊 Feature: ${nearMol.label} — ${nearMol.desc || 'Ice/Gas Band'}`);
+                    }
+                  }
+
+                  // Proximity fallback for catalog photometry spots (if hover is within ±0.14 µm)
+                  const hasPhotItem = items.some(it => it.datasetIndex === 1);
+                  if (!hasPhotItem && spectrumPointMeta) {
+                    const nearPhot = Object.values(spectrumPointMeta).find(p => Math.abs(p.wavelength_um - wl) <= 0.14);
+                    if (nearPhot) {
+                      extra.push(`💎 Catalog Spot: ${nearPhot.band} (${nearPhot.survey}) — ${Number(nearPhot.flux_ujy).toFixed(1)} µJy (${nearPhot.mag} mag)`);
+                    }
+                  }
+
+                  return extra;
                 }
               }
             }
@@ -5366,13 +5488,27 @@
             });
             if (window._setSpectrumPointMeta) window._setSpectrumPointMeta(ptMeta);
 
+            // Populate Molecular Feature Spots directly on the SED curve
+            const molOverlay = new Array(Math.max(102, fluxes.length)).fill(null);
+            const molMeta = {};
+            if (fluxes.length > 0) {
+              MOLECULAR_ANNOTATIONS.forEach(mol => {
+                const idx = Math.max(0, Math.min(fluxes.length - 1, Math.round(((mol.wavelength - 0.75) / 4.25) * 101)));
+                molOverlay[idx] = fluxes[idx];
+                molMeta[idx] = mol;
+              });
+            }
+            if (window._setMolPointMeta) window._setMolPointMeta(molMeta);
+
             if (fluxes.length > 0) {
               specChart.data.labels = labels;
               specChart.data.datasets[0].data = fluxes;
               if (specChart.data.datasets[1]) specChart.data.datasets[1].data = scatterOverlay;
+              if (specChart.data.datasets[2]) specChart.data.datasets[2].data = molOverlay;
             } else {
               specChart.data.datasets[0].data = [];
               if (specChart.data.datasets[1]) specChart.data.datasets[1].data = [];
+              if (specChart.data.datasets[2]) specChart.data.datasets[2].data = [];
             }
             specChart.update();
           }

@@ -26,6 +26,23 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⚡ BACKEND RATE-LIMIT OPTIMIZATION & INTERACTIVE 102-BAND SPECTRUM SPOTS (@jokerodu & @coolodu)]**
+  - **Backend Rate-Limit Prevention:**
+    1. Decoupled 102-band spectrum generation from background viewport tiles via `include_spectrum=False`, dropping external TAP queries per pan from ~120 to 0.
+    2. Added `threading.BoundedSemaphore(4)` concurrency limiter and 15s transient negative cache for upstream 502/timeouts on NASA IRSA queries.
+    3. Added 3.5s tight timeouts to ESA Gaia and IRSA TAP cone searches with instant fallback to calibrated WCS projections.
+    4. Suppressed Astropy Erfa dubious year epoch warnings.
+  - **Client-Side Viewport In-Flight Queue & AbortControllers:**
+    1. Implemented `MAX_CONCURRENT_TILE_REQUESTS = 3` priority queue sorted by camera distance.
+    2. Bound `AbortController` to cancel tiles that scroll outside the visible frustum during rapid panning.
+  - **Minimal Bottom Dock Collapse Button:**
+    - Stripped text label from `#btnToggleDock` to leave a clean, minimal dropdown chevron icon `˅`.
+  - **Interactive 102-Band Spectrum Spots & Rich Popups:**
+    1. Mounted dedicated `Molecular Signatures` dataset (Dataset 2) with color-matched diamond points (`CO₂ Ice` at 4.27µm, `H₂O` at 1.40µm, `H₂O Ice` at 3.05µm, `CH₄` at 3.30µm, `CO` at 4.67µm).
+    2. Sized `pointHitRadius: 25px` for both Catalog Photometry (Dataset 1) and Molecular Diamonds (Dataset 2) to eliminate finicky 1-pixel hover hunting.
+    3. Added rich tooltip callbacks with `afterBody` proximity fallback ($\pm 0.12\,\mu\text{m}$) ensuring every single spot in the 102 band reliably displays its physical feature description and photometry data.
+    4. Enabled 1-click feature jumping in `onClick` to automatically select the matching SPHEREx band in the toolbar and Aladin navigator.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (26/26), `test_viewport_overhaul_v2.py`, `test_bands_spectrum.py` (3/3), `test_golden_suite.py` (28/28), `test_continuous_viewport_e2e.py` (14/14), and `test_api_v1_contract.py` (10/10).
 - **[🛡️ CI & TEST PERMANENT FIX: PASSED 33/33 TARGET TESTS & ZERO ASYNCIO DEPRECATIONS]**
   - **Pytest-Asyncio Fixture Loop Scope Fix:** Explicitly configured `asyncio_mode = "auto"` and `asyncio_default_fixture_loop_scope = "function"` in `pyproject.toml` (with config warning filter for non-asyncio environments), eliminating `PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset` on Python 3.12+ / pytest-asyncio in GitHub CI.
   - **Authentic Spectral Bandpass Matching in Test Assertion:** Updated `tests/test_scene_and_metadata.py` to match the realistic astrophysics of WISE 0855 (AllWISE W2 at $4.60\,\mu\text{m}$ + SPHEREx Band 6 Stack at $4.60\,\mu\text{m}$, which is a valid matched passband pair `valid_bands is True`), while correctly checking band mismatch on Barnard's Star (2MASS $1.25\,\mu\text{m}$ vs SPHEREx $2.10\,\mu\text{m}$, `valid_bands is False`).
