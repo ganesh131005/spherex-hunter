@@ -26,6 +26,20 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⚡ BLINK COMPARATOR POPUP TOOLBAR & RAIL TOOL FUNCTIONALIZED (@coolodu)]**
+  - **Feature:** Full functional implementation of the Blink Comparator tool option on the left vertical rail (`#toolBlinkFlip`) and its companion interactive popup toolbar (`#viewportBlinkHUD`).
+  - **Left Rail Blink Tool:** Configured `#toolBlinkFlip` on `#leftToolRail` with `split` icon and `Blink` label; clicking activates the tool, sets `blender-btn-orange-active`, and toggles `#viewportBlinkHUD`.
+  - **Interactive Edit Options Drawer (`#blinkEditDrawer`):** Added `#btnBlinkEditOptions` toggle opening a dedicated preferences drawer featuring:
+    1. *Pinning Mode Toggles (`#optPinBlinkAlways` vs `#optUnpinBlinkFlyout`):* Switch between pinned viewport toolbar and flyout auto-dismiss mode (with persistence in `localStorage.spherex_blink_pinned`).
+    2. *Blink Cycle Rate Presets:* Direct 0.25s (4 FPS), 0.5s (2 FPS), 1.0s (1 FPS), and 2.0s (0.5 FPS) presets with active highlighting and bottom dock synchronization.
+    3. *Transition Style Options:* Smooth sine wave crossfade (`#optMorphSmooth`) vs instantaneous discrete hard-cut snap flip (`#optMorphSnap`).
+    4. *Position Reset Button (`#btnResetBlinkPos`):* Restores dragged toolbar back to the left rail default anchor.
+  - **Playback & Comparator Controls:**
+    1. *Instantaneous A/B Flip Action (`#btnHudFlipAB`):* Rapid single-click flip between historic baseline (Frame 1: 1999/2010) and SPHEREx discovery stack (Frame 4: 2025), auto-pausing playback for precision candidate inspection.
+    2. *VCR Transport Controls:* Prev (`#btnBlinkHudPrev`), Play/Pause Blink (`#btnBlinkHudPlay`), Next (`#btnBlinkHudNext`), and Mode Toggle (`#btnBlinkHudModeToggle`).
+    3. *Live Multi-Epoch Blend Scrubber:* Continuous crossfade slider (`#hudBlinkBlendSlider`) with readout (`#hudBlinkBlendVal`) and 4 discrete epoch jump chips (`.blink-epoch-chip` for 1999, 2010, 2014, 2025).
+  - **Multiple Close Options:** Header close `✕` (`#btnCloseBlinkHUD`), drawer close `✕` (`#btnDrawerCloseBlink`), footer quick close (`#btnBlinkFooterClose`), rail toggle (`#toolBlinkFlip`), hotkey `B`, and `Esc` dismiss.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (23/23), full Golden Suite (71/71), and live visual confirmation via browser subagent ([final_step_49.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/76f06a40-990c-4cd7-b7cf-4900ca4d77fe/browser_evidence/ae936dce-e2ba-4a90-b23f-178f21bebd6b/final_step_49.png)).
 - **[📌 ISSUE #43 CREATED: TIME-DOMAIN LIGHT CURVE ENHANCEMENTS & UPGRADES (@coolodu)]**
   - **Issue Link:** [#43: [Feature] Further Enhancements & Upgrades for Time-Domain Light Curve Tab](https://github.com/joker0210G/spherex-hunter/issues/43)
   - **Assigned Teammate:** `@coolodu` (Track: `web-frontend`, Resource Profile: `standard`)
