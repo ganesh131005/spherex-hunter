@@ -68,3 +68,4 @@ data_samples/*.json
 *.swo
 *_screenshot.png
 *_sidebar.png
+audit_results.json

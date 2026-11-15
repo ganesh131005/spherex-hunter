@@ -7,6 +7,8 @@ E2E Playwright test for Continuous Viewport features:
 
 import os
 import time
+import pytest
+pytest.importorskip("playwright")
 from playwright.sync_api import sync_playwright
 
 DOCS_FIGURES = os.path.join(os.path.dirname(__file__), "..", "docs", "figures")

@@ -19,7 +19,7 @@ from typing import Optional, Union
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -154,7 +154,10 @@ class DiscoveryCandidate(BaseModel):
     confidence: Optional[int] = 5
 
 @app.get("/")
-def root():
+def root(request: Request):
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and not accept.startswith("application/json"):
+        return RedirectResponse(url="/app/index.html", status_code=307)
     return {
         "service": "SPHEREx Hunter Astronomy Backend",
         "team": "RIP (Coimbatore, India)",

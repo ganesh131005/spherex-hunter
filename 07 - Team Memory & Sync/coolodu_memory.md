@@ -3,11 +3,14 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed comprehensive end-to-end Data Acquisition and UI/UX audit: verified 21/21 API/data acquisition tests pass (`scripts/test_data_acquisition_and_ui.py`), 99/99 non-Playwright pytest tests pass across entire repo (with 2 clean skips via `pytest.importorskip("playwright")`), resolved `AIAskRequest` float coordinate typing (422 bug), parallelized `crossmatch_photometry` (Gaia DR3 + 2MASS + WISE + SPHEREx + SIMBAD) with `ThreadPoolExecutor` and RAM/Disk caching, resolved top navbar overflow & horizontal window scrolling with `w-full max-w-full overflow-x-hidden`, added `orion` and `sgra` to frontend `TARGETS` with safety guards, and confirmed 0 console errors via live headless browser audit.
-- **Next Task:** Push `coolodu/web-frontend` implementation to GitHub remote (`origin/coolodu/web-frontend`).
-- **Blockers:** None. Local uvicorn server operational at `http://127.0.0.1:8000/app/`. 0 open issues remain across the repository.
+- **Current Task:** Completed comprehensive end-to-end Data Acquisition and UI/UX audit and rectification: verified 21/21 API/data acquisition tests pass (`scripts/test_data_acquisition_and_ui.py`), 99/99 non-Playwright pytest tests pass across entire repo (with 9 clean skips via `pytest.importorskip("playwright")`), resolved `AIAskRequest` float coordinate typing (422 bug), parallelized `crossmatch_photometry` (Gaia DR3 + 2MASS + WISE + SPHEREx + SIMBAD) with `ThreadPoolExecutor` and RAM/Disk caching, resolved top navbar overflow & horizontal window scrolling with `w-full max-w-full overflow-x-hidden`, added `orion` and `sgra` to frontend `TARGETS` with safety guards, added intelligent browser `Accept: text/html` redirect on root route `/` to `/app/index.html`, and confirmed 0 console errors via live headless browser audit.
+- **Next Task:** Maintain clean status, monitor GitHub Issues for incoming tasks.
+- **Blockers:** None. Local uvicorn server operational at `http://127.0.0.1:8000/app/` and root redirect live. 0 open issues remain across the repository.
 
 ## Completed Tasks:
+- [x] **[Root Route Browser Redirect & Repo-Wide Playwright Skips Hardening]**:
+  - **Browser Auto-Redirect on `/` (`backend/main.py`):** Added `Accept: text/html` detection in `@app.get("/")` returning `RedirectResponse(url="/app/index.html", status_code=307)`, while preserving JSON API descriptors for programmatic callers.
+  - **Full Test Suite Out-of-the-Box Execution:** Added `pytest.importorskip("playwright")` to all 8 E2E test files (`test_aladin_hips_e2e.py`, `test_continuous_viewport_e2e.py`, `test_google_maps_spherex_e2e.py`, `test_issues_9_10_12_e2e.py`, `test_redesign_e2e.py`, `test_scene_panel_e2e.py`, `test_ui_brand_and_nav_e2e.py`, `test_caching_and_inspector_e2e.py`). Running `python -m pytest -v` runs all 108 tests without crashing: **99 passed, 9 skipped, 0 failed**.
 - [x] **[Comprehensive UI/UX & Data Acquisition Audit, Bug Rectification & Performance Optimization]**:
   - **Data Acquisition API Audit (21/21 Passed in `scripts/test_data_acquisition_and_ui.py`):**
     - Probed core endpoints (`/api/health`, `/api/bands`, `/api/resources_codex`).
