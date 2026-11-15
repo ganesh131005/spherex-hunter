@@ -176,7 +176,12 @@ def test_temporal_filter_empty_range():
 
 def test_spatial_hash_cache_hit():
     """Verify Issue #13: L1 spatial-hash proximity cache returns sub-arcmin neighbor hit."""
-    from backend.services.cutout_engine import _L1_MEMORY_CACHE, _SPATIAL_HASH_CACHE, fetch_real_cutout, get_spatial_cell_id
+    from backend.services.cutout_engine import (
+        _L1_MEMORY_CACHE,
+        _SPATIAL_HASH_CACHE,
+        fetch_real_cutout,
+        get_spatial_cell_id,
+    )
 
     _L1_MEMORY_CACHE.clear()
     _SPATIAL_HASH_CACHE.clear()
@@ -206,6 +211,7 @@ def test_auto_prune_disk_cache():
     """Verify Issue #13: smart disk auto-pruning evicts unpinned files while preserving benchmarks."""
     import os
     import tempfile
+
     from backend.services.cutout_engine import auto_prune_disk_cache
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -233,6 +239,7 @@ def test_auto_prune_disk_cache():
 def test_ai_copilot_analyze_and_ask():
     """Verifies Integrated AI Co-Pilot endpoints synthesize real telemetry with zero fabricated scores."""
     from fastapi.testclient import TestClient
+
     from backend.main import app
     client = TestClient(app)
     r_analyze = client.get("/api/ai/analyze?ra=133.79513&dec=-7.24515&fov=3.0&target=wise0855")
@@ -263,7 +270,9 @@ def test_ai_copilot_analyze_and_ask():
 def test_issue_23_scientific_cache_lifecycle_and_headers():
     """Verifies Issue #23: X-Cache headers, cached_at provenance, quota telemetry, and refresh=true bypass."""
     from unittest.mock import patch
+
     from fastapi.testclient import TestClient
+
     from backend.main import app
     from backend.services.cutout_engine import clear_all_caches
 
@@ -308,7 +317,9 @@ def test_issue_23_scientific_cache_lifecycle_and_headers():
 def test_issue_28_resilient_cutout_fallback_on_irsa_502():
     """Verifies Issue #28: graceful WCS + Gaia DR3 degraded fallback when upstream IRSA fails."""
     from unittest.mock import patch
+
     from fastapi.testclient import TestClient
+
     from backend.main import app
 
     sample_gaia = {

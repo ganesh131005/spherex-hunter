@@ -12,36 +12,32 @@ Validates:
 """
 
 import io
-import json
+
+import astropy.units as u
 import numpy as np
-import pytest
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from astropy.table import Table
-import astropy.units as u
-from astropy.time import Time
 from fastapi.testclient import TestClient
 
+from backend.api_v1 import propagate_target_position
 from backend.main import app
 from backend.models_v1 import (
     CapabilitiesResponse,
-    HealthResponse,
-    StatusResponse,
-    TargetSummary,
-    TargetDetail,
-    SceneResponse,
-    ExposuresResponse,
     CutoutRawHeaderResponse,
     DifferenceResponse,
-    ValidationResponse,
-    CandidatesResponse,
+    ExposuresResponse,
     FlagCandidateResponse,
-    PhotometryResponse,
+    HealthResponse,
     LightCurveResponse,
-    SearchResponse,
+    PhotometryResponse,
     ProblemDetails,
+    SceneResponse,
+    SearchResponse,
+    StatusResponse,
+    TargetDetail,
+    TargetSummary,
+    ValidationResponse,
 )
-from backend.api_v1 import propagate_target_position, to_sexagesimal
 
 client = TestClient(app)
 

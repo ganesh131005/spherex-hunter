@@ -21,7 +21,6 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 from astropy.visualization import AsinhStretch
-from fastapi import HTTPException
 from PIL import Image
 from scipy.ndimage import gaussian_filter
 

@@ -6,8 +6,8 @@ E2E & Integration Test Suite for Issues #13 and #14:
 
 import os
 import time
-import pytest
 
+import pytest
 from fastapi.testclient import TestClient
 
 from backend.main import app

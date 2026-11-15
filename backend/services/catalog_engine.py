@@ -11,12 +11,12 @@ Queries the official European Space Agency (ESA) Gaia DR3 catalog via TAP:
   no catalogue rows are ever curated, synthesized or randomly generated.
 """
 
-from collections import OrderedDict
 import concurrent.futures
 import json
 import os
 import re
 import time
+from collections import OrderedDict
 
 import numpy as np
 import requests
@@ -1074,7 +1074,7 @@ def crossmatch_photometry(
         (primary_gaia.get("total_pm_mas_yr", 0) > 1000.0)
     )
 
-    return {
+    response_payload = {
         "status": "success",
         "coordinates": {"ra": ra, "dec": dec, "radius_arcmin": radius_arcmin},
         "simbad_classification": simbad_res,

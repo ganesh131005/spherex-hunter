@@ -12,7 +12,7 @@ Validates strict codebase criteria for GitHub Issues:
 """
 
 import os
-import re
+
 from bs4 import BeautifulSoup
 
 INDEX_PATH = os.path.join(os.path.dirname(__file__), "..", "frontend", "index.html")

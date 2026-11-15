@@ -7,7 +7,9 @@ E2E Playwright test suite for Issues #9, #10, and #12:
 
 import os
 import time
+
 import pytest
+
 pytest.importorskip("playwright")
 from playwright.sync_api import sync_playwright
 

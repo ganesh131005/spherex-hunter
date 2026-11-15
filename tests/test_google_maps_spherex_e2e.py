@@ -8,7 +8,9 @@ E2E Playwright test for Google-Maps-Style SPHEREx All-Sky Continuous Viewer:
 
 import os
 import time
+
 import pytest
+
 pytest.importorskip("playwright")
 from playwright.sync_api import sync_playwright
 
