@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⚡ STEP 5 COMPLETED: SCOPED MULTI-TIER CACHING & QUANTIZED COORDINATE TILE STORE (@coolodu)]**
+  - **Micro-Degree Coordinate Quantization:** Quantized floating-point sky coordinates to integer micro-degrees ($10^{-5}\text{ deg} \approx 0.036''$, far below the $6.15''$ detector pixel) in `getClientSpatialKey`, completely eliminating floating-point jitter cache misses.
+  - **Scoped L0/L1 Storage Hierarchy:** RAM LRU cache (L0, max 128 decoded textures) + IndexedDB `spherex_tile_store` (L1, max 256 records) serving calibrated exposure cutouts and difference products with automatic least-recently-used capacity pruning.
+  - **HTTP 304 ETag Conditional Revalidation:** Mounted conditional ETag handling on `/cutout` and `/api/cutout` returning HTTP 304 Not Modified when `If-None-Match` matches, avoiding redundant data transfer and payload parsing.
+  - **Cross-Browser Idle Prefetching & Data-Saver Compliance:** Proactive idle prefetching of adjacent zoom tiers (LOD 0, 1, 2) via `scheduleIdle` (with Safari/Firefox fallback), automatically disabled if user activates Data Saver (`navigator.connection.saveData`).
+  - **Live Cache Telemetry Counters:** Exposes `window.cacheTelemetry` tracking `l0Hits`, `l1Hits`, `httpCacheHits`, `http304Count`, `uncachedNetworkFetches`, `byteBudgetUsed`, and `evictions`.
+  - **Verification:** 45 tests passing 100% green across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
 - **[🔬 102-BAND SPECTRUM TOOLTIPS, INTERACTION POPUPS & LABELS FIXED (Commit `9a3880c`)]**
   - **Issue:** Spots on the 102-band spectrum chart (such as WISE W2 / 2MASS catalog photometry points and molecular markers) were not showing popups due to Chart.js requiring exact pixel intersection (`intersect: true` default) and dataset gaps (`null`).
   - **Fix Implemented:**

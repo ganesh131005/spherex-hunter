@@ -256,6 +256,7 @@
     /* Vertical Zoom Slider custom styling (Step 2 Specification) */
     #vpZoomSlider {
       -webkit-appearance: slider-vertical;
+      appearance: slider-vertical;
       writing-mode: vertical-lr;
       direction: rtl;
     }
@@ -2380,7 +2381,9 @@
       l1Hits: 0,
       httpCacheHits: 0,
       http304Count: 0,
-      uncachedNetworkFetches: 0
+      uncachedNetworkFetches: 0,
+      byteBudgetUsed: 0,
+      evictions: 0
     };
 
     // Cross-browser idle scheduling fallback for Safari / Firefox (Amendment A5)
@@ -2396,16 +2399,16 @@
       }
     }
 
-    function fetchWithCancellation(url) {
+    function fetchWithCancellation(url, headers = {}) {
       if (activeCutoutAbortController) {
         activeCutoutAbortController.abort();
       }
       activeCutoutAbortController = new AbortController();
-      return fetch(url, { signal: activeCutoutAbortController.signal });
+      return fetch(url, { signal: activeCutoutAbortController.signal, headers });
     }
 
     // Quantized deterministic cache keys: integer micro-degrees prevent float miss jitter (Amendment A5)
-    function getClientSpatialKey(ra, dec, fov, lod, targetKey, channel = 1) {
+    function getClientSpatialKey(ra, dec, fov, lod, targetKey, channel = 1, epochFrame = 0) {
       const release = 'DR1';
       const pipeVer = '2.1.0';
       const prodType = 'cutout';
@@ -2413,7 +2416,7 @@
       const raMicro = Math.round(parseFloat(ra) * 1e5);
       const decMicro = Math.round(parseFloat(dec) * 1e5);
       const fovArcsec = Math.round(parseFloat(fov) * 60.0);
-      return `${release}:${pipeVer}:${prodType}:${targetSlug}:ch${channel}:fov${fovArcsec}:ra${raMicro}_dec${decMicro}:lod${lod}`;
+      return `${release}:${pipeVer}:${prodType}:${targetSlug}:ep${epochFrame}:ch${channel}:fov${fovArcsec}:ra${raMicro}_dec${decMicro}:lod${lod}`;
     }
 
     function openTileIDB() {
@@ -2475,10 +2478,17 @@
     }
 
     async function saveTileToClientCache(cacheKey, payload) {
+      let approxBytes = 50000;
+      try {
+        approxBytes = JSON.stringify(payload).length;
+      } catch (_) {}
       clientRamTileCache.set(cacheKey, payload);
+      window.cacheTelemetry.byteBudgetUsed = (window.cacheTelemetry.byteBudgetUsed || 0) + approxBytes;
+
       if (clientRamTileCache.size > MAX_RAM_TILES) {
         const firstKey = clientRamTileCache.keys().next().value;
         clientRamTileCache.delete(firstKey);
+        window.cacheTelemetry.evictions = (window.cacheTelemetry.evictions || 0) + 1;
       }
       try {
         const db = await openTileIDB();
@@ -2488,6 +2498,8 @@
           tx.objectStore(IDB_STORE).put({
             cache_key: cacheKey,
             payload,
+            etag: payload?.etag || null,
+            byte_size: approxBytes,
             last_accessed: Date.now()
           });
           tx.oncomplete = () => resolve();
@@ -2520,6 +2532,7 @@
               if (cursor && deleted < toDelete) {
                 cursor.delete();
                 deleted++;
+                window.cacheTelemetry.evictions = (window.cacheTelemetry.evictions || 0) + 1;
                 cursor.continue();
               } else {
                 resolve();

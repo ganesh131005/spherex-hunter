@@ -3,8 +3,8 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Array A1 default alignment & single-row toolbar anchoring for the 102-Band Spectrum panel, Issue #42 (`Citizen Science Onboarding Redesign`), Step 4 (Multi-Epoch Placement, Narrowband Stacking & Gaia DR3), Step 3 (Sky Context Layer), and Issue #41 (Typography Scale & Readability).
-- **Next Task:** Step 5 (Scoped Multi-Tier Caching & Quantized Coordinate Tile Store) and monitoring GitHub Issues board.
+- **Current Task:** Completed and verified Step 5 (Scoped Multi-Tier Caching & Quantized Coordinate Tile Store) of the Master Engineering Specification on `coolodu/web-frontend`. Implemented integer micro-degree quantization ($10^{-5}$ deg) with deterministic cache keys (`${release}:${pipeVer}:${prodType}:${targetSlug}:ep${epochFrame}:ch${channel}:fov${fovArcsec}:ra${raMicro}_dec${decMicro}:lod${lod}`), conditional HTTP 304 ETag revalidation in FastAPI backend and client fetcher, byte budgeting and eviction tracking in `window.cacheTelemetry` (tracking `l0Hits`, `l1Hits`, `httpCacheHits`, `http304Count`, `uncachedNetworkFetches`, `byteBudgetUsed`, `evictions`), Safari/Firefox cross-browser `scheduleIdle` prefetching, and `navigator.connection.saveData` Data-Saver compliance. All 45 tests passing 100% green. Also merged with Issue #42 and Array A1 toolbar anchoring.
+- **Next Task:** Step 6 (Progressive Detail on Zoom-In, Nearest-Neighbor Pixelation & Vector Overlays).
 - **Blockers:** None.
 
 ## Assigned Tasks:
@@ -21,6 +21,13 @@
   - **Scope:** Refactored `text-[9px]` & `text-[10px]` across SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`), molecular absorption reference table, viewport HUD time-step controls, and coordinate validation hints to accessible font scales ($\ge 11\text{px}$–$14\text{px}$) with comfortable click padding and WCAG AA contrast.
 
 ## Completed Tasks:
+- [x] **[Step 5 Completed: Scoped Multi-Tier Caching & Quantized Coordinate Tile Store]**:
+  - **Micro-Degree Coordinate Quantization:** Quantized floating-point sky coordinates to integer micro-degrees ($10^{-5}\text{ deg} \approx 0.036''$, far below the $6.15''$ detector pixel) in `getClientSpatialKey`, completely eliminating floating-point jitter cache misses.
+  - **Scoped L0/L1 Storage Hierarchy:** RAM LRU cache (L0, max 128 decoded textures) + IndexedDB `spherex_tile_store` (L1, max 256 records) serving calibrated exposure cutouts and difference products with automatic least-recently-used capacity pruning.
+  - **HTTP 304 ETag Conditional Revalidation:** Mounted conditional ETag handling on `/cutout` and `/api/cutout` returning HTTP 304 Not Modified when `If-None-Match` matches, avoiding redundant data transfer and payload parsing.
+  - **Cross-Browser Idle Prefetching & Data-Saver Compliance:** Proactive idle prefetching of adjacent zoom tiers (LOD 0, 1, 2) via `scheduleIdle` (with Safari/Firefox fallback), automatically disabled if user activates Data Saver (`navigator.connection.saveData`).
+  - **Live Cache Telemetry Counters:** Exposes `window.cacheTelemetry` tracking `l0Hits`, `l1Hits`, `httpCacheHits`, `http304Count`, `uncachedNetworkFetches`, `byteBudgetUsed`, and `evictions`.
+  - **Verification:** 45 tests passing 100% green across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
 - [x] **[Resolved Issue #42 — Citizen Science Onboarding Redesign & Quick-Start Polish]**:
   - **Cosmic Quick-Start (3 Snappy Steps):**
     - Step 1 (*The Infrared Secret*): Visual comparison cards contrasting optical black void against glowing 4.6 µm SPHEREx thermal dipoles.
