@@ -26,7 +26,57 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-## 📝 Recent Team Log & Announcements
+- **[⚡ BLINK COMPARATOR POPUP TOOLBAR & RAIL TOOL FUNCTIONALIZED (@coolodu)]**
+  - **Feature:** Full functional implementation of the Blink Comparator tool option on the left vertical rail (`#toolBlinkFlip`) and its companion interactive popup toolbar (`#viewportBlinkHUD`).
+  - **Left Rail Blink Tool:** Configured `#toolBlinkFlip` on `#leftToolRail` with `split` icon and `Blink` label; clicking activates the tool, sets `blender-btn-orange-active`, and toggles `#viewportBlinkHUD`.
+  - **Interactive Edit Options Drawer (`#blinkEditDrawer`):** Added `#btnBlinkEditOptions` toggle opening a dedicated preferences drawer featuring:
+    1. *Pinning Mode Toggles (`#optPinBlinkAlways` vs `#optUnpinBlinkFlyout`):* Switch between pinned viewport toolbar and flyout auto-dismiss mode (with persistence in `localStorage.spherex_blink_pinned`).
+    2. *Blink Cycle Rate Presets:* Direct 0.25s (4 FPS), 0.5s (2 FPS), 1.0s (1 FPS), and 2.0s (0.5 FPS) presets with active highlighting and bottom dock synchronization.
+    3. *Transition Style Options:* Smooth sine wave crossfade (`#optMorphSmooth`) vs instantaneous discrete hard-cut snap flip (`#optMorphSnap`).
+    4. *Position Reset Button (`#btnResetBlinkPos`):* Restores dragged toolbar back to the left rail default anchor.
+  - **Playback & Comparator Controls:**
+    1. *Instantaneous A/B Flip Action (`#btnHudFlipAB`):* Rapid single-click flip between historic baseline (Frame 1: 1999/2010) and SPHEREx discovery stack (Frame 4: 2025), auto-pausing playback for precision candidate inspection.
+    2. *VCR Transport Controls:* Prev (`#btnBlinkHudPrev`), Play/Pause Blink (`#btnBlinkHudPlay`), Next (`#btnBlinkHudNext`), and Mode Toggle (`#btnBlinkHudModeToggle`).
+    3. *Live Multi-Epoch Blend Scrubber:* Continuous crossfade slider (`#hudBlinkBlendSlider`) with readout (`#hudBlinkBlendVal`) and 4 discrete epoch jump chips (`.blink-epoch-chip` for 1999, 2010, 2014, 2025).
+  - **Multiple Close Options:** Header close `✕` (`#btnCloseBlinkHUD`), drawer close `✕` (`#btnDrawerCloseBlink`), footer quick close (`#btnBlinkFooterClose`), rail toggle (`#toolBlinkFlip`), hotkey `B`, and `Esc` dismiss.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (23/23), full Golden Suite (71/71), and live visual confirmation via browser subagent ([final_step_49.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/76f06a40-990c-4cd7-b7cf-4900ca4d77fe/browser_evidence/ae936dce-e2ba-4a90-b23f-178f21bebd6b/final_step_49.png)).
+- **[📌 ISSUE #43 CREATED: TIME-DOMAIN LIGHT CURVE ENHANCEMENTS & UPGRADES (@coolodu)]**
+  - **Issue Link:** [#43: [Feature] Further Enhancements & Upgrades for Time-Domain Light Curve Tab](https://github.com/joker0210G/spherex-hunter/issues/43)
+  - **Assigned Teammate:** `@coolodu` (Track: `web-frontend`, Resource Profile: `standard`)
+  - **Scope:** Interactive point details with SNR/flux (µJy), Lomb-Scargle power sparkline, bad epoch outlier masking, compact layout fine-tuning, and model curve overlay.
+- **[📈 REDEFINED ASTRONOMICAL LIGHT CURVE TAB & POINT SELECTION RETICLE (@jokerodu / @coolodu)]**
+  - **Feature:** Completely redefined `#dockPanelLightCurve` in the bottom dock according to NASA / IPAC / ZTF / AAVSO scientific standards:
+    1. **Dynamic Point-Specific Fetching & Reticle:** Clicking anywhere on the sky canvas with the Select (Reticle) tool, clicking a Gaia star, or clicking an auto-detected candidate now draws a cyan reticle diamond and dynamically fetches multi-epoch IR photometry (`/api/catalog/crossmatch`) for that exact coordinate $(\alpha, \delta)$.
+    2. **Multi-Bandpass Segregation:** Segregated 2MASS $K_s$ ($2.15\,\mu\text{m}$, amber), WISE W1 ($3.4\,\mu\text{m}$, emerald), WISE W2 ($4.6\,\mu\text{m}$, cyan), and SPHEREx DR1 ($4.6\,\mu\text{m}$, purple) with one-click filter pills (`All`, `W2`, `W1`, `Ks`, `SPHEREx`).
+    3. **Photometric Error Bars & 3σ Limits:** Custom canvas Chart.js plugin renders observational $\pm 1\sigma$ error whiskers on detection points and downward triangle markers (`#f43f5e`) for upper limits.
+    4. **Client-Side Phase Folding & Lomb-Scargle:** 1-click automated period discovery scanning 0.2d to 500d with double-cycle $[0.0, 2.0]$ visualization and stepper controls.
+    5. **Quantitative Astrophysics Telemetry:** Sidebar displays baseline span $\Delta t$ (26.2 yr), amplitude $\Delta m$, reduced $\chi^2_{\text{red}}$ constant-flux test, Stetson index $J$, and one-click AAVSO CSV export.
+    6. **Bidirectional Viewport Sync:** Clicking any epoch point jumps the main flipbook timeline directly to that observation frame.
+  - **Verification:** 100% green pass rate across 55/55 primary tests (`test_ui_contract.py`, `test_golden_suite.py`, `test_viewport_overhaul_v2.py`). Zero regressions.
+- **[🔭 REMOTE FETCH SYNC & VIEWPORT TILE SEAM REMEDIATION (@coolodu)]**
+  - **Synchronization:** Ran `git fetch --all --prune` across all remotes and merged `origin/coolodu/web-frontend` (commits up to `e0b9422`).
+  - **Tile Seam Remediation:** Removed adjacent Cartesian 2D canvas drawing code (`drawAdjacentSkyTiling`), eliminating sliced stars, photometric checkerboard steps, and missing tile voids. Delegated continuous wide-field celestial context to spherical HEALPix Aladin Lite (SPHEREx DR1 HiPS).
+  - **Flux Scale Fix:** Fixed borrowing of mismatched field parameters in fallback cutouts in `backend/services/cutout_engine.py` (preventing solid white saturation).
+  - **HUD Overlays:** Added Level 2 footprint boundaries (`EXP_ID`, `Detector`, `MJD`) and equatorial coordinate grid lines toggleable directly in the HUD.
+  - **Verification:** 100% green across all test suites (`test_ui_contract.py`: 22 passed, `test_viewport_overhaul.py`: 8 passed, `test_continuous_viewport_e2e.py`: 2 passed, `test_golden_suite.py`: 22 passed).
+- **[⏱️ TIME STEP CONTROLLER POPUP: ALL TOOLS FUNCTIONALIZED, EDIT OPTIONS DRAWER & PIN/UNPIN/CLOSE ENHANCED (@coolodu)]**
+  - **Feature:** Full functional overhaul of the Time Step Controller popup toolbar (`#viewportTimeStepHUD`) anchored adjacent to the left vertical tool rail.
+  - **Auto-Initialization Fix:** Resolved missing startup call by auto-initializing `initAutoIDAndHUDListeners()` on script load and DOM ready, ensuring all event listeners are actively bound immediately.
+  - **Interactive Edit Options Drawer (`#timeStepEditDrawer`):** Added `#btnTimeStepEditOptions` toggle opening a dedicated preferences drawer featuring:
+    1. *Pinning Mode Toggles (`#optPinAlways` vs `#optUnpinFlyout`):* Easily toggle between permanently pinned viewport sidebar and auto-dismiss flyout mode (with persistence in `localStorage`).
+    2. *Blink Cycle Speed Presets:* Direct 0.5s, 1.0s, and 2.0s speed selectors with active highlighting.
+    3. *Position Reset Button (`#btnResetTimeStepPos`):* Quickly resets any custom drag positioning back to the default rail anchor.
+  - **Multiple Intuitive Close Options:**
+    1. Header Close `✕` (`#btnCloseTimeStepHUD`)
+    2. Footer Quick Close `Close ✕` (`#btnTimeStepFooterClose`)
+    3. Drawer Close `✕ Close Popup` (`#btnDrawerCloseTimeStep`)
+    4. Left Rail Toggle (`#toolTimeStep`, Hotkey: `T`)
+    5. Keyboard shortcuts: `T` to toggle open/close, `Esc` to dismiss
+    6. Click-outside auto-dismiss when in unpinned/flyout mode
+  - **Direct Multi-Epoch Scrubber & Jump Chips:**
+    - Integrated direct blend slider (`#hudEpochBlendSlider`) and 4 discrete frame chips (`1999`, `2010`, `2014`, `2025`) inside the popup, allowing rapid scrubbing without opening the bottom dock.
+  - **Draggable Viewport Header:** Draggable header (`#hudTimeStepHeader`) allows moving the controller anywhere in the observatory view.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (21/21), Golden Suite (22/22), and physical verification via live browser subagent ([final_step_12.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/76f06a40-990c-4cd7-b7cf-4900ca4d77fe/browser_evidence/032640eb-d24e-41d4-ba99-53369e0accb6/final_step_12.png)).
 - **[🚀 OPTION 2 STREAMLINED: A/B PAIR CONTROLS MOVED TO TIMELINE & PROVENANCE MODAL DEPLOYED (@coolodu)]**
   - **The Problem:** The user observed that the 4 observation epochs were redundantly repeated across the UI: in the bottom Timeline bar, in the Inspector Sidebar as 4 bulky vertical cards (`OBSERVATION EPOCHS (4)`), and again in the Visual Layers hierarchy (`Base Epoch A`, `Base Epoch B`).
   - **The Solution (Option 2):**

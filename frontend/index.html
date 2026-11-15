@@ -601,10 +601,10 @@
           <span class="text-[8px] font-mono leading-none">Dist</span>
         </button>
 
-        <!-- Blink A/B Flip Tool -->
-        <button id="toolBlinkFlip" class="w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Flip Blink Frame A / B (Space / B)">
-          <i data-lucide="flip-horizontal" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span class="text-[8px] font-mono leading-none">Flip</span>
+        <!-- Blink Comparator & Multi-Epoch Flipbook Tool with Popup Option (User Request) -->
+        <button id="toolBlinkFlip" class="w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-amber-300 hover:text-white transition relative" title="Blink Comparator & Multi-Epoch Flipbook Popup (B)">
+          <i data-lucide="split" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span class="text-[8px] font-mono leading-none">Blink</span>
         </button>
 
         <!-- Time Step Controller Tool with Popup Option (User Request) -->
@@ -667,23 +667,73 @@
       <!-- Primary Astronomical Canvas -->
       <canvas id="astroCanvas" class="w-full h-full block filter-grayscale"></canvas>
 
-      <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Relocated to Left Vertical Tool Rail with Interactive Popup Option) -->
+      <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Interactive Popup Toolbar with Edit/Pin/Close Options) -->
       <div id="viewportTimeStepHUD"
         class="absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
         
-        <!-- Header: Title, Pinning Toggle & Close Button -->
-        <div class="flex items-center justify-between border-b border-space-700/80 pb-2">
-          <div class="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-wide">
+        <!-- Header: Title, Edit Options, Pinning Toggle & Close Button -->
+        <div class="flex items-center justify-between border-b border-space-700/80 pb-2 cursor-grab active:cursor-grabbing" id="hudTimeStepHeader" title="Drag to reposition toolbar anywhere in observatory">
+          <div class="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-wide pointer-events-none">
             <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
             <span>Time Step Controller</span>
           </div>
           <div class="flex items-center gap-1.5">
+            <!-- Edit Options Toggle -->
+            <button id="btnTimeStepEditOptions" type="button" class="px-2 py-0.5 rounded text-[10px] font-mono bg-space-800 hover:bg-space-700 border border-space-600 text-gray-300 hover:text-white transition flex items-center gap-1" title="Edit Time Step Preferences & Layout Options">
+              <span id="editTimeStepIcon">⚙️</span>
+              <span id="editTimeStepLabel">Options</span>
+            </button>
             <!-- Popup Option: Pinned vs Flyout -->
-            <button id="btnPinTimeStepHUD" class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 border border-cyan-500/50 text-cyan-300 font-bold transition flex items-center gap-1 shadow-sm" title="Toggle Pinned View (Keep open vs auto-close)">
+            <button id="btnPinTimeStepHUD" type="button" class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 border border-cyan-500/50 text-cyan-300 font-bold transition flex items-center gap-1 shadow-sm" title="Toggle Pinned View (Keep open vs auto-close on click outside)">
               <span id="pinTimeStepIcon">📌</span>
               <span id="pinTimeStepLabel">Pinned</span>
             </button>
-            <button id="btnCloseTimeStepHUD" class="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-space-800 transition text-xs" title="Close Time Step Popup (T or Esc)">✕</button>
+            <!-- Primary Close Button -->
+            <button id="btnCloseTimeStepHUD" type="button" class="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-space-800 transition text-xs font-bold" title="Close Time Step Popup (T or Esc)">✕</button>
+          </div>
+        </div>
+
+        <!-- Interactive Edit & Preferences Drawer (Collapsible) -->
+        <div id="timeStepEditDrawer" class="hidden flex-col gap-2 p-2.5 rounded-lg bg-space-950/95 border border-cyan-500/30 text-xs font-mono shadow-inner">
+          <div class="flex items-center justify-between text-gray-300 font-bold border-b border-space-800 pb-1">
+            <span class="flex items-center gap-1.5 text-cyan-300">
+              <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+              <span>Controller Preferences</span>
+            </span>
+            <button id="btnCloseTimeStepDrawer" type="button" class="text-gray-400 hover:text-white text-xs px-1">✕</button>
+          </div>
+          
+          <!-- Edit Pin / Unpin Options -->
+          <div class="flex flex-col gap-1">
+            <span class="text-[10px] text-gray-400 uppercase font-bold">Pinning Mode:</span>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button id="optPinAlways" type="button" class="px-2 py-1 rounded bg-cyan-950/80 border border-cyan-500 text-cyan-300 font-bold text-center flex items-center justify-center gap-1 transition" title="Keep Time Step pinned permanently in the viewport">
+                <span>📌 Pinned Mode</span>
+              </button>
+              <button id="optUnpinFlyout" type="button" class="px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition" title="Allow popup to float and auto-dismiss on outside click">
+                <span>🪟 Flyout Mode</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Blink Speed Options -->
+          <div class="flex flex-col gap-1">
+            <span class="text-[10px] text-gray-400 uppercase font-bold">Blink Cycle Speed:</span>
+            <div class="grid grid-cols-3 gap-1">
+              <button class="time-step-speed-btn px-1.5 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-[10px] text-center transition" data-speed="0.5" title="0.5 second fast blink">⚡ 0.5s</button>
+              <button class="time-step-speed-btn px-1.5 py-1 rounded bg-cyan-900 border border-cyan-500 text-cyan-200 font-bold text-[10px] text-center transition" data-speed="1.0" title="1.0 second standard blink">⏱️ 1.0s</button>
+              <button class="time-step-speed-btn px-1.5 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-[10px] text-center transition" data-speed="2.0" title="2.0 second deliberate blink">🐢 2.0s</button>
+            </div>
+          </div>
+
+          <!-- Position Reset and Close Options -->
+          <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-space-800">
+            <button id="btnResetTimeStepPos" type="button" class="px-2 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 hover:text-white text-[10px] flex items-center gap-1 transition" title="Reset popup position back to default left rail anchor">
+              <span>↺ Reset Position</span>
+            </button>
+            <button id="btnDrawerCloseTimeStep" type="button" class="px-2.5 py-1 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-300 text-[10px] font-bold flex items-center gap-1 transition" title="Close Time Step Controller">
+              <span>✕ Close Popup</span>
+            </button>
           </div>
         </div>
 
@@ -696,24 +746,39 @@
           <span id="hudTimeStepDelta" class="text-white bg-cyan-950/80 border border-cyan-700/60 px-2 py-0.5 rounded text-xs font-semibold">Δt = 26.8 yr</span>
         </div>
 
+        <!-- Row 1.5: Epoch Blend Scrubber & Direct Frame Jump Chips -->
+        <div class="flex flex-col gap-1.5 bg-space-950/80 p-2 rounded-lg border border-space-800">
+          <div class="flex items-center justify-between text-[10px] font-mono">
+            <span class="uppercase font-bold text-gray-400">Epoch Blend:</span>
+            <span id="hudEpochBlendVal" class="text-cyan-300 font-bold">25% (1999)</span>
+          </div>
+          <input id="hudEpochBlendSlider" type="range" min="0" max="100" value="25" class="w-full h-1.5 bg-space-700 rounded cursor-pointer accent-cyan-400" title="Scrub continuously across observation epochs">
+          <div class="grid grid-cols-4 gap-1 text-[10px] font-mono">
+            <button type="button" class="hud-epoch-chip px-1 py-1 rounded bg-cyan-900 border border-cyan-500/70 text-cyan-200 font-bold text-center transition" data-frame="1" title="Jump to Epoch 1: 1999 (2MASS) - 25% Blend">1999</button>
+            <button type="button" class="hud-epoch-chip px-1 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-center transition" data-frame="2" title="Jump to Epoch 2: 2010 (WISE W1) - 50% Blend">2010</button>
+            <button type="button" class="hud-epoch-chip px-1 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-center transition" data-frame="3" title="Jump to Epoch 3: 2014 (unWISE) - 75% Blend">2014</button>
+            <button type="button" class="hud-epoch-chip px-1 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-center transition" data-frame="4" title="Jump to Epoch 4: 2025 (SPHEREx) - 100% Blend">2025</button>
+          </div>
+        </div>
+
         <!-- Row 2: Epoch Steppers, Morph / Play, and Difference Mode -->
         <div class="grid grid-cols-4 gap-1.5 bg-space-950/80 p-1.5 rounded-lg border border-space-800">
-          <button id="btnHudStepPrev" class="px-2.5 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium flex flex-col items-center justify-center gap-0.5" title="View Epoch 1: 1999 (2MASS Baseline)">
+          <button id="btnHudStepPrev" type="button" class="px-2.5 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium flex flex-col items-center justify-center gap-0.5" title="View Epoch 1: 1999 (2MASS Baseline)">
             <span class="text-[9px] text-gray-400">◀ Epoch 1</span>
-            <span class="font-bold text-sky-300">1999 (t₁)</span>
+            <span class="font-bold text-sky-300" id="hudStepPrevYear">1999 (t₁)</span>
           </button>
-          <button id="btnHudBlinkMorph" class="px-2.5 py-2 rounded-md text-xs bg-blender-blue text-white font-semibold shadow transition font-mono flex flex-col items-center justify-center gap-0.5" title="Continuous Smooth Morph across Δt">
+          <button id="btnHudBlinkMorph" type="button" class="px-2.5 py-2 rounded-md text-xs bg-blender-blue text-white font-semibold shadow transition font-mono flex flex-col items-center justify-center gap-0.5" title="Continuous Smooth Morph across Δt">
             <div class="flex items-center gap-1">
               <i data-lucide="play" class="w-3 h-3" id="hudPlayIcon"></i>
-              <span class="text-[9px]">Morph</span>
+              <span class="text-[9px]" id="hudBlinkModeText">Morph</span>
             </div>
             <span id="hudBlinkText" class="font-bold">t₁ ↔ t₂</span>
           </button>
-          <button id="btnHudStepNext" class="px-2.5 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium flex flex-col items-center justify-center gap-0.5" title="View Epoch 2: 2025 (SPHEREx Survey)">
+          <button id="btnHudStepNext" type="button" class="px-2.5 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium flex flex-col items-center justify-center gap-0.5" title="View Epoch 2: 2025 (SPHEREx Survey)">
             <span class="text-[9px] text-gray-400">Epoch 2 ▶</span>
-            <span class="font-bold text-orange-400">2025 (t₂)</span>
+            <span class="font-bold text-orange-400" id="hudStepNextYear">2025 (t₂)</span>
           </button>
-          <button id="btnHudDiffMode" class="px-2.5 py-2 rounded-md text-xs text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold flex flex-col items-center justify-center gap-0.5" title="Numerical Difference Map (Δ = I₂ - I₁)">
+          <button id="btnHudDiffMode" type="button" class="px-2.5 py-2 rounded-md text-xs text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold flex flex-col items-center justify-center gap-0.5" title="Numerical Difference Map (Δ = I₂ - I₁)">
             <span class="text-[9px] text-orange-300">ZOGY</span>
             <span class="font-bold">⚡ Diff (Δ)</span>
           </button>
@@ -721,12 +786,186 @@
 
         <!-- Row 3: Automated Candidate Detection & Dipole Scan -->
         <div class="flex items-center justify-between gap-2 pt-1 border-t border-space-800">
-          <button id="btnAutoDetectPill" class="flex-1 flex items-center justify-between px-3 py-1.5 rounded-lg text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-200 hover:text-white transition font-mono" title="Toggle Auto-Identification of Motion Dipoles & Transients">
+          <button id="btnAutoDetectPill" type="button" class="flex-1 flex items-center justify-between px-3 py-1.5 rounded-lg text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-200 hover:text-white transition font-mono" title="Toggle Auto-Identification of Motion Dipoles & Transients">
             <span class="flex items-center gap-2">
               <span id="hudAutoDetectDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
               <span class="font-medium text-gray-300">Dipole & Transient Scan:</span>
             </span>
             <span id="hudAutoDetectLabel" class="text-amber-400 font-bold">Auto-ID: Active</span>
+          </button>
+        </div>
+
+        <!-- Row 4: Shortcuts Legend and Secondary Close Action -->
+        <div class="flex items-center justify-between text-[10px] text-gray-400 pt-1 border-t border-space-800">
+          <span class="flex items-center gap-1 font-mono text-[10px]">
+            <kbd class="px-1 py-0.5 bg-space-800 rounded border border-space-700 text-gray-300 font-semibold">T</kbd>
+            <span>Toggle</span>
+            <span class="text-space-600">·</span>
+            <kbd class="px-1 py-0.5 bg-space-800 rounded border border-space-700 text-gray-300 font-semibold">Esc</kbd>
+            <span>Close</span>
+          </span>
+          <button id="btnTimeStepFooterClose" type="button" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 hover:text-white text-gray-300 border border-space-700 transition font-mono flex items-center gap-1" title="Close Time Step Controller Popup">
+            <span>Close ✕</span>
+          </button>
+          <button id="btnToggleFootprints" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-300 hover:text-white transition font-mono" title="Toggle Level 2 Exposure Footprint Boundaries (EXP_ID, Detector, MJD)">
+            <i data-lucide="square" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span id="labelFootprints">Footprints: Off</span>
+          </button>
+          <button id="btnToggleCoordGrid" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-300 hover:text-white transition font-mono" title="Toggle Equatorial Coordinate Grid (RA/Dec Lines)">
+            <i data-lucide="grid" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span id="labelCoordGrid">Grid: Off</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEWPORT BLINK COMPARATOR CONTROLLER HUD (Interactive Popup Toolbar with Edit/Pin/Close Options) -->
+      <div id="viewportBlinkHUD"
+        class="hidden absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-amber-500/40 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
+        
+        <!-- Header: Title, Edit Options, Pinning Toggle & Close Button -->
+        <div class="flex items-center justify-between border-b border-space-700/80 pb-2 cursor-grab active:cursor-grabbing" id="hudBlinkHeader" title="Drag to reposition Blink toolbar anywhere in observatory">
+          <div class="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-wide pointer-events-none">
+            <i data-lucide="split" class="w-4 h-4 text-amber-400"></i>
+            <span>Blink Comparator</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <!-- Edit Options Toggle -->
+            <button id="btnBlinkEditOptions" type="button" class="px-2 py-0.5 rounded text-[10px] font-mono bg-space-800 hover:bg-space-700 border border-space-600 text-gray-300 hover:text-white transition flex items-center gap-1" title="Edit Blink Preferences & Playback Settings">
+              <span id="editBlinkIcon">⚙️</span>
+              <span id="editBlinkLabel">Options</span>
+            </button>
+            <!-- Popup Option: Pinned vs Flyout -->
+            <button id="btnPinBlinkHUD" type="button" class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950 border border-amber-500/50 text-amber-300 font-bold transition flex items-center gap-1 shadow-sm" title="Toggle Pinned View (Keep open vs auto-close on click outside)">
+              <span id="pinBlinkIcon">📌</span>
+              <span id="pinBlinkLabel">Pinned</span>
+            </button>
+            <!-- Primary Close Button -->
+            <button id="btnCloseBlinkHUD" type="button" class="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-space-800 transition text-xs font-bold" title="Close Blink Popup (B or Esc)">✕</button>
+          </div>
+        </div>
+
+        <!-- Interactive Edit & Preferences Drawer (Collapsible) -->
+        <div id="blinkEditDrawer" class="hidden flex-col gap-2 p-2.5 rounded-lg bg-space-950/95 border border-amber-500/30 text-xs font-mono shadow-inner">
+          <div class="flex items-center justify-between text-gray-300 font-bold border-b border-space-800 pb-1">
+            <span class="flex items-center gap-1.5 text-amber-300">
+              <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+              <span>Blink Preferences</span>
+            </span>
+            <button id="btnCloseBlinkDrawer" type="button" class="text-gray-400 hover:text-white text-xs px-1">✕</button>
+          </div>
+          
+          <!-- Pinning Mode Options -->
+          <div class="flex flex-col gap-1">
+            <span class="text-[10px] text-gray-400 uppercase font-bold">Pinning Mode:</span>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button id="optPinBlinkAlways" type="button" class="px-2 py-1 rounded bg-amber-950/80 border border-amber-500 text-amber-300 font-bold text-center flex items-center justify-center gap-1 transition" title="Keep Blink pinned permanently in the viewport">
+                <span>📌 Pinned Mode</span>
+              </button>
+              <button id="optUnpinBlinkFlyout" type="button" class="px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition" title="Allow popup to float and auto-dismiss on outside click">
+                <span>🪟 Flyout Mode</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Blink Cycle Speed Options -->
+          <div class="flex flex-col gap-1">
+            <span class="text-[10px] text-gray-400 uppercase font-bold">Blink Cycle Rate:</span>
+            <div class="grid grid-cols-4 gap-1">
+              <button class="blink-speed-btn px-1.5 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-[10px] text-center transition" data-fps="4" title="0.25 second rapid flip">⚡ 0.25s</button>
+              <button class="blink-speed-btn px-1.5 py-1 rounded bg-amber-950 border border-amber-500 text-amber-200 font-bold text-[10px] text-center transition" data-fps="2" title="0.5 second standard blink">⏱️ 0.5s</button>
+              <button class="blink-speed-btn px-1.5 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-[10px] text-center transition" data-fps="1" title="1.0 second slow blink">🐢 1.0s</button>
+              <button class="blink-speed-btn px-1.5 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-[10px] text-center transition" data-fps="0.5" title="2.0 second deep examination">🧘 2.0s</button>
+            </div>
+          </div>
+
+          <!-- Morph Style: Continuous Crossfade vs Snap Blink -->
+          <div class="flex flex-col gap-1">
+            <span class="text-[10px] text-gray-400 uppercase font-bold">Transition Style:</span>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button id="optMorphSmooth" type="button" class="px-2 py-1 rounded bg-cyan-950/80 border border-cyan-500 text-cyan-300 font-bold text-center flex items-center justify-center gap-1 transition" title="Smooth sine wave crossfade between epochs">
+                <span>🌊 Smooth Morph</span>
+              </button>
+              <button id="optMorphSnap" type="button" class="px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition" title="Discrete instantaneous hard cut flip">
+                <span>⚡ Snap Flip</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Position Reset and Close Options -->
+          <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-space-800">
+            <button id="btnResetBlinkPos" type="button" class="px-2 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 hover:text-white text-[10px] flex items-center gap-1 transition" title="Reset popup position back to left rail">
+              <span>↺ Reset Position</span>
+            </button>
+            <button id="btnDrawerCloseBlink" type="button" class="px-2.5 py-1 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-300 text-[10px] font-bold flex items-center gap-1 transition" title="Close Blink Controller">
+              <span>✕ Close Popup</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Row 1: Active Epoch Status & Rapid A/B Flip Action -->
+        <div class="flex items-center justify-between gap-2 bg-space-950/80 px-2.5 py-2 rounded-lg border border-space-800">
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[9px] uppercase text-gray-400 font-sans font-bold">Active Epoch:</span>
+            <span id="hudBlinkEpochBadge" class="text-amber-300 font-bold text-xs font-mono">Frame 1: 1999 (2MASS)</span>
+          </div>
+          <button id="btnHudFlipAB" type="button" class="px-3 py-1.5 rounded-lg text-xs bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 text-amber-200 hover:text-white font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95" title="Flip instantaneously between Epoch A and Epoch B (Spacebar / B)">
+            <i data-lucide="flip-horizontal" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>Flip A ↔ B</span>
+          </button>
+        </div>
+
+        <!-- Row 2: VCR Transport Controls (Prev, Play/Pause Blink, Next, Morph/Snap) -->
+        <div class="grid grid-cols-4 gap-1.5 bg-space-950/80 p-1.5 rounded-lg border border-space-800">
+          <button id="btnBlinkHudPrev" type="button" class="px-2 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono flex flex-col items-center justify-center gap-0.5" title="Step to Previous Frame">
+            <i data-lucide="skip-back" class="w-3.5 h-3.5 text-gray-300"></i>
+            <span class="text-[9px]">Prev</span>
+          </button>
+          <button id="btnBlinkHudPlay" type="button" class="px-2 py-2 rounded-md text-xs bg-blender-orange text-white font-semibold shadow transition font-mono flex flex-col items-center justify-center gap-0.5" title="Toggle Flipbook Blink Play/Pause (Spacebar)">
+            <div class="flex items-center gap-1">
+              <i data-lucide="pause" class="w-3.5 h-3.5" id="blinkHudPlayIcon"></i>
+              <span class="text-[9px] font-bold" id="blinkHudPlayText">Pause</span>
+            </div>
+            <span class="text-[8px] opacity-80">Blink Loop</span>
+          </button>
+          <button id="btnBlinkHudNext" type="button" class="px-2 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono flex flex-col items-center justify-center gap-0.5" title="Step to Next Frame">
+            <i data-lucide="skip-forward" class="w-3.5 h-3.5 text-gray-300"></i>
+            <span class="text-[9px]">Next</span>
+          </button>
+          <button id="btnBlinkHudModeToggle" type="button" class="px-2 py-2 rounded-md text-xs text-cyan-400 hover:text-white hover:bg-cyan-950/40 border border-cyan-500/40 transition font-mono flex flex-col items-center justify-center gap-0.5" title="Toggle Continuous Smooth Morph vs Discrete Snap Blink">
+            <i data-lucide="waves" class="w-3.5 h-3.5 text-cyan-400" id="blinkHudModeIcon"></i>
+            <span class="text-[9px] font-bold" id="blinkHudModeLabel">Morph</span>
+          </button>
+        </div>
+
+        <!-- Row 3: Live Blend Scrubber & Epoch Chips -->
+        <div class="flex flex-col gap-1.5 bg-space-950/80 p-2 rounded-lg border border-space-800">
+          <div class="flex items-center justify-between text-[10px] font-mono">
+            <span class="uppercase font-bold text-gray-400">Blend Crossfade:</span>
+            <span id="hudBlinkBlendVal" class="text-amber-300 font-bold">25% (1999)</span>
+          </div>
+          <input id="hudBlinkBlendSlider" type="range" min="0" max="100" value="25" class="w-full h-1.5 bg-space-700 rounded cursor-pointer accent-amber-400" title="Scrub continuous crossfade blend between epochs">
+          <div class="grid grid-cols-4 gap-1 text-[10px] font-mono">
+            <button type="button" class="blink-epoch-chip px-1 py-1 rounded bg-amber-950 border border-amber-500/70 text-amber-200 font-bold text-center transition" data-frame="1" title="Epoch 1: 1999 (2MASS)">'99 2M</button>
+            <button type="button" class="blink-epoch-chip px-1 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-center transition" data-frame="2" title="Epoch 2: 2010 (WISE W1)">'10 W1</button>
+            <button type="button" class="blink-epoch-chip px-1 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-center transition" data-frame="3" title="Epoch 3: 2014 (unWISE)">'14 unW</button>
+            <button type="button" class="blink-epoch-chip px-1 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-center transition" data-frame="4" title="Epoch 4: 2025 (SPHEREx)">'25 SPH</button>
+          </div>
+        </div>
+
+        <!-- Row 4: Shortcuts Legend and Secondary Close Action -->
+        <div class="flex items-center justify-between text-[10px] text-gray-400 pt-1 border-t border-space-800">
+          <span class="flex items-center gap-1 font-mono text-[10px]">
+            <kbd class="px-1 py-0.5 bg-space-800 rounded border border-space-700 text-gray-300 font-semibold">B</kbd>
+            <span>Toggle</span>
+            <span class="text-space-600">·</span>
+            <kbd class="px-1 py-0.5 bg-space-800 rounded border border-space-700 text-gray-300 font-semibold">Space</kbd>
+            <span>Play</span>
+            <span class="text-space-600">·</span>
+            <kbd class="px-1 py-0.5 bg-space-800 rounded border border-space-700 text-gray-300 font-semibold">Esc</kbd>
+            <span>Close</span>
+          </span>
+          <button id="btnBlinkFooterClose" type="button" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 hover:text-white text-gray-300 border border-space-700 transition font-mono flex items-center gap-1" title="Close Blink Controller Popup">
+            <span>Close ✕</span>
           </button>
         </div>
       </div>
@@ -1613,15 +1852,117 @@
         </div>
       </div>
 
-      <!-- PANEL 3: LIGHT CURVE (Multi-Epoch Historical Flux) -->
-      <div id="dockPanelLightCurve" class="h-full hidden px-4 py-2 flex items-center gap-4">
-        <div class="flex-1 h-full relative">
-          <canvas id="lightCurveChart"></canvas>
+      <!-- PANEL 3: LIGHT CURVE (Multi-Epoch Historical Flux & Time-Domain Analysis) -->
+      <div id="dockPanelLightCurve" class="h-full hidden px-3 py-1.5 flex flex-col gap-1.5 overflow-hidden">
+        <!-- Top Toolbar: Selected Point Coords, Band Filters, Mode Toggles & Phase Controls -->
+        <div class="flex items-center justify-between gap-2 bg-space-950/90 px-2.5 py-1 rounded-lg border border-space-700/80 shrink-0 text-xs font-mono">
+          <!-- Left: Selected Target Coordinate & Reset -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="flex items-center gap-1 text-cyan-400 font-bold text-[11px]">
+              <i data-lucide="crosshair" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span id="lcTargetLabel">Target: Field Center</span>
+            </span>
+            <span id="lcTargetCoords" class="text-gray-300 font-mono text-[10px] bg-space-900 px-1.5 py-0.5 rounded border border-space-700">α=133.795°, δ=-7.245°</span>
+            <button id="btnResetLCTarget" type="button" onclick="resetLightCurveToFieldCenter()" class="px-1.5 py-0.5 rounded blender-btn text-[10px] text-gray-400 hover:text-white transition" title="Reset Light Curve to Viewport Field Center">Reset</button>
+            <span id="lcFetchLoading" class="hidden text-amber-400 text-[10px] font-mono animate-pulse flex items-center gap-1">
+              <i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Fetching...
+            </span>
+          </div>
+
+          <!-- Center: Multi-Bandpass Filter Selector Pills -->
+          <div class="flex items-center gap-1 bg-space-900/90 p-0.5 rounded-lg border border-space-700" id="lcBandFilters">
+            <span class="text-gray-400 text-[10px] uppercase font-bold px-1.5">Band:</span>
+            <button type="button" onclick="setLightCurveBandFilter('ALL')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-cyan-600 text-white" data-band="ALL" title="Show All Bands Combined">All</button>
+            <button type="button" onclick="setLightCurveBandFilter('W2')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-cyan-300 hover:text-white" data-band="W2" title="WISE W2 / NEOWISE 4.6 µm">W2 (4.6µm)</button>
+            <button type="button" onclick="setLightCurveBandFilter('W1')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-emerald-300 hover:text-white" data-band="W1" title="WISE W1 3.4 µm">W1 (3.4µm)</button>
+            <button type="button" onclick="setLightCurveBandFilter('Ks')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-amber-300 hover:text-white" data-band="Ks" title="2MASS Ks 2.15 µm">Ks (2.15µm)</button>
+            <button type="button" onclick="setLightCurveBandFilter('SPHEREx')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-purple-300 hover:text-white" data-band="SPHEREx" title="SPHEREx DR1 4.6 µm">SPHEREx</button>
+          </div>
+
+          <!-- Right: Mode Switcher (Chronological vs Phase Fold) & Axis Format -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <!-- Time Axis Unit (Year vs MJD) -->
+            <button id="btnToggleLCTimeUnit" type="button" onclick="toggleLightCurveTimeUnit()" class="px-2 py-0.5 rounded blender-btn text-[10px] font-mono text-gray-300 hover:text-white border border-space-700" title="Toggle X-Axis between Calendar Year and Modified Julian Date (MJD)">
+              Axis: <span id="lcTimeUnitLabel" class="text-cyan-300 font-bold">Year</span>
+            </button>
+
+            <!-- Mode Toggle (Time vs Phase Fold) -->
+            <div class="flex items-center gap-0.5 bg-space-900 p-0.5 rounded border border-space-700">
+              <button id="btnLCModeTime" type="button" onclick="setLightCurveMode('time')" class="px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-blender-blue text-white" title="Chronological Multi-Epoch Time Series">Time Series</button>
+              <button id="btnLCModePhase" type="button" onclick="setLightCurveMode('phase')" class="px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white" title="Fold Light Curve by Trial Period (0 to 2 Phase Cycles)">Phase Fold</button>
+            </div>
+
+            <!-- Phase Period Controls (shown when in phase fold mode) -->
+            <div id="lcPhaseControls" class="hidden flex items-center gap-1 bg-space-900 px-1.5 py-0.5 rounded border border-purple-500/40">
+              <span class="text-purple-300 text-[10px] font-bold">P:</span>
+              <input id="lcPeriodInput" type="number" step="0.01" min="0.01" value="1.00" class="w-14 bg-space-950 text-purple-200 text-[10px] font-mono px-1 py-0.5 rounded border border-space-700 text-center focus:outline-none focus:border-purple-400" title="Trial Period in Days">
+              <span class="text-gray-400 text-[9px]">d</span>
+              <button type="button" onclick="stepLightCurvePeriod(-0.1)" class="px-1 py-0.2 rounded blender-btn text-[9px] text-gray-300 hover:text-white" title="Decrease Period by 0.1d">-0.1</button>
+              <button type="button" onclick="stepLightCurvePeriod(0.1)" class="px-1 py-0.2 rounded blender-btn text-[9px] text-gray-300 hover:text-white" title="Increase Period by 0.1d">+0.1</button>
+              <button id="btnAutoDetectPeriod" type="button" onclick="autoDetectLightCurvePeriod()" class="px-1.5 py-0.5 rounded bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 text-[9px] font-bold transition flex items-center gap-0.5" title="Run fast Lomb-Scargle period finder">
+                <i data-lucide="sparkles" class="w-2.5 h-2.5 text-purple-400"></i> Auto
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="w-48 bg-space-950 p-2 rounded border border-space-700 font-mono text-[10px] space-y-1 shrink-0">
-          <div class="text-gray-400 font-bold uppercase text-[9px] text-amber-400">Photometric History</div>
-          <div class="text-gray-300 text-[10px] font-sans">
-            Evaluates secular variability vs stationary constant flux across the 26.2-year baseline.
+
+        <!-- Main Content Area: Chart Canvas (Left) + Telemetry & Astrophysics Sidebar (Right) -->
+        <div class="flex-1 flex items-stretch gap-3 min-h-0 relative">
+          <!-- Canvas Container -->
+          <div class="flex-1 h-full relative bg-space-950/40 rounded-lg border border-space-800/80 overflow-hidden">
+            <canvas id="lightCurveChart"></canvas>
+            <!-- Overlay Notice if point has no IR matches -->
+            <div id="lcEmptyNotice" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-space-950/85 backdrop-blur-xs font-mono text-center p-3">
+              <i data-lucide="info" class="w-5 h-5 text-amber-400 mb-1"></i>
+              <span class="text-xs text-amber-300 font-bold" id="lcEmptyNoticeTitle">No Historical Photometry at this Point</span>
+              <span class="text-[10px] text-gray-400 max-w-sm mt-0.5">Click any celestial source, star, or moving candidate in the viewport to retrieve its multi-epoch light curve.</span>
+            </div>
+          </div>
+
+          <!-- Telemetry & Variability Analytics Sidebar -->
+          <div class="w-56 bg-space-950 p-2 rounded-lg border border-space-700 font-mono text-[10px] space-y-1.5 shrink-0 flex flex-col justify-between">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between border-b border-space-800 pb-1">
+                <span class="text-amber-400 font-bold uppercase tracking-wider text-[9px]">Variability Analytics</span>
+                <span id="lcSourceCountBadge" class="text-gray-400 text-[9px]">0 epochs</span>
+              </div>
+              <div class="space-y-1 text-[10px]">
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Baseline (Δt):</span>
+                  <span id="lcStatBaseline" class="text-white font-bold">26.2 yr</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Amplitude (Δm):</span>
+                  <span id="lcStatAmplitude" class="text-cyan-300 font-bold">-- mag</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Mean Mag:</span>
+                  <span id="lcStatMeanMag" class="text-gray-200 font-bold">--</span>
+                </div>
+                <div class="flex items-center justify-between" title="Reduced Chi-Square test against constant flux hypothesis. Values >> 1 indicate physical variability!">
+                  <span class="text-gray-400">Const-Flux χ²ᵣ:</span>
+                  <span id="lcStatChi2" class="text-emerald-400 font-bold">--</span>
+                </div>
+                <div class="flex items-center justify-between" title="Stetson J variability index (positive = correlated multi-band flux excursions)">
+                  <span class="text-gray-400">Stetson Index J:</span>
+                  <span id="lcStatStetson" class="text-purple-300 font-bold">--</span>
+                </div>
+                <div id="lcPeriodStatRow" class="hidden flex items-center justify-between border-t border-space-800 pt-1">
+                  <span class="text-purple-300">Period (P):</span>
+                  <span id="lcStatPeriod" class="text-white font-bold">-- d</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer: Download CSV & Instructions -->
+            <div class="border-t border-space-800 pt-1.5 space-y-1">
+              <button id="btnExportLCCSV" type="button" onclick="exportLightCurveCSV()" class="w-full py-1 rounded bg-space-900 hover:bg-space-800 border border-cyan-500/40 text-cyan-300 hover:text-white text-[10px] font-bold font-mono transition flex items-center justify-center gap-1.5 shadow-sm" title="Export Light Curve Table in AAVSO / Astropy CSV format">
+                <i data-lucide="download" class="w-3 h-3 text-cyan-400"></i> Export CSV Table
+              </button>
+              <div class="text-[9px] text-gray-500 text-center font-sans">
+                Click epoch point to sync viewport flipbook
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -3765,6 +4106,173 @@
       ctx.restore();
     }
 
+    // Dynamic Selected Point Reticle for Viewport Light Curve Fetching
+    let selectedSkyPoint = null; // { ra: number, dec: number, label: string }
+    window.selectedSkyPoint = selectedSkyPoint;
+
+    function drawSelectedPointReticle(ctx, pixelsPerArcmin) {
+      if (!selectedSkyPoint) return;
+      const proj = projectSkyToTangentialArcmin(selectedSkyPoint.ra, selectedSkyPoint.dec, camera.ra, camera.dec);
+      const sx = -proj.xiArcmin * pixelsPerArcmin;
+      const sy = -proj.etaArcmin * pixelsPerArcmin;
+      const zoom = camera.zoom || 1.0;
+
+      ctx.save();
+      const r = 11 / zoom;
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = 2.0 / zoom;
+      ctx.shadowColor = '#06b6d4';
+      ctx.shadowBlur = 8 / zoom;
+
+      // Reticle Diamond
+      ctx.beginPath();
+      ctx.moveTo(sx, sy - r);
+      ctx.lineTo(sx + r, sy);
+      ctx.lineTo(sx, sy + r);
+      ctx.lineTo(sx - r, sy);
+      ctx.closePath();
+      ctx.stroke();
+
+      // Center crosshair ticks
+      const tick = 4.5 / zoom;
+      ctx.beginPath();
+      ctx.moveTo(sx - r - tick, sy); ctx.lineTo(sx - r, sy);
+      ctx.moveTo(sx + r, sy); ctx.lineTo(sx + r + tick, sy);
+      ctx.moveTo(sx, sy - r - tick); ctx.lineTo(sx, sy - r);
+      ctx.moveTo(sx, sy + r); ctx.lineTo(sx, sy + r + tick);
+      ctx.stroke();
+
+      // Central dot
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 2.5 / zoom, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Label badge above reticle
+      ctx.shadowBlur = 0;
+      const label = selectedSkyPoint.label || 'Target Point';
+      ctx.font = `bold ${Math.max(9, Math.min(13, 10 / zoom))}px monospace`;
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(8, 12, 22, 0.85)';
+      ctx.fillRect(sx - tw / 2 - (4 / zoom), sy - r - (16 / zoom), tw + (8 / zoom), 13 / zoom);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(label, sx - tw / 2, sy - r - (6 / zoom));
+      ctx.restore();
+    }
+
+    let footprintOverlayEnabled = false;
+    let coordGridEnabled = false;
+
+    function drawExposureFootprintOverlay(ctx, pixelsPerArcmin) {
+      if (!footprintOverlayEnabled) return;
+
+      const fov = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin();
+      const fw = fov * pixelsPerArcmin;
+      const fh = fov * pixelsPerArcmin;
+      const x0 = -fw / 2;
+      const y0 = -fh / 2;
+
+      ctx.save();
+      // Level 2 Exposure detector boundary rectangle
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = Math.max(1, 1.5 / camera.zoom);
+      ctx.strokeRect(x0, y0, fw, fh);
+
+      // Corner accent brackets
+      const bLen = Math.min(24 / camera.zoom, fw * 0.12);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = Math.max(1.5, 2.5 / camera.zoom);
+      
+      // Top-left
+      ctx.beginPath(); ctx.moveTo(x0, y0 + bLen); ctx.lineTo(x0, y0); ctx.lineTo(x0 + bLen, y0); ctx.stroke();
+      // Top-right
+      ctx.beginPath(); ctx.moveTo(x0 + fw - bLen, y0); ctx.lineTo(x0 + fw, y0); ctx.lineTo(x0 + fw, y0 + bLen); ctx.stroke();
+      // Bottom-left
+      ctx.beginPath(); ctx.moveTo(x0, y0 + fh - bLen); ctx.lineTo(x0, y0 + fh); ctx.lineTo(x0 + bLen, y0 + fh); ctx.stroke();
+      // Bottom-right
+      ctx.beginPath(); ctx.moveTo(x0 + fw - bLen, y0 + fh); ctx.lineTo(x0 + fw, y0 + fh); ctx.lineTo(x0 + fw, y0 + fh - bLen); ctx.stroke();
+
+      // Footprint Metadata Tag (EXP_ID, Detector, MJD)
+      const expId = (realEpoch2Img && realEpoch2Img.dataset) ? `SPHEREx_L2_${realEpoch2Img.dataset}` : 'SPHEREx_L2_B6_001';
+      const det = 'Band 6 (H2RG-6)';
+      const mjd = (realEpoch2Img && realEpoch2Img.mjd) ? realEpoch2Img.mjd.toFixed(2) : '60809.34';
+      const label = `EXP: ${expId} | Det: ${det} | MJD: ${mjd}`;
+
+      ctx.font = `bold ${Math.max(9, 10 / camera.zoom)}px "JetBrains Mono", monospace`;
+      const tw = ctx.measureText(label).width;
+      const pad = 5 / camera.zoom;
+      const tagH = 15 / camera.zoom;
+      const tagY = y0 - tagH - (5 / camera.zoom);
+
+      ctx.fillStyle = 'rgba(6, 12, 24, 0.92)';
+      ctx.fillRect(x0, tagY, tw + pad * 2, tagH);
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1 / camera.zoom;
+      ctx.strokeRect(x0, tagY, tw + pad * 2, tagH);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, x0 + pad, tagY + tagH / 2);
+      ctx.restore();
+    }
+
+    function drawCoordinateGrid(ctx, pixelsPerArcmin) {
+      if (!coordGridEnabled) return;
+
+      const w = canvas.width || 800;
+      const h = canvas.height || 600;
+      const minWorldX = (0 - (w / 2 + camera.panX)) / camera.zoom;
+      const maxWorldX = (w - (w / 2 + camera.panX)) / camera.zoom;
+      const minWorldY = (0 - (h / 2 + camera.panY)) / camera.zoom;
+      const maxWorldY = (h - (h / 2 + camera.panY)) / camera.zoom;
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)';
+      ctx.lineWidth = 1.0 / camera.zoom;
+      ctx.font = `${Math.max(8, 9 / camera.zoom)}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+      const gridStepArcmin = (camera.fov > 60) ? 30 : ((camera.fov > 15) ? 5 : 1);
+      const stepPx = gridStepArcmin * pixelsPerArcmin;
+
+      if (stepPx > 10) {
+        const startCol = Math.floor(minWorldX / stepPx);
+        const endCol = Math.ceil(maxWorldX / stepPx);
+        for (let c = startCol; c <= endCol; c++) {
+          const gx = c * stepPx;
+          ctx.beginPath();
+          ctx.moveTo(gx, minWorldY);
+          ctx.lineTo(gx, maxWorldY);
+          ctx.stroke();
+
+          const draDeg = - (c * gridStepArcmin / 60.0) / Math.max(0.01, cosDec);
+          const raVal = ((camera.ra + draDeg) % 360 + 360) % 360;
+          ctx.textAlign = 'center';
+          ctx.fillText(`${raVal.toFixed(2)}°`, gx, minWorldY + 12 / camera.zoom);
+        }
+
+        const startRow = Math.floor(minWorldY / stepPx);
+        const endRow = Math.ceil(maxWorldY / stepPx);
+        for (let r = startRow; r <= endRow; r++) {
+          const gy = r * stepPx;
+          ctx.beginPath();
+          ctx.moveTo(minWorldX, gy);
+          ctx.lineTo(maxWorldX, gy);
+          ctx.stroke();
+
+          const ddecDeg = - (r * gridStepArcmin / 60.0);
+          const decVal = Math.max(-90, Math.min(90, camera.dec + ddecDeg));
+          ctx.textAlign = 'left';
+          ctx.fillText(`${decVal >= 0 ? '+' : ''}${decVal.toFixed(2)}°`, minWorldX + 6 / camera.zoom, gy - 3 / camera.zoom);
+        }
+      }
+      ctx.restore();
+    }
+      ctx.restore();
+    }
+
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
@@ -3835,6 +4343,10 @@
         if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
           drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB, false);
         }
+
+        if ((!realEpoch1Img || !realEpoch1Img.complete) && (!realEpoch2Img || !realEpoch2Img.complete)) {
+          drawNoCoverageHatch(ctx, -rw / 2, -rh / 2, rw, rh, 'Loading SPHEREx Calibrated Exposure...');
+        }
       }
 
       // 3. Issue #10: Continuous Raytracing Sky Tiling & dynamic frustum fill (seamless adjacent coverage)
@@ -3866,6 +4378,13 @@
       // 6. AI Field Scanner Dipole Markers & Angular Distance Ruler
       drawAiDetectedCandidates(ctx, pixelsPerArcmin);
       drawMeasurementRuler(ctx, pixelsPerArcmin);
+      drawSelectedPointReticle(ctx, pixelsPerArcmin);
+
+      // 7. Step 2: Level 2 Exposure Footprint Boundaries (EXP_ID, detector, MJD)
+      drawExposureFootprintOverlay(ctx, pixelsPerArcmin);
+
+      // 8. Step 2: Equatorial Coordinate Grid (RA/Dec lines)
+      drawCoordinateGrid(ctx, pixelsPerArcmin);
 
       ctx.restore();
     }
@@ -3965,6 +4484,38 @@
       }
     }
 
+    function drawNoCoverageHatch(ctx, x, y, w, h, label = 'SPHEREx Coverage Gap / Loading') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+
+      ctx.fillStyle = '#06080e';
+      ctx.fillRect(x, y, w, h);
+
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+      ctx.lineWidth = 1.0;
+      const step = 20;
+      for (let d = -h; d < w + h; d += step) {
+        ctx.beginPath();
+        ctx.moveTo(x + d, y);
+        ctx.lineTo(x + d + h, y + h);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+
+      if (w > 60 && h > 30) {
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x + w / 2, y + h / 2);
+      }
+      ctx.restore();
+    }
+
     function drawAdjacentSkyTiling(ctx, pixelsPerArcmin) {
       const w = canvas.width || 800;
       const h = canvas.height || 600;
@@ -4028,55 +4579,11 @@
           const tileKey = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${currentLOD}`;
           visibleTileKeys.add(tileKey);
 
-          let entry = adjacentSkyTileCache.get(tileKey);
-          let activeTexture = (entry && entry.loaded) ? entry : null;
-
-          // Non-destructive texture retention: check other LOD tiers or last rendered texture
-          if (!activeTexture) {
-            for (const l of [1, 2, 0]) {
-              const fb = adjacentSkyTileCache.get(`${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${l}`);
-              if (fb && fb.loaded) {
-                activeTexture = fb;
-                break;
-              }
-            }
-          }
-          if (!activeTexture) {
-            const lastFb = lastRenderedSpatialTiles.get(`${tileRA}_${tileDec}`);
-            if (lastFb && lastFb.loaded) {
-              activeTexture = lastFb;
-            }
-          }
-
-          if (activeTexture && activeTexture.loaded) {
-            lastRenderedSpatialTiles.set(`${tileRA}_${tileDec}`, activeTexture);
-            if (diffMode) {
-              if (diffVis && activeTexture.imgDiff && activeTexture.imgDiff.complete && diffAlpha > 0.005) {
-                drawFeatheredImage(ctx, activeTexture.imgDiff, x0, y0, drawW, drawH, diffAlpha, false);
-              }
-            } else {
-              if (visA && activeTexture.img1 && activeTexture.img1.complete && alphaA > 0.005) {
-                drawFeatheredImage(ctx, activeTexture.img1, x0, y0, drawW, drawH, alphaA, false);
-              }
-              if (visB && activeTexture.img2 && activeTexture.img2.complete && alphaB > 0.005) {
-                drawFeatheredImage(ctx, activeTexture.img2, x0, y0, drawW, drawH, alphaB, false);
-              }
-            }
-          }
-
-          if (!entry && Math.abs(rawDec) <= 89.9) {
-            if (isDragging) {
-              // During active drag, don't trigger new network fetches; let existing textures smoothly pan
-              continue;
-            }
-            if (adjacentSkyTileCache.size >= 128) {
-              const oldestKey = adjacentSkyTileCache.keys().next().value;
-              if (oldestKey) adjacentSkyTileCache.delete(oldestKey);
-            }
-            adjacentSkyTileCache.set(tileKey, { loading: true, loaded: false });
-            const distSq = col * col + row * row;
-            queueTileFetch(tileKey, tileRA, tileDec, tileFovArcmin, currentLOD, distSq);
-          }
+          // Step 2 Requirement: Removed adjacent-tile canvas mosaic drawing.
+          // All wide-field celestial context is provided by continuous Aladin Lite HiPS,
+          // eliminating sliced stars, photometric checkerboard seams, and missing tile voids.
+          adjacentSkyTileCache.set(tileKey, { loading: false, loaded: true, fov: tileFovArcmin });
+          lastRenderedSpatialTiles.set(`${tileRA}_${tileDec}`, { loaded: true, fov: tileFovArcmin });
         }
       }
 
@@ -4626,6 +5133,7 @@
         activeCutoutData = data;
         runAutoIdentification(data);
         updateTimeStepHUD(data);
+        if (typeof updateBlinkHUD === 'function') updateBlinkHUD(data);
 
         const fovArcmin = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : reqFov;
 
@@ -4914,6 +5422,8 @@
           dot.className = "timeline-tick-dot absolute w-2.5 h-2.5 rounded-full bg-space-600 hover:bg-cyan-400 border border-space-500 cursor-pointer -translate-x-1/2 transition-all z-10";
         }
       });
+      if (typeof updateTimeStepHUD === 'function') updateTimeStepHUD();
+      if (typeof updateBlinkHUD === 'function') updateBlinkHUD();
     }
 
     function setFlipbookFrame(frameNum) {
@@ -5137,6 +5647,7 @@
       updateFrameLabel();
       drawFrame();
       startFlipbook();
+      if (typeof toggleBlinkHUD === 'function') toggleBlinkHUD(true);
     });
 
     wsDiff.addEventListener('click', () => {
@@ -6688,6 +7199,9 @@
           const cy = - ddecCenter * pixelsPerArcmin;
           if (Math.hypot(worldX - cx, worldY - cy) <= 35 / camera.zoom) {
             lockOntoDetectedChange(chg);
+            selectedSkyPoint = { ra: chg.raCenter, dec: chg.decCenter, label: 'Candidate Dipole' };
+            fetchPointLightCurve(chg.raCenter, chg.decCenter, 'Candidate Dipole');
+            drawFrame();
             return;
           }
         }
@@ -6698,6 +7212,7 @@
         const obsEpochYr = getActiveObservationEpochYear();
         let nearestStar = null;
         let nearestDist = 28 / camera.zoom;
+        let nearestProp = null;
 
         for (let i = 0; i < gaiaSources.length; i++) {
           const src = gaiaSources[i];
@@ -6709,6 +7224,7 @@
           if (dist < nearestDist) {
             nearestDist = dist;
             nearestStar = src;
+            nearestProp = prop;
           }
         }
 
@@ -6721,16 +7237,22 @@
           playTargetLockChime();
           const pmStr = nearestStar.total_pm_mas_yr ? `${(nearestStar.total_pm_mas_yr / 1000).toFixed(2)}″/yr` : '0.00″/yr';
           showToast(`Inspecting Gaia Source ...${nearestStar.source_id.slice(-6)} (G: ${nearestStar.phot_g_mag !== null ? nearestStar.phot_g_mag.toFixed(1) : '?'}, μ: ${pmStr})`, 'info');
+          const starLabel = `Gaia ...${nearestStar.source_id.slice(-6)}`;
+          selectedSkyPoint = { ra: nearestProp ? nearestProp.ra : nearestStar.ra, dec: nearestProp ? nearestProp.dec : nearestStar.dec, label: starLabel };
+          fetchPointLightCurve(selectedSkyPoint.ra, selectedSkyPoint.dec, starLabel);
           drawFrame();
           return;
         }
       }
 
-      // If user clicked empty space with select tool, report sky coordinate
+      // If user clicked empty space with select tool, report sky coordinate and fetch point light curve
       if (activeTool === 'select') {
         const clickRa = camera.ra - (worldX / pixelsPerArcmin / cosDec) / 60.0;
         const clickDec = camera.dec - (worldY / pixelsPerArcmin) / 60.0;
+        selectedSkyPoint = { ra: clickRa, dec: clickDec, label: 'Selected Reticle' };
         showToast(`Reticle Selected: α = ${clickRa.toFixed(5)}°, δ = ${clickDec.toFixed(5)}°`, 'info');
+        fetchPointLightCurve(clickRa, clickDec, 'Selected Reticle');
+        drawFrame();
       }
     });
 
@@ -7626,6 +8148,7 @@
       initSpectrumChart();
       initShareModal();
       initTemporalFilter();
+      if (typeof initAutoIDAndHUDListeners === 'function') initAutoIDAndHUDListeners();
 
       const btnRefresh = document.getElementById('btnRefreshScene');
       if (btnRefresh) {
@@ -8252,44 +8775,435 @@
       }, 3000);
     }
 
-    // LIGHT CURVE CHART (Chart.js) & MULTI-SURVEY CROSS-MATCH SYNTHESIS
+    // =========================================================================
+    // LIGHT CURVE TIME-DOMAIN ENGINE (Multi-Band, Phase-Fold, Error Bars, Reticle)
+    // =========================================================================
     let lightCurveChart = null;
     let latestMultiEpochLC = null;
+    let lcActiveBandFilter = 'ALL';
+    let lcDisplayMode = 'time'; // 'time' or 'phase'
+    let lcTimeUnit = 'year';    // 'year' or 'mjd'
+    let lcTrialPeriod = 1.0;    // Days for phase folding
+    let lcFetchAbortCtrl = null;
+
+    // Custom Chart.js Plugin for Observational Error Bars (±1σ)
+    const lcErrorBarPlugin = {
+      id: 'lcErrorBars',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const yAxis = chart.scales.y;
+        if (!yAxis) return;
+
+        chart.data.datasets.forEach((dataset, datasetIdx) => {
+          const meta = chart.getDatasetMeta(datasetIdx);
+          if (!meta || meta.hidden) return;
+          const pts = dataset.rawEpochPoints;
+          if (!pts || !Array.isArray(pts)) return;
+
+          meta.data.forEach((element, idx) => {
+            const pt = pts[idx];
+            if (!pt || pt.is_upper_limit || pt.mag === null || pt.mag === undefined) return;
+            const mag = Number(pt.mag);
+            const err = Number(pt.mag_err) || 0.05;
+            const yTop = yAxis.getPixelForValue(mag - err);
+            const yBottom = yAxis.getPixelForValue(mag + err);
+            const x = element.x;
+            const capWidth = 3.5;
+
+            ctx.save();
+            ctx.strokeStyle = dataset.borderColor || '#38bdf8';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            // Whisker
+            ctx.moveTo(x, yTop);
+            ctx.lineTo(x, yBottom);
+            // Caps
+            ctx.moveTo(x - capWidth, yTop);
+            ctx.lineTo(x + capWidth, yTop);
+            ctx.moveTo(x - capWidth, yBottom);
+            ctx.lineTo(x + capWidth, yBottom);
+            ctx.stroke();
+            ctx.restore();
+          });
+        });
+      }
+    };
+
+    function setLightCurveBandFilter(band) {
+      lcActiveBandFilter = band;
+      document.querySelectorAll('#lcBandFilters .lc-band-pill').forEach(btn => {
+        const b = btn.getAttribute('data-band');
+        if (b === band) {
+          btn.className = 'lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-cyan-600 text-white shadow-sm';
+        } else {
+          btn.className = 'lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white';
+        }
+      });
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.setLightCurveBandFilter = setLightCurveBandFilter;
+
+    function setLightCurveMode(mode) {
+      lcDisplayMode = mode;
+      const btnTime = document.getElementById('btnLCModeTime');
+      const btnPhase = document.getElementById('btnLCModePhase');
+      const phaseControls = document.getElementById('lcPhaseControls');
+      const periodStatRow = document.getElementById('lcPeriodStatRow');
+
+      if (mode === 'phase') {
+        if (btnTime) btnTime.className = 'px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white';
+        if (btnPhase) btnPhase.className = 'px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-purple-600 text-white';
+        if (phaseControls) phaseControls.classList.remove('hidden');
+        if (periodStatRow) periodStatRow.classList.remove('hidden');
+      } else {
+        if (btnTime) btnTime.className = 'px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-blender-blue text-white';
+        if (btnPhase) btnPhase.className = 'px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white';
+        if (phaseControls) phaseControls.classList.add('hidden');
+        if (periodStatRow) periodStatRow.classList.add('hidden');
+      }
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.setLightCurveMode = setLightCurveMode;
+
+    function toggleLightCurveTimeUnit() {
+      lcTimeUnit = (lcTimeUnit === 'year') ? 'mjd' : 'year';
+      const lbl = document.getElementById('lcTimeUnitLabel');
+      if (lbl) lbl.innerText = lcTimeUnit === 'year' ? 'Year' : 'MJD';
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.toggleLightCurveTimeUnit = toggleLightCurveTimeUnit;
+
+    function stepLightCurvePeriod(delta) {
+      const input = document.getElementById('lcPeriodInput');
+      if (!input) return;
+      let val = Math.max(0.01, (parseFloat(input.value) || 1.0) + delta);
+      val = Math.round(val * 100) / 100;
+      input.value = val.toFixed(2);
+      lcTrialPeriod = val;
+      const statPeriod = document.getElementById('lcStatPeriod');
+      if (statPeriod) statPeriod.innerText = `${val.toFixed(2)} d`;
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.stepLightCurvePeriod = stepLightCurvePeriod;
+
+    function autoDetectLightCurvePeriod() {
+      if (!latestMultiEpochLC || latestMultiEpochLC.length < 3) {
+        showToast("Insufficient multi-epoch points for Lomb-Scargle period detection", "warning");
+        return;
+      }
+      const valid = latestMultiEpochLC.filter(p => !p.is_upper_limit && p.mag !== null && p.mjd);
+      const times = valid.map(p => Number(p.mjd));
+      const mags = valid.map(p => Number(p.mag));
+
+      const bestP = computeLombScargleBestPeriod(times, mags);
+      lcTrialPeriod = bestP;
+      const input = document.getElementById('lcPeriodInput');
+      if (input) input.value = bestP.toFixed(2);
+      const statPeriod = document.getElementById('lcStatPeriod');
+      if (statPeriod) statPeriod.innerText = `${bestP.toFixed(2)} d`;
+      setLightCurveMode('phase');
+      showToast(`Lomb-Scargle Best Period Detected: P = ${bestP.toFixed(2)} days`, 'success');
+    }
+    window.autoDetectLightCurvePeriod = autoDetectLightCurvePeriod;
+
+    function computeLombScargleBestPeriod(times, mags) {
+      if (!times || times.length < 3) return 1.0;
+      const n = times.length;
+      const meanY = mags.reduce((a, b) => a + b, 0) / n;
+      let varY = 0;
+      for (let i = 0; i < n; i++) varY += (mags[i] - meanY) ** 2;
+      if (varY <= 1e-9) return 1.0;
+
+      const minP = 0.2;
+      const maxP = 500.0;
+      const nFreq = 250;
+      let bestP = 1.0;
+      let maxPower = -1;
+
+      for (let k = 0; k < nFreq; k++) {
+        const p = minP * Math.pow(maxP / minP, k / (nFreq - 1));
+        const omega = (2 * Math.PI) / p;
+
+        let sumSin2 = 0;
+        let sumCos2 = 0;
+        for (let i = 0; i < n; i++) {
+          sumSin2 += Math.sin(2 * omega * times[i]);
+          sumCos2 += Math.cos(2 * omega * times[i]);
+        }
+        const tau = Math.atan2(sumSin2, sumCos2) / (2 * omega);
+
+        let cosSum = 0;
+        let sinSum = 0;
+        let cos2Sum = 0;
+        let sin2Sum = 0;
+
+        for (let i = 0; i < n; i++) {
+          const c = Math.cos(omega * (times[i] - tau));
+          const s = Math.sin(omega * (times[i] - tau));
+          const dy = mags[i] - meanY;
+          cosSum += dy * c;
+          sinSum += dy * s;
+          cos2Sum += c * c;
+          sin2Sum += s * s;
+        }
+
+        const power = (0.5 / varY) * (
+          (cosSum * cosSum) / (cos2Sum || 1e-6) +
+          (sinSum * sinSum) / (sin2Sum || 1e-6)
+        );
+
+        if (power > maxPower) {
+          maxPower = power;
+          bestP = p;
+        }
+      }
+      return Number(bestP.toFixed(2));
+    }
+
+    function computeVariabilityStatistics(points) {
+      const detPts = (points || []).filter(p => !p.is_upper_limit && p.mag !== null && p.mag !== undefined);
+      if (detPts.length === 0) {
+        return { count: 0, baselineYr: 0, amplitude: null, meanMag: null, chi2Red: null, stetsonJ: null };
+      }
+
+      const mjds = detPts.map(p => Number(p.mjd) || 0).filter(m => m > 0);
+      const mags = detPts.map(p => Number(p.mag));
+      const errs = detPts.map(p => Math.max(0.01, Number(p.mag_err) || 0.05));
+
+      const minMjd = Math.min(...mjds);
+      const maxMjd = Math.max(...mjds);
+      const baselineYr = mjds.length > 1 ? Number(((maxMjd - minMjd) / 365.25).toFixed(1)) : 0;
+
+      const minMag = Math.min(...mags);
+      const maxMag = Math.max(...mags);
+      const amplitude = Number((maxMag - minMag).toFixed(2));
+
+      // Weighted mean magnitude
+      let sumWeight = 0;
+      let sumWeightedMag = 0;
+      for (let i = 0; i < detPts.length; i++) {
+        const w = 1.0 / (errs[i] * errs[i]);
+        sumWeight += w;
+        sumWeightedMag += w * mags[i];
+      }
+      const meanMag = sumWeight > 0 ? sumWeightedMag / sumWeight : mags[0];
+
+      // Reduced Chi-Square against constant flux
+      let chi2 = 0;
+      for (let i = 0; i < detPts.length; i++) {
+        const diff = mags[i] - meanMag;
+        chi2 += (diff * diff) / (errs[i] * errs[i]);
+      }
+      const dof = Math.max(1, detPts.length - 1);
+      const chi2Red = Number((chi2 / dof).toFixed(2));
+
+      // Stetson J index
+      let stetsonJ = 0;
+      if (detPts.length >= 2) {
+        const n = detPts.length;
+        const factor = Math.sqrt(n / (n - 1));
+        for (let i = 0; i < n; i++) {
+          const delta = factor * (mags[i] - meanMag) / errs[i];
+          stetsonJ += Math.sign(delta) * Math.sqrt(Math.abs(delta));
+        }
+        stetsonJ = Number((stetsonJ / n).toFixed(2));
+      } else {
+        stetsonJ = 0.00;
+      }
+
+      return {
+        count: detPts.length,
+        baselineYr,
+        amplitude,
+        meanMag: Number(meanMag.toFixed(2)),
+        chi2Red,
+        stetsonJ
+      };
+    }
+
+    async function fetchPointLightCurve(ra, dec, label = 'Selected Point') {
+      const numRA = parseFloat(ra);
+      const numDec = parseFloat(dec);
+      if (isNaN(numRA) || isNaN(numDec)) return;
+
+      const lblEl = document.getElementById('lcTargetLabel');
+      const coordEl = document.getElementById('lcTargetCoords');
+      const loadingEl = document.getElementById('lcFetchLoading');
+      const emptyNotice = document.getElementById('lcEmptyNotice');
+
+      if (lblEl) lblEl.innerText = `Target: ${label}`;
+      if (coordEl) coordEl.innerText = `α=${numRA.toFixed(5)}°, δ=${numDec.toFixed(5)}°`;
+      if (loadingEl) loadingEl.classList.remove('hidden');
+      if (emptyNotice) emptyNotice.classList.add('hidden');
+
+      if (lcFetchAbortCtrl) {
+        lcFetchAbortCtrl.abort();
+      }
+      lcFetchAbortCtrl = new AbortController();
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/catalog/crossmatch?ra=${encodeURIComponent(numRA)}&dec=${encodeURIComponent(numDec)}&radius=3.0`, {
+          signal: lcFetchAbortCtrl.signal
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (loadingEl) loadingEl.classList.add('hidden');
+
+        const lcPoints = data.multi_epoch_lightcurve || [];
+        if (lcPoints.length === 0) {
+          if (emptyNotice) {
+            emptyNotice.classList.remove('hidden');
+            const emptyTitle = document.getElementById('lcEmptyNoticeTitle');
+            if (emptyTitle) emptyTitle.innerText = `No Photometry at α=${numRA.toFixed(4)}°, δ=${numDec.toFixed(4)}°`;
+          }
+          updateLightCurveChart([]);
+        } else {
+          if (emptyNotice) emptyNotice.classList.add('hidden');
+          updateLightCurveChart(lcPoints);
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        if (loadingEl) loadingEl.classList.add('hidden');
+        console.warn("fetchPointLightCurve error:", err);
+      }
+    }
+    window.fetchPointLightCurve = fetchPointLightCurve;
+
+    function resetLightCurveToFieldCenter() {
+      selectedSkyPoint = null;
+      drawFrame();
+      fetchPointLightCurve(camera.ra, camera.dec, 'Field Center');
+      showToast("Light curve reset to viewport field center", "info");
+    }
+    window.resetLightCurveToFieldCenter = resetLightCurveToFieldCenter;
+
+    function exportLightCurveCSV() {
+      if (!latestMultiEpochLC || latestMultiEpochLC.length === 0) {
+        showToast("No light curve data available to export", "warning");
+        return;
+      }
+      const targetLabel = document.getElementById('lcTargetLabel')?.innerText || 'Target';
+      const coords = document.getElementById('lcTargetCoords')?.innerText || '';
+
+      let csv = `# TARGET: ${targetLabel} (${coords})\n`;
+      csv += `# CREATED BY: SPHEREx Hunter - Team RIP (NASA Space Apps 2026)\n`;
+      csv += `epoch_label,mjd,year,band,mag,mag_err,is_upper_limit,survey\n`;
+
+      latestMultiEpochLC.forEach(p => {
+        const yr = Number(p.year) || (p.mjd ? (1858.878 + Number(p.mjd) / 365.25).toFixed(3) : '');
+        const magVal = p.is_upper_limit ? (p.upper_limit ?? '') : (p.mag ?? '');
+        const errVal = p.is_upper_limit ? '' : (p.mag_err ?? '0.05');
+        csv += `"${p.epoch_label || ''}",${p.mjd || ''},${yr},"${p.band || ''}",${magVal},${errVal},${p.is_upper_limit ? 'true' : 'false'},"${p.survey || ''}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `spherex_lightcurve_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Exported Light Curve CSV table successfully!", "success");
+    }
+    window.exportLightCurveCSV = exportLightCurveCSV;
 
     function updateLightCurveChart(lcPoints) {
       latestMultiEpochLC = Array.isArray(lcPoints) ? lcPoints : [];
       if (!lightCurveChart) return;
 
-      const validPts = latestMultiEpochLC.filter(p => p && ((p.mag !== null && p.mag !== undefined) || p.is_upper_limit));
-      if (validPts.length > 0) {
-        // Sort chronologically by MJD
-        validPts.sort((a, b) => (Number(a.mjd) || 0) - (Number(b.mjd) || 0));
-        const labels = validPts.map(p => p.epoch_label || p.band || 'Epoch');
-        const detData = validPts.map(p => (!p.is_upper_limit && p.mag !== null) ? p.mag : null);
-        const ulData = validPts.map(p => (p.is_upper_limit && p.upper_limit !== null) ? p.upper_limit : (p.is_upper_limit ? p.mag : null));
+      // Filter by active bandpass
+      let filteredPts = latestMultiEpochLC;
+      if (lcActiveBandFilter !== 'ALL') {
+        filteredPts = latestMultiEpochLC.filter(p => {
+          const b = (p.band || '').toUpperCase();
+          if (lcActiveBandFilter === 'W2') return b.includes('W2');
+          if (lcActiveBandFilter === 'W1') return b.includes('W1');
+          if (lcActiveBandFilter === 'KS') return b.includes('KS') || b.includes('2MASS');
+          if (lcActiveBandFilter === 'SPHEREX') return b.includes('SPHEREX') || b.includes('SPX');
+          return true;
+        });
+      }
 
-        lightCurveChart.data.labels = labels;
+      // Compute & update telemetry stats
+      const stats = computeVariabilityStatistics(filteredPts);
+      const statBaseEl = document.getElementById('lcStatBaseline');
+      const statAmpEl = document.getElementById('lcStatAmplitude');
+      const statMeanEl = document.getElementById('lcStatMeanMag');
+      const statChi2El = document.getElementById('lcStatChi2');
+      const statStetsonEl = document.getElementById('lcStatStetson');
+      const countBadge = document.getElementById('lcSourceCountBadge');
+
+      if (statBaseEl) statBaseEl.innerText = `${stats.baselineYr} yr`;
+      if (statAmpEl) statAmpEl.innerText = stats.amplitude !== null ? `${stats.amplitude} mag` : '--';
+      if (statMeanEl) statMeanEl.innerText = stats.meanMag !== null ? `${stats.meanMag} mag` : '--';
+      if (statChi2El) {
+        statChi2El.innerText = stats.chi2Red !== null ? String(stats.chi2Red) : '--';
+        statChi2El.className = (stats.chi2Red && stats.chi2Red > 3.0) ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
+      }
+      if (statStetsonEl) statStetsonEl.innerText = stats.stetsonJ !== null ? String(stats.stetsonJ) : '--';
+      if (countBadge) countBadge.innerText = `${stats.count} epochs`;
+
+      const validPts = filteredPts.filter(p => p && ((p.mag !== null && p.mag !== undefined) || p.is_upper_limit));
+      if (validPts.length === 0) {
+        lightCurveChart.data.labels = ['No Epochs in Selected Band'];
+        lightCurveChart.data.datasets = [{
+          label: 'Magnitude',
+          data: [],
+          borderColor: '#38bdf8'
+        }];
+        lightCurveChart.update();
+        return;
+      }
+
+      if (lcDisplayMode === 'phase') {
+        // Phase-Fold Mode (Φ ∈ [0.0, 2.0])
+        const periodDays = Math.max(0.01, parseFloat(document.getElementById('lcPeriodInput')?.value) || lcTrialPeriod || 1.0);
+        const t0 = Math.min(...validPts.map(p => Number(p.mjd) || 50000));
+
+        const phasePts = [];
+        validPts.forEach(p => {
+          const mjd = Number(p.mjd) || t0;
+          let phi = ((mjd - t0) / periodDays) % 1.0;
+          if (phi < 0) phi += 1.0;
+
+          // Duplicate point in cycle 2 for visual continuity [1.0, 2.0]
+          phasePts.push({ ...p, phase: phi });
+          phasePts.push({ ...p, phase: phi + 1.0 });
+        });
+
+        phasePts.sort((a, b) => a.phase - b.phase);
+
+        // Separate detections and upper limits
+        const detPts = phasePts.filter(p => !p.is_upper_limit && p.mag !== null);
+        const ulPts = phasePts.filter(p => p.is_upper_limit);
+
+        lightCurveChart.options.scales.x.type = 'linear';
+        lightCurveChart.options.scales.x.min = 0.0;
+        lightCurveChart.options.scales.x.max = 2.0;
+        lightCurveChart.options.scales.x.title = { display: true, text: `Orbital / Pulsational Phase (Φ) [P = ${periodDays.toFixed(2)}d, 2 Cycles]`, color: '#c084fc', font: { size: 9 } };
+
         lightCurveChart.data.datasets = [
           {
-            label: 'IR Detections (mag)',
-            data: detData,
-            borderColor: '#38bdf8',
-            backgroundColor: 'rgba(56, 189, 248, 0.15)',
-            fill: false,
-            tension: 0.15,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBackgroundColor: '#ea7600',
+            label: 'Folded Flux (mag)',
+            data: detPts.map(p => ({ x: Number(p.phase.toFixed(3)), y: p.mag })),
+            rawEpochPoints: detPts,
+            borderColor: '#c084fc',
+            backgroundColor: 'rgba(192, 132, 252, 0.2)',
+            showLine: false,
+            pointRadius: 5.5,
+            pointHoverRadius: 8,
+            pointBackgroundColor: '#a855f7',
             pointBorderColor: '#ffffff',
             borderWidth: 1.5,
-            spanGaps: true
           },
           {
-            label: 'Non-Detection 3σ Upper Limits (mag)',
-            data: ulData,
+            label: 'Non-Detection 3σ Limits',
+            data: ulPts.map(p => ({ x: Number(p.phase.toFixed(3)), y: p.upper_limit ?? p.mag })),
+            rawEpochPoints: ulPts,
             borderColor: '#f43f5e',
             backgroundColor: 'rgba(244, 63, 94, 0.2)',
-            fill: false,
             showLine: false,
             pointRadius: 6,
             pointHoverRadius: 8,
@@ -8298,17 +9212,85 @@
             pointBackgroundColor: '#f43f5e',
             pointBorderColor: '#ffffff',
             borderWidth: 1.5,
-            spanGaps: true
           }
         ];
       } else {
-        lightCurveChart.data.labels = ['Awaiting IR Epoch Photometry'];
-        lightCurveChart.data.datasets = [{
-          label: 'Infrared Magnitude (mag)',
+        // Chronological Time Mode
+        validPts.sort((a, b) => (Number(a.mjd) || 0) - (Number(b.mjd) || 0));
+
+        // Group points by survey bandpass for distinct colors
+        const datasets = [];
+        const bandSpecs = [
+          { key: 'W2', label: 'WISE W2 (4.6 µm)', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.15)', ptColor: '#0891b2' },
+          { key: 'W1', label: 'WISE W1 (3.4 µm)', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', ptColor: '#059669' },
+          { key: 'Ks', label: '2MASS Ks (2.15 µm)', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', ptColor: '#d97706' },
+          { key: 'SPHEREx', label: 'SPHEREx DR1 (4.6 µm)', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)', ptColor: '#9333ea' },
+        ];
+
+        // Format X values
+        const formatX = (p) => {
+          if (lcTimeUnit === 'mjd') return Number(p.mjd) || 0;
+          return Number(p.year) || Math.round((1858.878 + (Number(p.mjd) || 0) / 365.25) * 10) / 10;
+        };
+
+        bandSpecs.forEach(spec => {
+          const bPts = validPts.filter(p => !p.is_upper_limit && p.mag !== null && (p.band || '').toUpperCase().includes(spec.key.toUpperCase()));
+          if (bPts.length > 0) {
+            datasets.push({
+              label: spec.label,
+              data: bPts.map(p => ({ x: formatX(p), y: p.mag })),
+              rawEpochPoints: bPts,
+              borderColor: spec.color,
+              backgroundColor: spec.bg,
+              fill: false,
+              tension: 0.15,
+              pointRadius: 5.5,
+              pointHoverRadius: 8,
+              pointBackgroundColor: spec.ptColor,
+              pointBorderColor: '#ffffff',
+              borderWidth: 1.5,
+              spanGaps: true
+            });
+          }
+        });
+
+        // Add 3σ Upper limits dataset
+        const ulPts = validPts.filter(p => p.is_upper_limit);
+        if (ulPts.length > 0) {
+          datasets.push({
+            label: '3σ Upper Limits (mag)',
+            data: ulPts.map(p => ({ x: formatX(p), y: p.upper_limit ?? p.mag })),
+            rawEpochPoints: ulPts,
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.2)',
+            showLine: false,
+            pointRadius: 6.5,
+            pointHoverRadius: 9,
+            pointStyle: 'triangle',
+            pointRotation: 180,
+            pointBackgroundColor: '#f43f5e',
+            pointBorderColor: '#ffffff',
+            borderWidth: 1.5
+          });
+        }
+
+        lightCurveChart.options.scales.x.type = 'linear';
+        delete lightCurveChart.options.scales.x.min;
+        delete lightCurveChart.options.scales.x.max;
+        lightCurveChart.options.scales.x.title = {
+          display: true,
+          text: lcTimeUnit === 'year' ? 'Observation Epoch (Calendar Year)' : 'Observation Time (Modified Julian Date, MJD)',
+          color: '#94a3b8',
+          font: { size: 9 }
+        };
+
+        lightCurveChart.data.datasets = datasets.length > 0 ? datasets : [{
+          label: 'Magnitude',
           data: [],
           borderColor: '#38bdf8'
         }];
       }
+
       lightCurveChart.update();
     }
 
@@ -8316,30 +9298,53 @@
       const canvasLC = document.getElementById('lightCurveChart');
       if (!canvasLC || lightCurveChart) return;
       const ctxLC = canvasLC.getContext('2d');
+
       lightCurveChart = new Chart(ctxLC, {
         type: 'line',
+        plugins: [lcErrorBarPlugin],
         data: {
-          labels: ['Loading Epochs...'],
           datasets: [{
             label: 'Infrared Magnitude (mag)',
             data: [],
             borderColor: '#38bdf8',
             backgroundColor: 'rgba(56, 189, 248, 0.15)',
-            fill: false,
-            tension: 0.2,
-            pointRadius: 4,
-            pointBackgroundColor: '#ea7600'
+            pointRadius: 5
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          onClick: (e, elements) => {
+            if (!elements || elements.length === 0) return;
+            const el = elements[0];
+            const ds = lightCurveChart.data.datasets[el.datasetIndex];
+            if (!ds || !ds.rawEpochPoints) return;
+            const pt = ds.rawEpochPoints[el.index];
+            if (!pt) return;
+
+            const yr = Number(pt.year) || Math.round(1858.878 + (Number(pt.mjd) || 0) / 365.25);
+            let frameIdx = 0;
+            if (yr <= 2005) frameIdx = 0;
+            else if (yr <= 2012) frameIdx = 1;
+            else if (yr <= 2020) frameIdx = 2;
+            else frameIdx = 3;
+
+            if (typeof setBlinkFrameFromTimeline === 'function') {
+              setBlinkFrameFromTimeline('A', frameIdx);
+            }
+            showToast(`Synced Viewport to Epoch: ${pt.epoch_label || pt.survey || yr}`, 'info');
+          },
           scales: {
-            x: { ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } } },
+            x: {
+              type: 'linear',
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
             y: {
               reverse: true,
-              title: { display: true, text: 'Mag (Brighter ↑)', color: '#94a3b8', font: { size: 9 } },
-              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+              title: { display: true, text: 'Magnitude (Brighter ↑)', color: '#94a3b8', font: { size: 9 } },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
             }
           },
           plugins: {
@@ -8347,23 +9352,28 @@
               display: true,
               labels: {
                 color: '#94a3b8',
-                boxWidth: 10,
-                font: { family: 'JetBrains Mono', size: 9 }
+                boxWidth: 9,
+                font: { family: 'JetBrains Mono', size: 8.5 }
               }
             },
             tooltip: {
               callbacks: {
                 label: (ctx) => {
-                  const val = ctx.raw;
+                  const ds = lightCurveChart.data.datasets[ctx.datasetIndex];
+                  const pt = ds?.rawEpochPoints ? ds.rawEpochPoints[ctx.dataIndex] : null;
+                  const val = ctx.raw?.y ?? ctx.raw;
                   if (val === null || val === undefined) return '';
-                  if (ctx.datasetIndex === 1) return `> ${val} mag (3σ Upper Limit non-detection)`;
-                  return `${ctx.dataset.label}: ${val} mag`;
+                  if (pt?.is_upper_limit) return `> ${val} mag (3σ Upper Limit non-detection)`;
+                  const errStr = pt?.mag_err ? ` ± ${pt.mag_err}` : '';
+                  const surveyStr = pt?.survey ? ` [${pt.survey}]` : '';
+                  return `${ds.label}: ${val}${errStr} mag${surveyStr}`;
                 }
               }
             }
           }
         }
       });
+
       if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
     }
 
@@ -9943,6 +10953,7 @@
 
       updateAutoDetectHUD();
       updateTimeStepHUD(data);
+      if (typeof updateBlinkHUD === 'function') updateBlinkHUD(data);
     }
     window.runAutoIdentification = runAutoIdentification;
 
@@ -10118,18 +11129,54 @@
       const btnHudStepNext = document.getElementById('btnHudStepNext');
       const btnHudDiffMode = document.getElementById('btnHudDiffMode');
       const hudPlayIcon = document.getElementById('hudPlayIcon');
+      const hudStepPrevYear = document.getElementById('hudStepPrevYear');
+      const hudStepNextYear = document.getElementById('hudStepNextYear');
+      const hudEpochBlendVal = document.getElementById('hudEpochBlendVal');
+      const hudEpochBlendSlider = document.getElementById('hudEpochBlendSlider');
+      const hudBlinkModeText = document.getElementById('hudBlinkModeText');
 
       if (!hudTimeStepDelta) return;
       const target = TARGETS[currentTargetKey];
       let baselineText = "Δt = 26.8 yr";
+      let t1Label = "1999 (t₁)";
+      let t2Label = "2025 (t₂)";
+
       if (target && target.baseline) {
         const m = target.baseline.match(/([0-9.]+)\s*Years?/i);
         if (m) baselineText = `Δt = ${m[1]} yr`;
         else baselineText = `Δt: ${target.baseline.split('(')[0].trim()}`;
+        if (currentTargetKey === 'wise0855') {
+          t1Label = "2010 (W2)";
+          t2Label = "2025 (Stack)";
+        }
       } else if (data && data.epochs && data.epochs.length >= 2) {
         baselineText = "Δt = 26.8 yr (1999 → 2025)";
       }
       hudTimeStepDelta.innerText = baselineText;
+      if (hudStepPrevYear) hudStepPrevYear.innerText = t1Label;
+      if (hudStepNextYear) hudStepNextYear.innerText = t2Label;
+
+      // Update HUD blend slider and value readout
+      const blendPercent = Math.round(epochBlend * 100);
+      if (hudEpochBlendSlider && document.activeElement !== hudEpochBlendSlider) {
+        hudEpochBlendSlider.value = blendPercent;
+      }
+      if (hudEpochBlendVal) {
+        let frameYear = '1999';
+        if (blendPercent > 80) frameYear = '2025';
+        else if (blendPercent > 60) frameYear = '2014';
+        else if (blendPercent > 35) frameYear = '2010';
+        hudEpochBlendVal.innerText = `${blendPercent}% (${frameYear})`;
+      }
+
+      // Sync active styling on HUD epoch chips
+      document.querySelectorAll('.hud-epoch-chip').forEach(chip => {
+        const f = parseInt(chip.getAttribute('data-frame'), 10);
+        const isActive = (f === currentFrame);
+        chip.className = isActive
+          ? 'hud-epoch-chip px-1 py-1 rounded bg-cyan-900 border border-cyan-500/70 text-cyan-200 font-bold text-center transition shadow-sm'
+          : 'hud-epoch-chip px-1 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-center transition';
+      });
 
       const totalFrames = (typeof getTotalEpochCount === 'function') ? getTotalEpochCount() : 4;
 
@@ -10157,9 +11204,11 @@
         if (isPlaying && !diffMode) {
           btnHudBlinkMorph.className = "px-2.5 py-2 rounded-md text-xs bg-blender-orange text-white font-semibold shadow transition font-mono flex flex-col items-center justify-center gap-0.5";
           hudPlayIcon.setAttribute('data-lucide', 'pause');
+          if (hudBlinkModeText) hudBlinkModeText.innerText = 'Pause';
         } else {
           btnHudBlinkMorph.className = "px-2.5 py-2 rounded-md text-xs bg-space-800 text-gray-200 hover:text-white hover:bg-space-700 transition font-mono flex flex-col items-center justify-center gap-0.5";
           hudPlayIcon.setAttribute('data-lucide', 'play');
+          if (hudBlinkModeText) hudBlinkModeText.innerText = 'Morph';
         }
         if (window.lucide) lucide.createIcons();
       }
@@ -10167,6 +11216,60 @@
     window.updateTimeStepHUD = updateTimeStepHUD;
 
     let isTimeStepHudPinned = true;
+    try {
+      const savedPin = localStorage.getItem('spherex_timestep_pinned');
+      if (savedPin !== null) isTimeStepHudPinned = (savedPin === '1');
+    } catch (_) {}
+
+    function setTimeStepPinned(pinned) {
+      isTimeStepHudPinned = Boolean(pinned);
+      try {
+        localStorage.setItem('spherex_timestep_pinned', isTimeStepHudPinned ? '1' : '0');
+      } catch (_) {}
+
+      const pinIcon = document.getElementById('pinTimeStepIcon');
+      const pinLabel = document.getElementById('pinTimeStepLabel');
+      const btnPin = document.getElementById('btnPinTimeStepHUD');
+      const optPin = document.getElementById('optPinAlways');
+      const optFlyout = document.getElementById('optUnpinFlyout');
+
+      if (isTimeStepHudPinned) {
+        if (pinIcon) pinIcon.innerText = '📌';
+        if (pinLabel) pinLabel.innerText = 'Pinned';
+        if (btnPin) btnPin.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 border border-cyan-500/50 text-cyan-300 font-bold transition flex items-center gap-1 shadow-sm";
+        if (optPin) optPin.className = "px-2 py-1 rounded bg-cyan-950/80 border border-cyan-500 text-cyan-300 font-bold text-center flex items-center justify-center gap-1 transition";
+        if (optFlyout) optFlyout.className = "px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition";
+        if (typeof showToast === 'function') showToast('Time Step: Pinned to Viewport', 'info');
+      } else {
+        if (pinIcon) pinIcon.innerText = '🪟';
+        if (pinLabel) pinLabel.innerText = 'Flyout';
+        if (btnPin) btnPin.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-space-800 hover:bg-space-700 border border-space-600 text-gray-300 hover:text-white transition flex items-center gap-1";
+        if (optPin) optPin.className = "px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition";
+        if (optFlyout) optFlyout.className = "px-2 py-1 rounded bg-cyan-950/80 border border-cyan-500 text-cyan-300 font-bold text-center flex items-center justify-center gap-1 transition";
+        if (typeof showToast === 'function') showToast('Time Step: Flyout Mode (Closes on click outside or Esc)', 'info');
+      }
+    }
+    window.setTimeStepPinned = setTimeStepPinned;
+
+    function toggleTimeStepEditDrawer(force) {
+      const drawer = document.getElementById('timeStepEditDrawer');
+      const btnOptions = document.getElementById('btnTimeStepEditOptions');
+      if (!drawer) return;
+      const willShow = (typeof force === 'boolean') ? force : drawer.classList.contains('hidden');
+      if (willShow) {
+        drawer.classList.remove('hidden');
+        if (btnOptions) {
+          btnOptions.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 border border-cyan-500 text-cyan-300 font-bold transition flex items-center gap-1 shadow-sm";
+        }
+      } else {
+        drawer.classList.add('hidden');
+        if (btnOptions) {
+          btnOptions.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-space-800 hover:bg-space-700 border border-space-600 text-gray-300 hover:text-white transition flex items-center gap-1";
+        }
+      }
+    }
+    window.toggleTimeStepEditDrawer = toggleTimeStepEditDrawer;
+
     function toggleTimeStepHUD(forceState) {
       const hud = document.getElementById('viewportTimeStepHUD');
       const tool = document.getElementById('toolTimeStep');
@@ -10178,6 +11281,7 @@
         updateTimeStepHUD();
       } else {
         hud.classList.add('hidden');
+        toggleTimeStepEditDrawer(false);
         if (tool) tool.classList.remove('blender-btn-active');
       }
     }
@@ -10206,7 +11310,209 @@
     }
     window.updateAutoDetectHUD = updateAutoDetectHUD;
 
+    let isBlinkHudPinned = true;
+    try {
+      const savedBlinkPin = localStorage.getItem('spherex_blink_pinned');
+      if (savedBlinkPin !== null) isBlinkHudPinned = (savedBlinkPin === '1');
+    } catch (_) {}
+
+    function setBlinkPinned(pinned) {
+      isBlinkHudPinned = Boolean(pinned);
+      try {
+        localStorage.setItem('spherex_blink_pinned', isBlinkHudPinned ? '1' : '0');
+      } catch (_) {}
+
+      const pinIcon = document.getElementById('pinBlinkIcon');
+      const pinLabel = document.getElementById('pinBlinkLabel');
+      const btnPin = document.getElementById('btnPinBlinkHUD');
+      const optPin = document.getElementById('optPinBlinkAlways');
+      const optFlyout = document.getElementById('optUnpinBlinkFlyout');
+
+      if (isBlinkHudPinned) {
+        if (pinIcon) pinIcon.innerText = '📌';
+        if (pinLabel) pinLabel.innerText = 'Pinned';
+        if (btnPin) btnPin.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950 border border-amber-500/50 text-amber-300 font-bold transition flex items-center gap-1 shadow-sm";
+        if (optPin) optPin.className = "px-2 py-1 rounded bg-amber-950/80 border border-amber-500 text-amber-300 font-bold text-center flex items-center justify-center gap-1 transition";
+        if (optFlyout) optFlyout.className = "px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition";
+        if (typeof showToast === 'function') showToast('Blink: Pinned to Viewport', 'info');
+      } else {
+        if (pinIcon) pinIcon.innerText = '🪟';
+        if (pinLabel) pinLabel.innerText = 'Flyout';
+        if (btnPin) btnPin.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-space-800 hover:bg-space-700 border border-space-600 text-gray-300 hover:text-white transition flex items-center gap-1";
+        if (optPin) optPin.className = "px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition";
+        if (optFlyout) optFlyout.className = "px-2 py-1 rounded bg-amber-950/80 border border-amber-500 text-amber-300 font-bold text-center flex items-center justify-center gap-1 transition";
+        if (typeof showToast === 'function') showToast('Blink: Flyout Mode (Closes on click outside or Esc)', 'info');
+      }
+    }
+    window.setBlinkPinned = setBlinkPinned;
+
+    function toggleBlinkEditDrawer(force) {
+      const drawer = document.getElementById('blinkEditDrawer');
+      const btnOptions = document.getElementById('btnBlinkEditOptions');
+      if (!drawer) return;
+      const willShow = (typeof force === 'boolean') ? force : drawer.classList.contains('hidden');
+      if (willShow) {
+        drawer.classList.remove('hidden');
+        if (btnOptions) {
+          btnOptions.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950 border border-amber-500 text-amber-300 font-bold transition flex items-center gap-1 shadow-sm";
+        }
+      } else {
+        drawer.classList.add('hidden');
+        if (btnOptions) {
+          btnOptions.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-space-800 hover:bg-space-700 border border-space-600 text-gray-300 hover:text-white transition flex items-center gap-1";
+        }
+      }
+    }
+    window.toggleBlinkEditDrawer = toggleBlinkEditDrawer;
+
+    function toggleBlinkHUD(forceState) {
+      const hud = document.getElementById('viewportBlinkHUD');
+      const tool = document.getElementById('toolBlinkFlip');
+      if (!hud) return;
+      const willShow = (typeof forceState === 'boolean') ? forceState : hud.classList.contains('hidden');
+      if (willShow) {
+        hud.classList.remove('hidden');
+        if (tool) tool.classList.add('blender-btn-orange-active');
+        updateBlinkHUD();
+      } else {
+        hud.classList.add('hidden');
+        toggleBlinkEditDrawer(false);
+        if (tool) tool.classList.remove('blender-btn-orange-active');
+      }
+    }
+    window.toggleBlinkHUD = toggleBlinkHUD;
+
+    function flipBlinkAB() {
+      diffMode = false;
+      stopFlipbook();
+      const totalFrames = (typeof getTotalEpochCount === 'function') ? getTotalEpochCount() : 4;
+      if (currentFrame === totalFrames || epochBlend >= 0.5) {
+        setFlipbookFrame(1);
+        if (typeof showToast === 'function') showToast('Blink Flip: Frame 1 Historic Baseline', 'info');
+      } else {
+        setFlipbookFrame(totalFrames);
+        if (typeof showToast === 'function') showToast('Blink Flip: Frame 4 SPHEREx Discovery Stack', 'info');
+      }
+      updateTimeStepHUD();
+      updateBlinkHUD();
+    }
+    window.flipBlinkAB = flipBlinkAB;
+
+    function updateBlinkHUD(data) {
+      const badge = document.getElementById('hudBlinkEpochBadge');
+      const playBtn = document.getElementById('btnBlinkHudPlay');
+      const playText = document.getElementById('blinkHudPlayText');
+      const modeBtn = document.getElementById('btnBlinkHudModeToggle');
+      const modeLabel = document.getElementById('blinkHudModeLabel');
+      const slider = document.getElementById('hudBlinkBlendSlider');
+      const blendVal = document.getElementById('hudBlinkBlendVal');
+      const optSmooth = document.getElementById('optMorphSmooth');
+      const optSnap = document.getElementById('optMorphSnap');
+
+      const isWise0855 = (typeof currentTargetKey !== 'undefined' && currentTargetKey === 'wise0855');
+      const epochTitles = isWise0855 ? [
+        "Frame 1: 2010 (AllWISE W2)",
+        "Frame 2: 2015 (unWISE E1)",
+        "Frame 3: 2020 (unWISE E2)",
+        "Frame 4: 2025 (SPHEREx 4.6μm)"
+      ] : [
+        "Frame 1: 1999 (2MASS)",
+        "Frame 2: 2010 (WISE W1)",
+        "Frame 3: 2014 (unWISE)",
+        "Frame 4: 2025 (SPHEREx)"
+      ];
+
+      if (badge) {
+        if (diffMode) {
+          badge.innerText = "Δ Difference Map (I₂ - I₁)";
+          badge.className = "text-orange-400 font-bold text-xs font-mono";
+        } else {
+          badge.innerText = epochTitles[currentFrame - 1] || `Frame ${currentFrame}`;
+          badge.className = "text-amber-300 font-bold text-xs font-mono";
+        }
+      }
+
+      if (playBtn) {
+        const iconEl = playBtn.querySelector('[data-lucide]');
+        if (isPlaying && !diffMode) {
+          playBtn.className = "px-2 py-2 rounded-md text-xs bg-blender-orange text-white font-semibold shadow transition font-mono flex flex-col items-center justify-center gap-0.5";
+          if (iconEl) iconEl.setAttribute('data-lucide', 'pause');
+          if (playText) playText.innerText = 'Pause';
+        } else {
+          playBtn.className = "px-2 py-2 rounded-md text-xs bg-space-800 text-gray-200 hover:text-white hover:bg-space-700 transition font-mono flex flex-col items-center justify-center gap-0.5";
+          if (iconEl) iconEl.setAttribute('data-lucide', 'play');
+          if (playText) playText.innerText = 'Play';
+        }
+      }
+
+      if (modeBtn) {
+        const iconEl = modeBtn.querySelector('[data-lucide]');
+        if (blinkMorphMode === 'morph') {
+          modeBtn.className = "px-2 py-2 rounded-md text-xs bg-cyan-950/80 border border-cyan-500 text-cyan-300 font-bold shadow-sm transition font-mono flex flex-col items-center justify-center gap-0.5";
+          if (iconEl) {
+            iconEl.setAttribute('data-lucide', 'waves');
+            iconEl.classList.remove('text-amber-300');
+            iconEl.classList.add('text-cyan-300');
+          }
+          if (modeLabel) modeLabel.innerText = 'Morph';
+        } else {
+          modeBtn.className = "px-2 py-2 rounded-md text-xs bg-amber-950/80 border border-amber-500 text-amber-300 font-bold shadow-sm transition font-mono flex flex-col items-center justify-center gap-0.5";
+          if (iconEl) {
+            iconEl.setAttribute('data-lucide', 'zap');
+            iconEl.classList.remove('text-cyan-300');
+            iconEl.classList.add('text-amber-300');
+          }
+          if (modeLabel) modeLabel.innerText = 'Snap';
+        }
+      }
+
+      if (optSmooth && optSnap) {
+        if (blinkMorphMode === 'morph') {
+          optSmooth.className = "px-2 py-1 rounded bg-cyan-950/80 border border-cyan-500 text-cyan-300 font-bold text-center flex items-center justify-center gap-1 transition";
+          optSnap.className = "px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition";
+        } else {
+          optSmooth.className = "px-2 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-center flex items-center justify-center gap-1 transition";
+          optSnap.className = "px-2 py-1 rounded bg-amber-950/80 border border-amber-500 text-amber-300 font-bold text-center flex items-center justify-center gap-1 transition";
+        }
+      }
+
+      const blendPercent = Math.round(epochBlend * 100);
+      if (slider && document.activeElement !== slider) {
+        slider.value = blendPercent;
+      }
+      if (blendVal) {
+        let frameYear = isWise0855 ? '2010' : '1999';
+        if (blendPercent > 80) frameYear = '2025';
+        else if (blendPercent > 60) frameYear = isWise0855 ? '2020' : '2014';
+        else if (blendPercent > 35) frameYear = isWise0855 ? '2015' : '2010';
+        blendVal.innerText = `${blendPercent}% (${frameYear})`;
+      }
+
+      document.querySelectorAll('.blink-epoch-chip').forEach(chip => {
+        const f = parseInt(chip.getAttribute('data-frame'), 10);
+        const isActive = (f === currentFrame);
+        chip.className = isActive
+          ? 'blink-epoch-chip px-1 py-1 rounded bg-amber-950 border border-amber-500/70 text-amber-200 font-bold text-center transition shadow-sm'
+          : 'blink-epoch-chip px-1 py-1 rounded bg-space-800 hover:bg-space-700 text-gray-300 text-center transition';
+      });
+
+      document.querySelectorAll('.blink-speed-btn').forEach(btn => {
+        const btnFps = parseFloat(btn.getAttribute('data-fps'));
+        const isCurrent = Math.abs(btnFps - fps) < 0.2;
+        btn.className = isCurrent
+          ? 'blink-speed-btn px-1.5 py-1 rounded bg-amber-950 border border-amber-500 text-amber-200 font-bold text-[10px] text-center transition'
+          : 'blink-speed-btn px-1.5 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-[10px] text-center transition';
+      });
+
+      if (window.lucide) lucide.createIcons();
+    }
+    window.updateBlinkHUD = updateBlinkHUD;
+
+    let _hudListenersInitialized = false;
     function initAutoIDAndHUDListeners() {
+      if (_hudListenersInitialized) return;
+      _hudListenersInitialized = true;
+
       const btnHudStepPrev = document.getElementById('btnHudStepPrev');
       const btnHudBlinkMorph = document.getElementById('btnHudBlinkMorph');
       const btnHudStepNext = document.getElementById('btnHudStepNext');
@@ -10215,61 +11521,197 @@
       const toolAutoDetect = document.getElementById('toolAutoDetect');
       const toolTimeStep = document.getElementById('toolTimeStep');
       const btnCloseTimeStepHUD = document.getElementById('btnCloseTimeStepHUD');
+      const btnTimeStepFooterClose = document.getElementById('btnTimeStepFooterClose');
+      const btnDrawerCloseTimeStep = document.getElementById('btnDrawerCloseTimeStep');
       const btnPinTimeStepHUD = document.getElementById('btnPinTimeStepHUD');
+      const optPinAlways = document.getElementById('optPinAlways');
+      const optUnpinFlyout = document.getElementById('optUnpinFlyout');
+      const btnTimeStepEditOptions = document.getElementById('btnTimeStepEditOptions');
+      const btnCloseTimeStepDrawer = document.getElementById('btnCloseTimeStepDrawer');
+      const btnResetTimeStepPos = document.getElementById('btnResetTimeStepPos');
+      const hudEpochBlendSlider = document.getElementById('hudEpochBlendSlider');
 
-      // Left Rail Tool Time Step toggle & Popup Controls
+      // Initialize Pinning Visuals from state
+      setTimeStepPinned(isTimeStepHudPinned);
+
+      // Left Rail Tool Time Step toggle
       if (toolTimeStep) {
-        toolTimeStep.addEventListener('click', () => toggleTimeStepHUD());
+        toolTimeStep.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleTimeStepHUD();
+        });
       }
 
+      // Close buttons: Header ✕, Footer Close ✕, and Drawer Close ✕
       if (btnCloseTimeStepHUD) {
-        btnCloseTimeStepHUD.addEventListener('click', () => toggleTimeStepHUD(false));
+        btnCloseTimeStepHUD.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleTimeStepHUD(false);
+        });
+      }
+      if (btnTimeStepFooterClose) {
+        btnTimeStepFooterClose.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleTimeStepHUD(false);
+        });
+      }
+      if (btnDrawerCloseTimeStep) {
+        btnDrawerCloseTimeStep.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleTimeStepHUD(false);
+        });
       }
 
+      // Pin / Unpin options
       if (btnPinTimeStepHUD) {
-        btnPinTimeStepHUD.addEventListener('click', () => {
-          isTimeStepHudPinned = !isTimeStepHudPinned;
-          const pinIcon = document.getElementById('pinTimeStepIcon');
-          const pinLabel = document.getElementById('pinTimeStepLabel');
-          if (isTimeStepHudPinned) {
-            if (pinIcon) pinIcon.innerText = '📌';
-            if (pinLabel) pinLabel.innerText = 'Pinned';
-            btnPinTimeStepHUD.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 border border-cyan-500/50 text-cyan-300 font-bold transition flex items-center gap-1 shadow-sm";
-          } else {
-            if (pinIcon) pinIcon.innerText = '🪟';
-            if (pinLabel) pinLabel.innerText = 'Flyout';
-            btnPinTimeStepHUD.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-space-800 hover:bg-space-700 border border-space-600 text-gray-300 hover:text-white transition flex items-center gap-1";
+        btnPinTimeStepHUD.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setTimeStepPinned(!isTimeStepHudPinned);
+        });
+      }
+      if (optPinAlways) {
+        optPinAlways.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setTimeStepPinned(true);
+        });
+      }
+      if (optUnpinFlyout) {
+        optUnpinFlyout.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setTimeStepPinned(false);
+        });
+      }
+
+      // Edit Options Drawer
+      if (btnTimeStepEditOptions) {
+        btnTimeStepEditOptions.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleTimeStepEditDrawer();
+        });
+      }
+      if (btnCloseTimeStepDrawer) {
+        btnCloseTimeStepDrawer.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleTimeStepEditDrawer(false);
+        });
+      }
+
+      // Blink Speed buttons in drawer
+      document.querySelectorAll('.time-step-speed-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const speedSec = parseFloat(btn.getAttribute('data-speed')) || 1.0;
+          currentBlinkInterval = Math.round(speedSec * 1000);
+          document.querySelectorAll('.time-step-speed-btn').forEach(b => {
+            b.className = (b === btn)
+              ? 'time-step-speed-btn px-1.5 py-1 rounded bg-cyan-900 border border-cyan-500 text-cyan-200 font-bold text-[10px] text-center transition'
+              : 'time-step-speed-btn px-1.5 py-1 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-300 text-[10px] text-center transition';
+          });
+          if (typeof showToast === 'function') showToast(`Blink Speed: ${speedSec}s`, 'info');
+        });
+      });
+
+      // Draggable Repositioning by Header
+      const hudHeader = document.getElementById('hudTimeStepHeader');
+      const hudElement = document.getElementById('viewportTimeStepHUD');
+      if (hudHeader && hudElement) {
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let startLeft = 0, startTop = 0;
+
+        hudHeader.addEventListener('mousedown', (e) => {
+          if (e.target.closest('button')) return;
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          const rect = hudElement.getBoundingClientRect();
+          const parentRect = hudElement.offsetParent ? hudElement.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+          startLeft = rect.left - parentRect.left;
+          startTop = rect.top - parentRect.top;
+          hudHeader.style.cursor = 'grabbing';
+          e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          hudElement.style.left = `${Math.max(8, startLeft + dx)}px`;
+          hudElement.style.top = `${Math.max(8, startTop + dy)}px`;
+        });
+
+        window.addEventListener('mouseup', () => {
+          if (isDragging) {
+            isDragging = false;
+            hudHeader.style.cursor = 'grab';
           }
         });
       }
 
-      // Auto-dismiss popup on click outside when unpinned
-      document.addEventListener('click', (e) => {
-        const hud = document.getElementById('viewportTimeStepHUD');
-        const tool = document.getElementById('toolTimeStep');
-        if (!hud || hud.classList.contains('hidden') || isTimeStepHudPinned) return;
-        if (!hud.contains(e.target) && !tool?.contains(e.target)) {
-          toggleTimeStepHUD(false);
-        }
-      });
+      // Reset Position
+      if (btnResetTimeStepPos && hudElement) {
+        btnResetTimeStepPos.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hudElement.style.left = '';
+          hudElement.style.top = '';
+          if (typeof showToast === 'function') showToast('Time Step Position Reset', 'info');
+        });
+      }
 
-      // Keyboard shortcut 'T' to toggle Time Step HUD
-      document.addEventListener('keydown', (e) => {
-        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
-        if (e.key === 't' || e.key === 'T') {
-          e.preventDefault();
-          toggleTimeStepHUD();
-        } else if (e.key === 'Escape') {
-          const hud = document.getElementById('viewportTimeStepHUD');
-          if (hud && !hud.classList.contains('hidden') && !isTimeStepHudPinned) {
-            toggleTimeStepHUD(false);
-          }
-        }
-      });
-
-      if (btnHudStepPrev) {
-        btnHudStepPrev.addEventListener('click', () => {
+      // Multi-Epoch Scrubbing Slider
+      if (hudEpochBlendSlider) {
+        hudEpochBlendSlider.addEventListener('input', (e) => {
           diffMode = false;
+          isPlaying = false;
+          const val = parseInt(e.target.value, 10);
+          epochBlend = val / 100.0;
+          targetEpochBlend = epochBlend;
+
+          const bottomSlider = document.getElementById('epochBlendSlider');
+          if (bottomSlider) bottomSlider.value = String(val);
+          const bottomLabel = document.getElementById('epochBlendLabel');
+          if (bottomLabel) bottomLabel.innerText = `${val}%`;
+
+          if (val <= 30) currentFrame = 1;
+          else if (val <= 60) currentFrame = 2;
+          else if (val <= 85) currentFrame = 3;
+          else currentFrame = 4;
+
+          updateFrameLabel();
+          updateTimeStepHUD();
+          drawFrame();
+        });
+      }
+
+      // Multi-Epoch Direct Jump Chips
+      document.querySelectorAll('.hud-epoch-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          diffMode = false;
+          isPlaying = false;
+          const f = parseInt(chip.getAttribute('data-frame'), 10) || 1;
+          currentFrame = f;
+          const blends = { 1: 0.25, 2: 0.50, 3: 0.75, 4: 1.00 };
+          epochBlend = blends[f] || 0.25;
+          targetEpochBlend = epochBlend;
+
+          const bottomSlider = document.getElementById('epochBlendSlider');
+          if (bottomSlider) bottomSlider.value = String(Math.round(epochBlend * 100));
+          const bottomLabel = document.getElementById('epochBlendLabel');
+          if (bottomLabel) bottomLabel.innerText = `${Math.round(epochBlend * 100)}%`;
+
+          updateFrameLabel();
+          updateTimeStepHUD();
+          drawFrame();
+        });
+      });
+
+      // Steppers: Epoch 1 (2MASS) & Epoch 2 (SPHEREx)
+      if (btnHudStepPrev) {
+        btnHudStepPrev.addEventListener('click', (e) => {
+          e.stopPropagation();
+          diffMode = false;
+          isPlaying = false;
           currentFrame = 1;
           targetEpochBlend = 0.25;
           epochBlend = 0.25;
@@ -10284,8 +11726,10 @@
       }
 
       if (btnHudStepNext) {
-        btnHudStepNext.addEventListener('click', () => {
+        btnHudStepNext.addEventListener('click', (e) => {
+          e.stopPropagation();
           diffMode = false;
+          isPlaying = false;
           const totalFrames = (typeof getTotalEpochCount === 'function') ? getTotalEpochCount() : 4;
           currentFrame = totalFrames;
           targetEpochBlend = 1.0;
@@ -10300,8 +11744,10 @@
         });
       }
 
+      // Blink / Morph Playback Toggle
       if (btnHudBlinkMorph) {
-        btnHudBlinkMorph.addEventListener('click', () => {
+        btnHudBlinkMorph.addEventListener('click', (e) => {
+          e.stopPropagation();
           diffMode = false;
           isPlaying = !isPlaying;
           const btnPlayPause = document.getElementById('btnPlayPause');
@@ -10314,8 +11760,10 @@
         });
       }
 
+      // Difference Map (ZOGY Δ) Toggle
       if (btnHudDiffMode) {
-        btnHudDiffMode.addEventListener('click', () => {
+        btnHudDiffMode.addEventListener('click', (e) => {
+          e.stopPropagation();
           diffMode = !diffMode;
           if (diffMode && isPlaying) isPlaying = false;
           updateLayerVisibility('diff_image', diffMode);
@@ -10333,7 +11781,9 @@
         });
       }
 
-      const toggleAutoID = () => {
+      // Auto-Detect Candidate Scan Toggle
+      const toggleAutoID = (e) => {
+        if (e) e.stopPropagation();
         autoDetectEnabled = !autoDetectEnabled;
         updateAutoDetectHUD();
         drawFrame();
@@ -10344,6 +11794,341 @@
 
       if (btnAutoDetectPill) btnAutoDetectPill.addEventListener('click', toggleAutoID);
       if (toolAutoDetect) toolAutoDetect.addEventListener('click', toggleAutoID);
+
+      // =========================================================================
+      // BLINK COMPARATOR HUD CONTROLLER EVENT LISTENERS
+      // =========================================================================
+      setBlinkPinned(isBlinkHudPinned);
+
+      const toolBlinkFlip = document.getElementById('toolBlinkFlip');
+      const btnCloseBlinkHUD = document.getElementById('btnCloseBlinkHUD');
+      const btnBlinkFooterClose = document.getElementById('btnBlinkFooterClose');
+      const btnDrawerCloseBlink = document.getElementById('btnDrawerCloseBlink');
+      const btnPinBlinkHUD = document.getElementById('btnPinBlinkHUD');
+      const optPinBlinkAlways = document.getElementById('optPinBlinkAlways');
+      const optUnpinBlinkFlyout = document.getElementById('optUnpinBlinkFlyout');
+      const btnBlinkEditOptions = document.getElementById('btnBlinkEditOptions');
+      const btnCloseBlinkDrawer = document.getElementById('btnCloseBlinkDrawer');
+      const btnResetBlinkPos = document.getElementById('btnResetBlinkPos');
+      const btnHudFlipAB = document.getElementById('btnHudFlipAB');
+      const btnBlinkHudPrev = document.getElementById('btnBlinkHudPrev');
+      const btnBlinkHudPlay = document.getElementById('btnBlinkHudPlay');
+      const btnBlinkHudNext = document.getElementById('btnBlinkHudNext');
+      const btnBlinkHudModeToggle = document.getElementById('btnBlinkHudModeToggle');
+      const hudBlinkBlendSlider = document.getElementById('hudBlinkBlendSlider');
+      const optMorphSmooth = document.getElementById('optMorphSmooth');
+      const optMorphSnap = document.getElementById('optMorphSnap');
+
+      // Left Rail Tool Blink toggle
+      if (toolBlinkFlip) {
+        toolBlinkFlip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleBlinkHUD();
+        });
+      }
+
+      // Close buttons: Header ✕, Footer Close ✕, and Drawer Close ✕
+      if (btnCloseBlinkHUD) {
+        btnCloseBlinkHUD.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleBlinkHUD(false);
+        });
+      }
+      if (btnBlinkFooterClose) {
+        btnBlinkFooterClose.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleBlinkHUD(false);
+        });
+      }
+      if (btnDrawerCloseBlink) {
+        btnDrawerCloseBlink.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleBlinkHUD(false);
+        });
+      }
+
+      // Pin / Unpin options
+      if (btnPinBlinkHUD) {
+        btnPinBlinkHUD.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setBlinkPinned(!isBlinkHudPinned);
+        });
+      }
+      if (optPinBlinkAlways) {
+        optPinBlinkAlways.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setBlinkPinned(true);
+        });
+      }
+      if (optUnpinBlinkFlyout) {
+        optUnpinBlinkFlyout.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setBlinkPinned(false);
+        });
+      }
+
+      // Edit Options Drawer
+      if (btnBlinkEditOptions) {
+        btnBlinkEditOptions.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleBlinkEditDrawer();
+        });
+      }
+      if (btnCloseBlinkDrawer) {
+        btnCloseBlinkDrawer.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleBlinkEditDrawer(false);
+        });
+      }
+
+      // Blink Speed buttons in drawer
+      document.querySelectorAll('.blink-speed-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          fps = parseFloat(btn.getAttribute('data-fps')) || 2.0;
+          const speedSlider = document.getElementById('speedSlider');
+          if (speedSlider) speedSlider.value = String(fps);
+          const speedLabel = document.getElementById('speedLabel');
+          if (speedLabel) speedLabel.innerText = `${fps.toFixed(1)} FPS`;
+          if (isPlaying && blinkMorphMode === 'snap') startFlipbook();
+          updateBlinkHUD();
+          if (typeof showToast === 'function') showToast(`Blink Rate: ${fps} FPS (${(1/fps).toFixed(2)}s/cycle)`, 'info');
+        });
+      });
+
+      // Morph Style Options
+      if (optMorphSmooth) {
+        optMorphSmooth.addEventListener('click', (e) => {
+          e.stopPropagation();
+          blinkMorphMode = 'morph';
+          if (isPlaying && playTimer) clearInterval(playTimer);
+          updateBlinkHUD();
+          if (typeof showToast === 'function') showToast('Transition: Continuous Sine Wave Morph', 'info');
+        });
+      }
+      if (optMorphSnap) {
+        optMorphSnap.addEventListener('click', (e) => {
+          e.stopPropagation();
+          blinkMorphMode = 'snap';
+          if (isPlaying) startFlipbook();
+          updateBlinkHUD();
+          if (typeof showToast === 'function') showToast('Transition: Instantaneous Snap Flip', 'info');
+        });
+      }
+
+      // Draggable Repositioning by Header
+      const hudBlinkHeader = document.getElementById('hudBlinkHeader');
+      const hudBlinkElement = document.getElementById('viewportBlinkHUD');
+      if (hudBlinkHeader && hudBlinkElement) {
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let startLeft = 0, startTop = 0;
+
+        hudBlinkHeader.addEventListener('mousedown', (e) => {
+          if (e.target.closest('button')) return;
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          const rect = hudBlinkElement.getBoundingClientRect();
+          const parentRect = hudBlinkElement.offsetParent ? hudBlinkElement.offsetParent.getBoundingClientRect() : { left: 0, top: 0 };
+          startLeft = rect.left - parentRect.left;
+          startTop = rect.top - parentRect.top;
+          hudBlinkHeader.style.cursor = 'grabbing';
+          e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          hudBlinkElement.style.left = `${Math.max(8, startLeft + dx)}px`;
+          hudBlinkElement.style.top = `${Math.max(8, startTop + dy)}px`;
+        });
+
+        window.addEventListener('mouseup', () => {
+          if (isDragging) {
+            isDragging = false;
+            hudBlinkHeader.style.cursor = 'grab';
+          }
+        });
+      }
+
+      // Reset Position
+      if (btnResetBlinkPos && hudBlinkElement) {
+        btnResetBlinkPos.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hudBlinkElement.style.left = '';
+          hudBlinkElement.style.top = '';
+          if (typeof showToast === 'function') showToast('Blink Position Reset', 'info');
+        });
+      }
+
+      // Flip A/B
+      if (btnHudFlipAB) {
+        btnHudFlipAB.addEventListener('click', (e) => {
+          e.stopPropagation();
+          flipBlinkAB();
+        });
+      }
+
+      // Transport controls: Prev, Play/Pause, Next, Mode Toggle
+      if (btnBlinkHudPrev) {
+        btnBlinkHudPrev.addEventListener('click', (e) => {
+          e.stopPropagation();
+          diffMode = false;
+          stopFlipbook();
+          const totalFrames = (typeof getTotalEpochCount === 'function') ? getTotalEpochCount() : 4;
+          setFlipbookFrame(currentFrame <= 1 ? totalFrames : currentFrame - 1);
+          updateBlinkHUD();
+        });
+      }
+      if (btnBlinkHudPlay) {
+        btnBlinkHudPlay.addEventListener('click', (e) => {
+          e.stopPropagation();
+          diffMode = false;
+          togglePlayPause();
+          updateTimeStepHUD();
+          updateBlinkHUD();
+        });
+      }
+      if (btnBlinkHudNext) {
+        btnBlinkHudNext.addEventListener('click', (e) => {
+          e.stopPropagation();
+          diffMode = false;
+          stopFlipbook();
+          const totalFrames = (typeof getTotalEpochCount === 'function') ? getTotalEpochCount() : 4;
+          setFlipbookFrame((currentFrame % totalFrames) + 1);
+          updateBlinkHUD();
+        });
+      }
+      if (btnBlinkHudModeToggle) {
+        btnBlinkHudModeToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          blinkMorphMode = (blinkMorphMode === 'morph') ? 'snap' : 'morph';
+          if (blinkMorphMode === 'morph') {
+            if (playTimer) clearInterval(playTimer);
+          } else {
+            if (isPlaying) startFlipbook();
+          }
+          updateBlinkHUD();
+        });
+      }
+
+      // Live Blend Scrubber
+      if (hudBlinkBlendSlider) {
+        hudBlinkBlendSlider.addEventListener('input', (e) => {
+          diffMode = false;
+          if (isPlaying) stopFlipbook();
+          const val = parseInt(e.target.value, 10);
+          epochBlend = val / 100.0;
+          targetEpochBlend = epochBlend;
+          morphPhase = Math.acos(Math.max(-1, Math.min(1, 1.0 - 2.0 * epochBlend)));
+          const bottomSlider = document.getElementById('epochBlendSlider');
+          if (bottomSlider) bottomSlider.value = String(val);
+          const bottomLabel = document.getElementById('epochBlendLabel');
+          if (bottomLabel) bottomLabel.innerText = `${val}%`;
+
+          const totalFrames = (typeof getTotalEpochCount === 'function') ? getTotalEpochCount() : 4;
+          const newFrame = Math.min(totalFrames, Math.max(1, Math.ceil(epochBlend / 0.25) || 1));
+          if (newFrame !== currentFrame) {
+            currentFrame = newFrame;
+          }
+          updateFrameLabel();
+          updateTimeStepHUD();
+          updateBlinkHUD();
+          drawFrame();
+        });
+      }
+
+      // Epoch Jump Chips
+      document.querySelectorAll('.blink-epoch-chip').forEach(chip => {
+        chip.addEventListener('click', (e) => {
+          e.stopPropagation();
+          diffMode = false;
+          if (isPlaying) stopFlipbook();
+          const f = parseInt(chip.getAttribute('data-frame'), 10) || 1;
+          setFlipbookFrame(f);
+          updateTimeStepHUD();
+          updateBlinkHUD();
+        });
+      });
+
+      // Auto-dismiss popup on click outside when unpinned (Flyout Mode)
+      document.addEventListener('click', (e) => {
+        const hud = document.getElementById('viewportTimeStepHUD');
+        const tool = document.getElementById('toolTimeStep');
+        if (hud && !hud.classList.contains('hidden') && !isTimeStepHudPinned) {
+          if (!hud.contains(e.target) && !tool?.contains(e.target)) {
+            toggleTimeStepHUD(false);
+          }
+        }
+        const blinkHud = document.getElementById('viewportBlinkHUD');
+        const toolBlink = document.getElementById('toolBlinkFlip');
+        const wsBlinkBtn = document.getElementById('wsBlink');
+        if (blinkHud && !blinkHud.classList.contains('hidden') && !isBlinkHudPinned) {
+          if (!blinkHud.contains(e.target) && !toolBlink?.contains(e.target) && !wsBlinkBtn?.contains(e.target)) {
+            toggleBlinkHUD(false);
+          }
+        }
+      });
+
+      // Keyboard shortcuts: 'T' toggles TimeStep, 'B' toggles Blink, 'Escape' closes popups
+      document.addEventListener('keydown', (e) => {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
+        if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          toggleTimeStepHUD();
+        } else if (e.key === 'b' || e.key === 'B') {
+          e.preventDefault();
+          toggleBlinkHUD();
+        } else if (e.key === 'Escape') {
+          const hud = document.getElementById('viewportTimeStepHUD');
+          if (hud && !hud.classList.contains('hidden')) {
+            toggleTimeStepHUD(false);
+          }
+          const blinkHud = document.getElementById('viewportBlinkHUD');
+          if (blinkHud && !blinkHud.classList.contains('hidden')) {
+            toggleBlinkHUD(false);
+          }
+        }
+      });
+
+      const btnToggleFootprints = document.getElementById('btnToggleFootprints');
+      if (btnToggleFootprints) {
+        btnToggleFootprints.addEventListener('click', () => {
+          footprintOverlayEnabled = !footprintOverlayEnabled;
+          const lbl = document.getElementById('labelFootprints');
+          if (lbl) lbl.innerText = `Footprints: ${footprintOverlayEnabled ? 'ON' : 'Off'}`;
+          btnToggleFootprints.classList.toggle('bg-cyan-950/80', footprintOverlayEnabled);
+          btnToggleFootprints.classList.toggle('border-cyan-500', footprintOverlayEnabled);
+          btnToggleFootprints.classList.toggle('text-cyan-300', footprintOverlayEnabled);
+          drawFrame();
+        });
+      }
+
+      const btnToggleCoordGrid = document.getElementById('btnToggleCoordGrid');
+      if (btnToggleCoordGrid) {
+        btnToggleCoordGrid.addEventListener('click', () => {
+          coordGridEnabled = !coordGridEnabled;
+          const lbl = document.getElementById('labelCoordGrid');
+          if (lbl) lbl.innerText = `Grid: ${coordGridEnabled ? 'ON' : 'Off'}`;
+          btnToggleCoordGrid.classList.toggle('bg-blue-950/80', coordGridEnabled);
+          btnToggleCoordGrid.classList.toggle('border-blue-500', coordGridEnabled);
+          btnToggleCoordGrid.classList.toggle('text-blue-300', coordGridEnabled);
+          if (aladinInstance && typeof aladinInstance.showGrid === 'function') {
+            aladinInstance.showGrid(coordGridEnabled);
+          }
+          drawFrame();
+        });
+      }
+    }
+    window.initAutoIDAndHUDListeners = initAutoIDAndHUDListeners;
+
+    // Run immediately so event listeners are active right away
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', initAutoIDAndHUDListeners);
+    } else {
+      initAutoIDAndHUDListeners();
     }
 
   </script>

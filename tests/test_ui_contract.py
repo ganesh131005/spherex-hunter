@@ -718,12 +718,42 @@ def test_timestep_relocated_to_left_rail_with_popup_option_contract():
     btn_autoid = hud.find(id="btnAutoDetectPill")
     assert btn_autoid is not None, "Missing #btnAutoDetectPill"
 
-    # 5. JavaScript toggle function and shortcuts exported
+    # 5. Edit Options & Drawer
+    btn_edit_opts = hud.find(id="btnTimeStepEditOptions")
+    assert btn_edit_opts is not None, "Missing #btnTimeStepEditOptions in HUD header"
+    drawer = hud.find(id="timeStepEditDrawer")
+    assert drawer is not None, "Missing #timeStepEditDrawer preferences drawer"
+    opt_pin = drawer.find(id="optPinAlways")
+    opt_unpin = drawer.find(id="optUnpinFlyout")
+    assert opt_pin is not None and opt_unpin is not None, "Missing pin and unpin options in edit drawer"
+    btn_reset_pos = drawer.find(id="btnResetTimeStepPos")
+    assert btn_reset_pos is not None, "Missing #btnResetTimeStepPos in edit drawer"
+
+    # 6. Multiple close options: Header close, Footer close, and Drawer close
+    btn_footer_close = hud.find(id="btnTimeStepFooterClose")
+    assert btn_footer_close is not None, "Missing #btnTimeStepFooterClose in HUD footer"
+    btn_drawer_close = drawer.find(id="btnDrawerCloseTimeStep")
+    assert btn_drawer_close is not None, "Missing #btnDrawerCloseTimeStep in edit drawer"
+
+    # 7. Multi-Epoch Scrubbing tools
+    blend_slider = hud.find(id="hudEpochBlendSlider")
+    assert blend_slider is not None, "Missing #hudEpochBlendSlider"
+    chips = hud.find_all(class_=lambda c: c and "hud-epoch-chip" in c)
+    assert len(chips) >= 4, f"Expected at least 4 epoch jump chips, found {len(chips)}"
+
+    # 8. JavaScript functions and listeners exported & initialized
     assert "toggleTimeStepHUD" in html, "Missing toggleTimeStepHUD function"
     assert "window.toggleTimeStepHUD" in html, "toggleTimeStepHUD must be exported to window"
+    assert "setTimeStepPinned" in html, "Missing setTimeStepPinned function"
+    assert "window.setTimeStepPinned" in html, "setTimeStepPinned must be exported to window"
+    assert "toggleTimeStepEditDrawer" in html, "Missing toggleTimeStepEditDrawer function"
+    assert "initAutoIDAndHUDListeners" in html, "Missing initAutoIDAndHUDListeners function"
+    assert "window.initAutoIDAndHUDListeners" in html, "initAutoIDAndHUDListeners must be exported to window"
     assert "toolTimeStep" in html, "JavaScript must bind listener to #toolTimeStep"
     assert "btnCloseTimeStepHUD" in html, "JavaScript must bind listener to #btnCloseTimeStepHUD"
     assert "btnPinTimeStepHUD" in html, "JavaScript must bind listener to #btnPinTimeStepHUD"
+    assert "btnTimeStepFooterClose" in html, "JavaScript must bind listener to #btnTimeStepFooterClose"
+    assert "btnDrawerCloseTimeStep" in html, "JavaScript must bind listener to #btnDrawerCloseTimeStep"
 
 
 def test_view_modes_single_tool_icon_and_collective_popup_contract():
@@ -765,6 +795,178 @@ def test_view_modes_single_tool_icon_and_collective_popup_contract():
     assert "updateActiveViewModeIndicator" in html, "Missing updateActiveViewModeIndicator JavaScript function"
     assert "window.toggleViewModesPopup" in html, "toggleViewModesPopup must be exported to window"
     assert "btnViewModesTrigger" in html, "btnViewModesTrigger must have event listeners bound"
+
+
+def test_redefined_light_curve_time_domain_contract():
+    """Validates the redefined Light Curve tab with multi-bandpass filters, dynamic point fetching, phase-folding, and telemetry."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Dock Panel Layout & Target Coordinate Badges
+    lc_panel = soup.find(id="dockPanelLightCurve")
+    assert lc_panel is not None, "Missing #dockPanelLightCurve in bottom dock"
+
+    target_lbl = lc_panel.find(id="lcTargetLabel")
+    assert target_lbl is not None, "Missing #lcTargetLabel for point/reticle tracking"
+
+    target_coords = lc_panel.find(id="lcTargetCoords")
+    assert target_coords is not None, "Missing #lcTargetCoords badge"
+
+    btn_reset = lc_panel.find(id="btnResetLCTarget")
+    assert btn_reset is not None, "Missing #btnResetLCTarget button"
+    assert "resetLightCurveToFieldCenter" in btn_reset.get("onclick", ""), "#btnResetLCTarget must trigger resetLightCurveToFieldCenter()"
+
+    # 2. Multi-Bandpass Filter Selector Pills
+    band_filters = lc_panel.find(id="lcBandFilters")
+    assert band_filters is not None, "Missing #lcBandFilters container"
+    bands = [btn.get("data-band") for btn in band_filters.find_all(class_=lambda c: c and "lc-band-pill" in c)]
+    assert "ALL" in bands, "Missing ALL bandpass filter"
+    assert "W2" in bands, "Missing W2 bandpass filter"
+    assert "W1" in bands, "Missing W1 bandpass filter"
+    assert "Ks" in bands, "Missing Ks bandpass filter"
+    assert "SPHEREx" in bands, "Missing SPHEREx bandpass filter"
+
+    # 3. Mode Switcher & Phase Controls
+    btn_time = lc_panel.find(id="btnLCModeTime")
+    btn_phase = lc_panel.find(id="btnLCModePhase")
+    assert btn_time is not None, "Missing #btnLCModeTime button"
+    assert btn_phase is not None, "Missing #btnLCModePhase button"
+
+    phase_controls = lc_panel.find(id="lcPhaseControls")
+    assert phase_controls is not None, "Missing #lcPhaseControls container"
+    period_input = phase_controls.find(id="lcPeriodInput")
+    assert period_input is not None, "Missing #lcPeriodInput for phase folding"
+    btn_auto_period = phase_controls.find(id="btnAutoDetectPeriod")
+    assert btn_auto_period is not None, "Missing #btnAutoDetectPeriod button"
+
+    # 4. Canvas & Empty Notice
+    canvas_chart = lc_panel.find(id="lightCurveChart")
+    assert canvas_chart is not None, "Missing canvas #lightCurveChart"
+    empty_notice = lc_panel.find(id="lcEmptyNotice")
+    assert empty_notice is not None, "Missing #lcEmptyNotice overlay"
+
+    # 5. Telemetry & Variability Analytics Sidebar
+    stat_baseline = lc_panel.find(id="lcStatBaseline")
+    assert stat_baseline is not None, "Missing #lcStatBaseline telemetry element"
+    stat_amplitude = lc_panel.find(id="lcStatAmplitude")
+    assert stat_amplitude is not None, "Missing #lcStatAmplitude telemetry element"
+    stat_mean = lc_panel.find(id="lcStatMeanMag")
+    assert stat_mean is not None, "Missing #lcStatMeanMag telemetry element"
+    stat_chi2 = lc_panel.find(id="lcStatChi2")
+    assert stat_chi2 is not None, "Missing #lcStatChi2 constant flux test element"
+    stat_stetson = lc_panel.find(id="lcStatStetson")
+    assert stat_stetson is not None, "Missing #lcStatStetson index element"
+
+    btn_export = lc_panel.find(id="btnExportLCCSV")
+    assert btn_export is not None, "Missing #btnExportLCCSV button"
+    assert "exportLightCurveCSV" in btn_export.get("onclick", ""), "#btnExportLCCSV must trigger exportLightCurveCSV()"
+
+    # 6. JavaScript Core Engine Functions
+    assert "fetchPointLightCurve" in html, "Missing fetchPointLightCurve JavaScript function"
+    assert "resetLightCurveToFieldCenter" in html, "Missing resetLightCurveToFieldCenter JavaScript function"
+    assert "setLightCurveBandFilter" in html, "Missing setLightCurveBandFilter JavaScript function"
+    assert "setLightCurveMode" in html, "Missing setLightCurveMode JavaScript function"
+    assert "toggleLightCurveTimeUnit" in html, "Missing toggleLightCurveTimeUnit JavaScript function"
+    assert "stepLightCurvePeriod" in html, "Missing stepLightCurvePeriod JavaScript function"
+    assert "autoDetectLightCurvePeriod" in html, "Missing autoDetectLightCurvePeriod JavaScript function"
+    assert "computeLombScargleBestPeriod" in html, "Missing computeLombScargleBestPeriod JavaScript function"
+    assert "computeVariabilityStatistics" in html, "Missing computeVariabilityStatistics JavaScript function"
+    assert "exportLightCurveCSV" in html, "Missing exportLightCurveCSV JavaScript function"
+    assert "drawSelectedPointReticle" in html, "Missing drawSelectedPointReticle JavaScript function"
+    assert "selectedSkyPoint" in html, "Missing selectedSkyPoint state"
+
+
+def test_blink_comparator_popup_toolbar_contract():
+    """Validates that the Blink icon tool option and its popup toolbar are fully functional with edit drawer, pin/unpin, and close options."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Left rail tool option #toolBlinkFlip
+    left_rail = soup.find(id="leftToolRail")
+    assert left_rail is not None, "Missing #leftToolRail"
+    tool_blink = left_rail.find(id="toolBlinkFlip")
+    assert tool_blink is not None, "Missing #toolBlinkFlip in #leftToolRail"
+    assert tool_blink.find(attrs={"data-lucide": "split"}) is not None, "toolBlinkFlip must feature split icon"
+    assert "Blink" in tool_blink.get_text(), "toolBlinkFlip must display 'Blink' label"
+
+    # 2. Viewport Blink HUD popup is anchored adjacent to left rail
+    hud = soup.find(id="viewportBlinkHUD")
+    assert hud is not None, "Missing #viewportBlinkHUD"
+    classes = hud.get("class", [])
+    assert "left-16" in classes, f"#viewportBlinkHUD must be anchored at left-16, got {classes}"
+
+    # 3. Popup header: Reposition handle, Edit Options, Pin toggle, and Close button
+    header = hud.find(id="hudBlinkHeader")
+    assert header is not None, "Missing #hudBlinkHeader draggable repositioning handle"
+    btn_edit_opts = header.find(id="btnBlinkEditOptions")
+    assert btn_edit_opts is not None, "Missing #btnBlinkEditOptions in popup header"
+    btn_pin = header.find(id="btnPinBlinkHUD")
+    assert btn_pin is not None, "Missing #btnPinBlinkHUD in popup header"
+    btn_close = header.find(id="btnCloseBlinkHUD")
+    assert btn_close is not None, "Missing #btnCloseBlinkHUD in popup header"
+
+    # 4. Interactive Edit & Preferences Drawer
+    drawer = hud.find(id="blinkEditDrawer")
+    assert drawer is not None, "Missing #blinkEditDrawer preferences drawer"
+    opt_pin = drawer.find(id="optPinBlinkAlways")
+    opt_unpin = drawer.find(id="optUnpinBlinkFlyout")
+    assert opt_pin is not None and opt_unpin is not None, "Missing pin and unpin options in edit drawer"
+
+    speed_btns = drawer.find_all(class_=lambda c: c and "blink-speed-btn" in c)
+    assert len(speed_btns) == 4, f"Expected 4 blink speed presets, found {len(speed_btns)}"
+
+    opt_smooth = drawer.find(id="optMorphSmooth")
+    opt_snap = drawer.find(id="optMorphSnap")
+    assert opt_smooth is not None and opt_snap is not None, "Missing smooth morph and snap flip options"
+
+    btn_reset_pos = drawer.find(id="btnResetBlinkPos")
+    assert btn_reset_pos is not None, "Missing #btnResetBlinkPos in edit drawer"
+    btn_drawer_close = drawer.find(id="btnDrawerCloseBlink")
+    assert btn_drawer_close is not None, "Missing #btnDrawerCloseBlink in edit drawer"
+
+    # 5. Row 1: Active Epoch Status & Instantaneous A/B Flip Action
+    badge = hud.find(id="hudBlinkEpochBadge")
+    assert badge is not None, "Missing #hudBlinkEpochBadge"
+    btn_flip_ab = hud.find(id="btnHudFlipAB")
+    assert btn_flip_ab is not None, "Missing #btnHudFlipAB instantaneous A/B flip button"
+
+    # 6. Row 2: VCR Transport Controls
+    btn_prev = hud.find(id="btnBlinkHudPrev")
+    assert btn_prev is not None, "Missing #btnBlinkHudPrev"
+    btn_play = hud.find(id="btnBlinkHudPlay")
+    assert btn_play is not None, "Missing #btnBlinkHudPlay"
+    btn_next = hud.find(id="btnBlinkHudNext")
+    assert btn_next is not None, "Missing #btnBlinkHudNext"
+    btn_mode = hud.find(id="btnBlinkHudModeToggle")
+    assert btn_mode is not None, "Missing #btnBlinkHudModeToggle"
+
+    # 7. Row 3: Live Blend Scrubber & Epoch Chips
+    slider = hud.find(id="hudBlinkBlendSlider")
+    assert slider is not None, "Missing #hudBlinkBlendSlider"
+    val = hud.find(id="hudBlinkBlendVal")
+    assert val is not None, "Missing #hudBlinkBlendVal"
+    chips = hud.find_all(class_=lambda c: c and "blink-epoch-chip" in c)
+    assert len(chips) >= 4, f"Expected at least 4 blink epoch chips, found {len(chips)}"
+
+    # 8. Row 4: Shortcuts Legend and Secondary Close Action
+    btn_footer_close = hud.find(id="btnBlinkFooterClose")
+    assert btn_footer_close is not None, "Missing #btnBlinkFooterClose in HUD footer"
+
+    # 9. JavaScript functions and window exports
+    assert "toggleBlinkHUD" in html, "Missing toggleBlinkHUD function"
+    assert "window.toggleBlinkHUD" in html, "toggleBlinkHUD must be exported to window"
+    assert "setBlinkPinned" in html, "Missing setBlinkPinned function"
+    assert "window.setBlinkPinned" in html, "setBlinkPinned must be exported to window"
+    assert "toggleBlinkEditDrawer" in html, "Missing toggleBlinkEditDrawer function"
+    assert "window.toggleBlinkEditDrawer" in html, "toggleBlinkEditDrawer must be exported to window"
+    assert "flipBlinkAB" in html, "Missing flipBlinkAB function"
+    assert "window.flipBlinkAB" in html, "flipBlinkAB must be exported to window"
+    assert "updateBlinkHUD" in html, "Missing updateBlinkHUD function"
+    assert "window.updateBlinkHUD" in html, "updateBlinkHUD must be exported to window"
+    assert "toolBlinkFlip" in html, "JavaScript must bind listener to #toolBlinkFlip"
+    assert "btnCloseBlinkHUD" in html, "JavaScript must bind listener to #btnCloseBlinkHUD"
+    assert "btnPinBlinkHUD" in html, "JavaScript must bind listener to #btnPinBlinkHUD"
+    assert "btnBlinkFooterClose" in html, "JavaScript must bind listener to #btnBlinkFooterClose"
+    assert "btnDrawerCloseBlink" in html, "JavaScript must bind listener to #btnDrawerCloseBlink"
+
 
 
 
