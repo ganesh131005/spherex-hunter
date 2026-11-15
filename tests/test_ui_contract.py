@@ -699,11 +699,12 @@ def test_timestep_relocated_to_left_rail_with_popup_option_contract():
     assert tool_timestep is not None, "Missing #toolTimeStep on left tool rail"
     assert "clock" in str(tool_timestep).lower() or "step" in str(tool_timestep).lower()
 
-    # 2. Time Step HUD popup is anchored adjacent to the left rail (left-16)
+    # 2. Time Step HUD popup is anchored adjacent to the left rail (left-16) and hidden by default
     hud = soup.find(id="viewportTimeStepHUD")
     assert hud is not None, "Missing #viewportTimeStepHUD"
     classes = hud.get("class", [])
     assert "left-16" in classes, f"#viewportTimeStepHUD must be anchored at left-16, got {classes}"
+    assert "hidden" in classes, f"#viewportTimeStepHUD must be closed/hidden by default to avoid obscuring viewport, got {classes}"
 
     # 3. Popup options: Close button and Pinned/Flyout mode button exist
     btn_close = hud.find(id="btnCloseTimeStepHUD")

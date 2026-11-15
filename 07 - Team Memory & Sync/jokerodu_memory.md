@@ -3,6 +3,11 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Persistent Zero-Noise Circuit Breaker & Single-Flight Fallback Engine]**:
+  - Implemented disk-backed persistent circuit state in `backend/cache/circuit_state.json` persisting `irsa_tap_cooldown` and `esa_gaia_cooldown` across Uvicorn reload processes and server restarts.
+  - Implemented single-flight host probe locks (`_IRSA_PROBE_LOCK`, `_ESA_PROBE_LOCK`) using double-checked locking: when concurrent threads query an uninitialized/closed circuit at startup, exactly one probes the upstream host, and upon failure, all sibling threads instantly divert to Harvard CfA VizieR without firing duplicate requests or throwing 502 errors.
+  - Eliminated noisy multi-line `urllib3` ConnectionPool tracebacks in terminal stdout via clean, single-line fallback notices (`_log_tap_fallback`).
+  - Added test `test_persistent_circuit_breakers_and_single_flight` in `tests/test_golden_suite.py` asserting disk persistence and fast fallbacks. Verified 58/58 tests passing (100% green).
 - [x] **[Catalog Engine Global Circuit Breaker & Resilient Multi-Survey Fallback Engine]**:
   - Eliminated cascading 502 Proxy Errors and blocking 6.0s connection timeouts from NASA IRSA TAP (`irsa.ipac.caltech.edu/TAP/sync`) and ESA Gaia TAP (`gea.esac.esa.int`).
   - Added global, shared in-process circuit breakers (`_IRSA_TAP_CIRCUIT_OPEN_UNTIL`, `_ESA_GAIA_CIRCUIT_OPEN_UNTIL`) with 60-second cooldown in `backend/services/catalog_engine.py` and `backend/services/gaia_service.py`.

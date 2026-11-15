@@ -3,11 +3,17 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed comprehensive error rectification across backend endpoints, browser probes, pytest warning filters, and telemetry UI badges on `coolodu/web-frontend`. Added direct `/index.html` and `/favicon.ico` route handling to prevent 404s, configured deprecation warning filters in `pyproject.toml` for 100% clean test runs, and re-styled high proper motion auto-centering badges to active cyan telemetry badges. Verified with 100% green test passes and 0 console errors.
+- **Current Task:** Completed comprehensive error rectification across backend endpoints, browser probes, pytest warning filters, telemetry UI badges, and Time Step Controller default closure. Added direct `/index.html` and `/favicon.ico` route handling to prevent 404s, configured deprecation warning filters in `pyproject.toml` for 100% clean test runs, closed Time Step Controller on initial load to keep canvas unobstructed, and re-styled high proper motion auto-centering badges to active cyan telemetry badges. Verified with 100% green test passes and 0 console errors.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Close Time Step Controller by Default to Free Viewport & Open from Sidebar on Demand]**:
+  - Closed `#viewportTimeStepHUD` by default by setting `class="hidden ..."` in `frontend/index.html`, eliminating viewport occlusion on initial startup.
+  - Set `#toolTimeStep` on the left sidebar tool rail to idle state by default (removed `blender-btn-active`).
+  - Maintained full on-demand toggle capability: clicking `#toolTimeStep` ("Step") in the left sidebar or pressing hotkey `T` toggles the controller open with active indicator styling, full time stepping, blink speed control, and options drawer.
+  - Added quiet initialization to `setTimeStepPinned(pinned, silent=true)` to eliminate redundant toast notifications when the controller is initially closed.
+  - Updated contract test `test_timestep_relocated_to_left_rail_with_popup_option_contract` in `tests/test_ui_contract.py` asserting `hidden` class on load. Verified 100% green pass rate across all 58 baseline contract tests.
 - [x] **[End-to-End Error & Warning Rectification Across Backend, Frontend & Tests]**:
   - Implemented `@app.get("/index.html")` redirect in `backend/main.py` so direct `/index.html` navigation cleanly forwards to `/app/index.html` without 404s.
   - Implemented `@app.get("/favicon.ico")` in `backend/main.py` serving SVG brand icon to cleanly resolve default browser favicon probes.
@@ -17,7 +23,7 @@
 - [x] **[Compact Icon Sizing for Save Analysis, Share, and Command Palette in Upper Toolbar]**:
   - Resized the SVG icons of `#btnSaveAnalysis` (bookmark-plus), `#btnShareModal` (share-2), `#btnOpenCommandPalette` (search), and `#cmdPaletteBtn` (search) in the top header to `w-2.5 h-2.5` (`10px x 10px`).
   - Streamlined icon proportions to create visual hierarchy with the primary view mode and target dropdown triggers.
-  - Verified live in browser subagent with bounding box inspections and screenshot capture ([`final_step_181.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_181.png)).
+  - Verified live in browser subagent with bounding box inspections and screenshot capture.
   - Verified all 28 contract tests passing 100% green.
 - [x] **[Relocate 'My Investigations' to Cands Tab in Right Vertical Toolbar]**:
   - Removed `#btnOpenInvestigations` from the upper horizontal toolbar, streamlining top header real estate.
@@ -25,21 +31,13 @@
   - Retained `#btnOpenInvestigations` ("Open" action) and `#investigationsCountBadge` with persistent session counter.
   - Preserved full interactive functionality: clicking `#btnOpenInvestigations` opens `#investigationsModal` dialog with full CRUD, renaming, snapshot deletion, and session restore capabilities.
   - Updated contract test `test_issue_21_investigations_drawer_contract()` in `tests/test_ui_contract.py`. All 28 tests passing.
-  - Verified live in browser subagent ([`final_step_97.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_97.png)).
 - [x] **[Consolidate Curated Targets into Single Tool Icon with Collective Popup Toolbar]**:
   - Replaced the horizontal row of individual preset buttons in the upper header with a single compact tool button (`#btnTargetPresetsTrigger`).
   - Displays active target icon (`#targetPresetsActiveIcon`), active target label (`#targetPresetsActiveLabel`, defaults to 'WISE 0855'), and dynamic rotating chevron (`#targetPresetsChevron`).
-  - Added collective popup toolbar flyout (`#targetPresetsPopup` inside `#targetPresetsMenuContainer`) anchored directly beneath the trigger:
-    1. *WISE 0855-0714 (`data-target="wise0855"`):* Coldest substellar brown dwarf (~250 K), 8.12"/yr PM.
-    2. *Barnard's Star (`data-target="barnard"`):* Fastest proper motion star in night sky (10.36"/yr northward).
-    3. *Epsilon Indi B (`data-target="epsindi"`):* Binary brown dwarf companion, 4.70"/yr proper motion.
-    4. *RW Aurigae (`data-target="rwaur"`):* Eruptive young stellar object with 2.8x flare amplitude.
-    5. *R Draconis (`data-target="rdraconis"`):* Pulsating asymptotic giant branch Mira variable (3.4x).
-    6. *Orion Nebula Core (`data-target="orion"`):* Messier 42 starburst & complex organic ice absorption.
+  - Added collective popup toolbar flyout (`#targetPresetsPopup` inside `#targetPresetsMenuContainer`) anchored directly beneath the trigger.
   - Implemented click-to-toggle, outside click auto-dismiss, `Esc` key dismiss, and header close button `✕` (`#btnCloseTargetPresetsPopup`).
   - Wired `selectTarget(key)` to update trigger label and active button highlight automatically.
   - Added contract test `test_target_presets_single_tool_icon_and_collective_popup_contract()` in `tests/test_ui_contract.py`. All 28 tests passing.
-  - Physically verified in live browser subagent ([`final_step_91.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_91.png)).
 - [x] **[Repository-Wide Error & Code Quality Remediation]**:
   - Ran ruff audit and rectified 53 formatting, unused import, and syntax issues across `tools/*.py`.
   - Verified 0 ruff errors across `backend/`, `tools/`, and `tests/`.
@@ -48,13 +46,8 @@
 - [x] **[Scene Collection Right Vertical Toolbar Distinct Color Tone Gradient]**:
   - Applied an Astral Amethyst / Cosmic Obsidian gradient (`linear-gradient(180deg, #130a24 0%, #170d2d 25%, #1c1036 55%, #160c2b 85%, #0f071e 100%)`) with `border-left: 1px solid rgba(192, 132, 252, 0.28)` and deep cosmic drop-shadow on `#propertiesSidebar`.
   - Added matching glassmorphic gradient to `#propertiesSidebarHeader` (`rgba(38, 17, 66, 0.95)` to `rgba(26, 11, 46, 0.98)`).
-  - Maintained all tools in the toolbar 100% intact:
-    1. Sticky Tab Header with Scene Collection title, LIVE STATE badge, and Refresh button.
-    2. 4 Inspector Tabs: Layers, Target, Cands, and Photo.
-    3. Filter search input (`#layerSearchInput`) with custom amethyst focus border.
-    4. Observation Epochs, Baseline Difference cards, and Visual Layers tree with visibility eye toggles and opacity sliders.
+  - Maintained all tools in the toolbar 100% intact.
   - Added contract test `test_scene_collection_right_toolbar_gradient_contract()` in `tests/test_ui_contract.py`. All 27 tests passing.
-  - Verified live in browser subagent ([`final_step_69.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_69.png)).
 - [x] **[Make Upper Horizontal Toolbar Blink Icon Functional & Make Popup Toolbar Visible]**:
   - Resolved CSS overflow clipping on top `<header>` by changing `overflow-hidden` to `overflow-visible` with high stacking context (`z-40`).
   - Rendered `#viewModesPopup` directly beneath the top toolbar with high-contrast styling (`border-cyan-500/60`, backdrop blur, deep shadow `0 12px 40px rgba(0,0,0,0.85)`).
