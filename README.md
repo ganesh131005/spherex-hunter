@@ -106,15 +106,29 @@ Our application comes pre-loaded with verified astronomical benchmark targets:
 
 ## 📸 Visual Screenshots & Evidence
 
-| Primary Observatory Blink Viewer | Scientific Validation Benchmark Codex |
+| Primary Observatory Blink Viewer | 102-Band Infrared Spectrum Workbench |
 | :---: | :---: |
-| [![Observatory Blink View](docs/screenshots/01_wise0855_observatory_blink.png)](docs/screenshots/01_wise0855_observatory_blink.png) | [![Validation Modal](docs/screenshots/02_scientific_validation_modal.png)](docs/screenshots/02_scientific_validation_modal.png) |
-| *Multi-epoch FITS blink comparator with auto-identified dipole annotation* | *Verified completeness ($m_{\text{AB}} \approx 17.3$) and astrometric metrics* |
+| [![Observatory Blink View](docs/screenshots/01_wise0855_observatory_blink.png)](docs/screenshots/01_wise0855_observatory_blink.png) | [![102-Band Spectrum](docs/screenshots/04_102_band_spectrum_workbench.png)](docs/screenshots/04_102_band_spectrum_workbench.png) |
+| *Multi-epoch FITS blink comparator with auto-identified dipole & timeline* | *102-channel SED graph across 6 arrays with molecular absorption signatures* |
 
-| CDS Strasbourg Aladin Lite Sky View |
-| :---: |
-| [![Aladin Sky View](docs/screenshots/03_aladin_sky_hips_view.png)](docs/screenshots/03_aladin_sky_hips_view.png) |
-| *All-Sky HiPS context layer with responsive bottom context bar* |
+| CDS Strasbourg Aladin Lite All-Sky Mode | Aladin Sky High-Definition Deep Starfield |
+| :---: | :---: |
+| [![Aladin Sky View](docs/screenshots/03_aladin_sky_hips_view.png)](docs/screenshots/03_aladin_sky_hips_view.png) | [![Aladin Sky Deep](docs/screenshots/09_aladin_sky_deep_starfield.png)](docs/screenshots/09_aladin_sky_deep_starfield.png) |
+| *All-Sky HiPS context layer with responsive bottom scale context bar* | *Zoomed high-definition starfield ($18.3^\circ \times 8.8^\circ$) centered on target* |
+
+| Streamlined Viewport Canvas & Telemetry HUD | Scientific Validation Benchmark Codex |
+| :---: | :---: |
+| [![Streamlined Viewport](docs/screenshots/10_streamlined_viewport_canvas.png)](docs/screenshots/10_streamlined_viewport_canvas.png) | [![Validation Modal](docs/screenshots/02_scientific_validation_modal.png)](docs/screenshots/02_scientific_validation_modal.png) |
+| *Consolidated collision-proof HUD with dynamic epoch badge & scale* | *Verified detection completeness ($m_{\text{AB}} \approx 17.3$) & flight exposure Codex* |
+
+### 🎯 Benchmark Targets In Action
+| Barnard's Star (10.36″/yr Motion) | Epsilon Indi B (Brown Dwarf Binary) |
+| :---: | :---: |
+| [![Barnard's Star](docs/screenshots/05_target_barnards_star_benchmark.png)](docs/screenshots/05_target_barnards_star_benchmark.png) | [![Epsilon Indi B](docs/screenshots/07_target_epsilon_indi_binary.png)](docs/screenshots/07_target_epsilon_indi_binary.png) |
+
+| RW Aurigae (Eruptive Variable) | R Draconis (Pulsating Mira Variable) |
+| :---: | :---: |
+| [![RW Aurigae](docs/screenshots/06_target_rw_aurigae_variable.png)](docs/screenshots/06_target_rw_aurigae_variable.png) | [![R Draconis](docs/screenshots/08_target_r_draconis_variable.png)](docs/screenshots/08_target_r_draconis_variable.png) |
 
 ---
 

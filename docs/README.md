@@ -135,6 +135,13 @@ All specialized reports, specs, and audits in `/docs`:
 * 🏗️ [**Project Status & Execution Plan**](PROJECT_STATUS_AND_PLAN.md) — Milestones, sprint phases, and system health status.
 
 ### 📸 Visual Evidence & Screenshots Gallery
-* 🖼️ [**WISE 0855 Observatory Blink**](screenshots/01_wise0855_observatory_blink.png) — Multi-epoch blink comparator showing cold brown dwarf proper motion.
-* 🖼️ [**Scientific Validation Modal**](screenshots/02_scientific_validation_modal.png) — Benchmark metrics, completeness curve, and flight exposure Codex.
-* 🖼️ [**CDS Aladin Lite All-Sky HiPS View**](screenshots/03_aladin_sky_hips_view.png) — Interactive Strasbourg HiPS all-sky context layer.
+* 🖼️ [**WISE 0855 Observatory Blink View**](screenshots/01_wise0855_observatory_blink.png) — Multi-epoch FITS blink comparator with auto-identified proper motion dipole & timeline.
+* 🖼️ [**102-Band Infrared Spectrum Workbench**](screenshots/04_102_band_spectrum_workbench.png) — 102-channel SED graph across 6 arrays with molecular absorption signatures ($H_2O, CH_4, CO_2, CO$).
+* 🖼️ [**CDS Aladin Lite All-Sky HiPS View**](screenshots/03_aladin_sky_hips_view.png) — Interactive Strasbourg HiPS all-sky context layer with responsive bottom scale context bar.
+* 🖼️ [**Aladin Sky Deep Starfield Zoom**](screenshots/09_aladin_sky_deep_starfield.png) — High-definition zoomed starfield ($18.3^\circ \times 8.8^\circ$) centered on target coordinates.
+* 🖼️ [**Streamlined Viewport Canvas & Telemetry HUD**](screenshots/10_streamlined_viewport_canvas.png) — Consolidated collision-proof HUD with dynamic epoch badge, coordinates, and scale.
+* 🖼️ [**Scientific Validation Benchmark Codex**](screenshots/02_scientific_validation_modal.png) — Benchmark metrics, completeness curve ($m_{\text{AB}} \approx 17.3$), and flight exposure Codex.
+* 🖼️ [**Barnard's Star Motion Benchmark**](screenshots/05_target_barnards_star_benchmark.png) — $10.36″/\text{yr}$ northward proper motion benchmark verification.
+* 🖼️ [**RW Aurigae Eruptive Flare Benchmark**](screenshots/06_target_rw_aurigae_variable.png) — $2.8\times$ eruptive flare amplitude & accretion variability.
+* 🖼️ [**Epsilon Indi B Binary Benchmark**](screenshots/07_target_epsilon_indi_binary.png) — $4.70″/\text{yr}$ brown dwarf companion proper motion.
+* 🖼️ [**R Draconis Mira Variable Benchmark**](screenshots/08_target_r_draconis_variable.png) — $3.4\times$ periodic flux variability with clean sinusoidal lightcurve.
