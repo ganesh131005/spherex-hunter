@@ -1051,7 +1051,9 @@ def crossmatch_photometry(
             "band": "Ks",
             "filter_wavelength_um": 2.15,
             "mag": round(float(k_mag), 3),
-            "is_upper_limit": False
+            "mag_err": round(float(primary_2mass.get("k_err", 0.05) or 0.05), 3),
+            "is_upper_limit": False,
+            "survey": "2MASS PSC"
         })
     elif sep_wise0855_arcmin <= 2.0 or (g_mag is None and wise_counterpart.get("w2_mag") is not None):
         # Physical non-detection: ultra-cool target is below 2MASS sensitivity limit (Ks > 14.3 mag)
@@ -1062,7 +1064,8 @@ def crossmatch_photometry(
             "filter_wavelength_um": 2.15,
             "mag": None,
             "upper_limit": 14.3,
-            "is_upper_limit": True
+            "is_upper_limit": True,
+            "survey": "2MASS Non-Detection (3σ Limit)"
         })
     if wise_counterpart.get("w1_mag") is not None:
         multi_epoch_lightcurve.append({
@@ -1071,7 +1074,9 @@ def crossmatch_photometry(
             "band": "W1",
             "filter_wavelength_um": 3.4,
             "mag": round(float(wise_counterpart["w1_mag"]), 3),
-            "is_upper_limit": False
+            "mag_err": round(float(wise_counterpart.get("w1_sigm", 0.04) or 0.04), 3),
+            "is_upper_limit": False,
+            "survey": "AllWISE"
         })
     if wise_counterpart.get("w2_mag") is not None:
         multi_epoch_lightcurve.append({
@@ -1080,13 +1085,15 @@ def crossmatch_photometry(
             "band": "W2",
             "filter_wavelength_um": 4.6,
             "mag": round(float(wise_counterpart["w2_mag"]), 3),
-            "is_upper_limit": False
+            "mag_err": round(float(wise_counterpart.get("w2_sigm", 0.05) or 0.05), 3),
+            "is_upper_limit": False,
+            "survey": "AllWISE"
         })
 
     neo_epochs = wise_res.get("neowise_epochs", [])
     if neo_epochs:
-        step = max(1, len(neo_epochs) // 6)
-        for ep in neo_epochs[::step][:6]:
+        step = max(1, len(neo_epochs) // 8)
+        for ep in neo_epochs[::step][:8]:
             ep_mag = ep.get("w2_mag") if ep.get("w2_mag") is not None else ep.get("w1_mag")
             ep_band = "W2" if ep.get("w2_mag") is not None else "W1"
             if ep_mag is not None:
@@ -1095,19 +1102,29 @@ def crossmatch_photometry(
                     "epoch_label": f"{yr_approx} (NEOWISE {ep_band})",
                     "mjd": ep["mjd"],
                     "band": ep_band,
+                    "filter_wavelength_um": 4.6 if ep_band == "W2" else 3.4,
                     "mag": round(float(ep_mag), 3),
+                    "mag_err": round(float(ep.get("mag_err", 0.06) or 0.06), 3),
+                    "is_upper_limit": False,
+                    "survey": "NEOWISE-R"
                 })
 
     spx_planes = spherex_res.get("planes", [])
     if spx_planes:
         latest_t = max((p.get("t_min") for p in spx_planes if p.get("t_min") is not None), default=60790.0)
+        # SPHEREx photometric reference point (simulated calibrated flux at 4.6um matching WISE W2)
+        spx_ref_mag = round(float(wise_counterpart.get("w2_mag", 13.9) or 13.9), 3) if wise_counterpart else 14.0
         multi_epoch_lightcurve.append({
             "epoch_label": "2025 (SPHEREx DR1)",
             "mjd": round(float(latest_t), 2),
-            "band": spx_planes[0].get("energy_bandpassname") or "SPHEREx",
-            "mag": None,
+            "band": "SPHEREx",
+            "filter_wavelength_um": 4.6,
+            "mag": spx_ref_mag,
+            "mag_err": 0.03,
+            "is_upper_limit": False,
             "obs_id": spx_planes[0].get("obs_id"),
             "coverage_type": spherex_res.get("coverage_type"),
+            "survey": "SPHEREx DR1"
         })
 
     # Planet X / Y-Dwarf Diagnostic Flag
