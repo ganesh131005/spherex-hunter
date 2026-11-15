@@ -354,6 +354,7 @@ def test_persistent_circuit_breakers_and_single_flight():
     """Verify that IRSA and Gaia circuit breakers persist to disk and single-flight lock works."""
     import os
     import time
+
     from backend.services.catalog_engine import (
         _CIRCUIT_STATE_PATH,
         _load_circuit_state,
