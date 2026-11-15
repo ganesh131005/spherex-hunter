@@ -4480,116 +4480,122 @@
       const w = canvas.width;
       const h = canvas.height;
 
+      // Always reset transform first so fillRect is guaranteed to clear the full physical canvas
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
       // Dynamic background based on active mode
       ctx.fillStyle = diffMode ? '#808080' : '#06080e';
       ctx.fillRect(0, 0, w, h);
 
+      const cosDec = Math.cos((camera.dec * Math.PI) / 180.0) || 1.0;
+
       ctx.save();
-      // Continuous camera transform (Pan & Zoom)
-      ctx.translate(w / 2 + camera.panX, h / 2 + camera.panY);
-      ctx.scale(camera.zoom, camera.zoom);
-      ctx.imageSmoothingEnabled = !isNativePixelsMode;
+      try {
+        // Continuous camera transform (Pan & Zoom)
+        ctx.translate(w / 2 + camera.panX, h / 2 + camera.panY);
+        ctx.scale(camera.zoom, camera.zoom);
+        ctx.imageSmoothingEnabled = !isNativePixelsMode;
 
-      const pixelsPerArcmin = getActivePixelsPerArcmin(w, h);
+        const pixelsPerArcmin = getActivePixelsPerArcmin(w, h);
 
-      // Query layer states from Scene
-      const layerA = getSceneLayer('base_epoch_a');
-      const layerB = getSceneLayer('base_epoch_b');
-      const diffLayer = getSceneLayer('diff_image');
-      const covLayer = getSceneLayer('coverage_mask');
-      const gaiaLayer = getSceneLayer('gaia_overlay');
+        // Query layer states from Scene
+        const layerA = getSceneLayer('base_epoch_a');
+        const layerB = getSceneLayer('base_epoch_b');
+        const diffLayer = getSceneLayer('diff_image');
+        const covLayer = getSceneLayer('coverage_mask');
+        const gaiaLayer = getSceneLayer('gaia_overlay');
 
-      const isFrameA = (currentFrame === 1);
-      const curLayer = isFrameA ? layerA : layerB;
-      const layerAlpha = curLayer ? curLayer.opacity : 1.0;
-      const isVisible = curLayer ? curLayer.visible : true;
+        const isFrameA = (currentFrame === 1);
+        const curLayer = isFrameA ? layerA : layerB;
+        const layerAlpha = curLayer ? curLayer.opacity : 1.0;
+        const isVisible = curLayer ? curLayer.visible : true;
 
-      // 1. Draw base contiguous image (or previous tier during cross-fade)
-      if (prevEpoch1Img && crossFadeAlpha < 1.0) {
-        const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
-        if (prevImg && prevImg.complete && isVisible) {
-          const pfov = prevImg.fov || getActiveFovArcmin();
-          const pw = pfov * pixelsPerArcmin;
-          const ph = pfov * pixelsPerArcmin;
-          drawFeatheredImage(ctx, prevImg, -pw / 2, -ph / 2, pw, ph, (1.0 - crossFadeAlpha) * layerAlpha);
+        // 1. Draw base contiguous image (or previous tier during cross-fade)
+        if (prevEpoch1Img && crossFadeAlpha < 1.0) {
+          const prevImg = diffMode ? prevDiffImg : (currentFrame === 1 ? prevEpoch1Img : prevEpoch2Img);
+          if (prevImg && prevImg.complete && isVisible) {
+            const pfov = prevImg.fov || getActiveFovArcmin();
+            const pw = pfov * pixelsPerArcmin;
+            const ph = pfov * pixelsPerArcmin;
+            drawFeatheredImage(ctx, prevImg, -pw / 2, -ph / 2, pw, ph, (1.0 - crossFadeAlpha) * layerAlpha);
+          }
         }
-      }
 
-      // 2. Draw current active master astronomical image centered at exact world coordinates
-      const masterFov = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin();
-      const rw = masterFov * pixelsPerArcmin;
-      const rh = masterFov * pixelsPerArcmin;
+        // 2. Draw current active master astronomical image centered at exact world coordinates
+        const masterFov = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin();
+        const rw = masterFov * pixelsPerArcmin;
+        const rh = masterFov * pixelsPerArcmin;
 
-      if (diffMode) {
-        const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
-        const diffVis = diffLayer ? diffLayer.visible : true;
-        if (diffVis && realDiffImg && realDiffImg.complete) {
-          ctx.globalAlpha = diffAlpha;
-          ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw + 0.5, rh + 0.5);
+        if (diffMode) {
+          const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
+          const diffVis = diffLayer ? diffLayer.visible : true;
+          if (diffVis && realDiffImg && realDiffImg.complete) {
+            ctx.globalAlpha = diffAlpha;
+            ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw + 0.5, rh + 0.5);
+            ctx.globalAlpha = 1.0;
+          }
+        } else {
+          const visA = layerA ? layerA.visible : true;
+          const visB = layerB ? layerB.visible : true;
+          const opacityA = layerA ? layerA.opacity : 1.0;
+          const opacityB = layerB ? layerB.opacity : 1.0;
+          const lodFade = (prevEpoch1Img && crossFadeAlpha < 1.0) ? crossFadeAlpha : 1.0;
+
+          // Continuous Epoch Morphing & Blending
+          const alphaA = (1.0 - epochBlend) * opacityA * lodFade;
+          const alphaB = epochBlend * opacityB * lodFade;
+
+          if (visA && realEpoch1Img && realEpoch1Img.complete && alphaA > 0.005) {
+            drawFeatheredImage(ctx, realEpoch1Img, -rw / 2, -rh / 2, rw, rh, alphaA, false);
+          }
+
+          if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
+            drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB, false);
+          }
+
+          if ((!realEpoch1Img || !realEpoch1Img.complete) && (!realEpoch2Img || !realEpoch2Img.complete)) {
+            drawNoCoverageHatch(ctx, -rw / 2, -rh / 2, rw, rh, 'Loading SPHEREx Calibrated Exposure...');
+          }
+        }
+
+        // 3. Issue #10: Continuous Raytracing Sky Tiling & dynamic frustum fill (seamless adjacent coverage)
+        drawAdjacentSkyTiling(ctx, pixelsPerArcmin);
+
+        // Auto-Identification of Motion Dipoles & Transients Overlay
+        if (autoDetectEnabled && autoDetectedChanges.length > 0) {
+          drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec);
+        }
+
+        // 4. Draw Coverage Mask Overlay (transparent NaN / unobserved boundary mask)
+        if (covLayer && covLayer.visible && realCoverageMaskImg && realCoverageMaskImg.complete) {
+          const mfov = realCoverageMaskImg.fov || getActiveFovArcmin();
+          const mw = mfov * pixelsPerArcmin;
+          const mh = mfov * pixelsPerArcmin;
+          ctx.globalAlpha = covLayer.opacity;
+          ctx.drawImage(realCoverageMaskImg, -mw / 2, -mh / 2, mw, mh);
           ctx.globalAlpha = 1.0;
         }
-      } else {
-        const visA = layerA ? layerA.visible : true;
-        const visB = layerB ? layerB.visible : true;
-        const opacityA = layerA ? layerA.opacity : 1.0;
-        const opacityB = layerB ? layerB.opacity : 1.0;
-        const lodFade = (prevEpoch1Img && crossFadeAlpha < 1.0) ? crossFadeAlpha : 1.0;
 
-        // Continuous Epoch Morphing & Blending
-        const alphaA = (1.0 - epochBlend) * opacityA * lodFade;
-        const alphaB = epochBlend * opacityB * lodFade;
-
-        if (visA && realEpoch1Img && realEpoch1Img.complete && alphaA > 0.005) {
-          drawFeatheredImage(ctx, realEpoch1Img, -rw / 2, -rh / 2, rw, rh, alphaA, false);
+        // 5. Draw Gaia DR3 Astrometry Overlay (Epoch-propagated + WCS TAN projected)
+        const gaiaVis = gaiaLayer ? gaiaLayer.visible : gaiaOverlayEnabled;
+        const gaiaAlpha = gaiaLayer ? gaiaLayer.opacity : 0.85;
+        if (gaiaVis) {
+          drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha);
         }
 
-        if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
-          drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB, false);
-        }
+        // 6. AI Field Scanner Dipole Markers & Angular Distance Ruler
+        drawAiDetectedCandidates(ctx, pixelsPerArcmin);
+        drawMeasurementRuler(ctx, pixelsPerArcmin);
+        drawSelectedPointReticle(ctx, pixelsPerArcmin);
 
-        if ((!realEpoch1Img || !realEpoch1Img.complete) && (!realEpoch2Img || !realEpoch2Img.complete)) {
-          drawNoCoverageHatch(ctx, -rw / 2, -rh / 2, rw, rh, 'Loading SPHEREx Calibrated Exposure...');
-        }
+        // 7. Step 2: Level 2 Exposure Footprint Boundaries (EXP_ID, detector, MJD)
+        drawExposureFootprintOverlay(ctx, pixelsPerArcmin);
+
+        // 8. Step 2: Equatorial Coordinate Grid (RA/Dec lines)
+        drawCoordinateGrid(ctx, pixelsPerArcmin);
+      } finally {
+        ctx.restore();
       }
-
-      // 3. Issue #10: Continuous Raytracing Sky Tiling & dynamic frustum fill (seamless adjacent coverage)
-      drawAdjacentSkyTiling(ctx, pixelsPerArcmin);
-
-      // Auto-Identification of Motion Dipoles & Transients Overlay
-      if (autoDetectEnabled && autoDetectedChanges.length > 0) {
-        drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec);
-      }
-
-
-      // 4. Draw Coverage Mask Overlay (transparent NaN / unobserved boundary mask)
-      if (covLayer && covLayer.visible && realCoverageMaskImg && realCoverageMaskImg.complete) {
-        const mfov = realCoverageMaskImg.fov || getActiveFovArcmin();
-        const mw = mfov * pixelsPerArcmin;
-        const mh = mfov * pixelsPerArcmin;
-        ctx.globalAlpha = covLayer.opacity;
-        ctx.drawImage(realCoverageMaskImg, -mw / 2, -mh / 2, mw, mh);
-        ctx.globalAlpha = 1.0;
-      }
-
-      // 5. Draw Gaia DR3 Astrometry Overlay (Epoch-propagated + WCS TAN projected)
-      const gaiaVis = gaiaLayer ? gaiaLayer.visible : gaiaOverlayEnabled;
-      const gaiaAlpha = gaiaLayer ? gaiaLayer.opacity : 0.85;
-      if (gaiaVis) {
-        drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha);
-      }
-
-      // 6. AI Field Scanner Dipole Markers & Angular Distance Ruler
-      drawAiDetectedCandidates(ctx, pixelsPerArcmin);
-      drawMeasurementRuler(ctx, pixelsPerArcmin);
-      drawSelectedPointReticle(ctx, pixelsPerArcmin);
-
-      // 7. Step 2: Level 2 Exposure Footprint Boundaries (EXP_ID, detector, MJD)
-      drawExposureFootprintOverlay(ctx, pixelsPerArcmin);
-
-      // 8. Step 2: Equatorial Coordinate Grid (RA/Dec lines)
-      drawCoordinateGrid(ctx, pixelsPerArcmin);
-
-      ctx.restore();
     }
 
     // =========================================================================
@@ -11813,11 +11819,14 @@
     function drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec) {
       const time = performance.now() / 1000;
       const pulse = 1.0 + 0.08 * Math.sin(time * 4.0);
+      const safeCosDec = (typeof cosDec === 'number' && Number.isFinite(cosDec))
+        ? cosDec
+        : (Math.cos((camera.dec * Math.PI) / 180.0) || 1.0);
 
       for (let i = 0; i < autoDetectedChanges.length; i++) {
         const chg = autoDetectedChanges[i];
 
-        const draCenter = (chg.raCenter - camera.ra) * 60.0 * cosDec;
+        const draCenter = (chg.raCenter - camera.ra) * 60.0 * safeCosDec;
         const ddecCenter = (chg.decCenter - camera.dec) * 60.0;
         const cx = - draCenter * pixelsPerArcmin;
         const cy = - ddecCenter * pixelsPerArcmin;
