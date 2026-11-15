@@ -2,18 +2,11 @@
 .venv/
 __pycache__/
 .pytest_cache/
-backend/
-backend/**
+backend/cache/
 specs/
-specs/**
 tools/
-tools/**
 tests/
-tests/**
 scripts/
-scripts/**
 docs/
-docs/**
 07 - Team Memory & Sync/
 *.pyc
-pyproject.toml
