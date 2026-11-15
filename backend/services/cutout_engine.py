@@ -134,9 +134,9 @@ def clean_astronomical_image(data: np.ndarray, smooth_sigma: float = 1.0, noise_
     threshold = bg_median + noise_clip_sigma * bg_std
     signal = np.maximum(0.0, smoothed - threshold)
 
-    # 3. Asinh stretch for high dynamic range
+    # 3. Asinh stretch for high dynamic range (enforcing noise floor to prevent noise over-amplification)
     vmax = np.percentile(signal[signal > 0], 99.5) if np.any(signal > 0) else 1.0
-    if vmax <= 0: vmax = 1.0
+    vmax = max(float(vmax), float(8.0 * bg_std), 1.0)
 
     norm = np.clip(signal / vmax, 0.0, 1.0)
     stretch = AsinhStretch(a=0.08)
@@ -1161,17 +1161,16 @@ def _build_degraded_gaia_wcs_fallback(
         except Exception:
             continue
 
-    def _stretch_u8(arr: np.ndarray) -> np.ndarray:
-        med = float(np.median(arr))
-        std = float(np.std(arr)) + 1e-6
-        sub = arr - med
-        vmin = -1.5 * std
-        vmax = max(10.0 * std, float(np.percentile(sub, 99.5)))
-        norm = np.clip((sub - vmin) / (vmax - vmin), 0.0, 1.0)
-        return (AsinhStretch(a=0.1)(norm) * 255.0).astype(np.uint8)
+    # Apply robust Asinh stretch with self-consistent noise floor to prevent flux scale mismatch
+    med1 = float(np.median(d1))
+    sig1 = max(float(1.4826 * np.median(np.abs(d1 - med1))), 1.5)
+    p99_1 = max(float(np.percentile(d1, 99.5)), med1 + 8.0 * sig1)
+    ep1_clean = apply_locked_asinh_stretch(d1, mu_sky=med1, sigma_sky=sig1, p99_5=p99_1, beta=3.0)
 
-    ep1_clean = _stretch_u8(d1)
-    ep2_clean = _stretch_u8(d2)
+    med2 = float(np.median(d2))
+    sig2 = max(float(1.4826 * np.median(np.abs(d2 - med2))), 1.5)
+    p99_2 = max(float(np.percentile(d2, 99.5)), med2 + 8.0 * sig2)
+    ep2_clean = apply_locked_asinh_stretch(d2, mu_sky=med2, sigma_sky=sig2, p99_5=p99_2, beta=3.0)
 
     try:
         dim_sub = min(d1.shape[0], d2.shape[0])
