@@ -26,13 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-- **[⚡ BLINK ICON TOOL & POPUP TOOLBAR MADE FULLY FUNCTIONAL AND VISIBLE (@coolodu)]**
-  - **Feature & Fix:** Made the left rail Blink Comparator tool (`#toolBlinkFlip`) fully functional and made the Blink popup toolbar (`#viewportBlinkHUD`) visible by default in the observatory viewport.
-  - **Root Cause & Fix:**
-    1. *Conflicting Event Listener:* Removed an old legacy listener on `toolBlinkFlip` that was triggering a secondary `wsBlink.click()`, which caused the toggle function to double-invoke and instantly close the popup upon click.
-    2. *Visible by Default:* Removed `hidden` class from `#viewportBlinkHUD`, activated `#toolBlinkFlip` visual state (`blender-btn-orange-active`), and set `#viewportTimeStepHUD` to hidden by default so both toolbars do not occlude each other.
-    3. *Mutual Closing:* Added mutual popup closing in `toggleTimeStepHUD` and `toggleBlinkHUD` so opening one cleanly closes the other.
-  - **Physical Verification:** Browser subagent verified live rendering on `http://127.0.0.1:8000`: `#viewportBlinkHUD` visible at (120, 104) with dimensions 342.3x321.2, including `#hudBlinkHeader`, `#btnHudFlipAB`, `#btnBlinkHudPlay`, `#hudBlinkBlendSlider`, and `#btnBlinkEditOptions`. Screenshot captured at `final_step_40.png`. All 26/26 contract tests passing green.
+- **[👁️ UPPER HORIZONTAL TOOLBAR BLINK FUNCTIONALITY & VISIBLE VIEW MODES POPUP (@coolodu)]**
+  - **Feature:** Resolved header clipping issue (`overflow-visible` on `<header>`), made the Blink tool icon (`#btnViewModesTrigger`) fully functional, and ensured the collective View Modes popup toolbar (`#viewModesPopup`) is prominently visible beneath the upper horizontal toolbar.
+  - **Root Cause & Fix:** `<header>` had `overflow-hidden`, which clipped all dropdowns and popups anchored in the top bar. Changed to `overflow-visible` with high stacking context (`z-40`).
+  - **Single Tool Trigger & Blink Playback:** Clicking `#btnViewModesTrigger` now toggles the collective popup toolbar and directly controls Blink comparator playback (starts flipbook loop, plays/pauses multi-epoch animation, redraws frame, and ensures `#viewportBlinkHUD` is active).
+  - **Visible Collective Popup Menu:** Displays all 4 view mode tools (Blink Comparator, Difference Imaging, 102-Band Spectra, and Aladin Sky Map) with quick close button `✕` (`#btnCloseViewModesPopup`), `Esc` dismiss, and outside-click dismiss.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (26/26) and verified live in browser subagent ([final_step_46.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_46.png)).
 - **[🔍 102-BAND SPECTRUM 2D SPOT POPUPS & INTERACTIVE INSPECTOR ENGINE (@jokerodu)]**
   - **Feature & Fix:** Solved missing popups/tooltips on spots in the 102-band spectrum chart (Dataset 1 Catalog Photometry diamonds e.g. WISE W2, and Dataset 2 Molecular Feature diamonds e.g. CO₂ Ice, H₂O, CH₄, CO).
   - **Root Cause:** Due to large vertical flux discrepancies between the SED curve (e.g. 2224 µJy) and photometry points (e.g. 566 µJy), 1D X-axis index snapping (`axis: 'x'`) pulled Chart.js's tooltip position to the top of the canvas, and hovering directly on spots with slight X-offset caused Dataset 1/2 to evaluate to null. Furthermore, clicking on points lacked dedicated interactive popup feedback.

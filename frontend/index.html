@@ -275,7 +275,7 @@
   <!-- ========================================================================= -->
   <!-- 1. TOP OBSERVATORY HEADER (48px / h-12)                                    -->
   <!-- ========================================================================= -->
-  <header class="h-12 bg-space-900 border-b border-space-700 px-3 flex items-center justify-between z-30 shrink-0 text-xs gap-2 shadow-md w-full max-w-full overflow-hidden">
+  <header class="h-12 bg-space-900 border-b border-space-700 px-3 flex items-center justify-between z-40 shrink-0 text-xs gap-2 shadow-md w-full max-w-full overflow-visible">
 
     <!-- Left: Branding & Workspace Mode Segmented Control -->
     <div class="flex items-center gap-3 shrink-0">
@@ -296,7 +296,7 @@
       <!-- Single Collective View Modes Tool with Popup Option (Blink, Difference, Spectra, Aladin Sky) -->
       <div class="relative shrink-0" id="viewModesMenuContainer">
         <!-- The Single View Modes Tool Button -->
-        <button id="btnViewModesTrigger" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-space-700 shadow-md hover:border-cyan-500/60 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective modes menu)">
+        <button id="btnViewModesTrigger" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to toggle Blink / open collective popup toolbar)">
           <span id="viewModeActiveIconWrapper" class="flex items-center justify-center">
             <i id="viewModeActiveIcon" data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
           </span>
@@ -305,10 +305,13 @@
         </button>
 
         <!-- Collective Popup Display Menu (Flyout anchored below the tool icon) -->
-        <div id="viewModesPopup" class="absolute top-full left-0 mt-1.5 w-64 bg-space-900/98 backdrop-blur-xl border border-space-700 rounded-xl shadow-2xl p-2 z-50 hidden flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
-          <div class="flex items-center justify-between px-2 py-1 text-[10px] text-gray-400 uppercase tracking-wider font-sans font-bold border-b border-space-800 pb-1.5 mb-1">
-            <span class="flex items-center gap-1.5"><i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i> View Modes</span>
-            <kbd class="text-[9px] font-mono text-gray-400">Esc to close</kbd>
+        <div id="viewModesPopup" class="absolute top-full left-0 mt-2 w-72 bg-space-900/98 backdrop-blur-xl border border-cyan-500/60 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] p-2.5 z-50 flex flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
+          <div class="flex items-center justify-between px-2 py-1 text-[10px] text-gray-300 uppercase tracking-wider font-sans font-bold border-b border-space-800 pb-1.5 mb-1">
+            <span class="flex items-center gap-1.5 text-cyan-300"><i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i> View Modes Toolbar</span>
+            <div class="flex items-center gap-2">
+              <kbd class="text-[9px] font-mono text-gray-400">Esc to close</kbd>
+              <button id="btnCloseViewModesPopup" type="button" class="w-5 h-5 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-space-800 transition text-xs font-bold" title="Close popup">✕</button>
+            </div>
           </div>
 
           <!-- Tool 1: Blink Comparator -->
@@ -602,13 +605,13 @@
         </button>
 
         <!-- Blink Comparator & Multi-Epoch Flipbook Tool with Popup Option (User Request) -->
-        <button id="toolBlinkFlip" class="w-11 h-9 rounded-lg rail-tool-btn blender-btn-orange-active flex flex-col items-center justify-center gap-0.5 text-amber-300 hover:text-white transition relative" title="Blink Comparator & Multi-Epoch Flipbook Popup (B)">
+        <button id="toolBlinkFlip" class="w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-amber-300 hover:text-white transition relative" title="Blink Comparator & Multi-Epoch Flipbook Popup (B)">
           <i data-lucide="split" class="w-3.5 h-3.5 text-amber-400"></i>
           <span class="text-[8px] font-mono leading-none">Blink</span>
         </button>
 
         <!-- Time Step Controller Tool with Popup Option (User Request) -->
-        <button id="toolTimeStep" class="w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
+        <button id="toolTimeStep" class="w-11 h-9 rounded-lg rail-tool-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span class="text-[8px] font-mono leading-none">Step</span>
         </button>
@@ -669,7 +672,7 @@
 
       <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Interactive Popup Toolbar with Edit/Pin/Close Options) -->
       <div id="viewportTimeStepHUD"
-        class="hidden absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
+        class="absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
         
         <!-- Header: Title, Edit Options, Pinning Toggle & Close Button -->
         <div class="flex items-center justify-between border-b border-space-700/80 pb-2 cursor-grab active:cursor-grabbing" id="hudTimeStepHeader" title="Drag to reposition toolbar anywhere in observatory">
@@ -820,7 +823,7 @@
 
       <!-- VIEWPORT BLINK COMPARATOR CONTROLLER HUD (Interactive Popup Toolbar with Edit/Pin/Close Options) -->
       <div id="viewportBlinkHUD"
-        class="absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-amber-500/40 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
+        class="hidden absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-amber-500/40 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
         
         <!-- Header: Title, Edit Options, Pinning Toggle & Close Button -->
         <div class="flex items-center justify-between border-b border-space-700/80 pb-2 cursor-grab active:cursor-grabbing" id="hudBlinkHeader" title="Drag to reposition Blink toolbar anywhere in observatory">
@@ -5628,6 +5631,7 @@
     const viewModeActiveLabel = document.getElementById('viewModeActiveLabel');
     const viewModeActiveIconWrapper = document.getElementById('viewModeActiveIconWrapper');
     const viewModeChevron = document.getElementById('viewModeChevron');
+    const btnCloseViewModesPopup = document.getElementById('btnCloseViewModesPopup');
 
     function toggleViewModesPopup(forceOpen) {
       if (!viewModesPopup) return;
@@ -5651,7 +5655,33 @@
     if (btnViewModesTrigger) {
       btnViewModesTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
+        // 1. Toggle popup toolbar visibility
         toggleViewModesPopup();
+
+        // 2. Make the Blink icon in top horizontal toolbar fully functional:
+        if (wsBlink) {
+          if (diffMode || !wsBlink.classList.contains('blender-btn-active')) {
+            // Activate Blink mode cleanly
+            wsBlink.click();
+          } else {
+            // Already in Blink mode: toggle flipbook play/pause & keep HUD active
+            if (typeof flipbookInterval !== 'undefined' && flipbookInterval) {
+              stopFlipbook();
+            } else {
+              startFlipbook();
+            }
+            if (typeof toggleBlinkHUD === 'function') toggleBlinkHUD(true);
+            drawFrame();
+            updateFrameLabel();
+          }
+        }
+      });
+    }
+
+    if (btnCloseViewModesPopup) {
+      btnCloseViewModesPopup.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeViewModesPopup();
       });
     }
 
@@ -7886,6 +7916,17 @@
       if (toolSelect) toolSelect.addEventListener('click', () => setCanvasTool('select'));
       if (toolPan) toolPan.addEventListener('click', () => setCanvasTool('pan'));
       if (toolMeasure) toolMeasure.addEventListener('click', () => setCanvasTool('measure'));
+
+      if (toolBlinkFlip) {
+        toolBlinkFlip.addEventListener('click', () => {
+          if (diffMode) {
+            const wsB = document.getElementById('wsBlink');
+            if (wsB) wsB.click();
+          }
+          const stepFwd = document.getElementById('btnStepFwd');
+          if (stepFwd) stepFwd.click();
+        });
+      }
 
       if (toolFullscreen) {
         toolFullscreen.addEventListener('click', () => {
@@ -11847,12 +11888,6 @@
       if (willShow) {
         hud.classList.remove('hidden');
         if (tool) tool.classList.add('blender-btn-active');
-        const blinkHud = document.getElementById('viewportBlinkHUD');
-        if (blinkHud && !blinkHud.classList.contains('hidden')) {
-          blinkHud.classList.add('hidden');
-          const toolBlink = document.getElementById('toolBlinkFlip');
-          if (toolBlink) toolBlink.classList.remove('blender-btn-orange-active');
-        }
         updateTimeStepHUD();
       } else {
         hud.classList.add('hidden');
@@ -11948,12 +11983,6 @@
       if (willShow) {
         hud.classList.remove('hidden');
         if (tool) tool.classList.add('blender-btn-orange-active');
-        const timeStepHud = document.getElementById('viewportTimeStepHUD');
-        if (timeStepHud && !timeStepHud.classList.contains('hidden')) {
-          timeStepHud.classList.add('hidden');
-          const toolStep = document.getElementById('toolTimeStep');
-          if (toolStep) toolStep.classList.remove('blender-btn-active');
-        }
         updateBlinkHUD();
       } else {
         hud.classList.add('hidden');
