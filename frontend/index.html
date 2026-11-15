@@ -602,13 +602,13 @@
         </button>
 
         <!-- Blink Comparator & Multi-Epoch Flipbook Tool with Popup Option (User Request) -->
-        <button id="toolBlinkFlip" class="w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-amber-300 hover:text-white transition relative" title="Blink Comparator & Multi-Epoch Flipbook Popup (B)">
+        <button id="toolBlinkFlip" class="w-11 h-9 rounded-lg rail-tool-btn blender-btn-orange-active flex flex-col items-center justify-center gap-0.5 text-amber-300 hover:text-white transition relative" title="Blink Comparator & Multi-Epoch Flipbook Popup (B)">
           <i data-lucide="split" class="w-3.5 h-3.5 text-amber-400"></i>
           <span class="text-[8px] font-mono leading-none">Blink</span>
         </button>
 
         <!-- Time Step Controller Tool with Popup Option (User Request) -->
-        <button id="toolTimeStep" class="w-11 h-9 rounded-lg rail-tool-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
+        <button id="toolTimeStep" class="w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span class="text-[8px] font-mono leading-none">Step</span>
         </button>
@@ -669,7 +669,7 @@
 
       <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Interactive Popup Toolbar with Edit/Pin/Close Options) -->
       <div id="viewportTimeStepHUD"
-        class="absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
+        class="hidden absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
         
         <!-- Header: Title, Edit Options, Pinning Toggle & Close Button -->
         <div class="flex items-center justify-between border-b border-space-700/80 pb-2 cursor-grab active:cursor-grabbing" id="hudTimeStepHeader" title="Drag to reposition toolbar anywhere in observatory">
@@ -820,7 +820,7 @@
 
       <!-- VIEWPORT BLINK COMPARATOR CONTROLLER HUD (Interactive Popup Toolbar with Edit/Pin/Close Options) -->
       <div id="viewportBlinkHUD"
-        class="hidden absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-amber-500/40 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
+        class="absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-amber-500/40 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
         
         <!-- Header: Title, Edit Options, Pinning Toggle & Close Button -->
         <div class="flex items-center justify-between border-b border-space-700/80 pb-2 cursor-grab active:cursor-grabbing" id="hudBlinkHeader" title="Drag to reposition Blink toolbar anywhere in observatory">
@@ -7887,17 +7887,6 @@
       if (toolPan) toolPan.addEventListener('click', () => setCanvasTool('pan'));
       if (toolMeasure) toolMeasure.addEventListener('click', () => setCanvasTool('measure'));
 
-      if (toolBlinkFlip) {
-        toolBlinkFlip.addEventListener('click', () => {
-          if (diffMode) {
-            const wsB = document.getElementById('wsBlink');
-            if (wsB) wsB.click();
-          }
-          const stepFwd = document.getElementById('btnStepFwd');
-          if (stepFwd) stepFwd.click();
-        });
-      }
-
       if (toolFullscreen) {
         toolFullscreen.addEventListener('click', () => {
           if (!document.fullscreenElement) {
@@ -11858,6 +11847,12 @@
       if (willShow) {
         hud.classList.remove('hidden');
         if (tool) tool.classList.add('blender-btn-active');
+        const blinkHud = document.getElementById('viewportBlinkHUD');
+        if (blinkHud && !blinkHud.classList.contains('hidden')) {
+          blinkHud.classList.add('hidden');
+          const toolBlink = document.getElementById('toolBlinkFlip');
+          if (toolBlink) toolBlink.classList.remove('blender-btn-orange-active');
+        }
         updateTimeStepHUD();
       } else {
         hud.classList.add('hidden');
@@ -11953,6 +11948,12 @@
       if (willShow) {
         hud.classList.remove('hidden');
         if (tool) tool.classList.add('blender-btn-orange-active');
+        const timeStepHud = document.getElementById('viewportTimeStepHUD');
+        if (timeStepHud && !timeStepHud.classList.contains('hidden')) {
+          timeStepHud.classList.add('hidden');
+          const toolStep = document.getElementById('toolTimeStep');
+          if (toolStep) toolStep.classList.remove('blender-btn-active');
+        }
         updateBlinkHUD();
       } else {
         hud.classList.add('hidden');

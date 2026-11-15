@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⚡ BLINK ICON TOOL & POPUP TOOLBAR MADE FULLY FUNCTIONAL AND VISIBLE (@coolodu)]**
+  - **Feature & Fix:** Made the left rail Blink Comparator tool (`#toolBlinkFlip`) fully functional and made the Blink popup toolbar (`#viewportBlinkHUD`) visible by default in the observatory viewport.
+  - **Root Cause & Fix:**
+    1. *Conflicting Event Listener:* Removed an old legacy listener on `toolBlinkFlip` that was triggering a secondary `wsBlink.click()`, which caused the toggle function to double-invoke and instantly close the popup upon click.
+    2. *Visible by Default:* Removed `hidden` class from `#viewportBlinkHUD`, activated `#toolBlinkFlip` visual state (`blender-btn-orange-active`), and set `#viewportTimeStepHUD` to hidden by default so both toolbars do not occlude each other.
+    3. *Mutual Closing:* Added mutual popup closing in `toggleTimeStepHUD` and `toggleBlinkHUD` so opening one cleanly closes the other.
+  - **Physical Verification:** Browser subagent verified live rendering on `http://127.0.0.1:8000`: `#viewportBlinkHUD` visible at (120, 104) with dimensions 342.3x321.2, including `#hudBlinkHeader`, `#btnHudFlipAB`, `#btnBlinkHudPlay`, `#hudBlinkBlendSlider`, and `#btnBlinkEditOptions`. Screenshot captured at `final_step_40.png`. All 26/26 contract tests passing green.
 - **[🔍 102-BAND SPECTRUM 2D SPOT POPUPS & INTERACTIVE INSPECTOR ENGINE (@jokerodu)]**
   - **Feature & Fix:** Solved missing popups/tooltips on spots in the 102-band spectrum chart (Dataset 1 Catalog Photometry diamonds e.g. WISE W2, and Dataset 2 Molecular Feature diamonds e.g. CO₂ Ice, H₂O, CH₄, CO).
   - **Root Cause:** Due to large vertical flux discrepancies between the SED curve (e.g. 2224 µJy) and photometry points (e.g. 566 µJy), 1D X-axis index snapping (`axis: 'x'`) pulled Chart.js's tooltip position to the top of the canvas, and hovering directly on spots with slight X-offset caused Dataset 1/2 to evaluate to null. Furthermore, clicking on points lacked dedicated interactive popup feedback.

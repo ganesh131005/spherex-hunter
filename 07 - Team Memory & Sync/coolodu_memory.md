@@ -3,7 +3,7 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and physically verified Issue #43: Time-Domain Light Curve Tab Enhancements & Upgrades on `coolodu/web-frontend`. Implemented interactive point details with SNR & microjansky flux (`#lcSelectedPointDetails`), Lomb-Scargle spectral power sparkline (`#lcPowerSparkline`), outlier flagging & masking with $\chi^2_{\text{red}}$ recalculation (`#btnToggleOutlierMask`, `#lcMaskedSection`, `#btnClearLCMasks`, `Shift+Click`), responsive flex-wrap dock toolbar, and harmonic least-squares phase model curve overlay (`#btnToggleLCModelCurve`). All 25/25 UI contract tests pass 100% green. Verified physically in live browser subagent.
+- **Current Task:** Fixed and verified: Made the Blink Icon (`#toolBlinkFlip`) fully functional and made the Blink popup toolbar (`#viewportBlinkHUD`) visible in the observatory viewport on `coolodu/web-frontend`. Resolved duplicate conflicting click listener on `#toolBlinkFlip`, set `#viewportBlinkHUD` visible with active highlight on `#toolBlinkFlip`, and ensured mutual auto-closing between Time Step and Blink popups. Verified 100% physically in the live browser subagent with bounding box confirmation and screenshot. All 26/26 UI contract tests pass 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
