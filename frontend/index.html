@@ -1272,7 +1272,7 @@
   <footer id="bottomDock" class="bg-space-900 border-t border-space-700 flex flex-col shrink-0 z-30 shadow-2xl transition-all duration-200">
 
     <!-- Bottom Dock Resize Splitter (Issue #16) -->
-    <div id="bottomDockSplitter" class="h-1.5 bg-space-800 hover:bg-cyan-500/60 active:bg-cyan-400 cursor-row-resize shrink-0 z-40 transition-colors" title="Drag to resize Bottom Dock (Double-click to reset)"></div>
+    <div id="bottomDockSplitter" class="h-1.5 bg-space-800 hover:bg-cyan-500/60 active:bg-cyan-400 cursor-row-resize shrink-0 z-40 transition-colors" title="Drag or scroll wheel up/down to zoom in/out (expand/shrink) Bottom Dock (Double-click to reset)"></div>
 
     <!-- Dock Header & Tab Bar -->
     <div class="h-9 px-3 bg-space-850 border-b border-space-700 flex items-center justify-between text-xs shrink-0 select-none">
@@ -1283,7 +1283,7 @@
           <i data-lucide="film" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span>Timeline (Flipbook)</span>
         </button>
-        <button id="dockTabSpectrum" class="blender-btn px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition">
+        <button id="dockTabSpectrum" class="blender-btn px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition" title="102-Band Spectrum (Scroll wheel up/down over bottom bar to zoom in/out)">
           <i data-lucide="line-chart" class="w-3.5 h-3.5 text-emerald-400"></i>
           <span>102-Band Spectrum</span>
         </button>
@@ -1451,13 +1451,20 @@
             </div>
           </div>
 
-          <!-- Right: Non-simultaneous observations honesty notice & Science Guide -->
+          <!-- Right: Non-simultaneous observations honesty notice, Dock Zoom Indicator & Science Guide -->
           <div class="flex items-center gap-2.5 shrink-0">
             <!-- Non-simultaneous observations honesty notice for variable stars -->
             <div id="spectrumNonSimultaneousNotice"
               class="text-xs font-medium text-amber-200 bg-amber-950/80 px-3 py-1.5 rounded-lg border border-amber-500/60 flex items-center gap-2 shrink-0 select-none hidden lg:flex shadow-sm">
               <i data-lucide="info" class="w-4 h-4 shrink-0 text-amber-400"></i>
               <span>Notice: Observation dates vary across arrays (e.g. RW Aur, R Dra).</span>
+            </div>
+
+            <!-- Bottom Dock Zoom / Height Indicator & Reset -->
+            <div id="specDockZoomIndicator" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-space-950 border border-cyan-500/40 text-xs font-mono text-cyan-300 shadow-sm select-none cursor-pointer hover:bg-space-850 hover:border-cyan-400 transition" title="102-Band Bottom Bar Zoom: Scroll wheel up/down over bottom bar to expand or shrink (Double-click to reset height)">
+              <i data-lucide="chevrons-up-down" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span id="specDockHeightLabel" class="font-bold">240px</span>
+              <span class="text-[10px] text-gray-400 hidden md:inline">⇅ Scroll Zoom</span>
             </div>
 
             <!-- 102-Band Science Explainer Trigger -->
@@ -3762,6 +3769,10 @@
           }
 
           if (!entry && Math.abs(rawDec) <= 89.9) {
+            if (isDragging) {
+              // During active drag, don't trigger new network fetches; let existing textures smoothly pan
+              continue;
+            }
             if (adjacentSkyTileCache.size >= 128) {
               const oldestKey = adjacentSkyTileCache.keys().next().value;
               if (oldestKey) adjacentSkyTileCache.delete(oldestKey);
@@ -6139,6 +6150,7 @@
       }
       if (isDragging) {
         isDragging = false;
+        drawFrame(); // Trigger final viewport tile fetch once pan drag settles
       }
     });
 
@@ -7158,12 +7170,19 @@
 
     const TIMELINE_COMPACT_HEIGHT = 64;
     let activeDockTabMode = 'timeline';
-    let savedDockBodyHeight = Math.max(156, Math.min(420, parseInt(localStorage.getItem('spherex_bottom_dock_height') || '240', 10) || 240));
+    let savedDockBodyHeight = Math.max(80, Math.min(650, parseInt(localStorage.getItem('spherex_bottom_dock_height') || '240', 10) || 240));
     let isDockCollapsed = false;
+
+    function updateDockHeightDisplay(height) {
+      const heightLabel = document.getElementById('specDockHeightLabel');
+      if (heightLabel) {
+        heightLabel.textContent = `${Math.round(height)}px`;
+      }
+    }
 
     function getTargetOpenDockHeight() {
       if (activeDockTabMode === 'timeline') return TIMELINE_COMPACT_HEIGHT;
-      if (activeDockTabMode === 'spectrum') return Math.max(240, savedDockBodyHeight);
+      if (activeDockTabMode === 'spectrum') return Math.max(80, savedDockBodyHeight);
       return Math.max(156, savedDockBodyHeight);
     }
 
@@ -7180,9 +7199,11 @@
       activeDockTabMode = (activePanel === dockPanelTimeline) ? 'timeline' : ((activePanel === dockPanelSpectrum) ? 'spectrum' : 'chart');
       isDockCollapsed = false;
       if (dockCollapseIcon) dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
+      const targetH = getTargetOpenDockHeight();
       if (dockContentBody) {
-        dockContentBody.style.height = `${getTargetOpenDockHeight()}px`;
+        dockContentBody.style.height = `${targetH}px`;
       }
+      updateDockHeightDisplay(targetH);
       if (window.lucide) lucide.createIcons();
       setTimeout(() => {
         if (typeof resizeCanvas === 'function') resizeCanvas();

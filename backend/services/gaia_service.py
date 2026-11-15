@@ -59,7 +59,14 @@ def _parse_gaia_rows(res) -> list[dict]:
     return parsed
 
 
-def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit: int = 50, timeout: float = 3.5) -> dict:
+def query_gaia_dr3(
+    ra: float,
+    dec: float,
+    radius_arcmin: float = 3.0,
+    row_limit: int = 50,
+    timeout: float = 3.5,
+    allow_live_tap: bool = True
+) -> dict:
     """
     Executes an astronomical ADQL cone search on Gaia DR3 via ESA Gaia TAP
     with automatic NASA IRSA `gaia_dr3_source` fallback and L1/L2 disk caching.
@@ -73,11 +80,17 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
     # 1. Check L1 RAM Cache
     if cache_key in _GAIA_CACHE:
         cached = dict(_GAIA_CACHE[cache_key])
-        cached["telemetry"] = {
-            "cache_tier": "L1_RAM",
-            "fetch_time_ms": round((time.time() - t0) * 1000, 2)
-        }
-        return cached
+        if "_neg_expires" in cached:
+            if time.time() > cached["_neg_expires"]:
+                _GAIA_CACHE.pop(cache_key, None)
+            else:
+                return cached
+        else:
+            cached["telemetry"] = {
+                "cache_tier": "L1_RAM",
+                "fetch_time_ms": round((time.time() - t0) * 1000, 2)
+            }
+            return cached
 
     # 2. Check L2 Disk Cache
     if os.path.exists(disk_cache_path):
@@ -92,6 +105,18 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
             return cached_disk
         except Exception:
             pass
+
+    if not allow_live_tap:
+        return {
+            "status": "unavailable",
+            "message": "Live TAP query disabled for fast background fallback",
+            "catalog": "Gaia Data Release 3 (Gaia DR3)",
+            "archive_host": "Local Fast Cache",
+            "search_center": {"ra_deg": ra, "dec_deg": dec, "radius_arcmin": radius_arcmin},
+            "matched_count": 0,
+            "sources": [],
+            "telemetry": {"cache_tier": "FAST_LOCAL_FALLBACK", "fetch_time_ms": round((time.time() - t0) * 1000, 2)}
+        }
 
     radius_deg = float(radius_arcmin) / 60.0
     select_cols = "SELECT TOP {limit} source_id, ra, dec, pmra, pmdec, parallax, phot_g_mean_mag".format(limit=row_limit)
@@ -164,7 +189,10 @@ def query_gaia_dr3(ra: float, dec: float, radius_arcmin: float = 3.0, row_limit:
     }
 
     if query_error:
-        return result  # never cache a failed query
+        # Short-lived negative cache (20s) so rapid viewport panning doesn't re-hammer failing mirrors
+        result["_neg_expires"] = time.time() + 20.0
+        _GAIA_CACHE[cache_key] = result
+        return result
 
     # Store in L1 RAM and L2 Disk caches
     if len(_GAIA_CACHE) >= _MAX_GAIA_CACHE:

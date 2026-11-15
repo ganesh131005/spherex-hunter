@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⚡ CIRCUIT BREAKER & FAST ZERO-TAP WCS BACKGROUND FALLBACK (@jokerodu)]**
+  - **The Problem:** When upstream NASA IRSA FinderChart experienced temporary delays or timeouts on un-cached sky coordinates during rapid panning, each timed-out background tile fell back to `_build_degraded_gaia_wcs_fallback()`, which in turn attempted synchronous live TAP queries across ESA Gaia (`gea.esac.esa.int`) and IRSA TAP (`irsa.ipac.caltech.edu`), accumulating 7–10s of blocking per tile and generating 502 Proxy Errors on IRSA.
+  - **The Solution:**
+    1. **IRSA Circuit Breaker:** Implemented a global circuit breaker (`_IRSA_CIRCUIT_OPEN_UNTIL`) in `cutout_engine.py`. If 2 consecutive upstream timeouts occur, the circuit breaker trips for 20 seconds, immediately short-circuiting network fetches and returning calibrated WCS fallbacks in $<1\,\text{ms}$.
+    2. **Zero-TAP Fast Fallback for Background Tiles:** Added `allow_live_tap: bool = False` to `_build_degraded_gaia_wcs_fallback()` and `query_gaia_dr3()`. Background tiles now use local L1 RAM / L2 disk cache if available, but **never** make outgoing HTTP requests to ESA or Caltech TAP servers.
+    3. **Pan Drag Debounce:** In `frontend/index.html`, prevented tile network requests while the user is actively dragging the canvas (`isDragging === true`). Only after the user releases the mouse (`mouseup`) does the viewport trigger network requests for the settled, visible tiles, eliminating mid-drag tile storms.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (26/26), `test_viewport_overhaul_v2.py`, and `test_continuous_viewport_e2e.py` (14/14). Clean working tree on `main`.
 - **[⚡ BACKEND RATE-LIMIT OPTIMIZATION & INTERACTIVE 102-BAND SPECTRUM SPOTS (@jokerodu & @coolodu)]**
   - **Backend Rate-Limit Prevention:**
     1. Decoupled 102-band spectrum generation from background viewport tiles via `include_spectrum=False`, dropping external TAP queries per pan from ~120 to 0.

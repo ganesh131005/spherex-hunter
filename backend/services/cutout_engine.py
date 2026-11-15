@@ -33,6 +33,29 @@ _TRANSIENT_NEGATIVE_CACHE = OrderedDict()
 _MAX_NEGATIVE_CACHE = 128
 _NEGATIVE_CACHE_TTL = 15.0  # seconds
 
+# Global Circuit Breaker for NASA IRSA to immediately halt cascading timeouts
+_IRSA_CIRCUIT_FAIL_COUNT = 0
+_IRSA_CIRCUIT_OPEN_UNTIL = 0.0
+_IRSA_CIRCUIT_LOCK = threading.Lock()
+
+def _is_irsa_circuit_open() -> bool:
+    global _IRSA_CIRCUIT_OPEN_UNTIL
+    return time.time() < _IRSA_CIRCUIT_OPEN_UNTIL
+
+def _trip_irsa_circuit(cooldown_sec: float = 20.0) -> None:
+    global _IRSA_CIRCUIT_FAIL_COUNT, _IRSA_CIRCUIT_OPEN_UNTIL
+    with _IRSA_CIRCUIT_LOCK:
+        _IRSA_CIRCUIT_FAIL_COUNT += 1
+        if _IRSA_CIRCUIT_FAIL_COUNT >= 2:
+            _IRSA_CIRCUIT_OPEN_UNTIL = time.time() + cooldown_sec
+            print(f"[IRSA Circuit Breaker] Upstream NASA IRSA is slow or timing out ({_IRSA_CIRCUIT_FAIL_COUNT} failures). Circuit breaker open for {cooldown_sec}s; serving high-speed local calibrated WCS fallbacks instantly.")
+
+def _record_irsa_success() -> None:
+    global _IRSA_CIRCUIT_FAIL_COUNT, _IRSA_CIRCUIT_OPEN_UNTIL
+    with _IRSA_CIRCUIT_LOCK:
+        _IRSA_CIRCUIT_FAIL_COUNT = 0
+        _IRSA_CIRCUIT_OPEN_UNTIL = 0.0
+
 # Benchmark target bookmarks. Only literature-sourced astrometry / classification lives here:
 # coordinates (SIMBAD ICRS), proper motion (Gaia DR3 / Luhman 2014), nominal effective temperature.
 # Per-target "telemetry" (W1-W2 colour, Gaia match status, contamination flags, NEOSSat status)
@@ -666,12 +689,15 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                             d1, d2 = None, None
                             hdr1, hdr2 = None, None
 
-    # If not in fresh cache, query NASA IRSA Caltech FinderChart API (up to 2 attempts, 8s timeout, max 4 concurrent)
+    # If not in fresh cache, query NASA IRSA Caltech FinderChart API (with concurrency limiter & circuit breaker)
     if d1 is None or d2 is None:
         last_err = None
         now_check = time.time()
         is_neg_cached = False
-        if not force_refresh and cache_id in _TRANSIENT_NEGATIVE_CACHE:
+        if _is_irsa_circuit_open():
+            is_neg_cached = True
+            last_err = "Circuit breaker open (upstream NASA IRSA cooldown active)"
+        elif not force_refresh and cache_id in _TRANSIENT_NEGATIVE_CACHE:
             if (now_check - _TRANSIENT_NEGATIVE_CACHE[cache_id]) < _NEGATIVE_CACHE_TTL:
                 is_neg_cached = True
                 last_err = "Transient upstream failure (cooldown active)"
@@ -685,7 +711,7 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                     subset_size = max(1.0, min(15.0, float(fov_arcmin)))
                     url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
                     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
-                    xml_data = urllib.request.urlopen(req, context=ctx, timeout=3.5).read()
+                    xml_data = urllib.request.urlopen(req, context=ctx, timeout=4.0).read()
                     root = ET.fromstring(xml_data)
 
                     url_2mass, url_dss = None, None
@@ -698,8 +724,8 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                             url_dss = u
 
                     if url_2mass and url_dss:
-                        raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=3.5).read()
-                        raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=3.5).read()
+                        raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=4.0).read()
+                        raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=4.0).read()
 
                         try:
                             with open(p1, "wb") as f: f.write(raw1)
@@ -718,11 +744,13 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                         disk_cached_ts = time.time()
                         is_stale_disk = False
                         _TRANSIENT_NEGATIVE_CACHE.pop(cache_id, None)
+                        _record_irsa_success()
                 except Exception as err:
                     last_err = err
                     if len(_TRANSIENT_NEGATIVE_CACHE) >= _MAX_NEGATIVE_CACHE:
                         _TRANSIENT_NEGATIVE_CACHE.popitem(last=False)
                     _TRANSIENT_NEGATIVE_CACHE[cache_id] = time.time()
+                    _trip_irsa_circuit(cooldown_sec=20.0)
         if (d1 is None or d2 is None) and stale_fallback_paths and not force_refresh:
             sp1, sp2, smtime = stale_fallback_paths
             try:
@@ -738,7 +766,8 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
             except Exception:
                 d1, d2 = None, None
         if d1 is None or d2 is None:
-            print(f"NASA IRSA live fetch fallback for RA {ra}, Dec {dec}: {last_err}")
+            if not is_neg_cached:
+                print(f"NASA IRSA live fetch fallback for RA {ra:.3f}, Dec {dec:+.3f}: {last_err}")
             return None
 
     if d1 is None or d2 is None or d1.size == 0 or d2.size == 0:
@@ -1053,7 +1082,8 @@ def _build_degraded_gaia_wcs_fallback(
     ra: float,
     dec: float,
     fov_arcmin: float = 3.0,
-    lod: int = 1
+    lod: int = 1,
+    allow_live_tap: bool = False
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict, str, str, float, np.ndarray, np.ndarray, str]:
     """
     Graceful degradation when upstream NASA IRSA / FinderChart returns HTTP 502 or times out.
@@ -1082,11 +1112,15 @@ def _build_degraded_gaia_wcs_fallback(
     gaia_sources: list[dict] = []
     try:
         from backend.services.gaia_service import query_gaia_dr3
-        gaia_res = query_gaia_dr3(float(ra), float(dec), radius_arcmin=max(2.0, actual_fov * 0.75))
+        gaia_res = query_gaia_dr3(
+            float(ra), float(dec),
+            radius_arcmin=max(2.0, actual_fov * 0.75),
+            allow_live_tap=allow_live_tap
+        )
         if isinstance(gaia_res, dict):
             gaia_sources = list(gaia_res.get("sources") or [])
     except Exception as gaia_err:
-        print(f"Degraded Gaia fallback lookup warning: {gaia_err}")
+        pass
 
     cos_dec = max(0.05, math.cos(math.radians(float(dec))))
     dt1_yr = 1999.12 - 2016.0
@@ -1298,7 +1332,10 @@ def fetch_real_cutout(
     fits_result = fetch_live_irsa_fits(ra, dec, fov_arcmin, lod=lod, force_refresh=force_refresh)
 
     if fits_result is None:
-        fits_result = _build_degraded_gaia_wcs_fallback(ra, dec, fov_arcmin, lod=lod)
+        fits_result = _build_degraded_gaia_wcs_fallback(
+            ra, dec, fov_arcmin, lod=lod,
+            allow_live_tap=(include_spectrum and not _is_irsa_circuit_open())
+        )
 
     ep1_arr, ep2_arr, diff_arr, vector_info, lbl1, lbl2, actual_fov, d1, d2, cache_tier = fits_result
 
