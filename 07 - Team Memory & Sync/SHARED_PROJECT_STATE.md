@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🎯 STEP 2 COMPLETED: 5 PRIORITY 0 VIEWPORT REGRESSION TARGETS REMEDIATED & VERIFIED]**
+  - **Bug 1 (Photometric Checkerboarding Fixed):** Implemented `apply_locked_asinh_stretch` in `backend/services/cutout_engine.py` with field-level caching (`_FIELD_SKY_PARAMS`) locking $(\mu_{\text{sky}}, \sigma_{\text{sky}}, P_{99.5})$ across neighbor cutouts.
+  - **Bug 2 (Vertical Black Seam Eliminated):** Discrete integer coordinate snapping (`Math.floor`, `drawW = (x1 - x0) + 1`) and $\cos(\delta_0)$ spherical metric scaling in `drawAdjacentSkyTiling` in `frontend/index.html`.
+  - **Bug 3 (Blink Zoom "Swiss Cheese" Eliminated):** Added non-destructive texture retention fallback (`lastRenderedSpatialTiles`) ensuring canvas rects never clear to black on cache miss; added `isZoomSliderDragging` interaction guard pausing automatic blink morphing during active zoom slider dragging.
+  - **Bug 4 (Independent Physical Device Scale HUD):** Refactored `#vpDeviceScale` to independent physical device pixel formula $\theta_{\text{screen}} = (\text{FOV}_{\text{arcmin}} \times 60) / (W_{\text{CSS}} \times \text{dpr})$ formatted as `${formattedScale}″/dev_px` with responsive flex shrink layout preventing string truncation.
+  - **Bug 5 (WISE 0855 Target-Specific Baseline Corrected):** Re-anchored WISE 0855 in `backend/services/scene_service.py` and `frontend/index.html` to AllWISE W2 ($4.6\,\mu\text{m}$, 2010) and SPHEREx narrowband stack ($4.6\,\mu\text{m}$, Band 6, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$) establishing true bandpass matching.
+  - **Verification:** 43 passed across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with clean ruff check.
 - **[📋 OFFICIAL NASA SPACE APPS SUBMISSION GUIDE & FIELD INSTRUCTIONS SYNCHRONIZED (@iceodu)]**
   - **Comprehensive Guide Deconstruction:** Fully audited the official [NASA Space Apps Project Submission Guide](https://www.spaceappschallenge.org/resources/project-submission-guide/#project-page-form-field-instructions), 2026 Judging & Awards Guide, and all embedded hyperlinks.
   - **Crucial Enforcements Identified & Vault Updated:**

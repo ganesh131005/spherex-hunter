@@ -62,64 +62,128 @@ def get_target_scene(
             )
 
     # 2. Build Epochs with Rigorous Astropy Proper Motion Propagation
-    epoch_specs = [
-        {
-            "id": "epoch_2mass",
-            "survey": "2MASS",
-            "instrument": "2MASS 1.3m Mt. Hopkins",
-            "band": "J-Band (1.25 μm)",
-            "wavelength_um": 1.25,
-            "mjd": 51227.0,
-            "obs_date": "1999-02-18",
-            "product_id": "2MASS_J_ALLSKY_COADD",
-            "product_url": "https://irsa.ipac.caltech.edu/applications/2MASS/",
-            "pixel_scale_arcsec": 1.0,
-            "units": "DN / counts",
-            "status": "loaded"
-        },
-        {
-            "id": "epoch_unwise_w1",
-            "survey": "unWISE",
-            "instrument": "WISE 0.4m Space Telescope",
-            "band": "W1 (3.4 μm)",
-            "wavelength_um": 3.40,
-            "mjd": 55400.0,
-            "obs_date": "2010-07-23",
-            "product_id": "UNWISE_COADD_W1_1457p000",
-            "product_url": "http://unwise.me/",
-            "pixel_scale_arcsec": 2.75,
-            "units": "Vega nanomaggies",
-            "status": "loaded"
-        },
-        {
-            "id": "epoch_unwise_w2",
-            "survey": "unWISE",
-            "instrument": "WISE 0.4m Space Telescope",
-            "band": "W2 (4.6 μm)",
-            "wavelength_um": 4.60,
-            "mjd": 58850.0,
-            "obs_date": "2020-01-01",
-            "product_id": "UNWISE_COADD_W2_1457p000",
-            "product_url": "http://unwise.me/",
-            "pixel_scale_arcsec": 2.75,
-            "units": "Vega nanomaggies",
-            "status": "loaded"
-        },
-        {
-            "id": "epoch_spherex",
-            "survey": "SPHEREx",
-            "instrument": "SPHEREx 0.2m Cryo Space Telescope",
-            "band": "Array 3 (2.1 μm)",
-            "wavelength_um": 2.10,
-            "mjd": 60825.0,
-            "obs_date": "2025-05-30",
-            "product_id": "SPHEREX_L2_ALLSKY_2025",
-            "product_url": "https://irsa.ipac.caltech.edu/Missions/spherex.html",
-            "pixel_scale_arcsec": 6.2,
-            "units": "MJy/sr",
-            "status": "loaded"
-        }
-    ]
+    if target_key == "wise0855":
+        epoch_specs = [
+            {
+                "id": "epoch_allwise_w2",
+                "survey": "AllWISE",
+                "instrument": "WISE 0.4m Space Telescope",
+                "band": "W2 (4.6 μm)",
+                "wavelength_um": 4.60,
+                "mjd": 55340.0,
+                "obs_date": "2010-05-24",
+                "product_id": "ALLWISE_COADD_W2_1337m072",
+                "product_url": "https://irsa.ipac.caltech.edu/Missions/wise.html",
+                "pixel_scale_arcsec": 2.75,
+                "units": "Vega nanomaggies",
+                "status": "loaded"
+            },
+            {
+                "id": "epoch_unwise_w2_2015",
+                "survey": "unWISE",
+                "instrument": "WISE 0.4m Space Telescope",
+                "band": "W2 (4.6 μm)",
+                "wavelength_um": 4.60,
+                "mjd": 57160.0,
+                "obs_date": "2015-05-18",
+                "product_id": "UNWISE_NEO2_W2_1337m072",
+                "product_url": "http://unwise.me/",
+                "pixel_scale_arcsec": 2.75,
+                "units": "Vega nanomaggies",
+                "status": "loaded"
+            },
+            {
+                "id": "epoch_unwise_w2_2020",
+                "survey": "unWISE",
+                "instrument": "WISE 0.4m Space Telescope",
+                "band": "W2 (4.6 μm)",
+                "wavelength_um": 4.60,
+                "mjd": 58980.0,
+                "obs_date": "2020-05-12",
+                "product_id": "UNWISE_NEO7_W2_1337m072",
+                "product_url": "http://unwise.me/",
+                "pixel_scale_arcsec": 2.75,
+                "units": "Vega nanomaggies",
+                "status": "loaded"
+            },
+            {
+                "id": "epoch_spherex_stack_4p6um",
+                "survey": "SPHEREx",
+                "instrument": "SPHEREx 0.2m Cryo Space Telescope",
+                "band": "Band 6 Stack (4.6 μm)",
+                "wavelength_um": 4.60,
+                "mjd": 60810.25,
+                "obs_date": "2025-05-15",
+                "product_id": "SPHEREx_stack_wise0855_4p6um",
+                "product_url": "https://irsa.ipac.caltech.edu/Missions/spherex.html",
+                "pixel_scale_arcsec": 6.15,
+                "units": "MJy/sr",
+                "status": "loaded",
+                "n_exposures": 26,
+                "stack_snr": 5.82,
+                "mjd_min": 60807.12,
+                "mjd_max": 60813.38
+            }
+        ]
+    else:
+        epoch_specs = [
+            {
+                "id": "epoch_2mass",
+                "survey": "2MASS",
+                "instrument": "2MASS 1.3m Mt. Hopkins",
+                "band": "J-Band (1.25 μm)",
+                "wavelength_um": 1.25,
+                "mjd": 51227.0,
+                "obs_date": "1999-02-18",
+                "product_id": "2MASS_J_ALLSKY_COADD",
+                "product_url": "https://irsa.ipac.caltech.edu/applications/2MASS/",
+                "pixel_scale_arcsec": 1.0,
+                "units": "DN / counts",
+                "status": "loaded"
+            },
+            {
+                "id": "epoch_unwise_w1",
+                "survey": "unWISE",
+                "instrument": "WISE 0.4m Space Telescope",
+                "band": "W1 (3.4 μm)",
+                "wavelength_um": 3.40,
+                "mjd": 55400.0,
+                "obs_date": "2010-07-23",
+                "product_id": "UNWISE_COADD_W1_1457p000",
+                "product_url": "http://unwise.me/",
+                "pixel_scale_arcsec": 2.75,
+                "units": "Vega nanomaggies",
+                "status": "loaded"
+            },
+            {
+                "id": "epoch_unwise_w2",
+                "survey": "unWISE",
+                "instrument": "WISE 0.4m Space Telescope",
+                "band": "W2 (4.6 μm)",
+                "wavelength_um": 4.60,
+                "mjd": 58850.0,
+                "obs_date": "2020-01-01",
+                "product_id": "UNWISE_COADD_W2_1457p000",
+                "product_url": "http://unwise.me/",
+                "pixel_scale_arcsec": 2.75,
+                "units": "Vega nanomaggies",
+                "status": "loaded"
+            },
+            {
+                "id": "epoch_spherex",
+                "survey": "SPHEREx",
+                "instrument": "SPHEREx 0.2m Cryo Space Telescope",
+                "band": "Array 3 (2.1 μm)",
+                "wavelength_um": 2.10,
+                "mjd": 60825.0,
+                "obs_date": "2025-05-30",
+                "product_id": "SPHEREX_L2_ALLSKY_2025",
+                "product_url": "https://irsa.ipac.caltech.edu/Missions/spherex.html",
+                "pixel_scale_arcsec": 6.2,
+                "units": "MJy/sr",
+                "status": "loaded"
+            }
+        ]
 
     epochs = []
     for spec in epoch_specs:
@@ -154,7 +218,11 @@ def get_target_scene(
             "fov_arcmin": fov_arcmin,
             "displacement_arcsec": motion_info["displacement_arcsec"],
             "exceeds_fov": motion_info["exceeds_fov"],
-            "warning": motion_info["warning"]
+            "warning": motion_info["warning"],
+            "n_exposures": spec.get("n_exposures"),
+            "stack_snr": spec.get("stack_snr"),
+            "mjd_min": spec.get("mjd_min"),
+            "mjd_max": spec.get("mjd_max"),
         })
 
     # 3. Default Blink Frame A and Frame B

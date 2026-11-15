@@ -184,6 +184,52 @@ def render_color_canvas(arr: np.ndarray, mode: str = "infrared", coverage_mask: 
     return f"data:image/png;base64,{b64}"
 
 
+_FIELD_SKY_PARAMS: dict[str, dict[str, float]] = {}
+
+
+def apply_locked_asinh_stretch(
+    arr: np.ndarray,
+    mu_sky: float | None = None,
+    sigma_sky: float | None = None,
+    p99_5: float | None = None,
+    beta: float = 3.0,
+) -> np.ndarray:
+    """
+    Globally locked [0, P99.5]-clipped Asinh stretch:
+    Locks background median (mu_sky), robust noise (sigma_sky = 1.4826 * MAD),
+    and upper percentile (P99.5) across cutouts to eliminate photometric
+    checkerboarding across neighbor tiles.
+    """
+    valid_pixels = arr[~np.isnan(arr)]
+    if len(valid_pixels) == 0:
+        return np.zeros_like(arr, dtype=np.uint8)
+
+    if mu_sky is None:
+        mu_sky = float(np.median(valid_pixels))
+    if sigma_sky is None:
+        mad = float(np.median(np.abs(valid_pixels - mu_sky)))
+        sigma_sky = float(1.4826 * mad) if mad > 1e-6 else float(np.std(valid_pixels)) + 1e-6
+    sigma_sky = max(sigma_sky, 1e-5)
+
+    if p99_5 is None:
+        p99_5 = float(np.percentile(valid_pixels, 99.5))
+    if p99_5 <= mu_sky:
+        p99_5 = mu_sky + 10.0 * sigma_sky
+
+    # f_clipped = min(max(I(x, y) - mu_sky, 0), P99.5 - mu_sky)
+    f_sub = arr - mu_sky
+    f_clipped = np.clip(f_sub, 0.0, p99_5 - mu_sky)
+
+    # I_norm = asinh(f_clipped / (beta * sigma_sky)) / asinh((P99.5 - mu_sky) / (beta * sigma_sky))
+    scale_denom = np.arcsinh((p99_5 - mu_sky) / (beta * sigma_sky))
+    if scale_denom <= 1e-6:
+        scale_denom = 1.0
+
+    i_norm = np.arcsinh(f_clipped / (beta * sigma_sky)) / scale_denom
+    i_norm = np.clip(i_norm, 0.0, 1.0)
+    return (i_norm * 255.0).astype(np.uint8)
+
+
 def render_coverage_mask_canvas(arr: np.ndarray) -> str:
     """
     Renders diagnostic coverage overlay:
@@ -517,7 +563,6 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
     import xml.etree.ElementTree as ET
 
     from astropy.io import fits
-    from astropy.visualization import AsinhStretch
     from scipy.ndimage import zoom
 
     cache_dir = os.path.join(os.path.dirname(__file__), "..", "cache", "dynamic_fits")
@@ -691,22 +736,28 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
     if d2.shape != (dim, dim):
         d2 = zoom(d2, (float(dim) / d2.shape[0], float(dim) / d2.shape[1]), order=1)
 
-    # Robust photometric sky equalization (anchoring median background)
-    med1 = float(np.median(d1))
-    std1 = float(np.std(d1)) + 1e-6
-    d1_sub = d1 - med1
-    vmin1 = -1.5 * std1
-    vmax1 = max(10.0 * std1, float(np.percentile(d1_sub, 99.5)))
-    norm1 = np.clip((d1_sub - vmin1) / (vmax1 - vmin1), 0.0, 1.0)
-    ep1_clean = (AsinhStretch(a=0.1)(norm1) * 255.0).astype(np.uint8)
+    # Globally locked [0, P99.5]-clipped Asinh stretch across field neighbors
+    f_key = f"{round(ra * 5.0) / 5.0:.2f}_{round(dec * 5.0) / 5.0:.2f}"
+    params = _FIELD_SKY_PARAMS.get(f_key)
+    if params is None:
+        med1 = float(np.median(d1))
+        mad1 = float(np.median(np.abs(d1 - med1)))
+        sig1 = float(1.4826 * mad1) if mad1 > 1e-6 else float(np.std(d1)) + 1e-6
+        p99_1 = float(np.percentile(d1, 99.5))
 
-    med2 = float(np.median(d2))
-    std2 = float(np.std(d2)) + 1e-6
-    d2_sub = d2 - med2
-    vmin2 = -1.5 * std2
-    vmax2 = max(10.0 * std2, float(np.percentile(d2_sub, 99.5)))
-    norm2 = np.clip((d2_sub - vmin2) / (vmax2 - vmin2), 0.0, 1.0)
-    ep2_clean = (AsinhStretch(a=0.1)(norm2) * 255.0).astype(np.uint8)
+        med2 = float(np.median(d2))
+        mad2 = float(np.median(np.abs(d2 - med2)))
+        sig2 = float(1.4826 * mad2) if mad2 > 1e-6 else float(np.std(d2)) + 1e-6
+        p99_2 = float(np.percentile(d2, 99.5))
+
+        params = {
+            "med1": med1, "sig1": sig1, "p99_1": p99_1,
+            "med2": med2, "sig2": sig2, "p99_2": p99_2,
+        }
+        _FIELD_SKY_PARAMS[f_key] = params
+
+    ep1_clean = apply_locked_asinh_stretch(d1, mu_sky=params["med1"], sigma_sky=params["sig1"], p99_5=params["p99_1"], beta=3.0)
+    ep2_clean = apply_locked_asinh_stretch(d2, mu_sky=params["med2"], sigma_sky=params["sig2"], p99_5=params["p99_2"], beta=3.0)
 
     # Real difference map: Execute ZOGY optimal subtraction on authentic FITS arrays
     try:
