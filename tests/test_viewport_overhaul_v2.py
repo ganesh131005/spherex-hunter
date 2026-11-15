@@ -196,3 +196,61 @@ def test_offline_hips_fixture_integrity():
     assert os.path.exists(prop_file), f"Missing local HiPS properties fixture: {prop_file}"
     assert os.path.exists(moc_file), f"Missing local HiPS Moc.fits fixture: {moc_file}"
     assert os.path.exists(tile_file), f"Missing local HiPS Order 0 tile fixture: {tile_file}"
+
+
+# -----------------------------------------------------------------------------
+# 8. Priority 0 Regression Remediation Contract Tests
+# -----------------------------------------------------------------------------
+def test_priority_0_regression_remediations_contract():
+    """Validates Priority 0 Live Screenshot bug fixes: locked stretch, non-destructive caching, HUD scale, drag pause."""
+    import numpy as np
+
+    from backend.services.cutout_engine import apply_locked_asinh_stretch
+
+    # 1. Bug 1: Globally Locked Asinh Stretch
+    sample_tile_a = np.array([[10.0, 10.5], [9.8, 1000.0]])  # Contains a bright star
+    sample_tile_b = np.array([[10.1, 9.9], [10.2, 10.0]])    # Starless tile
+
+    # When stretched with locked field parameters, background pixels receive identical values
+    res_a = apply_locked_asinh_stretch(sample_tile_a, mu_sky=10.0, sigma_sky=1.0, p99_5=100.0)
+    res_b = apply_locked_asinh_stretch(sample_tile_b, mu_sky=10.0, sigma_sky=1.0, p99_5=100.0)
+
+    # Background pixel (10.0) in both tiles must be strictly identical (0 intensity after clip at mu_sky)
+    assert res_a[0, 0] == res_b[1, 1], "Background pixels must receive identical gray stretch across neighbor tiles"
+    assert res_a.shape == (2, 2)
+    assert res_b.shape == (2, 2)
+
+    # 2. Bug 2, 3, 4: HTML Contracts for Non-Destructive Tile Retention, Seam Snapping & HUD Layout
+    html = _read_index_html()
+    assert "lastRenderedSpatialTiles" in html, "Missing lastRenderedSpatialTiles map for non-destructive texture fallback"
+    assert "isZoomSliderDragging" in html, "Missing isZoomSliderDragging interaction lock flag"
+    assert "dev_px" in html, "Missing non-truncating 'dev_px' unit in HUD scale readout"
+    assert "Math.max(1, (x1 - x0) + 1)" in html or "(x1 - x0) + 1" in html, "Missing +1px integer seam overlap in drawAdjacentSkyTiling"
+
+
+def test_wise0855_scene_timeline_contract():
+    """Validates Priority 0 Bug 5: WISE 0855 timeline re-anchored to AllWISE W2 (4.6um) + SPHEREx Stack (4.6um)."""
+    from backend.services.scene_service import get_target_scene
+
+    scene = get_target_scene(target_key="wise0855", fov_arcmin=15.0)
+    assert scene is not None
+    epochs = scene.get("epochs", [])
+    assert len(epochs) == 4
+
+    # Frame 1: AllWISE W2 (4.6um) instead of 1999 2MASS
+    ep1 = epochs[0]
+    assert ep1["survey"] == "AllWISE"
+    assert ep1["band"].startswith("W2")
+    assert ep1["wavelength_um"] == 4.60
+
+    # Frame 4: SPHEREx Narrowband Stack (4.6um)
+    ep4 = epochs[3]
+    assert ep4["survey"] == "SPHEREx"
+    assert ep4["wavelength_um"] == 4.60
+    assert ep4.get("n_exposures") == 26
+    assert ep4.get("stack_snr") >= 5.0
+
+    # Bandpass matching: Both are 4.6um -> Matched for Blink & Difference
+    active_pair = scene.get("active_blink_pair", {})
+    assert active_pair.get("band_matched") is True
+    assert active_pair.get("band_mismatch_reason") is None

@@ -816,17 +816,17 @@
       <!-- BOTTOM VIEWPORT HUD (Collision-Proof Flex Bar: Issue #27) -->
       <div class="absolute bottom-2.5 left-3 right-3 pointer-events-none flex items-end justify-between gap-3 z-10">
         <!-- Bottom-Left Live Cursor Telemetry HUD with Dual Resolution Thresholds -->
-        <div class="text-[10px] font-mono flex items-center gap-2 bg-space-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg max-w-[calc(100%-210px)] overflow-hidden whitespace-nowrap">
+        <div class="text-[10px] font-mono flex items-center flex-wrap gap-x-2 gap-y-1 bg-space-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg shrink max-w-[calc(100%-190px)] min-w-0">
           <span>RA: <b id="vpRA" class="text-gray-200">133.79513°</b></span>
           <span>Dec: <b id="vpDec" class="text-gray-200">-7.24515°</b></span>
           <span>FOV: <b id="vpFOV" class="text-gray-200">3.00'</b></span>
           <span>Zoom: <b id="vpZoom" class="text-gray-200">1.0x</b></span>
-          <span class="pl-2 border-l border-space-700">LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
-          <span class="pl-2 border-l border-space-700 hidden sm:inline">Scale: <b id="vpDeviceScale" class="text-gray-300">--</b></span>
-          <span class="pl-2 border-l border-space-700 hidden md:inline">Span: <b id="vpNativeSpan" class="text-cyan-300">--</b></span>
-          <span id="vpScaleStatusBadge" class="pl-2 border-l border-space-700 text-purple-300 font-bold truncate">🟣 HiPS: 12.9″/px</span>
-          <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold truncate max-w-[25vw]" title="Optical Lens: Contiguous NASA FITS Master Field">🔭 FITS Master</span>
-          <span class="pl-2 border-l border-space-700 text-gray-500 text-[9px] hidden lg:inline" title="Credit: NASA / JPL-Caltech / IPAC (SPHEREx DR1)">NASA/JPL/IPAC</span>
+          <span class="pl-2 border-l border-space-700 shrink-0">LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
+          <span class="pl-2 border-l border-space-700 hidden sm:inline shrink-0">Scale: <b id="vpDeviceScale" class="text-gray-300">--</b></span>
+          <span class="pl-2 border-l border-space-700 hidden md:inline shrink-0">Span: <b id="vpNativeSpan" class="text-cyan-300">--</b></span>
+          <span id="vpScaleStatusBadge" class="pl-2 border-l border-space-700 text-purple-300 font-bold shrink-0">🟣 HiPS: 12.9″/px</span>
+          <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold shrink-0 max-w-[25vw]" title="Optical Lens: Contiguous NASA FITS Master Field">🔭 FITS Master</span>
+          <span class="pl-2 border-l border-space-700 text-gray-500 text-[9px] hidden lg:inline shrink-0" title="Credit: NASA / JPL-Caltech / IPAC (SPHEREx DR1)">NASA/JPL/IPAC</span>
         </div>
 
         <!-- Bottom-Right Enlarged 36x36px Celestial Compass Rose & Dynamic Scale Bar (Issue #27) -->
@@ -2189,7 +2189,7 @@
         pm: "8.149 \"/yr (8149 mas/yr)",
         dist: "2.28 pc (7.43 ly)",
         temp: "~250 K",
-        baseline: "26.2 Years (2MASS 1999 → SPHEREx 2025)"
+        baseline: "15.0 Years (AllWISE W2 2010 → SPHEREx Stack 2025)"
       },
       barnard: {
         name: "Barnard's Star",
@@ -3489,8 +3489,10 @@
     // =========================================================================
     const adjacentSkyTileCache = new Map();
     const spatialTileCache = adjacentSkyTileCache;
+    const lastRenderedSpatialTiles = new Map();
     window.adjacentSkyTileCache = adjacentSkyTileCache;
     window.spatialTileCache = spatialTileCache;
+    window.lastRenderedSpatialTiles = lastRenderedSpatialTiles;
 
     let autoDetectEnabled = true;
     let autoDetectedChanges = [];
@@ -3576,11 +3578,15 @@
 
           const cx = col * tileSize;
           const cy = row * tileSize;
-          const x0 = cx - tileSize / 2;
-          const y0 = cy - tileSize / 2;
+          const x0 = Math.floor(cx - tileSize / 2);
+          const x1 = Math.floor(cx + tileSize / 2);
+          const y0 = Math.floor(cy - tileSize / 2);
+          const y1 = Math.floor(cy + tileSize / 2);
+          const drawW = Math.max(1, (x1 - x0) + 1);
+          const drawH = Math.max(1, (y1 - y0) + 1);
 
-          // Tangential sky coordinate mapping (East=xi+, North=eta+)
-          const dra = - (col * tileFovArcmin / 60.0) / cosDec;
+          // Tangential sky coordinate mapping (East=xi+, North=eta+) with spherical metric scaling
+          const dra = - (col * tileFovArcmin / 60.0) / Math.max(0.01, cosDec);
           const ddec = - (row * tileFovArcmin / 60.0);
           const rawDec = camera.dec + ddec;
           const rawRA = ((camera.ra + dra) % 360 + 360) % 360;
@@ -3589,26 +3595,42 @@
           const tileKey = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${currentLOD}`;
 
           let entry = adjacentSkyTileCache.get(tileKey);
-          if (!entry || !entry.loaded) {
-            const fallbackKeyLOD1 = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_1`;
-            const fallbackKeyLOD2 = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_2`;
-            const fallbackKeyLOD0 = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_0`;
-            entry = entry || adjacentSkyTileCache.get(fallbackKeyLOD1) || adjacentSkyTileCache.get(fallbackKeyLOD2) || adjacentSkyTileCache.get(fallbackKeyLOD0);
-          }
-          if (entry && entry.loaded) {
-            if (diffMode) {
-              if (diffVis && entry.imgDiff && entry.imgDiff.complete && diffAlpha > 0.005) {
-                drawFeatheredImage(ctx, entry.imgDiff, x0, y0, tileSize, tileSize, diffAlpha, false);
-              }
-            } else {
-              if (visA && entry.img1 && entry.img1.complete && alphaA > 0.005) {
-                drawFeatheredImage(ctx, entry.img1, x0, y0, tileSize, tileSize, alphaA, false);
-              }
-              if (visB && entry.img2 && entry.img2.complete && alphaB > 0.005) {
-                drawFeatheredImage(ctx, entry.img2, x0, y0, tileSize, tileSize, alphaB, false);
+          let activeTexture = (entry && entry.loaded) ? entry : null;
+
+          // Non-destructive texture retention: check other LOD tiers or last rendered texture
+          if (!activeTexture) {
+            for (const l of [1, 2, 0]) {
+              const fb = adjacentSkyTileCache.get(`${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${l}`);
+              if (fb && fb.loaded) {
+                activeTexture = fb;
+                break;
               }
             }
-          } else if (!entry && Math.abs(rawDec) <= 89.9) {
+          }
+          if (!activeTexture) {
+            const lastFb = lastRenderedSpatialTiles.get(`${tileRA}_${tileDec}`);
+            if (lastFb && lastFb.loaded) {
+              activeTexture = lastFb;
+            }
+          }
+
+          if (activeTexture && activeTexture.loaded) {
+            lastRenderedSpatialTiles.set(`${tileRA}_${tileDec}`, activeTexture);
+            if (diffMode) {
+              if (diffVis && activeTexture.imgDiff && activeTexture.imgDiff.complete && diffAlpha > 0.005) {
+                drawFeatheredImage(ctx, activeTexture.imgDiff, x0, y0, drawW, drawH, diffAlpha, false);
+              }
+            } else {
+              if (visA && activeTexture.img1 && activeTexture.img1.complete && alphaA > 0.005) {
+                drawFeatheredImage(ctx, activeTexture.img1, x0, y0, drawW, drawH, alphaA, false);
+              }
+              if (visB && activeTexture.img2 && activeTexture.img2.complete && alphaB > 0.005) {
+                drawFeatheredImage(ctx, activeTexture.img2, x0, y0, drawW, drawH, alphaB, false);
+              }
+            }
+          }
+
+          if (!entry && Math.abs(rawDec) <= 89.9) {
             if (adjacentSkyTileCache.size >= 128) {
               const oldestKey = adjacentSkyTileCache.keys().next().value;
               if (oldestKey) adjacentSkyTileCache.delete(oldestKey);
@@ -3934,13 +3956,14 @@
 
       // Compute physical device-pixel scale & native SPHEREx pixel span (Amendment A1)
       const dpr = window.devicePixelRatio || 1.0;
-      const wCss = (canvas && canvas.clientWidth) ? canvas.clientWidth : 800;
-      const hCss = (canvas && canvas.clientHeight) ? canvas.clientHeight : 600;
-      const arcsecPerDevicePx = (effFov * 60.0) / (wCss * dpr);
+      const wCss = (canvas && canvas.clientWidth) ? canvas.clientWidth : (canvas ? canvas.width : 800);
+      const hCss = (canvas && canvas.clientHeight) ? canvas.clientHeight : (canvas ? canvas.height : 600);
+      const arcsecPerDevicePx = (effFov * 60.0) / Math.max(1, (wCss * dpr));
 
       const devScaleEl = document.getElementById('vpDeviceScale');
       if (devScaleEl) {
-        devScaleEl.innerText = `${arcsecPerDevicePx.toFixed(1)}″/dev-px`;
+        const formattedScale = arcsecPerDevicePx < 1.0 ? arcsecPerDevicePx.toFixed(2) : arcsecPerDevicePx.toFixed(1);
+        devScaleEl.innerText = `${formattedScale}″/dev_px`;
       }
 
       const nativeSpanEl = document.getElementById('vpNativeSpan');
@@ -4347,7 +4370,13 @@
         return;
       }
 
-      const defaultLabels = [
+      const isWise0855 = (typeof currentTargetKey !== 'undefined' && currentTargetKey === 'wise0855');
+      const defaultLabels = isWise0855 ? [
+        "(Frame 1/4) AllWISE W2 Baseline (2010-05)",
+        "(Frame 2/4) unWISE W2 Epoch 1 (2015-05)",
+        "(Frame 3/4) unWISE W2 Epoch 2 (2020-05)",
+        "(Frame 4/4) SPHEREx Stack 4.60μm (2025-05, S/N 5.8σ, 26 Exps)"
+      ] : [
         "(Frame 1/4) 2MASS Historic Baseline (1999-02)",
         "(Frame 2/4) WISE W1 All-Sky Survey (2010-04)",
         "(Frame 3/4) unWISE Reactivation Epoch (2014-10)",
@@ -5762,8 +5791,8 @@
         }
       }
 
-      // Continuous Epoch Morphing & Blending
-      if (isPlaying && !diffMode && blinkMorphMode === 'morph') {
+      // Continuous Epoch Morphing & Blending (paused during active zoom slider drag)
+      if (isPlaying && !diffMode && blinkMorphMode === 'morph' && !window.isZoomSliderDragging) {
         morphPhase += (Math.PI * 2 * (fps / 2)) * dt;
         epochBlend = 0.5 - 0.5 * Math.cos(morphPhase);
         needRedraw = true;
@@ -6011,7 +6040,23 @@
         });
       }
 
+      let isZoomSliderDragging = false;
+      window.isZoomSliderDragging = false;
+
       if (slider) {
+        slider.addEventListener('pointerdown', () => {
+          isZoomSliderDragging = true;
+          window.isZoomSliderDragging = true;
+        });
+
+        window.addEventListener('pointerup', () => {
+          if (isZoomSliderDragging) {
+            isZoomSliderDragging = false;
+            window.isZoomSliderDragging = false;
+            drawFrame();
+          }
+        });
+
         slider.addEventListener('input', (e) => {
           const val = parseFloat(e.target.value);
           if (!isNaN(val) && val >= 0.4 && val <= 8.0) {

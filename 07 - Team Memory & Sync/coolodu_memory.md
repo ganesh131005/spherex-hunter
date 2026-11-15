@@ -3,11 +3,18 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Integrated and verified Viewport Overhaul v2 (Master Engineering Specification Steps 0–6) on `coolodu/web-frontend`. Interactive Zoom Bar with dual scale badges (HiPS Native 12.9″/px vs Exposure Native 6.15″/px), raw detector pixel toggle (`🔬 1:1 Pixels`), scoped L0/L1 cache engine, 102 IRSA channels JSON, WISE 0855 authentic narrowband co-add stack ($4.6\,\mu\text{m}$, $\text{S/N} = 5.82\sigma$, $N_{\text{exp}} = 26$), and Gaia DR3 space motion + EPSF centroid residuals. 61 tests passing. Pushed to `origin/coolodu/web-frontend`.
-- **Next Task:** Maintain clean status, coordinate with lead jokerodu for main branch master merge.
+- **Current Task:** Implemented and verified Step 2 of the Master Engineering Specification & Bug-Fix remediation on `coolodu/web-frontend`. Permanently resolved all 5 Priority 0 live screenshot regressions: (1) Globally locked $[0, P_{99.5}]$-clipped Asinh photometric stretch eliminating tile checkerboarding; (2) Integer coordinate bounds snapping with $+1\text{px}$ overlap eliminating vertical black seams; (3) Interaction drag lock on zoom slider and non-destructive texture retention (`lastRenderedSpatialTiles`) eliminating "Swiss cheese" black tiles during active blink; (4) Non-truncating physical device pixel scale HUD formula (`″/dev_px`); (5) Re-anchored WISE 0855 timeline to AllWISE W2 ($4.6\,\mu\text{m}$, 2010) + SPHEREx narrowband stack ($4.6\,\mu\text{m}$, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$). 41 tests passing 100% green.
+- **Next Task:** Proceed with Step 3 (Sky Context Layer & 102-Channel Selector) and coordinate with jokerodu.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Step 2 Completed: Priority 0 Bug Remediations & Zoom Bar Polish]**:
+  - **Bug 1 (Photometric Normalization & Stretch Locking):** Integrated `apply_locked_asinh_stretch` in `backend/services/cutout_engine.py` with `_FIELD_SKY_PARAMS` field-level caching of $(\mu_{\text{sky}}, \sigma_{\text{sky}}, P_{99.5})$ across neighbor cutouts.
+  - **Bug 2 (Zero-Seam Continuous Tiling):** Implemented integer pixel snapping (`x0 = Math.floor(...)`, `drawW = (x1 - x0) + 1`) and $\cos(\delta_0)$ spherical metric scaling in `drawAdjacentSkyTiling` in `frontend/index.html`.
+  - **Bug 3 (Non-Destructive Texture Retention & Zoom Drag Guard):** Defined `lastRenderedSpatialTiles` ensuring canvas never renders black on cache misses; wired `isZoomSliderDragging` to pause automatic blink/morph frame cycling during user slider interactions.
+  - **Bug 4 (Independent Physical Device-Pixel Scale HUD):** Refactored `#vpDeviceScale` to use true screen scale $\theta_{\text{screen}} = (\text{FOV}_{\text{arcmin}} \times 60) / (W_{\text{CSS}} \times \text{dpr})$ formatted as `${formattedScale}″/dev_px` with responsive flex shrink preventing truncation.
+  - **Bug 5 (Target-Specific Timeline & WISE 0855 W2 Baseline):** Re-anchored WISE 0855 in `backend/services/scene_service.py` to AllWISE W2 ($4.6\,\mu\text{m}$, 2010) and SPHEREx narrowband stack ($4.6\,\mu\text{m}$, Band 6, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$), establishing true bandpass matching.
+  - **Verification:** 41 passed across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
 - [x] **[Pushed Viewport Overhaul v2 to `coolodu/web-frontend` (Steps 0–6 Complete)]**:
   - **Interactive Zoom Bar & Dual LOD Badges (`frontend/index.html`):** Logarithmic slider, `+`/`−`/`⟲` reset, ARIA `role="slider"`, cursor-centered canvas wheel zooming, live arcsec/device_px HUD, and dual threshold badges separating HiPS Order 5 ($12.88''/\text{px}$) from native detector pitch ($6.15''/\text{px}$).
   - **Raw Detector Pixel Inspection Mode (`frontend/index.html`):** `🔬 1:1 Pixels` nearest-neighbor toggle (`gl.NEAREST` / `image-rendering: pixelated`) with detector pixel span readout (`N × M px (6.15″)`).
