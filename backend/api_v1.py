@@ -1580,11 +1580,12 @@ def get_simbad_v1(
     request: Request,
     ra: str = Query(...),
     dec: str = Query(...),
+    radius: float = Query(3.0),
     target: Optional[str] = Query(None)
 ):
     from backend.main import parse_celestial_coords
     ra_deg, dec_deg = parse_celestial_coords(ra, dec)
-    return query_simbad_metadata(target=target, ra=ra_deg, dec=dec_deg)
+    return query_simbad_metadata(ra=ra_deg, dec=dec_deg, radius_arcmin=radius, target=target)
 
 
 @router.get("/catalog/crossmatch")

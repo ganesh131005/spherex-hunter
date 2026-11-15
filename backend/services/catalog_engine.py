@@ -17,6 +17,7 @@ import os
 import re
 import time
 from collections import OrderedDict
+from typing import Optional, Union
 
 import numpy as np
 import requests
@@ -402,10 +403,11 @@ CACHE_DIR_SIMBAD = os.path.join(os.path.dirname(__file__), "..", "cache", "catal
 os.makedirs(CACHE_DIR_SIMBAD, exist_ok=True)
 
 def query_simbad_metadata(
-    ra: float,
-    dec: float,
+    ra: Optional[Union[float, str]] = None,
+    dec: Optional[float] = None,
     radius_arcmin: float = 3.0,
-    force_refresh: bool = False
+    force_refresh: bool = False,
+    target: Optional[str] = None,
 ) -> dict:
     """
     Live CDS SIMBAD cone search (astroquery). Returns the nearest catalogued object's
@@ -413,7 +415,29 @@ def query_simbad_metadata(
     reports them. If SIMBAD is unreachable or has no object, the status says so; nothing
     is looked up from a hardcoded table and no citation counts are invented.
     """
-    cache_key = f"simbad_{round(ra, 4)}_{round(dec, 4)}_{round(radius_arcmin, 1)}".replace("+", "").replace("-", "m")
+    if isinstance(ra, str) and target is None and dec is None:
+        target = ra
+        ra = None
+
+    if target and (ra is None or dec is None):
+        t_clean = target.strip().lower().replace(" ", "").replace("-", "").replace("_", "")
+        from backend.models_v1 import TARGET_REGISTRY
+        for k, v in TARGET_REGISTRY.items():
+            if k.replace("-", "").replace("_", "") == t_clean:
+                ra = float(v["ra"])
+                dec = float(v["dec"])
+                break
+
+    if ra is None or dec is None:
+        return {
+            "status": "unavailable",
+            "query_target": target,
+            "message": f"Cannot query SIMBAD for target '{target}' without celestial coordinates (RA/Dec)."
+        }
+
+    ra_float = float(ra)
+    dec_float = float(dec)
+    cache_key = f"simbad_{round(ra_float, 4)}_{round(dec_float, 4)}_{round(radius_arcmin, 1)}".replace("+", "").replace("-", "m")
     cache_path = os.path.join(CACHE_DIR_SIMBAD, f"{cache_key}.json")
     if not force_refresh and os.path.exists(cache_path):
         try:
@@ -421,11 +445,15 @@ def query_simbad_metadata(
                 with open(cache_path, "r", encoding="utf-8") as f:
                     entry = json.load(f)
                     entry["cached"] = True
+                    if target and "query_target" not in entry:
+                        entry["query_target"] = target
                     return entry
         except Exception:
             pass
 
-    out = {"query_ra": ra, "query_dec": dec, "radius_arcmin": radius_arcmin}
+    out = {"query_ra": ra_float, "query_dec": dec_float, "radius_arcmin": radius_arcmin}
+    if target:
+        out["query_target"] = str(target)
     try:
         import astropy.units as u
         from astropy.coordinates import SkyCoord
