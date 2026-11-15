@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[📢 ISSUE #42 DISPATCHED TO @coolodu — REDESIGN CITIZEN SCIENCE ONBOARDING UX]**
+  - **Issue:** [#42: Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards](https://github.com/joker0210G/spherex-hunter/issues/42)
+  - **Target Teammate:** `@coolodu` (Frontend Lead) | **Branch:** `coolodu/web-frontend` | **Track:** `web-frontend`
+  - **Objective:** Overhaul first-visit onboarding modal (`#onboardingModal`) from dense 5-slide textbook prose into a snappy, visually engaging 3-step "Cosmic Quick-Start" with visual dipole animations and a 15-second "Start Hunting" action.
+  - **Status:** Open on GitHub.
 - **[📋 OFFICIAL NASA SPACE APPS SUBMISSION GUIDE & FIELD INSTRUCTIONS SYNCHRONIZED (@iceodu)]**
   - **Comprehensive Guide Deconstruction:** Fully audited the official [NASA Space Apps Project Submission Guide](https://www.spaceappschallenge.org/resources/project-submission-guide/#project-page-form-field-instructions), 2026 Judging & Awards Guide, and all embedded hyperlinks.
   - **Crucial Enforcements Identified & Vault Updated:**
