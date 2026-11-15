@@ -1819,8 +1819,17 @@
 
         <!-- Middle: Canvas & Molecular Absorption Legend -->
         <div class="flex-1 flex items-center gap-3 min-h-0 relative">
-          <div class="flex-1 h-full relative">
+          <div class="flex-1 h-full relative" id="specChartContainer">
             <canvas id="spectrumChart"></canvas>
+            <!-- Floating Rich Interactive Popup for 102-Band Spectrum Spots (Photometry & Molecular Signatures) -->
+            <div id="specSpotPopup" class="absolute z-50 hidden flex-col gap-1.5 p-3 rounded-xl bg-space-950/98 backdrop-blur-xl border border-cyan-500/70 shadow-2xl font-mono text-xs max-w-xs transition-opacity duration-150 select-none">
+              <div class="flex items-center justify-between gap-2 border-b border-space-700/80 pb-1.5">
+                <span id="specSpotTitle" class="font-bold flex items-center gap-1.5 text-cyan-300"></span>
+                <button id="btnCloseSpecSpotPopup" type="button" class="text-gray-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-space-800 text-xs font-bold" title="Close Popup">✕</button>
+              </div>
+              <div id="specSpotBody" class="space-y-1 text-xs text-gray-200"></div>
+              <div id="specSpotAction" class="pt-1.5 border-t border-space-700/80 flex items-center justify-between text-xs"></div>
+            </div>
           </div>
           <!-- Molecular Reference Sidebar -->
           <div class="w-64 bg-space-950/95 p-3 rounded-xl border border-space-700/80 font-mono text-xs space-y-2 shrink-0 shadow-md">
@@ -1854,8 +1863,8 @@
 
       <!-- PANEL 3: LIGHT CURVE (Multi-Epoch Historical Flux & Time-Domain Analysis) -->
       <div id="dockPanelLightCurve" class="h-full hidden px-3 py-1.5 flex flex-col gap-1.5 overflow-hidden">
-        <!-- Top Toolbar: Selected Point Coords, Band Filters, Mode Toggles & Phase Controls -->
-        <div class="flex items-center justify-between gap-2 bg-space-950/90 px-2.5 py-1 rounded-lg border border-space-700/80 shrink-0 text-xs font-mono">
+        <!-- Top Toolbar: Selected Point Coords, Band Filters, Mode Toggles, Outlier Masking & Phase Controls -->
+        <div class="flex flex-wrap xl:flex-nowrap items-center justify-between gap-1.5 bg-space-950/90 px-2.5 py-1 rounded-lg border border-space-700/80 shrink-0 text-xs font-mono">
           <!-- Left: Selected Target Coordinate & Reset -->
           <div class="flex items-center gap-1.5 shrink-0">
             <span class="flex items-center gap-1 text-cyan-400 font-bold text-[11px]">
@@ -1879,8 +1888,14 @@
             <button type="button" onclick="setLightCurveBandFilter('SPHEREx')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-purple-300 hover:text-white" data-band="SPHEREx" title="SPHEREx DR1 4.6 µm">SPHEREx</button>
           </div>
 
-          <!-- Right: Mode Switcher (Chronological vs Phase Fold) & Axis Format -->
-          <div class="flex items-center gap-1.5 shrink-0">
+          <!-- Right: Mode Switcher (Chronological vs Phase Fold), Outlier Masking & Axis Format -->
+          <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
+            <!-- Outlier Masking Tool Toggle -->
+            <button id="btnToggleOutlierMask" type="button" onclick="toggleLightCurveMaskMode()" class="px-2 py-0.5 rounded blender-btn text-[10px] font-mono text-gray-300 hover:text-white border border-space-700 flex items-center gap-1 transition" title="Toggle Outlier Masking Tool (Click points on chart or Shift+Click to exclude artifacts from stats)">
+              <i data-lucide="shield-alert" class="w-3 h-3 text-rose-400"></i>
+              <span id="lcMaskModeLabel">Mask Mode</span>
+            </button>
+
             <!-- Time Axis Unit (Year vs MJD) -->
             <button id="btnToggleLCTimeUnit" type="button" onclick="toggleLightCurveTimeUnit()" class="px-2 py-0.5 rounded blender-btn text-[10px] font-mono text-gray-300 hover:text-white border border-space-700" title="Toggle X-Axis between Calendar Year and Modified Julian Date (MJD)">
               Axis: <span id="lcTimeUnitLabel" class="text-cyan-300 font-bold">Year</span>
@@ -1892,8 +1907,8 @@
               <button id="btnLCModePhase" type="button" onclick="setLightCurveMode('phase')" class="px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white" title="Fold Light Curve by Trial Period (0 to 2 Phase Cycles)">Phase Fold</button>
             </div>
 
-            <!-- Phase Period Controls (shown when in phase fold mode) -->
-            <div id="lcPhaseControls" class="hidden flex items-center gap-1 bg-space-900 px-1.5 py-0.5 rounded border border-purple-500/40">
+            <!-- Phase Period Controls & Lomb-Scargle Sparkline (shown when in phase fold mode) -->
+            <div id="lcPhaseControls" class="hidden flex items-center gap-1.5 bg-space-900 px-1.5 py-0.5 rounded border border-purple-500/40">
               <span class="text-purple-300 text-[10px] font-bold">P:</span>
               <input id="lcPeriodInput" type="number" step="0.01" min="0.01" value="1.00" class="w-14 bg-space-950 text-purple-200 text-[10px] font-mono px-1 py-0.5 rounded border border-space-700 text-center focus:outline-none focus:border-purple-400" title="Trial Period in Days">
               <span class="text-gray-400 text-[9px]">d</span>
@@ -1902,6 +1917,19 @@
               <button id="btnAutoDetectPeriod" type="button" onclick="autoDetectLightCurvePeriod()" class="px-1.5 py-0.5 rounded bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 text-[9px] font-bold transition flex items-center gap-0.5" title="Run fast Lomb-Scargle period finder">
                 <i data-lucide="sparkles" class="w-2.5 h-2.5 text-purple-400"></i> Auto
               </button>
+
+              <!-- Fitted Model Curve Toggle in Phase Space -->
+              <button id="btnToggleLCModelCurve" type="button" onclick="toggleLightCurveModelCurve()" class="px-1.5 py-0.5 rounded bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 text-[9px] font-bold transition flex items-center gap-0.5" title="Toggle Sinusoidal / Harmonic Model Curve Fit in Phase Space">
+                <i data-lucide="activity" class="w-2.5 h-2.5 text-purple-400"></i>
+                <span id="lcModelCurveLabel">Fit Curve</span>
+              </button>
+
+              <!-- Lomb-Scargle Spectral Power Sparkline -->
+              <div id="lcPowerSparklineContainer" class="hidden flex items-center gap-1 bg-space-950 px-1.5 py-0.5 rounded border border-purple-500/30" title="Lomb-Scargle Periodogram Power Spectrum P(ω)">
+                <span class="text-[8px] text-purple-400 font-bold uppercase">P(ω):</span>
+                <canvas id="lcPowerSparkline" width="70" height="16" class="rounded bg-space-900/60"></canvas>
+                <span id="lcPowerPeakLabel" class="text-[8px] text-cyan-300 font-bold">--</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1926,6 +1954,13 @@
                 <span class="text-amber-400 font-bold uppercase tracking-wider text-[9px]">Variability Analytics</span>
                 <span id="lcSourceCountBadge" class="text-gray-400 text-[9px]">0 epochs</span>
               </div>
+
+              <!-- Outlier Masking Badge & Clear Button -->
+              <div id="lcMaskedSection" class="hidden flex items-center justify-between bg-rose-950/40 border border-rose-500/30 px-1.5 py-0.5 rounded">
+                <span id="lcMaskedCountBadge" class="text-rose-300 text-[9px] font-bold">0 masked</span>
+                <button id="btnClearLCMasks" type="button" onclick="clearLightCurveMasks()" class="text-[9px] text-gray-400 hover:text-white underline">Clear</button>
+              </div>
+
               <div class="space-y-1 text-[10px]">
                 <div class="flex items-center justify-between">
                   <span class="text-gray-400">Baseline (Δt):</span>
@@ -1947,9 +1982,35 @@
                   <span class="text-gray-400">Stetson Index J:</span>
                   <span id="lcStatStetson" class="text-purple-300 font-bold">--</span>
                 </div>
-                <div id="lcPeriodStatRow" class="hidden flex items-center justify-between border-t border-space-800 pt-1">
-                  <span class="text-purple-300">Period (P):</span>
-                  <span id="lcStatPeriod" class="text-white font-bold">-- d</span>
+                <div id="lcPeriodStatRow" class="hidden flex flex-col gap-0.5 border-t border-space-800 pt-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-purple-300">Period (P):</span>
+                    <span id="lcStatPeriod" class="text-white font-bold">-- d</span>
+                  </div>
+                  <div class="flex items-center justify-between text-[9px]">
+                    <span class="text-gray-400">Peak Power:</span>
+                    <span id="lcStatPower" class="text-cyan-300 font-bold">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected Point Details Box (SNR, Calibrated Flux, Survey) -->
+              <div id="lcSelectedPointDetails" class="bg-space-900/90 border border-space-700/80 p-1.5 rounded text-[9px] space-y-0.5">
+                <div class="flex items-center justify-between text-gray-400 font-bold border-b border-space-800 pb-0.5">
+                  <span id="lcDetailSurvey" class="text-cyan-300 font-semibold truncate max-w-[110px]">Selected Epoch</span>
+                  <span id="lcDetailDate" class="text-gray-400">--</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Flux (F_ν):</span>
+                  <span id="lcDetailFlux" class="text-white font-bold">-- µJy</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Signal-to-Noise:</span>
+                  <span id="lcDetailSNR" class="text-emerald-300 font-bold">--</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Status:</span>
+                  <span id="lcDetailStatus" class="text-gray-300">Active</span>
                 </div>
               </div>
             </div>
@@ -1959,8 +2020,8 @@
               <button id="btnExportLCCSV" type="button" onclick="exportLightCurveCSV()" class="w-full py-1 rounded bg-space-900 hover:bg-space-800 border border-cyan-500/40 text-cyan-300 hover:text-white text-[10px] font-bold font-mono transition flex items-center justify-center gap-1.5 shadow-sm" title="Export Light Curve Table in AAVSO / Astropy CSV format">
                 <i data-lucide="download" class="w-3 h-3 text-cyan-400"></i> Export CSV Table
               </button>
-              <div class="text-[9px] text-gray-500 text-center font-sans">
-                Click epoch point to sync viewport flipbook
+              <div class="text-[8.5px] text-gray-500 text-center font-sans">
+                Click: sync viewport | Shift+Click: mask outlier
               </div>
             </div>
           </div>
@@ -4270,8 +4331,6 @@
       }
       ctx.restore();
     }
-      ctx.restore();
-    }
 
     function drawFrame() {
       const w = canvas.width;
@@ -6159,14 +6218,25 @@
                   const pt = spectrumPointMeta[idx];
                   const ptX = chart.scales.x.getPixelForValue(idx);
                   const ptY = chart.scales.y.getPixelForValue(val);
-                  if (ptX >= left && ptX <= right && ptY >= top - 20 && ptY <= bottom + 20) {
+                  if (ptX >= left && ptX <= right && ptY >= top - 25 && ptY <= bottom + 25) {
                     ctx.save();
-                    ctx.fillStyle = '#00f0ff';
+                    const ptLabel = `${pt.band || 'Photometry'} (${Number(pt.flux_ujy).toFixed(1)} µJy)`;
                     ctx.font = 'bold 9px "JetBrains Mono", monospace';
-                    const ptLabel = pt.band || 'Photometry';
                     const labelW = ctx.measureText(ptLabel).width;
-                    const lx = (ptX + labelW + 6 > right) ? (ptX - labelW - 6) : (ptX + 6);
-                    const ly = (ptY + 12 > bottom) ? (ptY - 6) : (ptY + 12);
+                    const lx = (ptX + labelW + 8 > right) ? (ptX - labelW - 8) : (ptX + 8);
+                    const ly = (ptY + 14 > bottom) ? (ptY - 8) : (ptY + 12);
+
+                    // High-contrast background pill
+                    ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 1.0;
+                    ctx.beginPath();
+                    ctx.roundRect ? ctx.roundRect(lx - 4, ly - 9, labelW + 8, 13, 3) : ctx.rect(lx - 4, ly - 9, labelW + 8, 13);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Text
+                    ctx.fillStyle = '#00f0ff';
                     ctx.fillText(ptLabel, lx, ly);
                     ctx.restore();
                   }
@@ -6179,6 +6249,9 @@
 
       let spectrumPointMeta = {};
       let molPointMeta = {};
+      let isSpecSpotPinned = false;
+      let pinnedSpotData = null;
+
       window._setSpectrumPointMeta = (m) => { spectrumPointMeta = m || {}; };
       window._setMolPointMeta = (m) => { molPointMeta = m || {}; };
 
@@ -6210,9 +6283,9 @@
               fill: false,
               showLine: false,
               borderWidth: 2.0,
-              pointRadius: 7,
-              pointHoverRadius: 10,
-              pointHitRadius: 25,
+              pointRadius: 8,
+              pointHoverRadius: 12,
+              pointHitRadius: 28,
               pointStyle: 'rectRot',
               spanGaps: false
             },
@@ -6227,9 +6300,9 @@
               fill: false,
               showLine: false,
               borderWidth: 2.0,
-              pointRadius: 7,
-              pointHoverRadius: 11,
-              pointHitRadius: 25,
+              pointRadius: 8,
+              pointHoverRadius: 12,
+              pointHitRadius: 28,
               pointStyle: 'rectRot',
               spanGaps: false
             }
@@ -6248,7 +6321,18 @@
             const chartArea = specChart.chartArea;
             if (!chartArea) return;
             const clickX = evt.x !== undefined ? evt.x : (evt.native ? evt.native.offsetX : 0);
+            const clickY = evt.y !== undefined ? evt.y : (evt.native ? evt.native.offsetY : 0);
             if (clickX < chartArea.left || clickX > chartArea.right) return;
+
+            // 1. Check if clicked near an interactive spot in 2D Euclidean space
+            const hitSpot = findNearestSpectrumSpot(clickX, clickY, 30);
+            if (hitSpot) {
+              pinSpecSpotPopup(hitSpot);
+              if (hitSpot.type === 'mol' && hitSpot.data && hitSpot.data.channel) {
+                select102BandChannel(hitSpot.data.channel);
+              }
+              return;
+            }
 
             const curMin = (specZoomMinIndex !== null) ? specZoomMinIndex : 0;
             const curMax = (specZoomMaxIndex !== null) ? specZoomMaxIndex : 101;
@@ -6256,14 +6340,14 @@
             const clickedIdx = curMin + ratio * (curMax - curMin);
             const clickedWl = 0.75 + (clickedIdx / 101) * (5.00 - 0.75);
 
-            // 1. Check if clicked near a molecular feature spot
+            // 2. Check if clicked near a molecular feature spot by wavelength
             const clickedMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - clickedWl) <= 0.08);
             if (clickedMol && clickedMol.channel && typeof select102BandChannel === 'function') {
               select102BandChannel(clickedMol.channel);
               return;
             }
 
-            // 2. Otherwise determine which array and channel
+            // 3. Otherwise determine which array and channel
             for (const [k, def] of Object.entries(SPHEREX_ARRAY_DEFS)) {
               if (clickedWl >= def.min_um && clickedWl <= def.max_um) {
                 activeArray = k;
@@ -6298,7 +6382,16 @@
                   if (!items || !items.length) return '';
                   const wl = items[0].label;
                   const numWl = parseFloat(wl);
-                  const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - numWl) < 0.10);
+
+                  // Prioritize direct catalog photometry hit
+                  const photItem = items.find(it => it.datasetIndex === 1);
+                  if (photItem && spectrumPointMeta[photItem.dataIndex]) {
+                    const pm = spectrumPointMeta[photItem.dataIndex];
+                    return `λ = ${wl} µm • ${pm.band} (${pm.survey})`;
+                  }
+
+                  // Precise molecular match (tight tolerance 0.05 um to prevent stealing nearby bands)
+                  const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - numWl) <= 0.05);
                   if (nearMol) {
                     return `λ = ${wl} µm • ${nearMol.label}`;
                   }
@@ -6323,16 +6416,16 @@
                   // Proximity fallback for molecular spots (if not directly hovered on dataset 2)
                   const hasMolItem = items.some(it => it.datasetIndex === 2);
                   if (!hasMolItem) {
-                    const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - wl) <= 0.12);
+                    const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - wl) <= 0.06);
                     if (nearMol) {
                       extra.push(`🧊 Feature: ${nearMol.label} — ${nearMol.desc || 'Ice/Gas Band'}`);
                     }
                   }
 
-                  // Proximity fallback for catalog photometry spots (if hover is within ±0.14 µm)
+                  // Proximity fallback for catalog photometry spots (if hover is within ±0.08 µm)
                   const hasPhotItem = items.some(it => it.datasetIndex === 1);
                   if (!hasPhotItem && spectrumPointMeta) {
-                    const nearPhot = Object.values(spectrumPointMeta).find(p => Math.abs(p.wavelength_um - wl) <= 0.14);
+                    const nearPhot = Object.values(spectrumPointMeta).find(p => Math.abs(p.wavelength_um - wl) <= 0.08);
                     if (nearPhot) {
                       extra.push(`💎 Catalog Spot: ${nearPhot.band} (${nearPhot.survey}) — ${Number(nearPhot.flux_ujy).toFixed(1)} µJy (${nearPhot.mag} mag)`);
                     }
@@ -6447,6 +6540,214 @@
       if (btnZoomIn) btnZoomIn.addEventListener('click', () => zoomSpectrumHorizontalAt(0.5, 0.75));
       if (btnZoomOut) btnZoomOut.addEventListener('click', () => zoomSpectrumHorizontalAt(0.5, 1.33));
       if (btnZoomReset) btnZoomReset.addEventListener('click', () => applySpectrumHorizontalZoom(null, null));
+
+      // -----------------------------------------------------------------------
+      // 2D SPOT HIT-TESTING & INTERACTIVE HOVER/CLICK POPUP (Issue #36 / User Feedback)
+      // -----------------------------------------------------------------------
+      const specSpotPopup = document.getElementById('specSpotPopup');
+      const specSpotTitle = document.getElementById('specSpotTitle');
+      const specSpotBody = document.getElementById('specSpotBody');
+      const specSpotAction = document.getElementById('specSpotAction');
+      const btnCloseSpecSpotPopup = document.getElementById('btnCloseSpecSpotPopup');
+
+      function findNearestSpectrumSpot(clientX, clientY, maxDistPx = 30) {
+        if (!specChart || !specChart.chartArea || !specChart.scales || !specChart.scales.x || !specChart.scales.y) return null;
+        const { left, right, top, bottom } = specChart.chartArea;
+        if (clientX < left - 10 || clientX > right + 10 || clientY < top - 10 || clientY > bottom + 10) return null;
+
+        const sedData = (specChart.data.datasets && specChart.data.datasets[0]) ? specChart.data.datasets[0].data : [];
+        let nearest = null;
+        let minDist = maxDistPx;
+
+        // 1. Check Catalog Photometry spots (Dataset 1)
+        if (specChart.data.datasets && specChart.data.datasets[1] && specChart.data.datasets[1].data) {
+          specChart.data.datasets[1].data.forEach((val, idx) => {
+            if (val !== null && val !== undefined && spectrumPointMeta[idx]) {
+              const pt = spectrumPointMeta[idx];
+              const ptX = specChart.scales.x.getPixelForValue(idx);
+              const ptY = specChart.scales.y.getPixelForValue(val);
+              if (ptX >= left - 5 && ptX <= right + 5 && ptY >= top - 25 && ptY <= bottom + 25) {
+                const dist = Math.hypot(clientX - ptX, clientY - ptY);
+                if (dist < minDist) {
+                  minDist = dist;
+                  const sedFlux = (sedData && sedData.length > idx) ? sedData[idx] : null;
+                  nearest = {
+                    type: 'photometry',
+                    data: pt,
+                    x: ptX,
+                    y: ptY,
+                    dist: dist,
+                    idx: idx,
+                    sedFlux: sedFlux
+                  };
+                }
+              }
+            }
+          });
+        }
+
+        // 2. Check Molecular Absorption Feature spots (Dataset 2 / Annotations)
+        MOLECULAR_ANNOTATIONS.forEach(mol => {
+          let molX;
+          if (specChart.scales.x) {
+            const idx = Math.max(0, Math.min(101, ((mol.wavelength - 0.75) / 4.25) * 101));
+            molX = specChart.scales.x.getPixelForValue(idx);
+          } else {
+            molX = left + ((mol.wavelength - 0.75) / 4.25) * (right - left);
+          }
+
+          if (molX >= left - 5 && molX <= right + 5) {
+            const wlIdx = Math.max(0, Math.min(101, Math.round(((mol.wavelength - 0.75) / 4.25) * 101)));
+            const sedFlux = (sedData && sedData.length > wlIdx) ? sedData[wlIdx] : null;
+            let molY = bottom - 14;
+            if (sedFlux !== null && sedFlux !== undefined && specChart.scales.y) {
+              molY = Math.max(top + 10, Math.min(bottom - 10, specChart.scales.y.getPixelForValue(sedFlux)));
+            }
+            const dist = Math.hypot(clientX - molX, clientY - molY);
+            if (dist < minDist) {
+              minDist = dist;
+              nearest = {
+                type: 'mol',
+                data: mol,
+                x: molX,
+                y: molY,
+                dist: dist,
+                idx: wlIdx,
+                sedFlux: sedFlux
+              };
+            }
+          }
+        });
+
+        return nearest;
+      }
+
+      function showSpecSpotPopup(spot, isPinned = false) {
+        if (!specSpotPopup || !spot) return;
+        const container = document.getElementById('specChartContainer');
+        if (!container) return;
+        const rect = container.getBoundingClientRect();
+
+        if (spot.type === 'photometry') {
+          const pt = spot.data;
+          const sedF = spot.sedFlux !== null && spot.sedFlux !== undefined ? Number(spot.sedFlux).toFixed(1) : '?';
+          const diff = (spot.sedFlux !== null && spot.sedFlux !== undefined) ? (pt.flux_ujy - spot.sedFlux).toFixed(1) : null;
+          const diffStr = diff !== null ? (Number(diff) > 0 ? `+${diff}` : `${diff}`) : '';
+
+          specSpotTitle.innerHTML = `<span class="w-2.5 h-2.5 rotate-45 border border-white bg-cyan-400 inline-block shadow-sm"></span> <span>${pt.band || 'Catalog'} Photometry</span>`;
+          specSpotBody.innerHTML = `
+            <div class="flex justify-between text-gray-300"><span>Survey:</span><span class="text-white font-bold">${pt.survey || 'Archival Catalog'}</span></div>
+            <div class="flex justify-between text-gray-300"><span>Wavelength:</span><span class="text-cyan-300 font-bold">${pt.wavelength_um} µm</span></div>
+            <div class="flex justify-between text-gray-300"><span>Measured Flux:</span><span class="text-emerald-300 font-bold">${Number(pt.flux_ujy).toFixed(1)} µJy</span></div>
+            <div class="flex justify-between text-gray-300"><span>Magnitude:</span><span class="text-amber-300 font-bold">${pt.mag !== null && pt.mag !== undefined ? `${pt.mag} mag` : 'N/A'}</span></div>
+            <div class="flex justify-between text-gray-300 pt-1 border-t border-space-800"><span>SED Model:</span><span class="text-orange-300">${sedF} µJy ${diffStr ? `(${diffStr} µJy)` : ''}</span></div>
+          `;
+          specSpotAction.innerHTML = `
+            <span class="text-gray-400">${isPinned ? '📌 Pinned' : 'Hover Spot'}</span>
+            <span class="text-cyan-400 font-bold">${pt.band}</span>
+          `;
+        } else if (spot.type === 'mol') {
+          const mol = spot.data;
+          const sedF = spot.sedFlux !== null && spot.sedFlux !== undefined ? Number(spot.sedFlux).toFixed(1) : '?';
+          let arrayId = 'A1';
+          let chInArray = 1;
+          for (const [k, def] of Object.entries(SPHEREX_ARRAY_DEFS)) {
+            if (mol.wavelength >= def.min_um && mol.wavelength <= def.max_um) {
+              arrayId = k;
+              const step = (def.max_um - def.min_um) / 16.0;
+              chInArray = Math.max(1, Math.min(17, Math.round((mol.wavelength - def.min_um) / step) + 1));
+              break;
+            }
+          }
+          const chNum = mol.channel || (SPHEREX_ARRAY_DEFS[arrayId].start_band + chInArray - 1);
+
+          specSpotTitle.innerHTML = `<span class="w-2.5 h-2.5 rotate-45 border border-white inline-block shadow-sm" style="background-color: ${mol.color || '#fb923c'}"></span> <span>${mol.label}</span>`;
+          specSpotBody.innerHTML = `
+            <div class="flex justify-between text-gray-300"><span>Bandpass:</span><span class="text-cyan-300 font-bold">${mol.wavelength.toFixed(2)} µm</span></div>
+            <div class="flex justify-between text-gray-300"><span>Detector:</span><span class="text-white font-bold">${arrayId} · Ch ${chInArray}/17 (Band ${chNum})</span></div>
+            <div class="flex justify-between text-gray-300"><span>SED Flux:</span><span class="text-orange-300 font-bold">${sedF} µJy</span></div>
+            <div class="text-[10px] text-gray-400 italic pt-1 border-t border-space-800 leading-tight">${mol.desc || 'Molecular absorption feature'}</div>
+          `;
+          specSpotAction.innerHTML = `
+            <span class="text-gray-400">${isPinned ? '📌 Pinned' : 'Click to inspect'}</span>
+            <button type="button" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-cyan-300 hover:text-white border border-space-700 font-bold transition" onclick="select102BandChannel(${chNum})">Band ${chNum} ➔</button>
+          `;
+        }
+
+        const popupW = 230;
+        const popupH = 140;
+        let leftPx = spot.x + 14;
+        let topPx = spot.y - 40;
+
+        if (leftPx + popupW > rect.width - 10) {
+          leftPx = spot.x - popupW - 14;
+        }
+        if (leftPx < 10) leftPx = 10;
+        if (topPx + popupH > rect.height - 10) {
+          topPx = rect.height - popupH - 10;
+        }
+        if (topPx < 10) topPx = 10;
+
+        specSpotPopup.style.left = `${Math.round(leftPx)}px`;
+        specSpotPopup.style.top = `${Math.round(topPx)}px`;
+        specSpotPopup.classList.remove('hidden');
+        specSpotPopup.classList.add('flex');
+        if (isPinned) {
+          specSpotPopup.classList.remove('pointer-events-none');
+        } else {
+          specSpotPopup.classList.add('pointer-events-none');
+        }
+      }
+
+      function hideSpecSpotPopup(force = false) {
+        if (!specSpotPopup) return;
+        if (isSpecSpotPinned && !force) return;
+        isSpecSpotPinned = false;
+        pinnedSpotData = null;
+        specSpotPopup.classList.add('hidden');
+        specSpotPopup.classList.remove('flex');
+        specSpotPopup.classList.add('pointer-events-none');
+      }
+
+      function pinSpecSpotPopup(spot) {
+        isSpecSpotPinned = true;
+        pinnedSpotData = spot;
+        showSpecSpotPopup(spot, true);
+        if (typeof playTargetLockChime === 'function') playTargetLockChime();
+      }
+
+      if (btnCloseSpecSpotPopup) {
+        btnCloseSpecSpotPopup.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hideSpecSpotPopup(true);
+        });
+      }
+
+      chartCanvas.addEventListener('mousemove', (e) => {
+        if (isPanningSpec) return;
+        const rect = chartCanvas.getBoundingClientRect();
+        const clientX = e.clientX - rect.left;
+        const clientY = e.clientY - rect.top;
+
+        const spot = findNearestSpectrumSpot(clientX, clientY, 26);
+        if (spot) {
+          chartCanvas.style.cursor = 'pointer';
+          if (!isSpecSpotPinned) {
+            showSpecSpotPopup(spot, false);
+          }
+        } else {
+          chartCanvas.style.cursor = (specZoomMinIndex !== null) ? 'grab' : 'crosshair';
+          if (!isSpecSpotPinned) {
+            hideSpecSpotPopup(false);
+          }
+        }
+      });
+
+      chartCanvas.addEventListener('mouseleave', () => {
+        if (!isSpecSpotPinned) {
+          hideSpecSpotPopup(false);
+        }
+      });
 
       // Bind Array Tab Click Events
       document.querySelectorAll('.array-tab').forEach(tab => {
@@ -8777,6 +9078,8 @@
 
     // =========================================================================
     // LIGHT CURVE TIME-DOMAIN ENGINE (Multi-Band, Phase-Fold, Error Bars, Reticle)
+    // Issue #43 Enhancements: Calibrated Flux, SNR, Lomb-Scargle Sparkline,
+    // Outlier Masking, Harmonic Model Curve Fit & Responsive Layout
     // =========================================================================
     let lightCurveChart = null;
     let latestMultiEpochLC = null;
@@ -8785,6 +9088,137 @@
     let lcTimeUnit = 'year';    // 'year' or 'mjd'
     let lcTrialPeriod = 1.0;    // Days for phase folding
     let lcFetchAbortCtrl = null;
+    let lcMaskedPointIds = new Set();
+    let lcShowModelCurve = true;
+    let lcMaskModeActive = false;
+    let lombScargleSpectrum = [];
+    window.lcMaskedPointIds = lcMaskedPointIds;
+
+    function getLCPointKey(p) {
+      if (!p) return '';
+      return `${p.survey || ''}_${p.band || ''}_${p.mjd || p.year || ''}_${p.mag ?? p.upper_limit ?? ''}`;
+    }
+    window.getLCPointKey = getLCPointKey;
+
+    function isPointMasked(p) {
+      return lcMaskedPointIds.has(getLCPointKey(p));
+    }
+    window.isPointMasked = isPointMasked;
+
+    function calcCalibratedFluxMicroJy(mag, band = '') {
+      if (mag === null || mag === undefined || isNaN(mag)) return null;
+      const b = (band || '').toUpperCase();
+      let f0_jy = 300.0;
+      if (b.includes('W1')) f0_jy = 309.54;
+      else if (b.includes('W2')) f0_jy = 171.79;
+      else if (b.includes('KS') || b.includes('2MASS')) f0_jy = 666.80;
+      else if (b.includes('SPHEREX')) f0_jy = 171.79;
+      const flux = f0_jy * 1e6 * Math.pow(10, -0.4 * parseFloat(mag));
+      return Number(flux.toFixed(1));
+    }
+    window.calcCalibratedFluxMicroJy = calcCalibratedFluxMicroJy;
+
+    function toggleLightCurveMaskMode() {
+      lcMaskModeActive = !lcMaskModeActive;
+      const btn = document.getElementById('btnToggleOutlierMask');
+      const lbl = document.getElementById('lcMaskModeLabel');
+      if (btn) {
+        if (lcMaskModeActive) {
+          btn.className = 'px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950 border border-rose-500 text-rose-300 font-bold flex items-center gap-1 shadow-sm transition';
+          if (lbl) lbl.innerText = 'Masking ON';
+          if (typeof showToast === 'function') showToast('Outlier Mask Mode: Click points to exclude artifacts from stats', 'info');
+        } else {
+          btn.className = 'px-2 py-0.5 rounded blender-btn text-[10px] font-mono text-gray-300 hover:text-white border border-space-700 flex items-center gap-1 transition';
+          if (lbl) lbl.innerText = 'Mask Mode';
+          if (typeof showToast === 'function') showToast('Outlier Mask Mode deactivated', 'info');
+        }
+      }
+    }
+    window.toggleLightCurveMaskMode = toggleLightCurveMaskMode;
+
+    function clearLightCurveMasks() {
+      lcMaskedPointIds.clear();
+      if (typeof showToast === 'function') showToast('Cleared all light curve outlier masks', 'info');
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.clearLightCurveMasks = clearLightCurveMasks;
+
+    function toggleLightCurveModelCurve() {
+      lcShowModelCurve = !lcShowModelCurve;
+      const btn = document.getElementById('btnToggleLCModelCurve');
+      const lbl = document.getElementById('lcModelCurveLabel');
+      if (btn) {
+        if (lcShowModelCurve) {
+          btn.className = 'px-1.5 py-0.5 rounded bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 text-[9px] font-bold transition flex items-center gap-0.5';
+          if (lbl) lbl.innerText = 'Fit Curve';
+        } else {
+          btn.className = 'px-1.5 py-0.5 rounded bg-space-800 hover:bg-space-700 border border-space-700 text-gray-400 text-[9px] font-bold transition flex items-center gap-0.5';
+          if (lbl) lbl.innerText = 'No Fit';
+        }
+      }
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.toggleLightCurveModelCurve = toggleLightCurveModelCurve;
+
+    function renderLombScargleSparkline(bestP, maxPower) {
+      const container = document.getElementById('lcPowerSparklineContainer');
+      const canvas = document.getElementById('lcPowerSparkline');
+      const peakLbl = document.getElementById('lcPowerPeakLabel');
+      const statPower = document.getElementById('lcStatPower');
+      if (!canvas || !lombScargleSpectrum || lombScargleSpectrum.length === 0) return;
+      if (container) container.classList.remove('hidden');
+      if (peakLbl) peakLbl.innerText = `${bestP.toFixed(1)}d`;
+      if (statPower) statPower.innerText = maxPower > 0 ? maxPower.toFixed(2) : '--';
+
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const powers = lombScargleSpectrum.map(s => s.power);
+      const maxPwr = Math.max(1e-4, Math.max(...powers));
+      const n = lombScargleSpectrum.length;
+
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, 'rgba(192, 132, 252, 0.45)');
+      grad.addColorStop(1, 'rgba(192, 132, 252, 0.0)');
+
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const x = (i / (n - 1)) * w;
+        const y = h - (lombScargleSpectrum[i].power / maxPwr) * (h - 2) - 1;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const x = (i / (n - 1)) * w;
+        const y = h - (lombScargleSpectrum[i].power / maxPwr) * (h - 2) - 1;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      const bestIdx = lombScargleSpectrum.findIndex(s => Math.abs(s.period - bestP) < 0.01);
+      if (bestIdx >= 0) {
+        const peakX = (bestIdx / (n - 1)) * w;
+        ctx.strokeStyle = '#22d3ee';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(peakX, 0);
+        ctx.lineTo(peakX, h);
+        ctx.stroke();
+      }
+    }
+    window.renderLombScargleSparkline = renderLombScargleSparkline;
 
     // Custom Chart.js Plugin for Observational Error Bars (±1σ)
     const lcErrorBarPlugin = {
@@ -8811,7 +9245,7 @@
             const capWidth = 3.5;
 
             ctx.save();
-            ctx.strokeStyle = dataset.borderColor || '#38bdf8';
+            ctx.strokeStyle = isPointMasked(pt) ? 'rgba(244, 63, 94, 0.4)' : (dataset.borderColor || '#38bdf8');
             ctx.lineWidth = 1.2;
             ctx.beginPath();
             // Whisker
@@ -8888,10 +9322,10 @@
 
     function autoDetectLightCurvePeriod() {
       if (!latestMultiEpochLC || latestMultiEpochLC.length < 3) {
-        showToast("Insufficient multi-epoch points for Lomb-Scargle period detection", "warning");
+        if (typeof showToast === 'function') showToast("Insufficient multi-epoch points for Lomb-Scargle period detection", "warning");
         return;
       }
-      const valid = latestMultiEpochLC.filter(p => !p.is_upper_limit && p.mag !== null && p.mjd);
+      const valid = latestMultiEpochLC.filter(p => !p.is_upper_limit && p.mag !== null && p.mjd && !isPointMasked(p));
       const times = valid.map(p => Number(p.mjd));
       const mags = valid.map(p => Number(p.mag));
 
@@ -8902,7 +9336,7 @@
       const statPeriod = document.getElementById('lcStatPeriod');
       if (statPeriod) statPeriod.innerText = `${bestP.toFixed(2)} d`;
       setLightCurveMode('phase');
-      showToast(`Lomb-Scargle Best Period Detected: P = ${bestP.toFixed(2)} days`, 'success');
+      if (typeof showToast === 'function') showToast(`Lomb-Scargle Best Period Detected: P = ${bestP.toFixed(2)} days`, 'success');
     }
     window.autoDetectLightCurvePeriod = autoDetectLightCurvePeriod;
 
@@ -8919,6 +9353,7 @@
       const nFreq = 250;
       let bestP = 1.0;
       let maxPower = -1;
+      lombScargleSpectrum = [];
 
       for (let k = 0; k < nFreq; k++) {
         const p = minP * Math.pow(maxP / minP, k / (nFreq - 1));
@@ -8952,23 +9387,40 @@
           (sinSum * sinSum) / (sin2Sum || 1e-6)
         );
 
+        lombScargleSpectrum.push({ period: Number(p.toFixed(3)), power: Number(power.toFixed(4)) });
+
         if (power > maxPower) {
           maxPower = power;
           bestP = p;
         }
       }
+      renderLombScargleSparkline(bestP, maxPower);
       return Number(bestP.toFixed(2));
     }
+    window.computeLombScargleBestPeriod = computeLombScargleBestPeriod;
 
     function computeVariabilityStatistics(points) {
-      const detPts = (points || []).filter(p => !p.is_upper_limit && p.mag !== null && p.mag !== undefined);
-      if (detPts.length === 0) {
-        return { count: 0, baselineYr: 0, amplitude: null, meanMag: null, chi2Red: null, stetsonJ: null };
+      const activeDetPts = (points || []).filter(p => !p.is_upper_limit && p.mag !== null && p.mag !== undefined && !isPointMasked(p));
+      const maskedCount = (points || []).filter(p => isPointMasked(p)).length;
+
+      const maskedSection = document.getElementById('lcMaskedSection');
+      const maskedBadge = document.getElementById('lcMaskedCountBadge');
+      if (maskedSection && maskedBadge) {
+        if (maskedCount > 0) {
+          maskedSection.classList.remove('hidden');
+          maskedBadge.innerText = `${maskedCount} masked`;
+        } else {
+          maskedSection.classList.add('hidden');
+        }
       }
 
-      const mjds = detPts.map(p => Number(p.mjd) || 0).filter(m => m > 0);
-      const mags = detPts.map(p => Number(p.mag));
-      const errs = detPts.map(p => Math.max(0.01, Number(p.mag_err) || 0.05));
+      if (activeDetPts.length === 0) {
+        return { count: 0, baselineYr: 0, amplitude: null, meanMag: null, chi2Red: null, stetsonJ: null, maskedCount };
+      }
+
+      const mjds = activeDetPts.map(p => Number(p.mjd) || 0).filter(m => m > 0);
+      const mags = activeDetPts.map(p => Number(p.mag));
+      const errs = activeDetPts.map(p => Math.max(0.01, Number(p.mag_err) || 0.05));
 
       const minMjd = Math.min(...mjds);
       const maxMjd = Math.max(...mjds);
@@ -8981,7 +9433,7 @@
       // Weighted mean magnitude
       let sumWeight = 0;
       let sumWeightedMag = 0;
-      for (let i = 0; i < detPts.length; i++) {
+      for (let i = 0; i < activeDetPts.length; i++) {
         const w = 1.0 / (errs[i] * errs[i]);
         sumWeight += w;
         sumWeightedMag += w * mags[i];
@@ -8990,17 +9442,17 @@
 
       // Reduced Chi-Square against constant flux
       let chi2 = 0;
-      for (let i = 0; i < detPts.length; i++) {
+      for (let i = 0; i < activeDetPts.length; i++) {
         const diff = mags[i] - meanMag;
         chi2 += (diff * diff) / (errs[i] * errs[i]);
       }
-      const dof = Math.max(1, detPts.length - 1);
+      const dof = Math.max(1, activeDetPts.length - 1);
       const chi2Red = Number((chi2 / dof).toFixed(2));
 
       // Stetson J index
       let stetsonJ = 0;
-      if (detPts.length >= 2) {
-        const n = detPts.length;
+      if (activeDetPts.length >= 2) {
+        const n = activeDetPts.length;
         const factor = Math.sqrt(n / (n - 1));
         for (let i = 0; i < n; i++) {
           const delta = factor * (mags[i] - meanMag) / errs[i];
@@ -9012,14 +9464,16 @@
       }
 
       return {
-        count: detPts.length,
+        count: activeDetPts.length,
         baselineYr,
         amplitude,
         meanMag: Number(meanMag.toFixed(2)),
         chi2Red,
-        stetsonJ
+        stetsonJ,
+        maskedCount
       };
     }
+    window.computeVariabilityStatistics = computeVariabilityStatistics;
 
     async function fetchPointLightCurve(ra, dec, label = 'Selected Point') {
       const numRA = parseFloat(ra);
@@ -9073,13 +9527,13 @@
       selectedSkyPoint = null;
       drawFrame();
       fetchPointLightCurve(camera.ra, camera.dec, 'Field Center');
-      showToast("Light curve reset to viewport field center", "info");
+      if (typeof showToast === 'function') showToast("Light curve reset to viewport field center", "info");
     }
     window.resetLightCurveToFieldCenter = resetLightCurveToFieldCenter;
 
     function exportLightCurveCSV() {
       if (!latestMultiEpochLC || latestMultiEpochLC.length === 0) {
-        showToast("No light curve data available to export", "warning");
+        if (typeof showToast === 'function') showToast("No light curve data available to export", "warning");
         return;
       }
       const targetLabel = document.getElementById('lcTargetLabel')?.innerText || 'Target';
@@ -9087,13 +9541,16 @@
 
       let csv = `# TARGET: ${targetLabel} (${coords})\n`;
       csv += `# CREATED BY: SPHEREx Hunter - Team RIP (NASA Space Apps 2026)\n`;
-      csv += `epoch_label,mjd,year,band,mag,mag_err,is_upper_limit,survey\n`;
+      csv += `epoch_label,mjd,year,band,mag,mag_err,is_upper_limit,is_masked,flux_microjy,snr,survey\n`;
 
       latestMultiEpochLC.forEach(p => {
         const yr = Number(p.year) || (p.mjd ? (1858.878 + Number(p.mjd) / 365.25).toFixed(3) : '');
         const magVal = p.is_upper_limit ? (p.upper_limit ?? '') : (p.mag ?? '');
         const errVal = p.is_upper_limit ? '' : (p.mag_err ?? '0.05');
-        csv += `"${p.epoch_label || ''}",${p.mjd || ''},${yr},"${p.band || ''}",${magVal},${errVal},${p.is_upper_limit ? 'true' : 'false'},"${p.survey || ''}"\n`;
+        const flux = calcCalibratedFluxMicroJy(p.mag ?? p.upper_limit, p.band) || '';
+        const snr = p.snr || (p.mag_err ? (1.0857 / Math.max(0.005, Number(p.mag_err))).toFixed(1) : '');
+        const masked = isPointMasked(p) ? 'true' : 'false';
+        csv += `"${p.epoch_label || ''}",${p.mjd || ''},${yr},"${p.band || ''}",${magVal},${errVal},${p.is_upper_limit ? 'true' : 'false'},${masked},${flux},"${snr}","${p.survey || ''}"\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -9105,7 +9562,7 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast("Exported Light Curve CSV table successfully!", "success");
+      if (typeof showToast === 'function') showToast("Exported Light Curve CSV table successfully!", "success");
     }
     window.exportLightCurveCSV = exportLightCurveCSV;
 
@@ -9143,7 +9600,11 @@
         statChi2El.className = (stats.chi2Red && stats.chi2Red > 3.0) ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
       }
       if (statStetsonEl) statStetsonEl.innerText = stats.stetsonJ !== null ? String(stats.stetsonJ) : '--';
-      if (countBadge) countBadge.innerText = `${stats.count} epochs`;
+      if (countBadge) {
+        countBadge.innerText = stats.maskedCount > 0
+          ? `${stats.count} active (${stats.maskedCount} masked)`
+          : `${stats.count} epochs`;
+      }
 
       const validPts = filteredPts.filter(p => p && ((p.mag !== null && p.mag !== undefined) || p.is_upper_limit));
       if (validPts.length === 0) {
@@ -9184,7 +9645,7 @@
         lightCurveChart.options.scales.x.max = 2.0;
         lightCurveChart.options.scales.x.title = { display: true, text: `Orbital / Pulsational Phase (Φ) [P = ${periodDays.toFixed(2)}d, 2 Cycles]`, color: '#c084fc', font: { size: 9 } };
 
-        lightCurveChart.data.datasets = [
+        const datasets = [
           {
             label: 'Folded Flux (mag)',
             data: detPts.map(p => ({ x: Number(p.phase.toFixed(3)), y: p.mag })),
@@ -9192,11 +9653,12 @@
             borderColor: '#c084fc',
             backgroundColor: 'rgba(192, 132, 252, 0.2)',
             showLine: false,
-            pointRadius: 5.5,
-            pointHoverRadius: 8,
-            pointBackgroundColor: '#a855f7',
-            pointBorderColor: '#ffffff',
-            borderWidth: 1.5,
+            pointRadius: detPts.map(p => isPointMasked(p) ? 7 : 5.5),
+            pointHoverRadius: 8.5,
+            pointStyle: detPts.map(p => isPointMasked(p) ? 'crossRot' : 'circle'),
+            pointBackgroundColor: detPts.map(p => isPointMasked(p) ? '#f43f5e' : '#a855f7'),
+            pointBorderColor: detPts.map(p => isPointMasked(p) ? '#fda4af' : '#ffffff'),
+            borderWidth: detPts.map(p => isPointMasked(p) ? 2.5 : 1.5),
           },
           {
             label: 'Non-Detection 3σ Limits',
@@ -9205,8 +9667,8 @@
             borderColor: '#f43f5e',
             backgroundColor: 'rgba(244, 63, 94, 0.2)',
             showLine: false,
-            pointRadius: 6,
-            pointHoverRadius: 8,
+            pointRadius: ulPts.map(p => isPointMasked(p) ? 7 : 6),
+            pointHoverRadius: 8.5,
             pointStyle: 'triangle',
             pointRotation: 180,
             pointBackgroundColor: '#f43f5e',
@@ -9214,6 +9676,61 @@
             borderWidth: 1.5,
           }
         ];
+
+        // Analytical Harmonic Model Curve Fit: y(phi) = C0 + C1*cos(2pi*phi) + C2*sin(2pi*phi)
+        if (lcShowModelCurve) {
+          const unmasked = detPts.filter(p => !isPointMasked(p));
+          if (unmasked.length >= 3) {
+            let sum1 = 0, sumU = 0, sumV = 0, sumU2 = 0, sumV2 = 0, sumUV = 0;
+            let sumY = 0, sumUY = 0, sumVY = 0;
+            unmasked.forEach(p => {
+              const phi = p.phase;
+              const u = Math.cos(2 * Math.PI * phi);
+              const v = Math.sin(2 * Math.PI * phi);
+              const y = Number(p.mag);
+              sum1 += 1; sumU += u; sumV += v;
+              sumU2 += u * u; sumV2 += v * v; sumUV += u * v;
+              sumY += y; sumUY += u * y; sumVY += v * y;
+            });
+
+            const mat = [
+              [sum1, sumU, sumV, sumY],
+              [sumU, sumU2, sumUV, sumUY],
+              [sumV, sumUV, sumV2, sumVY]
+            ];
+            for (let i = 0; i < 3; i++) {
+              let pivot = mat[i][i];
+              if (Math.abs(pivot) < 1e-9) pivot = 1e-9;
+              for (let j = 0; j <= 3; j++) mat[i][j] /= pivot;
+              for (let r = 0; r < 3; r++) {
+                if (r !== i) {
+                  const factor = mat[r][i];
+                  for (let j = 0; j <= 3; j++) mat[r][j] -= factor * mat[i][j];
+                }
+              }
+            }
+            const C0 = mat[0][3], C1 = mat[1][3], C2 = mat[2][3];
+            const curvePts = [];
+            for (let k = 0; k <= 100; k++) {
+              const phi = (k / 100) * 2.0;
+              const y = C0 + C1 * Math.cos(2 * Math.PI * phi) + C2 * Math.sin(2 * Math.PI * phi);
+              curvePts.push({ x: Number(phi.toFixed(3)), y: Number(y.toFixed(3)) });
+            }
+            datasets.push({
+              label: 'Harmonic Model Fit',
+              data: curvePts,
+              borderColor: '#e879f9',
+              borderWidth: 2,
+              pointRadius: 0,
+              pointHoverRadius: 0,
+              fill: false,
+              tension: 0.35,
+              showLine: true
+            });
+          }
+        }
+
+        lightCurveChart.data.datasets = datasets;
       } else {
         // Chronological Time Mode
         validPts.sort((a, b) => (Number(a.mjd) || 0) - (Number(b.mjd) || 0));
@@ -9227,7 +9744,6 @@
           { key: 'SPHEREx', label: 'SPHEREx DR1 (4.6 µm)', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)', ptColor: '#9333ea' },
         ];
 
-        // Format X values
         const formatX = (p) => {
           if (lcTimeUnit === 'mjd') return Number(p.mjd) || 0;
           return Number(p.year) || Math.round((1858.878 + (Number(p.mjd) || 0) / 365.25) * 10) / 10;
@@ -9244,11 +9760,12 @@
               backgroundColor: spec.bg,
               fill: false,
               tension: 0.15,
-              pointRadius: 5.5,
-              pointHoverRadius: 8,
-              pointBackgroundColor: spec.ptColor,
-              pointBorderColor: '#ffffff',
-              borderWidth: 1.5,
+              pointRadius: bPts.map(p => isPointMasked(p) ? 7 : 5.5),
+              pointHoverRadius: 8.5,
+              pointStyle: bPts.map(p => isPointMasked(p) ? 'crossRot' : 'circle'),
+              pointBackgroundColor: bPts.map(p => isPointMasked(p) ? '#f43f5e' : spec.ptColor),
+              pointBorderColor: bPts.map(p => isPointMasked(p) ? '#fda4af' : '#ffffff'),
+              borderWidth: bPts.map(p => isPointMasked(p) ? 2.5 : 1.5),
               spanGaps: true
             });
           }
@@ -9264,7 +9781,7 @@
             borderColor: '#f43f5e',
             backgroundColor: 'rgba(244, 63, 94, 0.2)',
             showLine: false,
-            pointRadius: 6.5,
+            pointRadius: ulPts.map(p => isPointMasked(p) ? 7 : 6.5),
             pointHoverRadius: 9,
             pointStyle: 'triangle',
             pointRotation: 180,
@@ -9293,6 +9810,7 @@
 
       lightCurveChart.update();
     }
+    window.updateLightCurveChart = updateLightCurveChart;
 
     function initLightCurveChart() {
       const canvasLC = document.getElementById('lightCurveChart');
@@ -9322,6 +9840,39 @@
             const pt = ds.rawEpochPoints[el.index];
             if (!pt) return;
 
+            // If in Outlier Masking Mode or Shift key held, toggle mask state
+            if (lcMaskModeActive || e.native?.shiftKey) {
+              const key = getLCPointKey(pt);
+              if (lcMaskedPointIds.has(key)) {
+                lcMaskedPointIds.delete(key);
+                if (typeof showToast === 'function') showToast(`Restored point to stats: ${pt.epoch_label || pt.band}`, 'info');
+              } else {
+                lcMaskedPointIds.add(key);
+                if (typeof showToast === 'function') showToast(`Masked outlier artifact: ${pt.epoch_label || pt.band}`, 'warning');
+              }
+              updateLightCurveChart(latestMultiEpochLC);
+              return;
+            }
+
+            // Normal click: Update selected point details box and sync viewport
+            const detailSurvey = document.getElementById('lcDetailSurvey');
+            const detailDate = document.getElementById('lcDetailDate');
+            const detailFlux = document.getElementById('lcDetailFlux');
+            const detailSNR = document.getElementById('lcDetailSNR');
+            const detailStatus = document.getElementById('lcDetailStatus');
+
+            if (detailSurvey) detailSurvey.innerText = pt.epoch_label || pt.survey || 'Epoch';
+            if (detailDate) detailDate.innerText = pt.obs_date || pt.year || (pt.mjd ? `MJD ${Math.round(pt.mjd)}` : '--');
+            const flux = calcCalibratedFluxMicroJy(pt.mag ?? pt.upper_limit, pt.band || ds.label);
+            if (detailFlux) detailFlux.innerText = flux ? (flux >= 1000 ? `${(flux / 1000).toFixed(2)} mJy` : `${flux.toFixed(1)} µJy`) : '--';
+            const snr = pt.snr || (pt.mag_err ? `${(1.0857 / Math.max(0.005, Number(pt.mag_err))).toFixed(1)}σ` : (pt.is_upper_limit ? '< 3.0σ' : '21.7σ'));
+            if (detailSNR) detailSNR.innerText = snr;
+            if (detailStatus) {
+              const masked = isPointMasked(pt);
+              detailStatus.innerText = masked ? 'Masked Outlier' : 'Active';
+              detailStatus.className = masked ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold';
+            }
+
             const yr = Number(pt.year) || Math.round(1858.878 + (Number(pt.mjd) || 0) / 365.25);
             let frameIdx = 0;
             if (yr <= 2005) frameIdx = 0;
@@ -9332,7 +9883,7 @@
             if (typeof setBlinkFrameFromTimeline === 'function') {
               setBlinkFrameFromTimeline('A', frameIdx);
             }
-            showToast(`Synced Viewport to Epoch: ${pt.epoch_label || pt.survey || yr}`, 'info');
+            if (typeof showToast === 'function') showToast(`Synced Viewport to Epoch: ${pt.epoch_label || pt.survey || yr}`, 'info');
           },
           scales: {
             x: {
@@ -9358,6 +9909,15 @@
             },
             tooltip: {
               callbacks: {
+                title: (items) => {
+                  if (!items || items.length === 0) return '';
+                  const item = items[0];
+                  const ds = lightCurveChart.data.datasets[item.datasetIndex];
+                  const pt = ds?.rawEpochPoints ? ds.rawEpochPoints[item.dataIndex] : null;
+                  if (!pt) return '';
+                  const yrStr = pt.year ? String(pt.year) : (pt.mjd ? `MJD ${Math.round(pt.mjd)}` : '');
+                  return `${pt.epoch_label || pt.survey || 'Observation Epoch'} (${pt.obs_date || yrStr})`;
+                },
                 label: (ctx) => {
                   const ds = lightCurveChart.data.datasets[ctx.datasetIndex];
                   const pt = ds?.rawEpochPoints ? ds.rawEpochPoints[ctx.dataIndex] : null;
@@ -9365,8 +9925,28 @@
                   if (val === null || val === undefined) return '';
                   if (pt?.is_upper_limit) return `> ${val} mag (3σ Upper Limit non-detection)`;
                   const errStr = pt?.mag_err ? ` ± ${pt.mag_err}` : '';
-                  const surveyStr = pt?.survey ? ` [${pt.survey}]` : '';
-                  return `${ds.label}: ${val}${errStr} mag${surveyStr}`;
+                  return `Magnitude: ${val}${errStr} mag`;
+                },
+                afterLabel: (ctx) => {
+                  const ds = lightCurveChart.data.datasets[ctx.datasetIndex];
+                  const pt = ds?.rawEpochPoints ? ds.rawEpochPoints[ctx.dataIndex] : null;
+                  if (!pt) return '';
+                  const lines = [];
+                  const val = ctx.raw?.y ?? ctx.raw;
+                  const flux = calcCalibratedFluxMicroJy(val, pt.band || ds.label);
+                  if (flux !== null) {
+                    lines.push(`Flux (F_ν): ${flux >= 1000 ? (flux / 1000).toFixed(2) + ' mJy' : flux.toFixed(1) + ' µJy'}`);
+                  }
+                  const snr = pt.snr || (pt.mag_err ? `${(1.0857 / Math.max(0.005, Number(pt.mag_err))).toFixed(1)}σ` : (pt.is_upper_limit ? '< 3.0σ' : '21.7σ'));
+                  lines.push(`Signal-to-Noise: ${snr}`);
+                  if (pt.band) lines.push(`Bandpass: ${pt.band}`);
+                  if (isPointMasked(pt)) {
+                    lines.push(`⚠️ MASKED OUTLIER (Excluded from stats)`);
+                    lines.push(`[Click or Shift+Click to Unmask]`);
+                  } else {
+                    lines.push(`Status: Active [Shift+Click to Mask]`);
+                  }
+                  return lines;
                 }
               }
             }
