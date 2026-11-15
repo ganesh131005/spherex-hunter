@@ -12,19 +12,17 @@ Verifies:
 7. REST endpoint /api/v1/mapping/surveys returns valid schema.
 """
 
-import pytest
 from fastapi.testclient import TestClient
 
 from backend.main import app
+from backend.services.metadata_schema import VERIFIED_PRESETS
 from backend.services.topology_mapper import (
     generate_2mass_map,
     generate_gaia_map,
-    generate_wise_map,
-    generate_spherex_map,
     generate_multi_survey_topology_and_overlay_mapping,
+    generate_spherex_map,
+    generate_wise_map,
 )
-from backend.services.metadata_schema import VERIFIED_PRESETS
-
 
 client = TestClient(app)
 
