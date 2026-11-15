@@ -23,7 +23,12 @@
 - [x] Guide darkodu, coolodu, iceodu, and astrodu to fetch repository and execute forwarded tasks.
 - [x] Review upcoming feature PRs from team branches into `main`.
 - [x] **[Release Integration Complete (`coolodu/web-frontend` -> `main`)]**: Merged verified `coolodu/web-frontend` work (Issues `#8`–`#31`, Integrated AI Science Co-Pilot, resilient IRSA 502 fallback, scientific cache lifecycle, `/app/P/DSS2/color/*` local HiPS fallback route, `94/94` non-Playwright `pytest` verification) into `main` and pushed to `origin/main` (0 open GitHub issues remaining).
-- [x] **[Continuous Dynamic Frustum Tile Streaming on Pan & Zoom Resolved & Verified Live]**: Fixed static 3x3 neighbor clustering and scale mismatch bug in `frontend/index.html`. Replaced static offsets with dynamic world-space frustum raycaster, unified center and neighbor tile FOV scaling, removed wireframe seams (`strokeRect` and dark edge vignettes), and verified via Playwright E2E suite (`tests/test_continuous_viewport_e2e.py` 2/2 passing).
+- [x] **[Master Release Integrated & Verified Live (`coolodu/web-frontend` -> `main`)]**: Merged `coolodu/web-frontend` into `main` with Issue #38 UI/UX resolution, Viewport Overhaul v2, 102 IRSA channels, and Gaia EPSF astrometry. All 41 unit, golden, and contract tests verified 100% green. Pushed to `origin/main`.
+- [x] **[Master Release Verification Complete on `main` (Issues #39 & #40 Resolved)]**:
+  - Validated and reviewed incoming commits (`b1c9aea`, `fade6f9`, `4166da6`, `7c13eff`) resolving Issue #39 (Backend cutout NoneType guard, FOV clamp to [1.0, 15.0], diagnostic error detail extraction) and Issue #40 (Viewport HUD time-step deconfliction to `top-14`, tool rail nebula styling, Gaia DR3 canvas click-to-inspect).
+  - Fast-forwarded local `main` to `origin/main` (`7c13eff`).
+  - Verified 100% green pass rate across all 43 tests: `test_ui_contract.py` (12/12), `test_viewport_overhaul_v2.py` (7/7), `test_continuous_viewport_e2e.py` (2/2), `test_golden_suite.py` (22/22).
+  - Verified all branches and remote status completely synchronized.
 - [x] **[Master Release Integration Complete: Issues #32, #33, #34, #35, #36, #37 Audited, Verified & Closed]**:
   - Merged all verified backend and frontend branches (`darkodu/astro-backend` and `coolodu/web-frontend`) into `main`.
   - Audited and physically verified all 6 issues (#32, #33, #34, #35, #36, #37) with git commit, AST grep, and functional test checks.

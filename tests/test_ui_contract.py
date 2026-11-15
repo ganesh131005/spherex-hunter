@@ -303,3 +303,55 @@ def test_viewport_overhaul_v2_contract():
     residuals = compute_astrometric_residuals(None, res)
     assert residuals["status"] == "ok"
     assert "median_offset_arcsec" in residuals
+
+
+def test_issue_39_cutout_error_diagnostics_and_clamping_contract():
+    """Validates Issue #39: Backend returns structured 400/404, clamps FOV to [1.0, 15.0], and formatFriendlyError extracts diagnostic details."""
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+
+    client = TestClient(app)
+    # 1. Backend rejects FOV > 15.0 arcmin with 400 Bad Request
+    r_wide = client.get("/api/cutout?ra=133.795&dec=-7.245&fov=559.76")
+    assert r_wide.status_code == 400, f"Expected HTTP 400 for FOV > 15', got {r_wide.status_code}"
+    err_json = r_wide.json()
+    assert "exceeds 15.0 arcmin limit" in err_json.get("detail", ""), "Detail message must explain FOV limit"
+
+    # 2. Frontend clamps FOV to [1.0, 15.0] and extracts error detail
+    html, soup = _get_html_and_soup()
+    assert "Math.max(1.0, Math.min(15.0, Number(fov) || 3.0))" in html, "loadSkyCutout must clamp FOV to [1.0, 15.0]"
+    assert "formatFriendlyError" in html
+    assert "exceeds 15.0" in html, "formatFriendlyError must diagnose FOV limit exceedances"
+    assert "Field of View Exceeds 15.0′ Limit" in html
+
+
+def test_issue_40_viewport_hud_deconfliction_contract():
+    """Validates Issue #40: Viewport HUD time step controller is vertically deconflicted below top telemetry and colormap controls."""
+    html, soup = _get_html_and_soup()
+
+    # 1. #viewportTimeStepHUD is placed at top-14 to avoid overlapping top telemetry and stretch row
+    hud = soup.find(id="viewportTimeStepHUD")
+    assert hud is not None, "Missing #viewportTimeStepHUD"
+    hud_classes = hud.get("class", [])
+    assert "top-14" in hud_classes, f"#viewportTimeStepHUD must be at top-14, got {hud_classes}"
+    assert "top-3" not in hud_classes, "#viewportTimeStepHUD must NOT be at top-3"
+
+    # 2. Top-left target telemetry chip (#vpTargetName) is at top-3 left-3
+    vp_target = soup.find(id="vpTargetName")
+    assert vp_target is not None, "Missing #vpTargetName"
+    target_card = vp_target.find_parent("div", class_=lambda c: c and "top-3" in c and "left-3" in c)
+    assert target_card is not None, "Top-left target card must be positioned at top-3 left-3"
+
+    # 3. Top-right stretch controls are at top-3 right-3
+    stretch_grayscale = soup.find(id="shadeGrayscale")
+    assert stretch_grayscale is not None, "Missing #shadeGrayscale"
+    stretch_card = stretch_grayscale.find_parent("div", class_=lambda c: c and "top-3" in c and "right-3" in c)
+    assert stretch_card is not None, "Stretch controls must be positioned at top-3 right-3"
+
+    # 4. Pop-down alert banners are deconflicted below HUD at top-28
+    guided_tour = soup.find(id="guidedTourBanner")
+    assert guided_tour is not None and "top-28" in guided_tour.get("class", []), "Guided tour banner must be at top-28"
+    cand_alert = soup.find(id="candidateAlertStrip")
+    assert cand_alert is not None and "top-28" in cand_alert.get("class", []), "Candidate alert strip must be at top-28"
+
