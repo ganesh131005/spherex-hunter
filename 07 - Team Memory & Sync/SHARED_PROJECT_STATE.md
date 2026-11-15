@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🔬 102-BAND INFORMATION BAR MERGED INTO SPECTRUM TOOLBAR (@coolodu)]**
+  - **Feature:** Unified the 102-Band Information Bar and direct channel selector into `#dockPanelSpectrum`'s top toolbar, anchoring it directly adjacent to the 6-Array selector and 17-channel in-array slider.
+  - **Enhancements Implemented:**
+    1. **Direct 102-Band Selection:** Added `#spec102BandInfoBar` with `#spec102PrevCh`, `#spec102NextCh`, `<select id="spec102ChannelSelect">`, and `#spec102WavelengthDisplay`.
+    2. **Responsive Molecular Feature Chips:** Sized and styled `#spec102MolecularBar` with 1-click jump pills (`.spec-mol-pill`) to key ice and gas bands (H₂O at 1.40µm, H₂O Ice at 3.05µm, CH₄ at 3.30µm, CO₂ Ice at 4.27µm, CO at 4.67µm), displayed responsively without viewport clipping.
+    3. **Bidirectional Channel Synchronization:** Implemented `select102BandChannel(chNumber)` ensuring seamless two-way synchronization between the spectrum panel's channel controls, Array A1–A6 active tabs, in-array slider, and the HiPS all-sky navigator (`#hipsChannelSelect`).
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (16/16), `test_bands_spectrum.py` (3/3), and `test_data_acquisition_and_ui.py` (21/21). Clean working tree on `coolodu/web-frontend`.
 - **[⚡ STEP 5 COMPLETED: SCOPED MULTI-TIER CACHING & QUANTIZED COORDINATE TILE STORE (@coolodu)]**
   - **Micro-Degree Coordinate Quantization:** Quantized floating-point sky coordinates to integer micro-degrees ($10^{-5}\text{ deg} \approx 0.036''$, far below the $6.15''$ detector pixel) in `getClientSpatialKey`, completely eliminating floating-point jitter cache misses.
   - **Scoped L0/L1 Storage Hierarchy:** RAM LRU cache (L0, max 128 decoded textures) + IndexedDB `spherex_tile_store` (L1, max 256 records) serving calibrated exposure cutouts and difference products with automatic least-recently-used capacity pruning.
