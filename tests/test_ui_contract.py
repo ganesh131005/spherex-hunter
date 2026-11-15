@@ -638,6 +638,50 @@ def test_ice_jump_chips_positioned_below_molecular_signatures():
     assert "CO" in pills_text, "Missing CO pill"
 
 
+def test_observation_epochs_option_2_streamlining_contract():
+    """Validates Option 2 streamlining: A/B pair toggles on timeline bar, provenance modal, and streamlined sidebar."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Timeline Track Pair Controls (A / B buttons)
+    timeline_panel = soup.find(id="dockPanelTimeline")
+    assert timeline_panel is not None, "Missing #dockPanelTimeline in bottom dock"
+
+    timeline_epoch_cols = timeline_panel.find(id="timelineEpochCols")
+    assert timeline_epoch_cols is not None, "Missing #timelineEpochCols in timeline panel"
+
+    cols = timeline_epoch_cols.find_all(attrs={"data-timeline-epoch": True})
+    assert len(cols) == 4, f"Expected 4 timeline epoch columns, found {len(cols)}"
+
+    btns_a = timeline_epoch_cols.find_all(class_=lambda c: c and "btn-timeline-set-a" in c)
+    btns_b = timeline_epoch_cols.find_all(class_=lambda c: c and "btn-timeline-set-b" in c)
+    assert len(btns_a) == 4, f"Expected 4 Frame A buttons on timeline, found {len(btns_a)}"
+    assert len(btns_b) == 4, f"Expected 4 Frame B buttons on timeline, found {len(btns_b)}"
+
+    # 2. Provenance Modal Trigger Button on Timeline Dock
+    btn_prov = timeline_panel.find(id="btnOpenEpochProvenance")
+    assert btn_prov is not None, "Missing #btnOpenEpochProvenance on timeline dock"
+    assert "openEpochsProvenanceModal" in btn_prov.get("onclick", ""), "#btnOpenEpochProvenance must trigger openEpochsProvenanceModal()"
+
+    # 3. NASA Observation Epochs Provenance Modal
+    modal = soup.find(id="epochProvenanceModal")
+    assert modal is not None, "Missing #epochProvenanceModal"
+    assert modal.find(id="btnCloseEpochProvenanceModal") is not None, "Missing #btnCloseEpochProvenanceModal"
+    assert modal.find(id="epochProvenanceList") is not None, "Missing #epochProvenanceList"
+
+    # 4. Streamlined Sidebar Elements (in renderTargetScene JS template)
+    assert "Observation Epochs & Difference Baseline" in html, "Missing 'Observation Epochs & Difference Baseline' header"
+    assert "accordionObservationEpochs" in html, "Missing #accordionObservationEpochs collapsible accordion"
+    assert "FRAME A" in html, "Missing FRAME A badge in Difference Baseline card"
+    assert "FRAME B" in html, "Missing FRAME B badge in Difference Baseline card"
+
+    # 5. Core JS Functions for Option 2
+    assert "setBlinkFrameFromTimeline" in html, "Missing setBlinkFrameFromTimeline() function"
+    assert "syncTimelineEpochControls" in html, "Missing syncTimelineEpochControls() function"
+    assert "openEpochsProvenanceModal" in html, "Missing openEpochsProvenanceModal() function"
+    assert "closeEpochsProvenanceModal" in html, "Missing closeEpochsProvenanceModal() function"
+
+
+
 
 
 
