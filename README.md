@@ -6,6 +6,14 @@ Welcome to the central command vault for **Team RIP**! This Obsidian vault is co
 
 ---
 
+## 🐙 GitHub & Developer Resources
+- 📘 **[GitHub Master Guide (Newbies & Pros)](docs/GITHUB_GUIDE.md)**: Plain-English guide for beginners + developer workflow.
+- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)**: Multi-branch protocol, commit standards, and PR checklist.
+- 🖥️ **[UI & Observatory Guide](docs/UI_GUIDE.md)**: WebGL blink comparator, HUD telemetry, and 102-band spectrum.
+- 🛰️ **[API Contract Documentation](docs/API_CONTRACT.md)**: FastAPI endpoints, TAP query parameters, and WCS models.
+
+---
+
 ## ⚡ Quick Navigation
 - 🧭 **Start Here:** [[00 - Team Command Center]]
 - 🎯 **Milestones & Sprints:** [[01 - Project Roadmap & Milestones]]
