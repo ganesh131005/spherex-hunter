@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🌐 ALL 5 TEAM BRANCHES SYNCHRONIZED & PUSHED TO GITHUB (Commit `689a25b`)]**
+  - **Branches Pushed:** `main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`.
+  - **State:** 100% aligned with minimal bottom dock collapse icon (`#btnToggleDock`), Viewport Overhaul Steps 3 & 4 (SPHEREx HiPS context layer, 102 channels, narrowband stacking, Gaia DR3 space motion), and Issue #42 onboarding dispatch.
+  - **Verification:** 23/23 tests green. Zero merge conflicts. All remote tracking tips identical at `689a25b`.
 - **[🛰️ STEP 4 COMPLETED: CALIBRATED MULTI-EPOCH PLACEMENT, NARROWBAND STACKING & GAIA DR3 ASTROMETRY (@coolodu)]**
   - **Target-Specific Historical Baselines:** Re-anchored WISE 0855 to AllWISE W2 ($4.6\,\mu\text{m}$, 2010 / unWISE) paired with SPHEREx narrowband stack ($4.6\,\mu\text{m}$, Band 6, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$) establishing true bandpass matching. Verified Barnard's Star ($10.36''/\text{yr}$), Epsilon Indi B ($4.70''/\text{yr}$), RW Aurigae, and R Draconis presets.
   - **Gaia Space Motion Propagation (`apply_space_motion`):** Implemented in `backend/services/gaia_service.py` using `astropy.coordinates.SkyCoord.apply_space_motion()` to propagate J2016.0 coordinates forward to exposure epoch `target_mjd`, accounting for proper motion, parallax, and radial velocity.
