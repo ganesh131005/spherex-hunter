@@ -37,12 +37,15 @@
     2. Top-left card (`#vpTargetName`, `#vpFrameLabel`) at `top-3 left-3` and top-right stretch controls at `top-3 right-3` now have 100% unobstructed horizontal breathing room across all screen widths.
     3. Re-positioned dismissible alert banners (`#guidedTourBanner`, `#candidateAlertStrip`, `#noObsBanner`) to `top-28` to prevent stacking on the time-step HUD.
     4. Verified in `tests/test_ui_contract.py::test_issue_40_viewport_hud_deconfliction_contract`.
-  - **Verification:** 47/47 CI unit and contract tests passing; clean ruff checks.
-- **[GitHub Native Issue #39 Created — Fix Backend 500 NoneType Crash on Archive Miss and Provide Actionable Diagnostic Details in Error Dialog]**
-  - **Issue #39 Link:** https://github.com/joker0210G/spherex-hunter/issues/39
-  - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`
-  - **Checklist Scope:** Items #7, #12, #24 (Helpful Error Explanations, Coordinate/FOV Boundaries, Safe Failure Handling).
-  - **Forensic Diagnosis:** `backend/main.py` crashes with `AttributeError: 'NoneType' object has no attribute 'get'` when `fetch_real_cutout()` returns `None`, returning HTTP 500 instead of a structured 404/503. The frontend displays a vague boilerplate "Something interrupted loading this view" rather than diagnosing the out-of-bounds FOV (559.76') or upstream archive miss.
+  - **Verification:** 47/47 CI unit and contract tests passing; clean ruff checks. Closed on GitHub.
+- **[🎉 MASTER INTEGRATION COMPLETE ON `main`: `coolodu/web-frontend` MERGED & 100% GREEN TESTS]**
+  - **Commit:** Integrated `coolodu/web-frontend` into `main` (commit `0a879ee`).
+  - **Capabilities Integrated:**
+    1. **Issue #38 UI/UX Fix:** Resolved inspector 4-tab clipping with responsive 4-column grid (`grid grid-cols-4 gap-1 min-w-0`), eliminated sticky header baseline bleed with opaque boundary separator (`border-b border-space-700/90 shadow-md` and `pt-2`), and prevented top navigation action button crowding.
+    2. **Viewport Overhaul v2:** Deployed interactive logarithmic zoom dock (`#viewportZoomBar`, $0.4\text{x}\text{--}8.0\text{x}$), dual-threshold resolution HUD (HiPS Native $12.88''/\text{px}$ vs Exposure Native $6.15''/\text{px}$), cursor-centered invariant zoom, raw pixel nearest-neighbor toggle, and scoped IndexedDB L1 tile store.
+    3. **102-Band SPHEREx Metadata:** Generated and linked `frontend/src/data/spherex_102_channels.json` covering all 6 SPHEREx detector bands ($0.753\text{--}4.988\,\mu\text{m}$).
+    4. **Gaia DR3 EPSF Astrometry:** Propagated space motion and astrometric residuals for WISE 0855 narrowband stack.
+  - **Verification:** 100% green pass rate across `test_golden_suite.py` (22/22), `test_viewport_overhaul_v2.py` (7/7), `test_ui_contract.py` (12/12), and `test_continuous_viewport_e2e.py` (2/2). Zero open GitHub issues.
 - **[🎨 ISSUE #38 RESOLVED ON `coolodu/web-frontend` & CLOSED ON GITHUB]**
   - **Commit:** `376a7f1` pushed to `origin/coolodu/web-frontend`.
   - **Remediation:**
@@ -50,6 +53,16 @@
     2. **Sticky Header Bleed Barrier:** Added reinforced bottom border (`border-b border-space-700/90`), `shadow-md`, and `pt-2` top clearance on `#inspectorPanelLayers` to completely eliminate scrolling content bleeding behind tabs.
     3. **Nav Bar Responsive Collapse:** Verified secondary action buttons cleanly collapse into `#headerMoreActionsDropdown` on screens <1400px.
   - **Verification:** 100% test pass rate across `test_ui_contract.py` and `test_viewport_overhaul_v2.py`. Issue #38 closed on GitHub via `github_bridge.py`.
+- **[GitHub Native Issue #40 Created — Fix Viewport HUD Overlap Between Time Step Controller and Top Telemetry / Stretch Controls]**
+  - **Issue #40 Link:** https://github.com/joker0210G/spherex-hunter/issues/40
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Checklist Scope:** Items #3 & #5 (Clear Controls & Screen Size Usability).
+  - **Forensic Diagnosis:** `#viewportTimeStepHUD` at `absolute top-3 left-1/2 -translate-x-1/2 z-20` directly collides horizontally with the top-left target chip (`#vpTargetName`, `#vpFrameLabel`) and top-right colormap stretch buttons (`Stretch: Gray Invert Thermal`), burying metadata text and button labels on displays under 1600px.
+- **[GitHub Native Issue #39 Created — Fix Backend 500 NoneType Crash on Archive Miss and Provide Actionable Diagnostic Details in Error Dialog]**
+  - **Issue #39 Link:** https://github.com/joker0210G/spherex-hunter/issues/39
+  - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`
+  - **Checklist Scope:** Items #7, #12, #24 (Helpful Error Explanations, Coordinate/FOV Boundaries, Safe Failure Handling).
+  - **Forensic Diagnosis:** `backend/main.py` crashes with `AttributeError: 'NoneType' object has no attribute 'get'` when `fetch_real_cutout()` returns `None`, returning HTTP 500 instead of a structured 404/503. The frontend displays a vague boilerplate "Something interrupted loading this view" rather than diagnosing the out-of-bounds FOV (559.76') or upstream archive miss.
 - **[🚀 `coolodu/web-frontend` SYNCHRONIZED & PUSHED WITH VIEWPORT OVERHAUL V2 + OPENROUTER AI]**
   - **Commit:** `ec16982` pushed cleanly to `origin/coolodu/web-frontend`.
   - **Merged Capabilities:** Seamlessly integrated Viewport Overhaul v2 (logarithmic zoom bar, dual scale thresholds, scoped L0/L1 cache, 102 IRSA channels, raw pixel inspection mode, and Gaia EPSF astrometry) with teammate's OpenRouter AI integration (`ac611c7`).
