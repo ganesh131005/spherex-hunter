@@ -522,6 +522,8 @@ def test_merged_102_band_information_bar_in_spectrum_panel_toolbar():
     # 4. Molecular Ice & Gas Feature Jump Chips in the toolbar
     mol_bar = spectrum_panel.find(id="spec102MolecularBar")
     assert mol_bar is not None, "Missing #spec102MolecularBar in spectrum toolbar"
+    classes = mol_bar.get("class", [])
+    assert not any("2xl:" in c for c in classes), "Molecular bar should not be restricted only to 2xl screens"
     pills = mol_bar.find_all(class_=lambda c: c and "spec-mol-pill" in c)
     assert len(pills) >= 5, f"Expected at least 5 molecular jump pills, found {len(pills)}"
 

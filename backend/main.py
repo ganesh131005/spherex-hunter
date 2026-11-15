@@ -10,6 +10,7 @@ Provides REST API endpoints for:
 """
 
 import csv
+import hashlib
 import io
 import json
 import os
@@ -283,8 +284,10 @@ def parse_celestial_coords(ra_input: str, dec_input: str) -> tuple[float, float]
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid celestial coordinates '{ra_input}', '{dec_input}': {e}")
 
+@app.get("/cutout")
 @app.get("/api/cutout")
 def get_cutout(
+    request: Request,
     response: Response,
     ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal ('08h55m10.831s')"),
     dec: str = Query(..., description="Declination in decimal deg or sexagesimal ('-7d14m42.53s')"),
@@ -301,7 +304,7 @@ def get_cutout(
     """
     Universal Astronomical Pipeline:
     Processes ANY celestial coordinates through authentic FITS retrieval, WCS alignment,
-    difference imaging, and multi-tier caching.
+    difference imaging, ETag conditional caching (HTTP 304), and multi-tier caching.
     """
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
@@ -325,6 +328,23 @@ def get_cutout(
             data["temporal_filter"] = query_observation_timeline(
                 ra_deg, dec_deg, start_date=start_date, end_date=end_date, exact_date=exact_date
             )
+
+        # Compute deterministic ETag for conditional caching (Amendment A5)
+        etag = f'"{hashlib.sha256(f"{data.get("cached_at", "")}_{ra_deg:.5f}_{dec_deg:.5f}_{fov_val:.2f}_{lod_val}".encode()).hexdigest()[:16]}"'
+        client_etag = request.headers.get("if-none-match")
+        if client_etag and client_etag.strip('"') == etag.strip('"'):
+            return Response(
+                status_code=304,
+                headers={
+                    "ETag": etag,
+                    "X-Cache": "HIT",
+                    "X-Cache-Tier": "L1_RAM",
+                    "Cache-Control": "public, max-age=3600",
+                },
+            )
+
+        response.headers["ETag"] = etag
+        response.headers["Cache-Control"] = "public, max-age=3600"
         response.headers["X-Cache"] = str(data.get("cache_status", "MISS"))
         response.headers["X-Cache-Tier"] = str(data.get("cache_tier", "UNKNOWN"))
         response.headers["X-Cached-At"] = str(data.get("cached_at", ""))
