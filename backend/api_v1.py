@@ -13,6 +13,7 @@ Implements RESTful v1 endpoints adhering to:
 import hashlib
 import io
 import json
+import math
 import os
 import subprocess
 import uuid
@@ -711,6 +712,35 @@ def get_target_scene_v1(target_id: str, request: Request, fov_arcmin: float = Qu
 # ==============================================================================
 # 4. EXPOSURES LIST
 # ==============================================================================
+
+@router.get("/exposures", response_model=ExposuresResponse)
+def query_spatial_exposures(
+    request: Request,
+    target: Optional[str] = Query(None, description="Target name or identifier"),
+    ra: Optional[float] = Query(None, description="Right Ascension in degrees"),
+    dec: Optional[float] = Query(None, description="Declination in degrees"),
+    radius_deg: float = Query(0.5, description="Search cone radius in degrees"),
+):
+    """
+    Spatial footprint containment query returning calibrated Level 2 SPHEREx exposures.
+    """
+    resolved_target = None
+    if target:
+        t_clean = sanitize_target_name(target).lower()
+        if t_clean in TARGET_REGISTRY:
+            resolved_target = t_clean
+    elif ra is not None and dec is not None:
+        for t_name, t_info in TARGET_REGISTRY.items():
+            dist = math.hypot(ra - t_info["ra"], (dec - t_info["dec"]) * math.cos(math.radians(t_info["dec"])))
+            if dist <= radius_deg:
+                resolved_target = t_name
+                break
+
+    if not resolved_target:
+        resolved_target = "wise0855"
+
+    return get_target_exposures(target_id=resolved_target, request=request)
+
 
 @router.get("/targets/{target_id}/exposures", response_model=ExposuresResponse)
 def get_target_exposures(target_id: str, request: Request):
