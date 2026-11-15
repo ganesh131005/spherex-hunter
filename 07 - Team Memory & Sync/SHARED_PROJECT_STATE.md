@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🔍 BOTTOM DOCK 102-BAND SPECTRUM SCROLL WHEEL ZOOM (EXPAND & SHRINK)]**
+  - **Feature:** Added bidirectional mouse wheel scroll zoom (expanding and shrinking) to the bottom observatory dock when the cursor is positioned over the 102-Band Spectrum tab (`#dockPanelSpectrum`, `#bottomDock`, or `#dockTabSpectrum`).
+  - **Interaction Mechanics:**
+    1. **Scroll Up (`deltaY < 0`):** Expands / zooms in the bottom dock height (up to `650px`), providing high-resolution examination of faint molecular absorption lines ($H_2O$, $CH_4$, $CO_2$, $CO$) across 102 SPHEREx LVF channels.
+    2. **Scroll Down (`deltaY > 0`):** Shrinks / zooms out the bottom dock height (down to `80px`), returning maximum screen real estate to the optical viewport.
+    3. **Zero-Lag 60fps Tracking:** Temporarily disables CSS transition during continuous wheel gestures and throttles canvas/chart redraws with `requestAnimationFrame` (`specChart.resize()` and `resizeCanvas()`).
+    4. **Persistence & Reset:** Persists height to `localStorage['spherex_bottom_dock_height']`, adds responsive HUD indicator `#specDockZoomIndicator` (`#specDockHeightLabel`), and allows double-clicking to reset back to default `240px`.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (18/18), `test_bands_spectrum.py` (3/3), and `test_viewport_overhaul_v2.py` (10/10) with 0 ruff errors.
 - **[⚡ CIRCUIT BREAKER & FAST ZERO-TAP WCS BACKGROUND FALLBACK (@jokerodu)]**
   - **The Problem:** When upstream NASA IRSA FinderChart experienced temporary delays or timeouts on un-cached sky coordinates during rapid panning, each timed-out background tile fell back to `_build_degraded_gaia_wcs_fallback()`, which in turn attempted synchronous live TAP queries across ESA Gaia (`gea.esac.esa.int`) and IRSA TAP (`irsa.ipac.caltech.edu`), accumulating 7–10s of blocking per tile and generating 502 Proxy Errors on IRSA.
   - **The Solution:**

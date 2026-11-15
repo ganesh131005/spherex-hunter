@@ -8,6 +8,12 @@
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Bottom Dock 102-Band Spectrum Scroll Wheel Zoom (Expand / Shrink)]**:
+  - Implemented bidirectional mouse wheel zoom on the bottom observatory dock when the cursor is positioned over the 102 tab (`#dockPanelSpectrum`, `#bottomDock`, or `#dockTabSpectrum`).
+  - Scrolling up expands the bottom dock height up to `650px` for deep spectral inspection; scrolling down shrinks it to `80px` for maximizing optical viewport space.
+  - Added `#specDockZoomIndicator` with live pixel readout (`#specDockHeightLabel`) and double-click reset to default `240px`.
+  - Zero-lag 60fps tracking using `requestAnimationFrame` chart resizing and temporary transition removal during wheel gestures.
+  - Added contract test in `tests/test_ui_contract.py` (`test_bottom_dock_102_scroll_wheel_zoom_contract`). All 18 tests passing.
 - [x] **[SnapBlink 25% Blend Rate Increment & Timeline Synchronization]**:
   - Configured `setFlipbookFrame()` to step `epochBlend = Math.min(1.0, currentFrame * 0.25)` in exact 25% increments (25%, 50%, 75%, 100%).
   - Aligned `#timelineProgress` and `#epochBlendSlider` / `#epochBlendLabel` to match 25% initial state and 25% progression.
