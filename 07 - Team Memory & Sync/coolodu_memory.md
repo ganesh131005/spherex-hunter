@@ -3,11 +3,19 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Streamlined the bottom dock header to enforce a minimalist layout per user feedback. Completed comprehensive error rectification across backend endpoints, browser probes, pytest warning filters, telemetry UI badges, and Time Step Controller default closure. Audited all 70 items of NASA SPHEREx App Challenge Final Judge Evaluation Checklist (100% green pass). Integrated four-survey spatial topology mapping (`backend/services/topology_mapper.py`, `backend/api_v1.py`) with discrete time steps [2MASS (1999) -> Gaia (2015) -> WISE (2010/2015) -> SPHEREx (2025)], RAF coalesced render scheduler, and unified header actions with More dropdown toolbar.
+- **Current Task:** Streamlined the viewport HUD by seamlessly merging the active blink frame and survey indicator into the bottom telemetry bar and consolidating redundant resolution/LOD indicators into a compact, unified readout.
 - **Next Task:** Maintain clean branch state and prepare final challenge submission demo materials.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Viewport Bloat Remediation: Merged Active Blink Frame & Consolidated Telemetry HUD]**:
+  - Investigated user report of viewport bloating between the top-left frame overlay (`| (Frame 4/4) SPHEREx Stack...`) and the bottom telemetry bar.
+  - Identified redundant indicators: Active Frame/Epoch info was split into an isolated top-left floating box, while the bottom bar carried 4 sprawling resolution indicators (`LOD 0`, `Scale`, `Span`, `Exp Magnified`).
+  - Action taken:
+    1. Integrated active frame and survey tag (`#vpBottomEpochTag`, `#vpBottomEpochDot`, `#vpBottomEpochLabel`) directly into the bottom telemetry HUD bar, syncing dynamically with blink comparator cycles.
+    2. Consolidated the 4 resolution metrics (`#vpLOD`, `#vpDeviceScale`, `#vpNativeSpan`, `#vpScaleStatusBadge`) into a single, cohesive optical scale block with rich hover tooltips, cutting horizontal bar bloat by ~40%.
+    3. Removed the orphan separator pipe `|` in `#vpTopTargetCard` when no target name is populated (`#vpTargetDivider`).
+    4. Verified all 62 automated tests (`test_ui_contract.py`, `test_golden_suite.py`, `test_viewport_overhaul_v2.py`) pass 100% green.
 - [x] **[Modernize Header Action Tools to Dropdown Toolbar Named 'More' & Target Selector Dropdown]**:
   - Replaced horizontal preset target strip with a clean, compact dropdown toolbar (`#btnTargetDropdownTrigger` & `#targetDropdownMenu`), preserving the single search icon button (`#btnOpenCommandPalette`, `Ctrl+K`) and all benchmark target buttons with full test compatibility.
   - Consolidated observatory action buttons (`#btnOpenInvestigations`, `#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenValidation`, `#btnOpenShortcuts`) into a single unified dropdown toolbar button named **"More"** (`#btnHeaderMoreActions` + `#headerMoreActionsDropdown`).

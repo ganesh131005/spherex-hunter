@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🔭 VIEWPORT OVERLAY STREAMLINING & CONSOLIDATION (@coolodu)]**
+  - **Issue & Symptom:** Viewport canvas suffered from visual bloat: an isolated floating chip at the top-left displayed `| (Frame 4/4) SPHEREx Stack...` with an orphan pipe divider, while the bottom-left telemetry bar overflowed with 4 redundant resolution tags (`LOD 0 (Hero 1024p Full-Res)`, `Scale: 0.06"/dev_px`, `Span: 15x8 px (6.15")`, `🔍 Exp Magnified (<4"/px)`).
+  - **Remediation & Consolidation:**
+    1. **Integrated Active Frame Badge:** Merged active epoch/frame and survey information (`#vpBottomEpochTag`, `#vpBottomEpochDot`, `#vpBottomEpochLabel`) directly into the bottom telemetry bar.
+    2. **Consolidated Resolution Group:** Unified the 4 resolution tags into a sleek, compact optical scale group with hover tooltips, reducing horizontal footprint by ~40% while preserving all DOM IDs for automated contract tests.
+    3. **Target Divider Cleanliness:** Fixed orphan pipe divider (`#vpTargetDivider`) so it only displays when a target name is explicitly populated.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (29/29), `test_golden_suite.py` (23/23), and `test_viewport_overhaul_v2.py` (10/10) — 62/62 tests passing.
 - **[🔭 102-BAND SPECTRUM TOOLBAR RESPONSIVE OVERHAUL & ALL-BRANCH SYNC (@jokerodu / Team RIP)]**
   - **Identified Resolution Issue:** The 102-Band Spectrum top toolbar in `#dockPanelSpectrum` previously forced ~2,000px of fixed `shrink-0` controls into a rigid `whitespace-nowrap overflow-y-hidden` row. On standard 1080p laptop displays (125%/150% scaling) or with the Scene Collection sidebar expanded, the right cluster (`specHorizontalZoomBar`, `btnOpenBandScience`, and zoom reset) was pushed off-screen or clipped.
   - **Responsive Architectural Fixes:**
