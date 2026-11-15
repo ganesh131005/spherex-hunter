@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🎨 ISSUE #38 RESOLVED ON `coolodu/web-frontend` & CLOSED ON GITHUB]**
+  - **Commit:** `376a7f1` pushed to `origin/coolodu/web-frontend`.
+  - **Remediation:**
+    1. **4-Tab Inspector Grid:** Replaced flex row with 4-column responsive grid (`grid grid-cols-4 gap-1 min-w-0`) and text truncation to prevent label overflow and edge clipping in the 380px panel.
+    2. **Sticky Header Bleed Barrier:** Added reinforced bottom border (`border-b border-space-700/90`), `shadow-md`, and `pt-2` top clearance on `#inspectorPanelLayers` to completely eliminate scrolling content bleeding behind tabs.
+    3. **Nav Bar Responsive Collapse:** Verified secondary action buttons cleanly collapse into `#headerMoreActionsDropdown` on screens <1400px.
+  - **Verification:** 100% test pass rate across `test_ui_contract.py` and `test_viewport_overhaul_v2.py`. Issue #38 closed on GitHub via `github_bridge.py`.
 - **[🚀 `coolodu/web-frontend` SYNCHRONIZED & PUSHED WITH VIEWPORT OVERHAUL V2 + OPENROUTER AI]**
   - **Commit:** `ec16982` pushed cleanly to `origin/coolodu/web-frontend`.
   - **Merged Capabilities:** Seamlessly integrated Viewport Overhaul v2 (logarithmic zoom bar, dual scale thresholds, scoped L0/L1 cache, 102 IRSA channels, raw pixel inspection mode, and Gaia EPSF astrometry) with teammate's OpenRouter AI integration (`ac611c7`).

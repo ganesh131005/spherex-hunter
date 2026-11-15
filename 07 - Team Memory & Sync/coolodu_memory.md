@@ -3,11 +3,16 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Integrated and verified Viewport Overhaul v2 (Master Engineering Specification Steps 0–6) on `coolodu/web-frontend`. Interactive Zoom Bar with dual scale badges (HiPS Native 12.9″/px vs Exposure Native 6.15″/px), raw detector pixel toggle (`🔬 1:1 Pixels`), scoped L0/L1 cache engine, 102 IRSA channels JSON, WISE 0855 authentic narrowband co-add stack ($4.6\,\mu\text{m}$, $\text{S/N} = 5.82\sigma$, $N_{\text{exp}} = 26$), and Gaia DR3 space motion + EPSF centroid residuals. 61 tests passing. Pushed to `origin/coolodu/web-frontend`.
-- **Next Task:** Maintain clean status, coordinate with lead jokerodu for main branch master merge.
+- **Current Task:** Resolved and closed GitHub Issue #38 (`fix(ui-ux): inspector 4-tab horizontal clipping, sticky header content bleed, and top bar button overflow`). Merged Viewport Overhaul v2 from `darkodu/astro-backend`. All tests passing (100%). Pushed to `origin/coolodu/web-frontend`.
+- **Next Task:** Ready for next team dispatch or main branch integration review with jokerodu.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Resolved Issue #38 — Inspector Tab Clipping, Content Bleed, and Nav Overflow (Commit `376a7f1`)]**:
+  - **4-Tab Inspector Grid (`#propertiesSidebar`):** Replaced flex container with 4-column responsive grid (`grid grid-cols-4 gap-1 min-w-0`) and text truncation, ensuring `Layers`, `Target`, `Cands`, and `Photo` fit cleanly within the 380px panel without overflowing or getting clipped.
+  - **Sticky Header Baseline Barrier (`#inspectorPanelLayers`):** Upgraded sticky header container with `shadow-md` and reinforced bottom border (`border-b border-space-700/90`), and added `pt-2` top clearance to `#inspectorPanelLayers` to completely eliminate scrolling layer metadata bleed.
+  - **Top Navigation Responsive Collapse:** Verified priority collapsing for secondary action buttons into `#headerMoreActionsDropdown` on viewports <1400px.
+  - **Verification:** Ran test suite, verified 100% green (17/17 UI & Viewport tests passed), pushed commit `376a7f1` to `origin/coolodu/web-frontend`, and closed Issue #38 on GitHub.
 - [x] **[Pushed Viewport Overhaul v2 to `coolodu/web-frontend` (Steps 0–6 Complete)]**:
   - **Interactive Zoom Bar & Dual LOD Badges (`frontend/index.html`):** Logarithmic slider, `+`/`−`/`⟲` reset, ARIA `role="slider"`, cursor-centered canvas wheel zooming, live arcsec/device_px HUD, and dual threshold badges separating HiPS Order 5 ($12.88''/\text{px}$) from native detector pitch ($6.15''/\text{px}$).
   - **Raw Detector Pixel Inspection Mode (`frontend/index.html`):** `🔬 1:1 Pixels` nearest-neighbor toggle (`gl.NEAREST` / `image-rendering: pixelated`) with detector pixel span readout (`N × M px (6.15″)`).
