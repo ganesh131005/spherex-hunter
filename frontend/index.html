@@ -4059,8 +4059,10 @@
 
       // Update vertical zoom bar slider & ARIA state (Step 2)
       const zoomSlider = document.getElementById('vpZoomSlider');
-      if (zoomSlider && document.activeElement !== zoomSlider) {
-        zoomSlider.value = (camera.zoom || 1.0).toFixed(2);
+      if (zoomSlider) {
+        if (!window.isZoomSliderDragging) {
+          zoomSlider.value = (camera.zoom || 1.0).toFixed(2);
+        }
         zoomSlider.setAttribute('aria-valuenow', (camera.zoom || 1.0).toFixed(2));
         zoomSlider.setAttribute('aria-valuetext', `Zoom ${(camera.zoom || 1.0).toFixed(1)}x (FOV ${effFov.toFixed(2)} arcmin)`);
       }
@@ -8078,6 +8080,9 @@
 
     function launchQuickStart() {
       closeOnboardingModal();
+      const tour = document.getElementById('guidedTourBanner');
+      if (tour) tour.classList.add('hidden');
+      localStorage.setItem('spherex_tour_seen', 'true');
       const wiseBtn = document.querySelector('.target-btn[data-target="wise0855"]');
       if (wiseBtn) {
         wiseBtn.click();
