@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #32 Created — Fix Top Header Horizontal Overflow Hiding Landmark Target Presets and Observatory Controls on Standard Displays]**
+  - **Issue #32 Link:** https://github.com/joker0210G/spherex-hunter/issues/32
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Checklist Scope:** Items #4 & #5 (Instructions for First-Time Users & Usability across Common Screen Sizes).
+  - **Defect:** In standard/medium desktop viewports (<1400px), the center benchmark preset selector (`.target-btn` presets for WISE 0855, Barnard's Star, Eps Indi B, RW Aur, R Dra) shrinks to 0px, and the right toolbar overflows after `Share`, hiding `#btnOpenOnboarding` (Mission Guide), `#btnThemeToggle`, `#btnSaveAnalysis`, and `#btnOpenInvestigations`.
 - **[🟢 GITHUB ACTIONS CI WORKFLOW RESOLVED & 100% PASSING - @coolodu]**
   - **Ruff Linting & Code Quality:** Fixed 28 ruff lint and import formatting errors across backend services and test modules.
   - **Undefined Name Bug:** Fixed `response_payload = { ... }` in `backend/services/catalog_engine.py` ensuring multi-survey crossmatch caching and eliminating `F821`.
