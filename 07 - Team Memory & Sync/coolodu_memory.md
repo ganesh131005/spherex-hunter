@@ -3,11 +3,16 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Merged 102-Band Information Bar & Responsive Molecular Feature Toolbar in `#dockPanelSpectrum` on `coolodu/web-frontend`. Unified 102-band channel selector (`#spec102ChannelSelect`), prev/next steppers (`#spec102PrevCh`, `#spec102NextCh`), exact wavelength readout display (`#spec102WavelengthDisplay`), Array A1–A6 tabs, 17-channel in-array slider, and responsive 1-click molecular jump pills (`#spec102MolecularBar` for H₂O, H₂O Ice, CH₄, CO₂ Ice, CO) with full two-way synchronization to HiPS cube slicing. All 25 UI contract and spectral tests passing 100% green.
-- **Next Task:** Step 6 (Progressive Detail on Zoom-In, Nearest-Neighbor Pixelation & Vector Overlays) and monitoring GitHub Issues board.
+- **Current Task:** Completed and verified SnapBlink 25% Blend Increment and Timeline Track Synchronization in `#dockPanelTimeline` on `coolodu/web-frontend`. Epoch blend smoothly increments by exact 25% steps per frame (Frame 1 = 25%, Frame 2 = 50%, Frame 3 = 75%, Frame 4 = 100%), with tick marks aligned at 25%, 50%, 75%, 100% and dynamic progress bar styling. 102-Band Spectrum Array A1 alignment and responsive single-row layout verified. All 27 UI contract and spectral tests passing 100% green.
+- **Next Task:** Ready for next instruction or task from lead/user; monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[SnapBlink 25% Blend Rate Increment & Timeline Synchronization]**:
+  - Configured `setFlipbookFrame()` to step `epochBlend = Math.min(1.0, currentFrame * 0.25)` in exact 25% increments (25%, 50%, 75%, 100%).
+  - Aligned `#timelineProgress` and `#epochBlendSlider` / `#epochBlendLabel` to match 25% initial state and 25% progression.
+  - Re-anchored timeline tick marks to `left: 25%`, `left: 50%`, `left: 75%`, `left: 100%` with dynamic glow and scaling on active tick.
+  - Added comprehensive contract test in `tests/test_ui_contract.py` (`test_snapblink_25_percent_increment_and_blend_timeline_alignment_contract`).
 - [x] **[Merged 102-Band Information Bar into Spectrum Panel Toolbar]**:
   - Integrated `#spec102BandInfoBar` with `#spec102ChannelSelect`, `#spec102PrevCh`, `#spec102NextCh`, and `#spec102WavelengthDisplay` directly adjacent to 6-Array tabs and 17-channel in-array slider.
   - Sized and styled responsive molecular absorption pills (`.spec-mol-pill` jumping to bands 25, 56, 60, 79, 89) visible across all viewport dimensions.

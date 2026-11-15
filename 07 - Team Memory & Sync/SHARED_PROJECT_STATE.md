@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🎞️ SNAPBLINK 25% BLEND RATE INCREMENT & SYNCHRONIZED TIMELINE TRACK (@coolodu)]**
+  - **Feature:** Synchronized SnapBlink continuous epoch blend rate to increase by exact 25% increments per frame (Frame 1 = 25%, Frame 2 = 50%, Frame 3 = 75%, Frame 4 = 100%), dynamically driving `#epochBlendSlider`, `#epochBlendLabel`, and `#timelineProgress`.
+  - **Timeline Alignment:** Re-anchored timeline tick marks to `left: 25%`, `left: 50%`, `left: 75%`, `left: 100%`, with active glowing styles and automatic tick transitions during playback.
+  - **102-Band Spectrum Array A1 Default Alignment:** Ensured Array A1 (`0.750 - 1.110 µm`) is anchored on the left and active by default on panel opening and coordinate slew, residing on an `overflow-x-auto` single-row layout that guarantees $>340\text{px}$ canvas height.
+  - **Verification:** 27/27 UI contract and continuous viewport tests passing 100% green (`tests/test_ui_contract.py`).
 - **[🛡️ CI & TEST PERMANENT FIX: PASSED 33/33 TARGET TESTS & ZERO ASYNCIO DEPRECATIONS]**
   - **Pytest-Asyncio Fixture Loop Scope Fix:** Explicitly configured `asyncio_mode = "auto"` and `asyncio_default_fixture_loop_scope = "function"` in `pyproject.toml` (with config warning filter for non-asyncio environments), eliminating `PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset` on Python 3.12+ / pytest-asyncio in GitHub CI.
   - **Authentic Spectral Bandpass Matching in Test Assertion:** Updated `tests/test_scene_and_metadata.py` to match the realistic astrophysics of WISE 0855 (AllWISE W2 at $4.60\,\mu\text{m}$ + SPHEREx Band 6 Stack at $4.60\,\mu\text{m}$, which is a valid matched passband pair `valid_bands is True`), while correctly checking band mismatch on Barnard's Star (2MASS $1.25\,\mu\text{m}$ vs SPHEREx $2.10\,\mu\text{m}$, `valid_bands is False`).
