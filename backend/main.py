@@ -15,7 +15,7 @@ import json
 import os
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Union
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -512,8 +512,8 @@ def verify_candidate_wiseview(
 
 
 class AIAskRequest(BaseModel):
-    ra: str
-    dec: str
+    ra: Union[float, str]
+    dec: Union[float, str]
     fov: float = 3.0
     target: Optional[str] = None
     question: str = "Why is this target scientifically interesting?"

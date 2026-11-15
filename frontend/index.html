@@ -206,14 +206,19 @@
     body.theme-light #viewportContainer .text-gray-300 {
       color: #f1f5f9 !important;
     }
+    html, body {
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden !important;
+    }
   </style>
 </head>
-<body class="h-screen flex flex-col bg-space-950 text-xs">
+<body class="h-screen flex flex-col bg-space-950 text-xs w-full max-w-full overflow-x-hidden">
 
   <!-- ========================================================================= -->
   <!-- 1. TOP OBSERVATORY HEADER (48px / h-12)                                    -->
   <!-- ========================================================================= -->
-  <header class="h-12 bg-space-900 border-b border-space-700 px-3 flex items-center justify-between z-30 shrink-0 text-xs gap-3 shadow-md">
+  <header class="h-12 bg-space-900 border-b border-space-700 px-3 flex items-center justify-between z-30 shrink-0 text-xs gap-2 shadow-md w-full max-w-full overflow-hidden">
 
     <!-- Left: Branding & Workspace Mode Segmented Control -->
     <div class="flex items-center gap-3 shrink-0">
@@ -271,10 +276,11 @@
       <!-- Quick Preset Buttons (Preserves .target-btn for E2E tests) -->
       <div class="flex items-center gap-1">
         <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="wise0855" title="WISE 0855-0714 (Cold Y-Dwarf, ~250 K)">WISE 0855</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="barnard" title="Barnard's Star (10.36 "/yr Proper Motion)">Barnard's Star</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="barnard" title="Barnard's Star (10.36 &quot;/yr Proper Motion)">Barnard's Star</button>
         <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">Eps Indi B</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rwaur" title="RW Aurigae (T-Tauri Variable)">RW Aur</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rdraconis" title="R Draconis (Mira Variable)">R Dra</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden sm:inline-block" data-target="rwaur" title="RW Aurigae (T-Tauri Variable)">RW Aur</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden md:inline-block" data-target="rdraconis" title="R Draconis (Mira Variable)">R Dra</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden lg:inline-block" data-target="orion" title="Orion Nebula Core (H II Star-Forming Region)">Orion</button>
       </div>
     </div>
 
@@ -371,19 +377,19 @@
       </button>
 
       <!-- Command Palette Pill (Ctrl+K) -->
-      <button id="cmdPaletteBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0" title="Open Command Palette (Ctrl+K)">
+      <button id="cmdPaletteBtn" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden xl:flex" title="Open Command Palette (Ctrl+K)">
         <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
         <span class="hidden sm:inline">Ctrl+K</span>
       </button>
 
       <!-- Share Sky Region Button (Issue #12) -->
-      <button id="btnShareModal" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0" title="Share Sky Region & Deep-Link URL">
+      <button id="btnShareModal" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden lg:flex" title="Share Sky Region & Deep-Link URL">
         <i data-lucide="share-2" class="w-3 h-3 text-cyan-400"></i>
         <span class="hidden sm:inline">Share</span>
       </button>
 
       <!-- Save Analysis Snapshot Button (Issue #22) -->
-      <button id="btnSaveAnalysis" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-emerald-300 hover:text-white border border-emerald-500/40 text-[10px] font-mono transition-all shrink-0" title="Save Current Analysis Session Snapshot">
+      <button id="btnSaveAnalysis" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-emerald-300 hover:text-white border border-emerald-500/40 text-[10px] font-mono transition-all shrink-0 hidden xl:flex" title="Save Current Analysis Session Snapshot">
         <i data-lucide="bookmark-plus" class="w-3 h-3 text-emerald-400"></i>
         <span class="hidden lg:inline">Save Analysis</span>
       </button>
@@ -391,7 +397,7 @@
       <!-- My Investigations / Previous Analyses Button (Issue #21) -->
       <button id="btnOpenInvestigations" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-purple-300 hover:text-white border border-purple-500/40 text-[10px] font-mono transition-all shrink-0" title="Open My Investigations & Saved Sessions">
         <i data-lucide="folder-clock" class="w-3 h-3 text-purple-400"></i>
-        <span class="hidden xl:inline">My Investigations</span>
+        <span class="hidden 2xl:inline">My Investigations</span>
         <span id="investigationsCountBadge" class="px-1.5 py-0.2 rounded-full bg-purple-900/80 text-purple-200 text-[9px] font-bold">0</span>
       </button>
 
@@ -413,13 +419,13 @@
       </button>
 
       <!-- Mission Codex & Phase 2 Validation Button -->
-      <button id="btnOpenValidation" class="p-1.5 rounded blender-btn text-cyan-300 hover:text-white flex items-center gap-1 text-xs" title="Open Official NASA/CSA Codex & Phase 2 Scientific Validation Benchmark">
+      <button id="btnOpenValidation" class="p-1.5 rounded blender-btn text-cyan-300 hover:text-white items-center gap-1 text-xs hidden 2xl:flex" title="Open Official NASA/CSA Codex & Phase 2 Scientific Validation Benchmark">
         <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
         <span class="hidden md:inline">Validation</span>
       </button>
 
       <!-- Keyboard Shortcuts Trigger -->
-      <button id="btnOpenShortcuts" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Keyboard Shortcuts Cheat Sheet (?)">
+      <button id="btnOpenShortcuts" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white hidden 2xl:flex" title="Keyboard Shortcuts Cheat Sheet (?)">
         <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
       </button>
 
@@ -2008,6 +2014,26 @@
         dist: "650 pc (2120 ly)",
         temp: "~2700 K",
         baseline: "245-Day Periodic Pulsation"
+      },
+      orion: {
+        name: "Orion Nebula Core",
+        raDeg: 83.82208,
+        decDeg: -5.39111,
+        type: "Diffuse Star-Forming H II Region",
+        pm: "0.01 \"/yr (10 mas/yr)",
+        dist: "414 pc (1350 ly)",
+        temp: "~8000 K",
+        baseline: "Diffuse Molecular Gas Complex"
+      },
+      sgra: {
+        name: "Galactic Center Sgr A*",
+        raDeg: 266.41683,
+        decDeg: -29.00781,
+        type: "Supermassive Black Hole Sky Field",
+        pm: "0.00 \"/yr",
+        dist: "8277 pc (27000 ly)",
+        temp: "~10000 K",
+        baseline: "High-Extinction Infrared Core"
       }
     };
 
@@ -4239,6 +4265,7 @@
     });
 
     function selectTarget(key) {
+      if (!TARGETS[key]) return;
       aiDetectedCandidates = [];
       measurementRuler.active = false;
       currentTargetKey = key;

@@ -11,9 +11,12 @@ Queries the official European Space Agency (ESA) Gaia DR3 catalog via TAP:
   no catalogue rows are ever curated, synthesized or randomly generated.
 """
 
+from collections import OrderedDict
+import concurrent.futures
 import json
 import os
 import re
+import time
 
 import numpy as np
 import requests
@@ -395,10 +398,14 @@ def query_2mass_psc(
 # SIMBAD Astronomical Object Metadata & Classification
 # =====================================================================
 
+CACHE_DIR_SIMBAD = os.path.join(os.path.dirname(__file__), "..", "cache", "catalog_simbad")
+os.makedirs(CACHE_DIR_SIMBAD, exist_ok=True)
+
 def query_simbad_metadata(
     ra: float,
     dec: float,
-    radius_arcmin: float = 3.0
+    radius_arcmin: float = 3.0,
+    force_refresh: bool = False
 ) -> dict:
     """
     Live CDS SIMBAD cone search (astroquery). Returns the nearest catalogued object's
@@ -406,6 +413,18 @@ def query_simbad_metadata(
     reports them. If SIMBAD is unreachable or has no object, the status says so; nothing
     is looked up from a hardcoded table and no citation counts are invented.
     """
+    cache_key = f"simbad_{round(ra, 4)}_{round(dec, 4)}_{round(radius_arcmin, 1)}".replace("+", "").replace("-", "m")
+    cache_path = os.path.join(CACHE_DIR_SIMBAD, f"{cache_key}.json")
+    if not force_refresh and os.path.exists(cache_path):
+        try:
+            if (time.time() - os.path.getmtime(cache_path)) <= 86400:
+                with open(cache_path, "r", encoding="utf-8") as f:
+                    entry = json.load(f)
+                    entry["cached"] = True
+                    return entry
+        except Exception:
+            pass
+
     out = {"query_ra": ra, "query_dec": dec, "radius_arcmin": radius_arcmin}
     try:
         import astropy.units as u
@@ -481,6 +500,11 @@ def query_simbad_metadata(
             "matches_in_cone": len(tab),
             "source": "CDS SIMBAD (live)",
         })
+        try:
+            with open(cache_path, "w", encoding="utf-8") as f:
+                json.dump(out, f, indent=2)
+        except Exception:
+            pass
         return out
     except Exception as e:
         out.update({"status": "unavailable", "canonical_name": None, "message": f"SIMBAD query failed: {e}"})
@@ -845,10 +869,16 @@ def query_spherex_archive(
 # Unified Multi-Survey Photometric Cross-Matching
 # =====================================================================
 
+CACHE_DIR_XMATCH = os.path.join(os.path.dirname(__file__), "..", "cache", "catalog_xmatch")
+os.makedirs(CACHE_DIR_XMATCH, exist_ok=True)
+_XMATCH_RAM_CACHE = OrderedDict()
+_XMATCH_MAX_RAM = 64
+
 def crossmatch_photometry(
     ra: float,
     dec: float,
-    radius_arcmin: float = 3.0
+    radius_arcmin: float = 3.0,
+    force_refresh: bool = False
 ) -> dict:
     """
     Performs unified multi-wavelength cross-matching across:
@@ -859,12 +889,36 @@ def crossmatch_photometry(
     - SIMBAD (Astrophysical classification & spectral type)
     Calculates optical-to-infrared color baselines (G - Ks, J - Ks, W1 - W2)
     to identify ultracold Brown Dwarfs and Planet X candidates.
+    Queries all catalogs concurrently in parallel threads with spatial disk/RAM caching.
     """
-    gaia_res = query_gaia_dr3(ra=ra, dec=dec, radius_arcmin=radius_arcmin, limit=20)
-    twomass_res = query_2mass_psc(ra=ra, dec=dec, radius_arcmin=radius_arcmin, limit=20)
-    wise_res = query_wise_catalog(ra=ra, dec=dec, radius_arcmin=radius_arcmin, limit=20)
-    spherex_res = query_spherex_archive(ra=ra, dec=dec, radius_arcmin=max(15.0, radius_arcmin), limit=12)
-    simbad_res = query_simbad_metadata(ra=ra, dec=dec, radius_arcmin=radius_arcmin)
+    cache_key = f"xmatch_{round(ra, 4)}_{round(dec, 4)}_{round(radius_arcmin, 1)}".replace("+", "").replace("-", "m")
+    if not force_refresh:
+        if cache_key in _XMATCH_RAM_CACHE:
+            _XMATCH_RAM_CACHE.move_to_end(cache_key)
+            return dict(_XMATCH_RAM_CACHE[cache_key])
+        disk_path = os.path.join(CACHE_DIR_XMATCH, f"{cache_key}.json")
+        if os.path.exists(disk_path):
+            try:
+                if (time.time() - os.path.getmtime(disk_path)) <= 86400:
+                    with open(disk_path, "r", encoding="utf-8") as f:
+                        entry = json.load(f)
+                        _XMATCH_RAM_CACHE[cache_key] = entry
+                        return entry
+            except Exception:
+                pass
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        f_gaia = executor.submit(query_gaia_dr3, ra=ra, dec=dec, radius_arcmin=radius_arcmin, limit=20)
+        f_twomass = executor.submit(query_2mass_psc, ra=ra, dec=dec, radius_arcmin=radius_arcmin, limit=20)
+        f_wise = executor.submit(query_wise_catalog, ra=ra, dec=dec, radius_arcmin=radius_arcmin, limit=20)
+        f_spherex = executor.submit(query_spherex_archive, ra=ra, dec=dec, radius_arcmin=max(15.0, radius_arcmin), limit=12)
+        f_simbad = executor.submit(query_simbad_metadata, ra=ra, dec=dec, radius_arcmin=radius_arcmin)
+
+        gaia_res = f_gaia.result()
+        twomass_res = f_twomass.result()
+        wise_res = f_wise.result()
+        spherex_res = f_spherex.result()
+        simbad_res = f_simbad.result()
 
     def _nearest(sources):
         """Nearest catalogue row to the query position (not simply the brightest)."""
@@ -1065,3 +1119,16 @@ def crossmatch_photometry(
         "all_wise_sources_count": len(wise_res.get("sources", [])),
         "spherex_planes_count": len(spx_planes),
     }
+
+    # Cache result in RAM LRU and Disk
+    try:
+        _XMATCH_RAM_CACHE[cache_key] = response_payload
+        if len(_XMATCH_RAM_CACHE) > _XMATCH_MAX_RAM:
+            _XMATCH_RAM_CACHE.popitem(last=False)
+        disk_path = os.path.join(CACHE_DIR_XMATCH, f"{cache_key}.json")
+        with open(disk_path, "w", encoding="utf-8") as f:
+            json.dump(response_payload, f, indent=2)
+    except Exception:
+        pass
+
+    return response_payload

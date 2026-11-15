@@ -6,6 +6,7 @@ E2E & Integration Test Suite for Issues #13 and #14:
 
 import os
 import time
+import pytest
 
 from fastapi.testclient import TestClient
 
@@ -88,6 +89,7 @@ def test_cache_api_endpoints():
 
 def test_issue_13_client_indexeddb_caching_e2e():
     """Verify client-side IndexedDB caching layer and in-flight abort handling."""
+    pytest.importorskip("playwright")
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -116,6 +118,7 @@ def test_issue_13_client_indexeddb_caching_e2e():
 
 def test_issue_14_user_friendly_inspector_panel_e2e():
     """Verify redesigned user-friendly Inspector Panel with clear sections and plain English."""
+    pytest.importorskip("playwright")
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
