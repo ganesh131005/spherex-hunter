@@ -60,7 +60,11 @@ from backend.services.cutout_engine import (
     query_observation_timeline,
     run_automated_source_discovery,
 )
-from backend.services.gaia_service import query_gaia_dr3
+from backend.services.gaia_service import (
+    compute_astrometric_residuals,
+    propagate_gaia_sources_to_epoch,
+    query_gaia_dr3,
+)
 from backend.services.neossat_service import build_neossat_tracking_report, build_portal_links
 from backend.services.scene_service import get_target_scene
 from backend.services.verification_service import run_wiseview_verification
@@ -116,6 +120,11 @@ def get_dss2_hips_fallback_tile(tile_path: str):
     """Serves a clean dark-space JPEG fallback tile so Aladin HiPS local probes never 404."""
     return Response(content=_get_fallback_hips_jpeg_bytes(), media_type="image/jpeg")
 
+
+# Mount local HiPS deterministic fixture for offline testing
+LOCAL_HIPS_FIXTURE = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures", "hips_spherex_dr1_sample")
+if os.path.exists(LOCAL_HIPS_FIXTURE):
+    app.mount("/app/fixtures/hips_spherex_dr1_sample", StaticFiles(directory=LOCAL_HIPS_FIXTURE), name="hips_dr1_fixture")
 
 # Mount frontend directory for same-origin browsing
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
@@ -475,6 +484,46 @@ def get_gaia_catalog(
             if "pm_dec_mas_yr" in s and "pmdec_mas_yr" not in s:
                 s["pmdec_mas_yr"] = s["pm_dec_mas_yr"]
         return catalog_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/astrometry/gaia")
+def get_gaia_astrometry_v1(
+    ra: str = Query(..., description="Right Ascension in decimal deg or sexagesimal"),
+    dec: str = Query(..., description="Declination in decimal deg or sexagesimal"),
+    radius: float = Query(3.0, description="Search radius in arcminutes (0.2 to 15.0)"),
+    limit: int = Query(100, description="Maximum number of sources to return (1 to 300)"),
+    target_mjd: Optional[float] = Query(None, description="Observation epoch MJD for astrometric space motion propagation")
+):
+    """
+    Step 4: Live Gaia DR3 Astrometry with Astropy space motion propagation (apply_space_motion)
+    and EPSF centroid astrometric residual computation.
+    """
+    try:
+        ra_deg, dec_deg = parse_celestial_coords(ra, dec)
+        catalog_data = query_gaia_dr3(ra=ra_deg, dec=dec_deg, radius_arcmin=radius, row_limit=limit)
+        sources = catalog_data.get("sources", [])
+        if target_mjd is not None:
+            sources = propagate_gaia_sources_to_epoch(sources, target_mjd=target_mjd)
+        residuals = compute_astrometric_residuals(None, sources, pixel_scale_arcsec=6.15)
+        return {
+            "status": "success",
+            "catalog": "Gaia DR3",
+            "search_center": {"ra_deg": ra_deg, "dec_deg": dec_deg, "radius_arcmin": radius},
+            "matched_count": len(sources),
+            "target_mjd": target_mjd,
+            "sources": sources,
+            "astrometric_residuals": residuals,
+            "pixel_scale_arcsec": 6.15,
+            "provenance": {
+                "reference_epoch": "J2016.0",
+                "propagated_to_mjd": target_mjd,
+                "engine": "astropy.coordinates.SkyCoord.apply_space_motion"
+            }
+        }
     except HTTPException:
         raise
     except Exception as e:

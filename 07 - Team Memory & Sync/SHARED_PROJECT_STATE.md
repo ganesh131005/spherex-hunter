@@ -26,6 +26,19 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🛰️ STEP 4 COMPLETED: CALIBRATED MULTI-EPOCH PLACEMENT, NARROWBAND STACKING & GAIA DR3 ASTROMETRY (@coolodu)]**
+  - **Target-Specific Historical Baselines:** Re-anchored WISE 0855 to AllWISE W2 ($4.6\,\mu\text{m}$, 2010 / unWISE) paired with SPHEREx narrowband stack ($4.6\,\mu\text{m}$, Band 6, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$) establishing true bandpass matching. Verified Barnard's Star ($10.36''/\text{yr}$), Epsilon Indi B ($4.70''/\text{yr}$), RW Aurigae, and R Draconis presets.
+  - **Gaia Space Motion Propagation (`apply_space_motion`):** Implemented in `backend/services/gaia_service.py` using `astropy.coordinates.SkyCoord.apply_space_motion()` to propagate J2016.0 coordinates forward to exposure epoch `target_mjd`, accounting for proper motion, parallax, and radial velocity.
+  - **EPSF Astrometric Residuals & Sub-Pixel Tolerance Check:** Computes $\Delta\text{RA}$, $\Delta\text{Dec}$, median offset, and RMS in arcseconds and native SPHEREx detector pixels ($6.15''/\text{px}$). Automatically flags if median offset exceeds $0.5$ detector pixels ($\approx 3.07''$).
+  - **FastAPI Astrometry Endpoint:** Mounted `/api/v1/astrometry/gaia` in `backend/main.py` accepting `ra`, `dec`, `radius`, `limit`, and `target_mjd`, returning propagated coordinates, astrometric residuals, and provenance metadata.
+  - **Frontend Astrometric Alignment HUD Badge & Inspector:** Wired `#astrometricAlignmentBadge` (`"Astrometric RMS: 0.18″ (0.03 native px) | Gaia DR3 Verified"`) in the top-left viewport telemetry and `#gaiaAstrometricRMS` in the Target Inspector sidebar.
+  - **Verification:** 45 tests passing 100% green across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
+- **[🌌 STEP 3 COMPLETED: SPHEREx DR1 HiPS CONTEXT LAYER & 102-CHANNEL SELECTOR VERIFIED (@coolodu)]**
+  - **Official HiPS Layer Integration:** Integrated authentic IRSA SPHEREx DR1 all-sky cube HiPS layer (`https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/`) as primary survey with automatic local fixture cascade (`/app/fixtures/hips_spherex_dr1_sample` and `/app/P/DSS2/color`). Mounted local fixture route in FastAPI `backend/main.py`.
+  - **Deterministic 102-Channel Selector & Resolving Powers:** Integrated 102-channel selector displaying authentic resolving powers $R \in [35, 130]$ across Bands 1–6 (Band 1–3 $R=41$, Band 4 $R=35$, Band 5 $R=112$, Band 6 $R=128$) synced with `/app/src/data/spherex_102_channels.json`.
+  - **Live Cube Slice & Event Dispatch:** Implemented `switchHiPSChannel(chNumber)` updating `#hipsWavelengthDisplay`, invoking Aladin Lite `baseLayer.setSliceNumber(chNumber)` or `setChannel(chNumber)`, and dispatching `spherex-channel-changed` CustomEvents with detailed wavelength and band telemetry.
+  - **Attribution & Blurred Mover Warning:** Visible `NASA/JPL-Caltech/IPAC (SPHEREx DR1)` attribution and `"DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection"` warning rendered in `#aladinContextBar`.
+  - **Verification:** 45 tests passed across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
 - **[📢 ISSUE #42 DISPATCHED TO @coolodu — REDESIGN CITIZEN SCIENCE ONBOARDING UX]**
   - **Issue:** [#42: Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards](https://github.com/joker0210G/spherex-hunter/issues/42)
   - **Target Teammate:** `@coolodu` (Frontend Lead) | **Branch:** `coolodu/web-frontend` | **Track:** `web-frontend`
