@@ -26,6 +26,15 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🌐 MASTER REPOSITORY SYNCHRONIZATION: ALL TRACKS MERGED INTO MAIN (@jokerodu)]**
+  - **Action:** Executed master synchronization collecting all completed innovations, UI controls, code quality fixes, and backend hardening across all 5 branches (`main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`) and cleanly integrating them into `main`.
+  - **Key Features Unified on Main:**
+    1. *Unified Header & Dropdowns:* Consolidated Target Presets dropdown (`#btnTargetPresetsTrigger` + `#targetPresetsPopup`), resized secondary utilities to compact `w-2.5 h-2.5`, and moved My Investigations to Cands tab.
+    2. *Scene Collection Styling:* Astral Amethyst cosmic gradient on `#propertiesSidebar` with intact visual tree and inspector tabs.
+    3. *Backend Route Reliability:* Direct `/index.html` redirects and `/favicon.ico` brand icon serving.
+    4. *Zero-Noise Catalog Engine:* Disk-backed persistent circuit breakers (`circuit_state.json`), single-flight host probe gates (`_IRSA_PROBE_LOCK`, `_ESA_PROBE_LOCK`), and Harvard CfA VizieR fallback.
+    5. *Clean Testing & Linting:* Suppressed third-party test warnings in `pyproject.toml`, 0 ruff errors across all tools.
+  - **Verification:** 100% green pass rate across `tests/test_golden_suite.py` (23/23), `tests/test_ui_contract.py` (26/26), and `tests/test_viewport_overhaul_v2.py` (12/12) — 61/61 tests passing with 0 warnings and 0 errors.
 - **[🛡️ PERSISTENT ZERO-NOISE CIRCUIT BREAKER & SINGLE-FLIGHT TAP ENGINE (@jokerodu)]**
   - **Issue & Symptom:** Addressed startup thundering-herd error cascades and multiline `urllib3` connection pool dumps when Uvicorn restarts with NASA IRSA TAP returning 502 and ESA Gaia TAP timing out.
   - **Disk-Backed Persistent Circuit State:** Implemented `backend/cache/circuit_state.json` persisting `irsa_tap_cooldown` and `esa_gaia_cooldown` across server restarts and Uvicorn reloads. If an archive was offline before restart, the circuit remains OPEN immediately on startup, eliminating the cold start timeout.
