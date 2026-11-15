@@ -34,7 +34,27 @@
     2. **Streamlined Sidebar Baseline Card:** Replaced the 4 bulky vertical cards in the sidebar with a sleek **Difference Baseline Quick Card** (`Frame A`, `Frame B`, baseline duration in years, $\Delta\theta$ proper-motion shift, and Astropy space-motion centering warning), saving over $250\text{px}$ of vertical space and making the Visual Layers hierarchy immediately visible without endless scrolling.
     3. **NASA Data Provenance Modal (`#epochProvenanceModal`):** Created a dedicated, high-resolution modal displaying authentic FITS Product IDs, instruments, pixel scales, calibrated units, coordinates, and direct NASA IRSA archive links, triggered via `#btnOpenEpochProvenance` in the timeline dock.
     4. **Zero-Break Backwards Compatibility:** Preserved `<details id="accordionObservationEpochs">` containing `.epoch-card` elements, ensuring 100% compliance with existing test contracts.
-  - **Verification:** 100% green pass rate across `test_ui_contract.py` (20/20), `test_bands_spectrum.py` (3/3), `test_viewport_overhaul_v2.py` (10/10), and all backend test suites (33/33) with 0 ruff errors.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (22/22), `test_bands_spectrum.py` (3/3), `test_viewport_overhaul_v2.py` (10/10), and all backend test suites (33/33) with 0 ruff errors.
+- **[👁️ CONSOLIDATED VIEW MODES INTO SINGLE TOOL ICON WITH COLLECTIVE POPUP DISPLAY (@coolodu)]**
+  - **Feature:** Replaced the wide 4-button segmented bar in the top header with a single compact observatory tool button (`#btnViewModesTrigger`) with an integrated collective flyout menu (`#viewModesPopup`).
+  - **Single Tool Trigger:** Displays the active mode's icon (`#viewModeActiveIcon`), mode label (`#viewModeActiveLabel`, defaults to 'Blink'), and dynamic rotating chevron (`#viewModeChevron`). Hover effects and Blender dark-theme styling seamlessly match the UI header aesthetic.
+  - **Collective Popup Display Options:**
+    1. *Blink Comparator (`#wsBlink`, Hotkey: B):* Multi-epoch flipbook & continuous kinematics morph.
+    2. *Difference Imaging (`#wsDiff`, Hotkey: D):* Numerical ZOGY sub-pixel PSF reference subtraction ($I_2 - I_1$).
+    3. *102-Band Spectra (`#wsSpec`, Hotkey: S):* SPHEREx $0.75 - 5.00\,\mu\text{m}$ spectrophotometry & ice bands.
+    4. *Aladin Sky Map (`#wsAladin`, Hotkey: A):* Interactive CDS Strasbourg all-sky HiPS cube navigator.
+  - **UX & Synchronization:** Supports click-to-toggle, click outside dismiss, and `Escape` key dismiss. Switching modes via mouse click, hotkeys (`B`, `D`, `S`, `A`), command palette, or automated scripts instantly updates the trigger icon, label, and active popup highlight.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (22/22) including `test_view_modes_single_tool_icon_and_collective_popup_contract`. Zero regressions in viewport, spectra, and backend contract test suites.
+- **[⏱️ RELOCATED TIME STEP CONTROLLER TO LEFT TOOLBAR WITH POPUP OPTION (@coolodu)]**
+  - **Feature:** Moved the floating Time Step Controller (`#viewportTimeStepHUD`) out of the center viewport canvas and anchored it adjacent to the left vertical tool rail (`#leftToolRail`, `left-16`, `top-14`).
+  - **Tool Rail Integration & Popup Mode:** Added `#toolTimeStep` (shortcut `T`) to the left rail to toggle the popup open/closed, added a Pinning mode toggle (`#btnPinTimeStepHUD`) for permanent pinned vs auto-dismiss flyout, and added an explicit close button (`#btnCloseTimeStepHUD`).
+  - **Full Functional Tool Suite:**
+    1. *Epoch 1 (1999 t₁):* Jumps to Frame 1 (1999 2MASS baseline), syncs blend to 25%, updates timeline slider and tick highlights, and draws canvas.
+    2. *Blink / Morph (t₁ ↔ t₂):* Toggles continuous smooth morph across $\Delta t$, syncs play/pause icons, and updates bottom dock status.
+    3. *Epoch 2 (2025 t₂):* Accurately jumps to the final SPHEREx frame (`totalFrames` / Frame 4) with 100% blend and timeline sync.
+    4. *ZOGY Difference (Δ):* Toggles numerical subtraction map and syncs with header Difference button.
+    5. *Auto-ID Dipole Scan:* Toggles automated candidate detection with pulsing indicator dot.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (22/22) including `test_timestep_relocated_to_left_rail_with_popup_option_contract`.
 - **[🔬 102-BAND SPECTRUM SIDEWAYS HORIZONTAL ZOOM & PAN (@coolodu)]**
   - **Feature:** Implemented cursor-centered sideways horizontal zoom and drag-pan across the 102-band spectrum chart ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$), replacing vertical height resizing with sideways wavelength expansion.
   - **Interaction Mechanics:**
