@@ -1,6 +1,6 @@
-import urllib.request
-import urllib.parse
 import json
+import urllib.parse
+import urllib.request
 
 url = 'https://n7z4i9pzx8.execute-api.us-west-2.amazonaws.com/prod/catalog/gaiadr2'
 ra = 133.786245

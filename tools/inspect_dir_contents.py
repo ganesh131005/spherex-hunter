@@ -1,5 +1,6 @@
-import urllib.request
 import ssl
+import urllib.request
+
 from bs4 import BeautifulSoup
 
 ctx = ssl._create_unverified_context()

@@ -11,11 +11,10 @@ Sets up the multi-track label taxonomy for Team RIP across:
 - Status & Verification: needs-refinement, ready-for-dev, in-review, nasa-verified
 """
 
-import os
-import sys
 import json
-import urllib.request
+import os
 import urllib.error
+import urllib.request
 
 REPO = "joker0210G/spherex-hunter"
 API_BASE = f"https://api.github.com/repos/{REPO}/labels"
@@ -71,7 +70,7 @@ def get_github_token():
 def main():
     token = get_github_token()
     print(f"🛰️ Team RIP: Configuring Labels for {REPO}...")
-    
+
     if not token:
         print("\n⚠️ Note: GITHUB_TOKEN environment variable is not set.")
         print("To push these labels directly to GitHub, run:")
@@ -93,7 +92,7 @@ def main():
         payload = json.dumps(label).encode("utf-8")
         req = urllib.request.Request(API_BASE, data=payload, headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req):
                 print(f"  ✅ Created label: {label['name']}")
                 success_count += 1
         except urllib.error.HTTPError as e:
@@ -101,7 +100,7 @@ def main():
                 update_url = f"{API_BASE}/{urllib.parse.quote(label['name'])}"
                 req_patch = urllib.request.Request(update_url, data=payload, headers=headers, method="PATCH")
                 try:
-                    with urllib.request.urlopen(req_patch) as patch_resp:
+                    with urllib.request.urlopen(req_patch):
                         print(f"  🔄 Updated existing label: {label['name']}")
                         success_count += 1
                 except Exception as ex:
