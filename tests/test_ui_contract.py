@@ -79,14 +79,21 @@ def test_issue_20_friendly_error_banner_and_retry_contract():
 
 
 def test_issue_21_investigations_drawer_contract():
-    """Validates Issue #21: Previous Analyses / My Investigations persistence, drawer modal, and stale notice."""
+    """Validates Issue #21: Previous Analyses / My Investigations persistence, drawer modal, and relocation to Cands toolbar above flagged candidates."""
     html, soup = _get_html_and_soup()
 
-    # 1. Topbar Investigations Button & Count Badge
+    # 1. Investigations Button & Count Badge in Cands Toolbar
     btn_open = soup.find(id="btnOpenInvestigations")
-    assert btn_open is not None, "Missing #btnOpenInvestigations button in header"
+    assert btn_open is not None, "Missing #btnOpenInvestigations button"
     badge = soup.find(id="investigationsCountBadge")
     assert badge is not None, "Missing #investigationsCountBadge"
+
+    # Verify relocation to Cands panel (#inspectorPanelCandidates) above flagged candidates
+    cands_panel = soup.find(id="inspectorPanelCandidates")
+    assert cands_panel is not None, "Missing #inspectorPanelCandidates"
+    inv_bar = cands_panel.find(id="candsMyInvestigationsBar")
+    assert inv_bar is not None, "Missing #candsMyInvestigationsBar in Cands toolbar"
+    assert inv_bar.find(id="btnOpenInvestigations") is not None, "#btnOpenInvestigations must be inside #candsMyInvestigationsBar"
 
     # 2. Investigations Modal & List Container
     modal = soup.find(id="investigationsModal")
@@ -1045,6 +1052,69 @@ def test_spectrum_102_band_spot_popup_and_2d_hit_contract():
     assert "showSpecSpotPopup" in html, "Missing showSpecSpotPopup function"
     assert "hideSpecSpotPopup" in html, "Missing hideSpecSpotPopup function"
     assert "pinSpecSpotPopup" in html, "Missing pinSpecSpotPopup function"
+
+
+def test_scene_collection_right_toolbar_gradient_contract():
+    """Validates that the Scene Collection right vertical toolbar has a distinct color tone gradient while preserving all tools."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Properties Sidebar exists with custom CSS rules
+    sidebar = soup.find(id="propertiesSidebar")
+    assert sidebar is not None, "Missing #propertiesSidebar (Scene Collection right toolbar)"
+    assert "#propertiesSidebar {" in html, "Missing custom CSS gradient rule for #propertiesSidebar"
+    assert "linear-gradient" in html and "#130a24" in html, "Missing custom color tone gradient on #propertiesSidebar"
+
+    # 2. Sticky Tab Header exists with custom CSS rules
+    header = sidebar.find(id="propertiesSidebarHeader")
+    assert header is not None, "Missing #propertiesSidebarHeader"
+    assert "#propertiesSidebarHeader {" in html, "Missing custom CSS gradient rule for #propertiesSidebarHeader"
+
+    # 3. All tools and controls in the toolbar remain intact
+    assert sidebar.find(id="tabLayersBtn") is not None, "Missing #tabLayersBtn"
+    assert sidebar.find(id="tabTargetBtn") is not None, "Missing #tabTargetBtn"
+    assert sidebar.find(id="tabCandidatesBtn") is not None, "Missing #tabCandidatesBtn"
+    assert sidebar.find(id="tabPhotometryBtn") is not None, "Missing #tabPhotometryBtn"
+    assert sidebar.find(id="sceneStatusBadge") is not None, "Missing #sceneStatusBadge"
+    assert sidebar.find(id="btnRefreshScene") is not None, "Missing #btnRefreshScene"
+    assert sidebar.find(id="layerSearchInput") is not None, "Missing #layerSearchInput"
+    assert sidebar.find(id="sceneContent") is not None, "Missing #sceneContent"
+    assert sidebar.find(id="inspectorPanelLayers") is not None, "Missing #inspectorPanelLayers"
+
+
+def test_target_presets_single_tool_icon_and_collective_popup_contract():
+    """Validates that benchmark target presets (WISE 0855, Barnard's Star, etc.) are consolidated into a single tool icon with a collective popup option."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Target presets menu container and trigger in header
+    container = soup.find(id="targetPresetsMenuContainer")
+    assert container is not None, "Missing #targetPresetsMenuContainer in header"
+
+    trigger = container.find(id="btnTargetPresetsTrigger")
+    assert trigger is not None, "Missing #btnTargetPresetsTrigger"
+    assert trigger.find(id="targetPresetsActiveLabel") is not None, "Missing #targetPresetsActiveLabel"
+    assert trigger.find(id="targetPresetsChevron") is not None, "Missing #targetPresetsChevron"
+
+    # 2. Collective popup container and target options
+    popup = container.find(id="targetPresetsPopup")
+    assert popup is not None, "Missing #targetPresetsPopup"
+    assert popup.find(id="btnCloseTargetPresetsPopup") is not None, "Missing #btnCloseTargetPresetsPopup"
+
+    target_btns = popup.find_all("button", class_="target-btn")
+    assert len(target_btns) >= 5, f"Expected at least 5 benchmark .target-btn buttons in popup, found {len(target_btns)}"
+    targets_present = {b.get("data-target") for b in target_btns}
+    assert "wise0855" in targets_present, "Missing wise0855 in popup"
+    assert "barnard" in targets_present, "Missing barnard in popup"
+    assert "epsindi" in targets_present, "Missing epsindi in popup"
+    assert "rwaur" in targets_present, "Missing rwaur in popup"
+    assert "rdraconis" in targets_present, "Missing rdraconis in popup"
+
+    # 3. JavaScript functions and window exports
+    assert "toggleTargetPresetsPopup" in html, "Missing toggleTargetPresetsPopup function"
+    assert "closeTargetPresetsPopup" in html, "Missing closeTargetPresetsPopup function"
+    assert "window.toggleTargetPresetsPopup" in html, "toggleTargetPresetsPopup must be exported to window"
+    assert "btnTargetPresetsTrigger" in html, "btnTargetPresetsTrigger must be bound in JavaScript"
+
+
 
 
 

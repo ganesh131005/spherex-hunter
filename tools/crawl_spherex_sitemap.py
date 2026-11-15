@@ -1,8 +1,9 @@
+import json
+import time
 import urllib.request
 from urllib.parse import urljoin, urlparse
+
 from bs4 import BeautifulSoup
-import time
-import json
 
 start_url = 'https://irsa.ipac.caltech.edu/Missions/spherex.html'
 domain = 'irsa.ipac.caltech.edu'
@@ -18,14 +19,14 @@ while to_visit:
     if curr in visited:
         continue
     visited.add(curr)
-    
+
     parsed = urlparse(curr)
     if parsed.netloc != domain:
         continue
     path = parsed.path.lower()
     if not any(k in path for k in ['spherex', 'missions/spherex', 'splices', 'comet3iatlas', 'psfhdrerr']):
         continue
-        
+
     try:
         req = urllib.request.Request(curr, headers=headers)
         with urllib.request.urlopen(req, timeout=12) as resp:
@@ -36,10 +37,10 @@ while to_visit:
             html = resp.read().decode('utf-8', errors='ignore')
             soup = BeautifulSoup(html, 'html.parser')
             title = soup.title.string.strip() if soup.title and soup.title.string else 'Untitled'
-            
+
             internal = []
             external = []
-            
+
             for a in soup.find_all('a', href=True):
                 href = a['href'].strip()
                 text = ' '.join(a.text.split())
@@ -52,7 +53,7 @@ while to_visit:
                         to_visit.append(full_clean)
                 else:
                     external.append({'text': text, 'url': full})
-                    
+
             sitemap[curr] = {
                 'title': title,
                 'internal': internal,

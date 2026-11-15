@@ -3,11 +3,52 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified making the Blink icon in the upper horizontal toolbar fully functional and making the collective View Modes popup toolbar (`#viewModesPopup`) prominently visible beneath the top toolbar on `coolodu/web-frontend`. Resolved `<header>` clipping (`overflow-visible`), enabled visibility and interactive toggle on `#btnViewModesTrigger`, wired Blink flipbook play/pause & HUD triggers, added quick close button `✕`, and verified live in browser with all 26 contract tests passing 100% green.
+- **Current Task:** Completed and physically verified compact icon sizing (`w-2.5 h-2.5` / 10px) on Save Analysis (`#btnSaveAnalysis`), Share (`#btnShareModal`), and Open Command Palette (`#btnOpenCommandPalette` & `#cmdPaletteBtn`) tools in the upper horizontal toolbar on `coolodu/web-frontend`. Tested live in browser subagent, confirmed SVG dimensions and responsive alignment, and verified all 28 UI contract tests pass 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Compact Icon Sizing for Save Analysis, Share, and Command Palette in Upper Toolbar]**:
+  - Resized the SVG icons of `#btnSaveAnalysis` (bookmark-plus), `#btnShareModal` (share-2), `#btnOpenCommandPalette` (search), and `#cmdPaletteBtn` (search) in the top header to `w-2.5 h-2.5` (`10px x 10px`).
+  - Streamlined icon proportions to create visual hierarchy with the primary view mode and target dropdown triggers.
+  - Verified live in browser subagent with bounding box inspections and screenshot capture ([`final_step_181.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_181.png)).
+  - Verified all 28 contract tests passing 100% green.
+- [x] **[Relocate 'My Investigations' to Cands Tab in Right Vertical Toolbar]**:
+  - Removed `#btnOpenInvestigations` from the upper horizontal toolbar, streamlining top header real estate.
+  - Placed dedicated My Investigations toolbar card (`#candsMyInvestigationsBar`) at the top of the Cands tab (`#inspectorPanelCandidates`) in the Scene Collection right vertical toolbar, directly above the 'Flagged Candidates' section.
+  - Retained `#btnOpenInvestigations` ("Open" action) and `#investigationsCountBadge` with persistent session counter.
+  - Preserved full interactive functionality: clicking `#btnOpenInvestigations` opens `#investigationsModal` dialog with full CRUD, renaming, snapshot deletion, and session restore capabilities.
+  - Updated contract test `test_issue_21_investigations_drawer_contract()` in `tests/test_ui_contract.py`. All 28 tests passing.
+  - Verified live in browser subagent ([`final_step_97.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_97.png)).
+- [x] **[Consolidate Curated Targets into Single Tool Icon with Collective Popup Toolbar]**:
+  - Replaced the horizontal row of individual preset buttons in the upper header with a single compact tool button (`#btnTargetPresetsTrigger`).
+  - Displays active target icon (`#targetPresetsActiveIcon`), active target label (`#targetPresetsActiveLabel`, defaults to 'WISE 0855'), and dynamic rotating chevron (`#targetPresetsChevron`).
+  - Added collective popup toolbar flyout (`#targetPresetsPopup` inside `#targetPresetsMenuContainer`) anchored directly beneath the trigger:
+    1. *WISE 0855-0714 (`data-target="wise0855"`):* Coldest substellar brown dwarf (~250 K), 8.12"/yr PM.
+    2. *Barnard's Star (`data-target="barnard"`):* Fastest proper motion star in night sky (10.36"/yr northward).
+    3. *Epsilon Indi B (`data-target="epsindi"`):* Binary brown dwarf companion, 4.70"/yr proper motion.
+    4. *RW Aurigae (`data-target="rwaur"`):* Eruptive young stellar object with 2.8x flare amplitude.
+    5. *R Draconis (`data-target="rdraconis"`):* Pulsating asymptotic giant branch Mira variable (3.4x).
+    6. *Orion Nebula Core (`data-target="orion"`):* Messier 42 starburst & complex organic ice absorption.
+  - Implemented click-to-toggle, outside click auto-dismiss, `Esc` key dismiss, and header close button `✕` (`#btnCloseTargetPresetsPopup`).
+  - Wired `selectTarget(key)` to update trigger label and active button highlight automatically.
+  - Added contract test `test_target_presets_single_tool_icon_and_collective_popup_contract()` in `tests/test_ui_contract.py`. All 28 tests passing.
+  - Physically verified in live browser subagent ([`final_step_91.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_91.png)).
+- [x] **[Repository-Wide Error & Code Quality Remediation]**:
+  - Ran ruff audit and rectified 53 formatting, unused import, and syntax issues across `tools/*.py`.
+  - Verified 0 ruff errors across `backend/`, `tools/`, and `tests/`.
+  - Confirmed 0 browser console errors, unhandled rejections, or layout bugs via live browser subagent.
+  - Verified all core test suites pass 100% green (49/49 contract tests).
+- [x] **[Scene Collection Right Vertical Toolbar Distinct Color Tone Gradient]**:
+  - Applied an Astral Amethyst / Cosmic Obsidian gradient (`linear-gradient(180deg, #130a24 0%, #170d2d 25%, #1c1036 55%, #160c2b 85%, #0f071e 100%)`) with `border-left: 1px solid rgba(192, 132, 252, 0.28)` and deep cosmic drop-shadow on `#propertiesSidebar`.
+  - Added matching glassmorphic gradient to `#propertiesSidebarHeader` (`rgba(38, 17, 66, 0.95)` to `rgba(26, 11, 46, 0.98)`).
+  - Maintained all tools in the toolbar 100% intact:
+    1. Sticky Tab Header with Scene Collection title, LIVE STATE badge, and Refresh button.
+    2. 4 Inspector Tabs: Layers, Target, Cands, and Photo.
+    3. Filter search input (`#layerSearchInput`) with custom amethyst focus border.
+    4. Observation Epochs, Baseline Difference cards, and Visual Layers tree with visibility eye toggles and opacity sliders.
+  - Added contract test `test_scene_collection_right_toolbar_gradient_contract()` in `tests/test_ui_contract.py`. All 27 tests passing.
+  - Verified live in browser subagent ([`final_step_69.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_69.png)).
 - [x] **[Make Upper Horizontal Toolbar Blink Icon Functional & Make Popup Toolbar Visible]**:
   - Resolved CSS overflow clipping on top `<header>` by changing `overflow-hidden` to `overflow-visible` with high stacking context (`z-40`).
   - Rendered `#viewModesPopup` directly beneath the top toolbar with high-contrast styling (`border-cyan-500/60`, backdrop blur, deep shadow `0 12px 40px rgba(0,0,0,0.85)`).

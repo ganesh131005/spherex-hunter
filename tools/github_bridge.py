@@ -11,13 +11,12 @@ Provides zero-dependency (pure Python stdlib) CLI integration with GitHub Issues
 - Create new tasks (via API or pre-filled 1-click Web URL)
 """
 
-import os
-import sys
 import argparse
 import json
-import urllib.request
+import os
 import urllib.error
 import urllib.parse
+import urllib.request
 
 REPO = "joker0210G/spherex-hunter"
 API_BASE = f"https://api.github.com/repos/{REPO}"
@@ -52,7 +51,7 @@ def _request(path, method="GET", data=None):
     }
     if token:
         headers["Authorization"] = f"token {token}"
-    
+
     req_data = json.dumps(data).encode("utf-8") if data else None
     req = urllib.request.Request(url, data=req_data, headers=headers, method=method)
     try:
@@ -77,7 +76,7 @@ def check_worker_tasks(worker):
         # Ignore pull requests
         if "pull_request" in iss:
             continue
-        
+
         labels = [l.get("name", "") for l in iss.get("labels", [])]
         assignees = [a.get("login", "") for a in iss.get("assignees", [])]
         body = iss.get("body") or ""
@@ -110,7 +109,7 @@ def list_issues(track_filter=None, status_filter=None):
         if "pull_request" in iss:
             continue
         labels = [l.get("name", "") for l in iss.get("labels", [])]
-        
+
         if track_filter and f"track:{track_filter}" not in labels and track_filter not in labels:
             continue
         if status_filter and f"status:{status_filter}" not in labels and status_filter not in labels:
@@ -121,7 +120,7 @@ def list_issues(track_filter=None, status_filter=None):
         role_label = next((l for l in labels if l.startswith("role:")), None)
         if role_label:
             assignee_str = f"@{role_label.split(':', 1)[1]}"
-            
+
         print(f"  #{iss['number']} {iss['title']}")
         print(f"     Owner: {assignee_str} | Labels: {', '.join(labels)}")
         print(f"     Link: {iss['html_url']}")
@@ -137,13 +136,13 @@ def view_issue(issue_number):
         return
 
     labels = [l.get("name", "") for l in iss.get("labels", [])]
-    print(f"\n=======================================================")
+    print("\n=======================================================")
     print(f"📌 ISSUE #{iss['number']}: {iss['title']}")
     print(f"Status: {iss['state'].upper()} | URL: {iss['html_url']}")
     print(f"Labels: {', '.join(labels)}")
-    print(f"=======================================================\n")
+    print("=======================================================\n")
     print(iss.get("body") or "(No description provided)")
-    print(f"\n=======================================================\n")
+    print("\n=======================================================\n")
 
 def create_issue(title, track, role, resource, body):
     token = get_github_token()
