@@ -675,12 +675,42 @@ def test_timestep_relocated_to_left_rail_with_popup_option_contract():
     btn_autoid = hud.find(id="btnAutoDetectPill")
     assert btn_autoid is not None, "Missing #btnAutoDetectPill"
 
-    # 5. JavaScript toggle function and shortcuts exported
+    # 5. Edit Options & Drawer
+    btn_edit_opts = hud.find(id="btnTimeStepEditOptions")
+    assert btn_edit_opts is not None, "Missing #btnTimeStepEditOptions in HUD header"
+    drawer = hud.find(id="timeStepEditDrawer")
+    assert drawer is not None, "Missing #timeStepEditDrawer preferences drawer"
+    opt_pin = drawer.find(id="optPinAlways")
+    opt_unpin = drawer.find(id="optUnpinFlyout")
+    assert opt_pin is not None and opt_unpin is not None, "Missing pin and unpin options in edit drawer"
+    btn_reset_pos = drawer.find(id="btnResetTimeStepPos")
+    assert btn_reset_pos is not None, "Missing #btnResetTimeStepPos in edit drawer"
+
+    # 6. Multiple close options: Header close, Footer close, and Drawer close
+    btn_footer_close = hud.find(id="btnTimeStepFooterClose")
+    assert btn_footer_close is not None, "Missing #btnTimeStepFooterClose in HUD footer"
+    btn_drawer_close = drawer.find(id="btnDrawerCloseTimeStep")
+    assert btn_drawer_close is not None, "Missing #btnDrawerCloseTimeStep in edit drawer"
+
+    # 7. Multi-Epoch Scrubbing tools
+    blend_slider = hud.find(id="hudEpochBlendSlider")
+    assert blend_slider is not None, "Missing #hudEpochBlendSlider"
+    chips = hud.find_all(class_=lambda c: c and "hud-epoch-chip" in c)
+    assert len(chips) >= 4, f"Expected at least 4 epoch jump chips, found {len(chips)}"
+
+    # 8. JavaScript functions and listeners exported & initialized
     assert "toggleTimeStepHUD" in html, "Missing toggleTimeStepHUD function"
     assert "window.toggleTimeStepHUD" in html, "toggleTimeStepHUD must be exported to window"
+    assert "setTimeStepPinned" in html, "Missing setTimeStepPinned function"
+    assert "window.setTimeStepPinned" in html, "setTimeStepPinned must be exported to window"
+    assert "toggleTimeStepEditDrawer" in html, "Missing toggleTimeStepEditDrawer function"
+    assert "initAutoIDAndHUDListeners" in html, "Missing initAutoIDAndHUDListeners function"
+    assert "window.initAutoIDAndHUDListeners" in html, "initAutoIDAndHUDListeners must be exported to window"
     assert "toolTimeStep" in html, "JavaScript must bind listener to #toolTimeStep"
     assert "btnCloseTimeStepHUD" in html, "JavaScript must bind listener to #btnCloseTimeStepHUD"
     assert "btnPinTimeStepHUD" in html, "JavaScript must bind listener to #btnPinTimeStepHUD"
+    assert "btnTimeStepFooterClose" in html, "JavaScript must bind listener to #btnTimeStepFooterClose"
+    assert "btnDrawerCloseTimeStep" in html, "JavaScript must bind listener to #btnDrawerCloseTimeStep"
 
 
 def test_view_modes_single_tool_icon_and_collective_popup_contract():

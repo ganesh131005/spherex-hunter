@@ -3,11 +3,19 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified consolidation of upper toolbar view modes (`Blink`, `Difference`, `Spectra`, `Aladin Sky`) into a single compact tool icon (`#btnViewModesTrigger`) with a collective popup display option (`#viewModesPopup`) on `coolodu/web-frontend`. Retained 100% backward compatibility for all legacy DOM IDs (`#wsBlink`, `#wsDiff`, `#wsSpec`, `#wsAladin`), keybindings (`B`, `D`, `S`, `A`), command palette integration, and automated test locators. All 21 UI contract tests passing 100% green.
+- **Current Task:** Completed and verified full functionality for all tools in the Time Step Controller popup toolbar (`#viewportTimeStepHUD`) on `coolodu/web-frontend`. Implemented interactive Edit Options drawer (`#timeStepEditDrawer`) with Pinning Mode toggles (`#optPinAlways` / `#optUnpinFlyout`), blink cycle speed controls, position reset (`#btnResetTimeStepPos`), draggable toolbar header (`#hudTimeStepHeader`), multi-epoch scrubber slider (`#hudEpochBlendSlider`), discrete frame jump chips (`.hud-epoch-chip`), and multiple intuitive close options (`#btnCloseTimeStepHUD`, `#btnTimeStepFooterClose`, `#btnDrawerCloseTimeStep`, `T` toggle, and `Esc` dismiss). All 21 UI contract tests passing 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Make All Tools in Time Step Popup Functional, Add Edit Options for Pin/Unpin, and Add Close Options]**:
+  - **Toolbar Tools Functionalized:** Fixed lifecycle auto-initialization bug so `initAutoIDAndHUDListeners()` executes on load and DOM ready, ensuring all event listeners are active.
+  - **Multi-Epoch Scrubber & Frame Chips:** Added continuous blend slider (`#hudEpochBlendSlider`) and 4 discrete frame jump chips (`1999`, `2010`, `2014`, `2025`) directly in the popup.
+  - **Edit Options Drawer (`#timeStepEditDrawer`):** Added `#btnTimeStepEditOptions` toggle opening a dedicated preferences drawer with Pinning Mode toggles (`#optPinAlways` vs `#optUnpinFlyout`), blink speed controls (0.5s, 1.0s, 2.0s), and position reset.
+  - **Pin / Unpin Options:** Added dual pin controls (`#btnPinTimeStepHUD` badge and drawer options) with visual indicators (`📌 Pinned` vs `🪟 Flyout`) and persistence in `localStorage`.
+  - **Multiple Close Options:** Added header close `✕` (`#btnCloseTimeStepHUD`), drawer close `✕` (`#btnDrawerCloseTimeStep`), bottom action bar close (`#btnTimeStepFooterClose`), left rail toggle (`#toolTimeStep`), keyboard shortcut `T`, and `Esc` dismiss.
+  - **Draggable Header:** Added viewport drag-to-reposition on `#hudTimeStepHeader` with smooth bounds constraint.
+  - **Verification:** Verified via live browser subagent and expanded `test_timestep_and_multi_epoch_controller_popup_contract` in `tests/test_ui_contract.py`. All 21 tests pass 100% green.
 - [x] **[Consolidate Blink, Difference, Spectra, and Aladin Sky into Single Tool Icon with Collective Popup Display]**:
   - Replaced wide 4-button horizontal segmented bar in the top header with a single compact tool button (`#btnViewModesTrigger`).
   - Single trigger displays active mode's icon (`#viewModeActiveIcon`), label (`#viewModeActiveLabel`), and dynamic rotating chevron (`#viewModeChevron`).

@@ -26,6 +26,24 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⏱️ TIME STEP CONTROLLER POPUP: ALL TOOLS FUNCTIONALIZED, EDIT OPTIONS DRAWER & PIN/UNPIN/CLOSE ENHANCED (@coolodu)]**
+  - **Feature:** Full functional overhaul of the Time Step Controller popup toolbar (`#viewportTimeStepHUD`) anchored adjacent to the left vertical tool rail.
+  - **Auto-Initialization Fix:** Resolved missing startup call by auto-initializing `initAutoIDAndHUDListeners()` on script load and DOM ready, ensuring all event listeners are actively bound immediately.
+  - **Interactive Edit Options Drawer (`#timeStepEditDrawer`):** Added `#btnTimeStepEditOptions` toggle opening a dedicated preferences drawer featuring:
+    1. *Pinning Mode Toggles (`#optPinAlways` vs `#optUnpinFlyout`):* Easily toggle between permanently pinned viewport sidebar and auto-dismiss flyout mode (with persistence in `localStorage`).
+    2. *Blink Cycle Speed Presets:* Direct 0.5s, 1.0s, and 2.0s speed selectors with active highlighting.
+    3. *Position Reset Button (`#btnResetTimeStepPos`):* Quickly resets any custom drag positioning back to the default rail anchor.
+  - **Multiple Intuitive Close Options:**
+    1. Header Close `✕` (`#btnCloseTimeStepHUD`)
+    2. Footer Quick Close `Close ✕` (`#btnTimeStepFooterClose`)
+    3. Drawer Close `✕ Close Popup` (`#btnDrawerCloseTimeStep`)
+    4. Left Rail Toggle (`#toolTimeStep`, Hotkey: `T`)
+    5. Keyboard shortcuts: `T` to toggle open/close, `Esc` to dismiss
+    6. Click-outside auto-dismiss when in unpinned/flyout mode
+  - **Direct Multi-Epoch Scrubber & Jump Chips:**
+    - Integrated direct blend slider (`#hudEpochBlendSlider`) and 4 discrete frame chips (`1999`, `2010`, `2014`, `2025`) inside the popup, allowing rapid scrubbing without opening the bottom dock.
+  - **Draggable Viewport Header:** Draggable header (`#hudTimeStepHeader`) allows moving the controller anywhere in the observatory view.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (21/21), Golden Suite (22/22), and physical verification via live browser subagent ([final_step_12.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/76f06a40-990c-4cd7-b7cf-4900ca4d77fe/browser_evidence/032640eb-d24e-41d4-ba99-53369e0accb6/final_step_12.png)).
 - **[👁️ CONSOLIDATED VIEW MODES INTO SINGLE TOOL ICON WITH COLLECTIVE POPUP DISPLAY (@coolodu)]**
   - **Feature:** Replaced the wide 4-button segmented bar in the top header with a single compact observatory tool button (`#btnViewModesTrigger`) with an integrated collective flyout menu (`#viewModesPopup`).
   - **Single Tool Trigger:** Displays the active mode's icon (`#viewModeActiveIcon`), mode label (`#viewModeActiveLabel`, defaults to 'Blink'), and dynamic rotating chevron (`#viewModeChevron`). Hover effects and Blender dark-theme styling seamlessly match the UI header aesthetic.
