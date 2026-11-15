@@ -26,6 +26,21 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🌈 102-BAND SPECTRUM GRAPH BRIGHTENED & CHANNEL VARIATION TOOLBAR SIZED UP (@coolodu)]**
+  - **High-Contrast Neon Spectral Graph Palette:**
+    - Upgraded 102-band SED curve to bright glowing amber (`#f59e0b`, width 2.5px, warm fill `rgba(245, 158, 11, 0.28)`) with white-on-amber hover rings.
+    - Sized catalog photometry scatter overlay to electric cyan diamonds (`#00f0ff`, 7px radius, 2.0px white border).
+    - Upgraded 6 SPHEREx array background bands (A1–A6) with vivid color saturation (alpha 0.22–0.26) and added an active neon glow highlight bounding box (`shadowBlur = 8`) for the currently selected array.
+    - Molecular absorption lines (H₂O, H₂O Ice, CH₄, CO₂ Ice, CO) rendered with vivid high-contrast dashed markers and diamond indicators.
+    - Upgraded X and Y axis scale ticks to bold bright `#cbd5e1` (slate-200) JetBrains Mono with enhanced grid contrast.
+  - **Enlarged Channel Variation Toolbar & Ergonomics:**
+    - Array tab selector wrapped in a prominent dark pill container with enlarged button targets (`px-3 py-1.5 rounded-lg text-xs font-bold`).
+    - Channel stepper buttons (`#chanPrev`, `#chanNext`) enlarged to `w-7 h-7` (or `w-8 h-8`) for effortless clicking and touch targets.
+    - Channel readout (`#chanDisplay`) increased to `min-w-[200px] text-xs font-bold tracking-wide`.
+    - Variation range slider (`#chanSlider`) enlarged with thick track (`w-32 h-2.5`) and vibrant amber accent.
+    - Flux badge (`#chanFluxBadge`) sized up with high-contrast amber border badge.
+    - Adjusted default spectrum dock height clamp to `Math.max(240, savedDockBodyHeight)` to give ample breathing room without vertical crowding.
+  - **Physical Verification:** Verified via headless browser screenshot (`final_step_18.png`) and 100% green pytest suite.
 - **[🎯 STEP 2 COMPLETED: 5 PRIORITY 0 VIEWPORT REGRESSION TARGETS REMEDIATED & VERIFIED]**
   - **Bug 1 (Photometric Checkerboarding Fixed):** Implemented `apply_locked_asinh_stretch` in `backend/services/cutout_engine.py` with field-level caching (`_FIELD_SKY_PARAMS`) locking $(\mu_{\text{sky}}, \sigma_{\text{sky}}, P_{99.5})$ across neighbor cutouts.
   - **Bug 2 (Vertical Black Seam Eliminated):** Discrete integer coordinate snapping (`Math.floor`, `drawW = (x1 - x0) + 1`) and $\cos(\delta_0)$ spherical metric scaling in `drawAdjacentSkyTiling` in `frontend/index.html`.
