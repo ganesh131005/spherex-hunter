@@ -15,7 +15,23 @@ import json
 import os
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional, Union
+
+# Load local .env if present
+env_path = Path(__file__).resolve().parent.parent / ".env"
+if env_path.exists():
+    try:
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    k, v = k.strip(), v.strip()
+                    if k and k not in os.environ:
+                        os.environ[k] = v
+    except Exception:
+        pass
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -523,6 +539,94 @@ class AIAskRequest(BaseModel):
     api_key: Optional[str] = None
 
 
+def _call_openrouter_api(api_key: str, synthesis: dict, question: str, model: Optional[str] = None) -> Optional[dict]:
+    """Calls OpenRouter API with real observational telemetry grounding."""
+    import json
+    import urllib.error
+    import urllib.request
+
+    try:
+        tname = synthesis.get("target_name", "Target Sky Field")
+        coords = synthesis.get("coordinates", {})
+        metrics = synthesis.get("telemetry_metrics", {})
+        verdict = synthesis.get("verdict", "INCONCLUSIVE")
+        evidence_tier = synthesis.get("evidence_tier", "INCONCLUSIVE")
+
+        system_instruction = (
+            "You are the AI Astronomical Science Co-Pilot for SPHEREx Hunter (NASA Space Apps 2026). "
+            "Your role is to assist astronomers and citizen scientists by interpreting multi-epoch astronomical cutouts, "
+            "102-band near-infrared spectrophotometry (0.75-5.00 um), Gaia DR3 optical astrometry, and SkyBoT asteroid vetoes. "
+            "STRICT RULES: Ground every assertion 100% in the real retrieved archive data provided. Never hallucinate fake coordinates or objects. "
+            "Speak clearly, authoritatively, and concisely."
+        )
+
+        user_prompt = (
+            f"Telescope Field: {tname} (RA {coords.get('ra_deg')}°, Dec {coords.get('dec_deg')}°)\n"
+            f"Verdict: {verdict} | Evidence Tier: {evidence_tier}\n"
+            f"Proper Motion: {metrics.get('proper_motion_arcsec_yr')}\"/yr | Distance: {metrics.get('distance_pc')} pc\n"
+            f"WISE Color W1-W2: {metrics.get('wise_w1_w2_color')} mag\n"
+            f"Plain English Summary: {synthesis.get('plain_english_summary')}\n"
+            f"Technical Summary: {synthesis.get('scientist_technical_summary')}\n\n"
+            f"Citizen Question: {question}"
+        )
+
+        # Determine topic from question semantics
+        q_lower = question.lower()
+        if any(k in q_lower for k in ("spectrum", "sed", "102", "band", "molecular", "absorption", "dip", "methane", "water")):
+            topic = "102-Band Infrared Spectroscopy"
+        elif any(k in q_lower for k in ("scan", "dipole", "motion", "move", "speed", "proper")):
+            topic = "Kinematics & Dipole Scan"
+        elif any(k in q_lower for k in ("planet", "brown dwarf", "cold", "why", "explain", "what")):
+            topic = "Astrophysical Interpretation"
+        else:
+            topic = "Co-Pilot Field Synthesis"
+
+        chosen_model = model or os.environ.get("OPENROUTER_MODEL", "google/gemini-2.5-flash")
+        req_body = {
+            "model": chosen_model,
+            "max_tokens": 500,
+            "temperature": 0.2,
+            "messages": [
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": user_prompt}
+            ]
+        }
+
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {api_key.strip()}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/joker0210G/spherex-hunter",
+            "X-Title": "SPHEREx Hunter"
+        }
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(req_body).encode("utf-8"),
+            headers=headers,
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=14.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            choices = data.get("choices", [])
+            if choices:
+                ans_text = choices[0].get("message", {}).get("content", "").strip()
+                if ans_text:
+                    return {
+                        "status": "success",
+                        "question": question,
+                        "topic": topic,
+                        "answer": ans_text,
+                        "evidence_tier": synthesis["evidence_tier"],
+                        "verdict": synthesis["verdict"],
+                        "candidate_status": synthesis["candidate_status"],
+                        "llm_provider": f"OpenRouter ({chosen_model})",
+                        "synthesis": synthesis,
+                    }
+    except Exception as e:
+        print(f"OpenRouter API call notice: {e}")
+    return None
+
+
 def _call_gemini_api(api_key: str, synthesis: dict, question: str) -> Optional[dict]:
     """Calls Google Gemini API (BYOK) with real observational telemetry system grounding."""
     import json
@@ -805,17 +909,31 @@ def ai_ask_get(
     fov: float = Query(3.0, description="Field of View in arcminutes"),
     target: Optional[str] = Query(None, description="Benchmark target key"),
     question: str = Query("Explain this object in plain English", description="Natural-language science question"),
-    api_key: Optional[str] = Query(None, description="Optional Google Gemini API Key (BYOK)")
+    api_key: Optional[str] = Query(None, description="Optional Google Gemini or OpenRouter API Key (BYOK)")
 ):
     """Interactive AI Science Co-Pilot Q&A backed 100% by real NASA/ESA archive telemetry."""
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         synthesis = _build_ai_science_synthesis(ra_deg=ra_deg, dec_deg=dec_deg, fov=fov, target=target)
+
+        # Check OpenRouter first (configured in .env or supplied via header/query starting with sk-or-)
+        or_key = (
+            api_key if (api_key and "sk-or-" in api_key)
+            else request.headers.get("x-openrouter-key")
+            or os.environ.get("OPENROUTER_API_KEY")
+        )
+        if or_key and len(or_key.strip()) > 10:
+            llm_res = _call_openrouter_api(or_key.strip(), synthesis, question)
+            if llm_res:
+                return llm_res
+
+        # Check direct Gemini Key
         key = api_key or request.headers.get("x-gemini-key") or os.environ.get("GEMINI_API_KEY")
         if key and len(key.strip()) > 8:
             llm_res = _call_gemini_api(key.strip(), synthesis, question)
             if llm_res:
                 return llm_res
+
         return _answer_ai_question(synthesis, question)
     except HTTPException:
         raise
@@ -829,11 +947,25 @@ def ai_ask_post(payload: AIAskRequest, request: Request):
     try:
         ra_deg, dec_deg = parse_celestial_coords(payload.ra, payload.dec)
         synthesis = _build_ai_science_synthesis(ra_deg=ra_deg, dec_deg=dec_deg, fov=payload.fov, target=payload.target)
+
+        # Check OpenRouter first (configured in .env or supplied via payload/header)
+        or_key = (
+            payload.api_key if (payload.api_key and "sk-or-" in payload.api_key)
+            else request.headers.get("x-openrouter-key")
+            or os.environ.get("OPENROUTER_API_KEY")
+        )
+        if or_key and len(or_key.strip()) > 10:
+            llm_res = _call_openrouter_api(or_key.strip(), synthesis, payload.question)
+            if llm_res:
+                return llm_res
+
+        # Check direct Gemini Key
         key = payload.api_key or request.headers.get("x-gemini-key") or os.environ.get("GEMINI_API_KEY")
         if key and len(key.strip()) > 8:
             llm_res = _call_gemini_api(key.strip(), synthesis, payload.question)
             if llm_res:
                 return llm_res
+
         return _answer_ai_question(synthesis, payload.question)
     except HTTPException:
         raise

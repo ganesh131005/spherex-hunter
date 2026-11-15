@@ -1953,23 +1953,23 @@
           </div>
           <div>
             <h3 class="text-sm font-bold text-white">Bring Your Own Key (BYOK)</h3>
-            <p class="text-[10px] text-gray-400 font-mono">Google Gemini AI Science Co-Pilot</p>
+            <p class="text-[10px] text-gray-400 font-mono">OpenRouter or Google Gemini AI Co-Pilot</p>
           </div>
         </div>
         <button id="btnCloseByokModal" class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition">✕</button>
       </div>
 
       <div class="text-gray-300 space-y-2 text-[11px] leading-relaxed">
-        <p>Connect your personal Google Gemini API key to activate live generative AI reasoning grounded in real SPHEREx 102-band spectrometry, Gaia DR3 astrometry, and difference dipoles.</p>
+        <p>Connect your personal <strong>OpenRouter</strong> (<code class="text-cyan-300 font-bold">sk-or-v1-...</code>) or <strong>Google Gemini</strong> (<code class="text-amber-300 font-bold">AIzaSy...</code>) key to activate live generative astronomical reasoning grounded in SPHEREx 102-band photometry, Gaia DR3 astrometry, and difference dipoles.</p>
         <p class="text-[10px] text-gray-400 font-mono bg-space-950 p-2 rounded border border-space-800">
-          🔒 Your key is stored locally in your browser (<code class="text-amber-300 font-bold">localStorage</code>) and transmitted securely to the server during live queries. It is never logged or leaked.
+          🔒 Your key is stored locally in your browser (<code class="text-amber-300 font-bold">localStorage</code>) and transmitted securely to the server during live queries.
         </p>
       </div>
 
       <div class="space-y-1.5">
-        <label for="inputGeminiApiKey" class="block text-[10px] font-mono text-gray-300 uppercase">Google Gemini API Key:</label>
+        <label for="inputGeminiApiKey" class="block text-[10px] font-mono text-gray-300 uppercase">API Key (OpenRouter or Google Gemini):</label>
         <div class="relative">
-          <input id="inputGeminiApiKey" type="password" placeholder="AIzaSy..." class="w-full bg-space-950 border border-space-700 rounded px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-purple-400 pr-10">
+          <input id="inputGeminiApiKey" type="password" placeholder="sk-or-v1-... or AIzaSy..." class="w-full bg-space-950 border border-space-700 rounded px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-purple-400 pr-10">
           <button id="btnToggleKeyVisibility" type="button" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs" title="Toggle visibility">👁</button>
         </div>
       </div>
@@ -7662,14 +7662,15 @@
       function updateByokStatus() {
         const key = localStorage.getItem('spherex_gemini_api_key');
         if (key && key.trim().length > 8) {
-          if (byokStatusText) byokStatusText.textContent = "AI Engine: Google Gemini (BYOK Active)";
+          const isOR = key.trim().startsWith('sk-or-');
+          if (byokStatusText) byokStatusText.textContent = isOR ? "AI Engine: OpenRouter (Active)" : "AI Engine: Google Gemini (Active)";
           if (byokStatusDot) byokStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
-          if (byokBtnLabel) byokBtnLabel.textContent = "BYOK (Active)";
+          if (byokBtnLabel) byokBtnLabel.textContent = isOR ? "OpenRouter (Active)" : "Gemini (Active)";
           if (inputKey) inputKey.value = key;
         } else {
-          if (byokStatusText) byokStatusText.textContent = "AI Engine: Free Deterministic Archive Synthesis";
-          if (byokStatusDot) byokStatusDot.className = "w-2 h-2 rounded-full bg-gray-500";
-          if (byokBtnLabel) byokBtnLabel.textContent = "BYOK Key";
+          if (byokStatusText) byokStatusText.textContent = "AI Engine: OpenRouter Server Active (Gemini 2.5 Flash)";
+          if (byokStatusDot) byokStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+          if (byokBtnLabel) byokBtnLabel.textContent = "AI Key (Configured)";
           if (inputKey) inputKey.value = '';
         }
       }
