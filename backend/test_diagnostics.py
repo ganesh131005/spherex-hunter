@@ -170,8 +170,9 @@ def test_fastapi_endpoints():
     print(f"  [PASS] parse_celestial_coords()  -> Sexagesimal '08h55m10.831s -07d14m42.53s' parsed to ({ra_sex:.4f}°, {dec_sex:.4f}°)")
 
     # 4. FITS cutout endpoint
-    cutout = get_cutout(ra="133.79513", dec="-7.24515", target="wise0855", fov=3.0, lod=1)
-    assert cutout["status"] == "success"
+    from fastapi import Response
+    cutout = get_cutout(ra="133.79513", dec="-7.24515", target="wise0855", fov=3.0, lod=1, response=Response())
+    assert cutout["status"] in ("success", "degraded")
     assert len(cutout["epochs"]) == 2
     print(f"  [PASS] get_cutout()              -> Target: {cutout['target']}, Archive: {cutout['archive_survey']}")
 

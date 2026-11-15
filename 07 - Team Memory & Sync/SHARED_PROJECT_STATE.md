@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[ISSUE #34 RESOLVED & VERIFIED: LIGHT CURVE FALSE STAR BLENDING ELIMINATED & ZOGY DIFFERENCING CONTRAST RESTORED (@darkodu)]**
+  - **Issue #34 Fixed:** [Fix Light Curve False Crossmatch & Band Mismatch and ZOGY Flat-Gray Difference Display](https://github.com/joker0210G/spherex-hunter/issues/34)
+  - **Astrometric Separations Enforced:** Restricted `_nearest` in `backend/services/catalog_engine.py` to `max_sep_arcsec = 2.5` (astrometric cross-match limit), stopping unrelated background stars $35''$ away from blending into ultra-cool brown dwarfs (WISE 0855).
+  - **Filter-Segregated Light Curve:** Multi-epoch photometry points are segregated by filter bandpass (`band`: Ks, W1, W2 with `filter_wavelength_um`), accompanied by explicit non-detection upper limits (2MASS Ks > 14.3 mag) to prevent filter color offsets from masquerading as temporal variability.
+  - **ZOGY Contrast Dynamic Range:** Replaced flat-gray clipping in `compute_scientific_difference` with robust MAD background estimation and arcsinh stretch (`128 + 38 * arcsinh(z / 1.2)`), boosting dipole visibility to full dynamic range ($20 \le \text{pixel} \le 255$) around neutral 128 mid-gray.
+  - **Verification:** Unit tests and diagnostics pass 100% green; clean ruff checks. Pushed to `origin/darkodu/astro-backend`.
 - **[CI LINT FIX: RECTIFIED RUFF I001 IMPORT FORMATTING IN `backend/main.py` (@darkodu)]**
   - **Issue Resolved:** Fixed GitHub Actions CI failure on `ruff check backend tests` where `from backend.api_v1 import make_request_id, router as api_v1_router` in `backend/main.py` caused rule `I001 [*] Import block is un-sorted or un-formatted`.
   - **Fix Applied:** Split and properly formatted the imports into `from backend.api_v1 import make_request_id` and `from backend.api_v1 import router as api_v1_router`.

@@ -144,11 +144,19 @@ def compute_scientific_difference(d1: np.ndarray, d2: np.ndarray) -> np.ndarray:
     # True differential residual array
     diff = i2_sub - S * i1_matched
     bg_mask = ~stars_mask if np.any(~stars_mask) else np.ones_like(diff, dtype=bool)
-    diff_sigma = float(np.std(diff[bg_mask])) + 1e-5
+    diff_bg = diff[bg_mask] if np.any(bg_mask) else diff
+    diff_median = float(np.median(diff_bg))
+    diff_mad = float(np.median(np.abs(diff_bg - diff_median)))
+    diff_sigma = float(1.4826 * diff_mad) if diff_mad > 1e-6 else float(np.std(diff_bg)) + 1e-5
+    diff_sigma = max(diff_sigma, 1e-5)
 
-    # Z-score significance mapping to telescope noise floor
-    z_score = diff / diff_sigma
-    diff_scaled = np.clip(128.0 + z_score * 16.0, 0, 255).astype(np.uint8)
+    # Z-score significance mapping relative to robust background noise floor
+    z_score = (diff - diff_median) / diff_sigma
+
+    # Robust contrast stretch with arcsinh scaling:
+    # Preserves neutral 128 mid-gray for zero-residuals while expanding contrast
+    # for subtle (2-5 sigma) dipoles so negative trough and positive peak stand out distinctly.
+    diff_scaled = np.clip(128.0 + 38.0 * np.arcsinh(z_score / 1.2), 0, 255).astype(np.uint8)
     return diff_scaled
 
 def render_color_canvas(arr: np.ndarray, mode: str = "infrared", coverage_mask: np.ndarray = None) -> str:
@@ -433,7 +441,10 @@ def detect_astronomical_transients(d1: np.ndarray, d2: np.ndarray, diff_scaled: 
     3. Static Background: No significant residual flux.
     """
     dim = diff_scaled.shape[0]
-    z_scores = (diff_scaled.astype(float) - 128.0) / 16.0
+    # Invert the arcsinh contrast stretch to recover authentic z-scores:
+    # diff_scaled = 128.0 + 38.0 * arcsinh(z / 1.2) -> z = 1.2 * sinh((diff_scaled - 128.0) / 38.0)
+    norm_diff = (diff_scaled.astype(float) - 128.0) / 38.0
+    z_scores = 1.2 * np.sinh(np.clip(norm_diff, -5.0, 5.0))
 
     # Mask outer margins to avoid edge artifacts
     margin = max(4, int(dim * 0.06))

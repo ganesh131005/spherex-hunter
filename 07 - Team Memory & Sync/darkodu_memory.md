@@ -3,11 +3,16 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Rectified CI Ruff import formatting in `backend/main.py` on `darkodu/astro-backend` (I001 organized imports fix); validated 100% clean ruff check and all 33 CI unit tests passing.
-- **Next Task:** Await teammate sync and manual inspection from team lead.
+- **Current Task:** Resolved and verified Issue #34 (Light curve false star blending, filter segregation with 2MASS upper limits, and ZOGY arcsinh contrast stretch eliminating flat-gray clipping). All diagnostic & contract tests 100% green. Pushing to `darkodu/astro-backend`.
+- **Next Task:** Await teammate sync and master integration.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Resolved Issue #34 (Light Curve False Blending & ZOGY Flat-Gray Difference Display):
+  - **Astrometric Cross-Match Separation Bound:** Enforced strict `max_sep_arcsec = 2.5` in `backend/services/catalog_engine.py` (`_nearest`), rejecting background field stars 35'' away from falsely blending with ultra-cool brown dwarfs like WISE 0855.
+  - **Filter-Segregated Light Curve:** Segregated multi-epoch photometry by distinct bandpass (`filter_wavelength_um` and `band`: Ks, W1, W2) and introduced explicit upper limit records for physical non-detections (e.g. 2MASS Ks > 14.3 mag for WISE 0855), preventing bandpass color differences from appearing as false temporal variability.
+  - **ZOGY Difference Contrast Stretch:** Replaced flat-gray clipping in `compute_scientific_difference` with robust MAD noise floor estimation and an arcsinh contrast stretch (`128 + 38 * arcsinh(z / 1.2)`), centered at neutral 128 mid-gray while expanding positive/negative dipole dynamic range ($20 \le \text{pixel} \le 255$). Inverted stretch in `detect_astronomical_transients` to preserve authentic z-scores.
+  - **Verification:** `backend/test_diagnostics.py` passed with 0 flat-gray clipping (Min 20 to Max 255 dynamic range), all unit tests passing, clean ruff linting.
 - [x] Rectified CI Ruff Import Formatting in `backend/main.py`:
   - Resolved `I001 [*] Import block is un-sorted or un-formatted` caused during conflict resolution in `backend/main.py`.
   - Split `from backend.api_v1 import make_request_id, router as api_v1_router` into sorted imports.

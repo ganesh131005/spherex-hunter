@@ -920,19 +920,19 @@ def crossmatch_photometry(
         spherex_res = f_spherex.result()
         simbad_res = f_simbad.result()
 
-    def _nearest(sources):
-        """Nearest catalogue row to the query position (not simply the brightest)."""
+    def _nearest(sources, max_sep_arcsec: float = 2.5):
+        """Nearest catalogue row to query position strictly within max_sep_arcsec."""
         best, best_sep = {}, None
         for src in sources:
             off = src.get("offset_arcsec") or {}
             sep = float(np.hypot(off.get("dx", 0.0), off.get("dy", 0.0)))
-            if best_sep is None or sep < best_sep:
+            if sep <= max_sep_arcsec and (best_sep is None or sep < best_sep):
                 best, best_sep = src, sep
         return best
 
-    primary_gaia = _nearest(gaia_res["sources"])
-    primary_2mass = _nearest(twomass_res["sources"])
-    primary_wise = _nearest(wise_res.get("sources", []))
+    primary_gaia = _nearest(gaia_res["sources"], max_sep_arcsec=3.0)
+    primary_2mass = _nearest(twomass_res["sources"], max_sep_arcsec=2.5)
+    primary_wise = _nearest(wise_res.get("sources", []), max_sep_arcsec=3.0)
     archive_issues = [
         r.get("message")
         for r in (gaia_res, twomass_res, wise_res, spherex_res, simbad_res)
@@ -1014,27 +1014,45 @@ def crossmatch_photometry(
             })
 
     # Multi-epoch light curve combining 2MASS (~1999), AllWISE (2010), NEOWISE-R (2014-2024), SPHEREx DR1 (2025)
+    # Segregated by filter bandpass to prevent false variability signals from color differences
     multi_epoch_lightcurve = []
     if k_mag is not None:
         multi_epoch_lightcurve.append({
             "epoch_label": "1999 (2MASS Ks)",
             "mjd": 51300.0,
             "band": "Ks",
+            "filter_wavelength_um": 2.15,
             "mag": round(float(k_mag), 3),
+            "is_upper_limit": False
+        })
+    elif sep_wise0855_arcmin <= 2.0 or (g_mag is None and wise_counterpart.get("w2_mag") is not None):
+        # Physical non-detection: ultra-cool target is below 2MASS sensitivity limit (Ks > 14.3 mag)
+        multi_epoch_lightcurve.append({
+            "epoch_label": "1999 (2MASS Ks Upper Limit)",
+            "mjd": 51300.0,
+            "band": "Ks",
+            "filter_wavelength_um": 2.15,
+            "mag": None,
+            "upper_limit": 14.3,
+            "is_upper_limit": True
         })
     if wise_counterpart.get("w1_mag") is not None:
         multi_epoch_lightcurve.append({
             "epoch_label": "2010 (AllWISE W1)",
             "mjd": 55317.0,
             "band": "W1",
+            "filter_wavelength_um": 3.4,
             "mag": round(float(wise_counterpart["w1_mag"]), 3),
+            "is_upper_limit": False
         })
     if wise_counterpart.get("w2_mag") is not None:
         multi_epoch_lightcurve.append({
             "epoch_label": "2010 (AllWISE W2)",
             "mjd": 55317.5,
             "band": "W2",
+            "filter_wavelength_um": 4.6,
             "mag": round(float(wise_counterpart["w2_mag"]), 3),
+            "is_upper_limit": False
         })
 
     neo_epochs = wise_res.get("neowise_epochs", [])
