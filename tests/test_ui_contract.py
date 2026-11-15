@@ -599,6 +599,35 @@ def test_bottom_dock_102_scroll_wheel_zoom_contract():
     assert "specChart.resize()" in html, "Wheel handler must trigger specChart.resize()"
 
 
+def test_ice_jump_chips_positioned_below_molecular_signatures():
+    """Validates that the 'Ices' quick jump chips are positioned directly below the 'Molecular Signatures' table in the sidebar."""
+    html, soup = _get_html_and_soup()
+
+    spectrum_panel = soup.find(id="dockPanelSpectrum")
+    assert spectrum_panel is not None, "Missing #dockPanelSpectrum in bottom dock"
+
+    # Find the Molecular Reference Sidebar
+    sidebar = spectrum_panel.find(lambda el: el.name == "div" and "Molecular Signatures" in el.get_text())
+    assert sidebar is not None, "Missing Molecular Reference Sidebar containing 'Molecular Signatures'"
+
+    # Verify #spec102MolecularBar is located inside the sidebar
+    mol_bar = sidebar.find(id="spec102MolecularBar")
+    assert mol_bar is not None, "#spec102MolecularBar must be located inside the Molecular Reference Sidebar"
+
+    # Verify the quick jump text and ice pills
+    assert "Jump to Ices:" in mol_bar.get_text(), "Missing 'Jump to Ices:' section title in sidebar"
+    pills = mol_bar.find_all(class_=lambda c: c and "spec-mol-pill" in c)
+    assert len(pills) == 5, f"Expected 5 ice/gas pills, found {len(pills)}"
+
+    # Verify each key molecule/ice is present
+    pills_text = " ".join(p.get_text() for p in pills)
+    assert "H₂O" in pills_text, "Missing H₂O pill"
+    assert "Ice" in pills_text, "Missing Ice pill"
+    assert "CH₄" in pills_text, "Missing CH₄ pill"
+    assert "CO₂" in pills_text, "Missing CO₂ pill"
+    assert "CO" in pills_text, "Missing CO pill"
+
+
 
 
 

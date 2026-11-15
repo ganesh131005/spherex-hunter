@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+## 📝 Recent Team Log & Announcements
+- **[❄️ REPOSITIONED ICES QUICK-JUMP SECTION BELOW MOLECULAR SIGNATURES (@coolodu)]**
+  - **Feature:** Moved `#spec102MolecularBar` from the top horizontal toolbar into the right-hand Molecular Reference Sidebar, locating it directly below the 'Molecular Signatures' table.
+  - **Layout Enhancement:** Structured the 5 ice & gas jump chips (`💧 H₂O`, `❄️ Ice`, `🪐 CH₄`, `🧊 CO₂`, `🔬 CO Monoxide`) in a dedicated 2-column grid within the sidebar, giving the top toolbar full breathing space for 102-band controls, Array tabs (A1-A6), and channel steppers without wrapping or clipping.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (including new contract test `test_ice_jump_chips_positioned_below_molecular_signatures`).
 - **[🔍 BOTTOM DOCK 102-BAND SPECTRUM SCROLL WHEEL ZOOM (EXPAND & SHRINK)]**
   - **Feature:** Added bidirectional mouse wheel scroll zoom (expanding and shrinking) to the bottom observatory dock when the cursor is positioned over the 102-Band Spectrum tab (`#dockPanelSpectrum`, `#bottomDock`, or `#dockTabSpectrum`).
   - **Interaction Mechanics:**
