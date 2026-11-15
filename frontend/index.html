@@ -807,6 +807,14 @@
           <button id="btnTimeStepFooterClose" type="button" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 hover:text-white text-gray-300 border border-space-700 transition font-mono flex items-center gap-1" title="Close Time Step Controller Popup">
             <span>Close ✕</span>
           </button>
+          <button id="btnToggleFootprints" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-300 hover:text-white transition font-mono" title="Toggle Level 2 Exposure Footprint Boundaries (EXP_ID, Detector, MJD)">
+            <i data-lucide="square" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span id="labelFootprints">Footprints: Off</span>
+          </button>
+          <button id="btnToggleCoordGrid" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-300 hover:text-white transition font-mono" title="Toggle Equatorial Coordinate Grid (RA/Dec Lines)">
+            <i data-lucide="grid" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span id="labelCoordGrid">Grid: Off</span>
+          </button>
         </div>
       </div>
 
@@ -3997,7 +4005,119 @@
       ctx.fillRect(sx - tw / 2 - (4 / zoom), sy - r - (16 / zoom), tw + (8 / zoom), 13 / zoom);
       ctx.fillStyle = '#38bdf8';
       ctx.fillText(label, sx - tw / 2, sy - r - (6 / zoom));
+      ctx.restore();
+    }
 
+    let footprintOverlayEnabled = false;
+    let coordGridEnabled = false;
+
+    function drawExposureFootprintOverlay(ctx, pixelsPerArcmin) {
+      if (!footprintOverlayEnabled) return;
+
+      const fov = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin();
+      const fw = fov * pixelsPerArcmin;
+      const fh = fov * pixelsPerArcmin;
+      const x0 = -fw / 2;
+      const y0 = -fh / 2;
+
+      ctx.save();
+      // Level 2 Exposure detector boundary rectangle
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = Math.max(1, 1.5 / camera.zoom);
+      ctx.strokeRect(x0, y0, fw, fh);
+
+      // Corner accent brackets
+      const bLen = Math.min(24 / camera.zoom, fw * 0.12);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = Math.max(1.5, 2.5 / camera.zoom);
+      
+      // Top-left
+      ctx.beginPath(); ctx.moveTo(x0, y0 + bLen); ctx.lineTo(x0, y0); ctx.lineTo(x0 + bLen, y0); ctx.stroke();
+      // Top-right
+      ctx.beginPath(); ctx.moveTo(x0 + fw - bLen, y0); ctx.lineTo(x0 + fw, y0); ctx.lineTo(x0 + fw, y0 + bLen); ctx.stroke();
+      // Bottom-left
+      ctx.beginPath(); ctx.moveTo(x0, y0 + fh - bLen); ctx.lineTo(x0, y0 + fh); ctx.lineTo(x0 + bLen, y0 + fh); ctx.stroke();
+      // Bottom-right
+      ctx.beginPath(); ctx.moveTo(x0 + fw - bLen, y0 + fh); ctx.lineTo(x0 + fw, y0 + fh); ctx.lineTo(x0 + fw, y0 + fh - bLen); ctx.stroke();
+
+      // Footprint Metadata Tag (EXP_ID, Detector, MJD)
+      const expId = (realEpoch2Img && realEpoch2Img.dataset) ? `SPHEREx_L2_${realEpoch2Img.dataset}` : 'SPHEREx_L2_B6_001';
+      const det = 'Band 6 (H2RG-6)';
+      const mjd = (realEpoch2Img && realEpoch2Img.mjd) ? realEpoch2Img.mjd.toFixed(2) : '60809.34';
+      const label = `EXP: ${expId} | Det: ${det} | MJD: ${mjd}`;
+
+      ctx.font = `bold ${Math.max(9, 10 / camera.zoom)}px "JetBrains Mono", monospace`;
+      const tw = ctx.measureText(label).width;
+      const pad = 5 / camera.zoom;
+      const tagH = 15 / camera.zoom;
+      const tagY = y0 - tagH - (5 / camera.zoom);
+
+      ctx.fillStyle = 'rgba(6, 12, 24, 0.92)';
+      ctx.fillRect(x0, tagY, tw + pad * 2, tagH);
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1 / camera.zoom;
+      ctx.strokeRect(x0, tagY, tw + pad * 2, tagH);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, x0 + pad, tagY + tagH / 2);
+      ctx.restore();
+    }
+
+    function drawCoordinateGrid(ctx, pixelsPerArcmin) {
+      if (!coordGridEnabled) return;
+
+      const w = canvas.width || 800;
+      const h = canvas.height || 600;
+      const minWorldX = (0 - (w / 2 + camera.panX)) / camera.zoom;
+      const maxWorldX = (w - (w / 2 + camera.panX)) / camera.zoom;
+      const minWorldY = (0 - (h / 2 + camera.panY)) / camera.zoom;
+      const maxWorldY = (h - (h / 2 + camera.panY)) / camera.zoom;
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.18)';
+      ctx.lineWidth = 1.0 / camera.zoom;
+      ctx.font = `${Math.max(8, 9 / camera.zoom)}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+      const gridStepArcmin = (camera.fov > 60) ? 30 : ((camera.fov > 15) ? 5 : 1);
+      const stepPx = gridStepArcmin * pixelsPerArcmin;
+
+      if (stepPx > 10) {
+        const startCol = Math.floor(minWorldX / stepPx);
+        const endCol = Math.ceil(maxWorldX / stepPx);
+        for (let c = startCol; c <= endCol; c++) {
+          const gx = c * stepPx;
+          ctx.beginPath();
+          ctx.moveTo(gx, minWorldY);
+          ctx.lineTo(gx, maxWorldY);
+          ctx.stroke();
+
+          const draDeg = - (c * gridStepArcmin / 60.0) / Math.max(0.01, cosDec);
+          const raVal = ((camera.ra + draDeg) % 360 + 360) % 360;
+          ctx.textAlign = 'center';
+          ctx.fillText(`${raVal.toFixed(2)}°`, gx, minWorldY + 12 / camera.zoom);
+        }
+
+        const startRow = Math.floor(minWorldY / stepPx);
+        const endRow = Math.ceil(maxWorldY / stepPx);
+        for (let r = startRow; r <= endRow; r++) {
+          const gy = r * stepPx;
+          ctx.beginPath();
+          ctx.moveTo(minWorldX, gy);
+          ctx.lineTo(maxWorldX, gy);
+          ctx.stroke();
+
+          const ddecDeg = - (r * gridStepArcmin / 60.0);
+          const decVal = Math.max(-90, Math.min(90, camera.dec + ddecDeg));
+          ctx.textAlign = 'left';
+          ctx.fillText(`${decVal >= 0 ? '+' : ''}${decVal.toFixed(2)}°`, minWorldX + 6 / camera.zoom, gy - 3 / camera.zoom);
+        }
+      }
+      ctx.restore();
+    }
       ctx.restore();
     }
 
@@ -4071,6 +4191,10 @@
         if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
           drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB, false);
         }
+
+        if ((!realEpoch1Img || !realEpoch1Img.complete) && (!realEpoch2Img || !realEpoch2Img.complete)) {
+          drawNoCoverageHatch(ctx, -rw / 2, -rh / 2, rw, rh, 'Loading SPHEREx Calibrated Exposure...');
+        }
       }
 
       // 3. Issue #10: Continuous Raytracing Sky Tiling & dynamic frustum fill (seamless adjacent coverage)
@@ -4103,6 +4227,12 @@
       drawAiDetectedCandidates(ctx, pixelsPerArcmin);
       drawMeasurementRuler(ctx, pixelsPerArcmin);
       drawSelectedPointReticle(ctx, pixelsPerArcmin);
+
+      // 7. Step 2: Level 2 Exposure Footprint Boundaries (EXP_ID, detector, MJD)
+      drawExposureFootprintOverlay(ctx, pixelsPerArcmin);
+
+      // 8. Step 2: Equatorial Coordinate Grid (RA/Dec lines)
+      drawCoordinateGrid(ctx, pixelsPerArcmin);
 
       ctx.restore();
     }
@@ -4202,6 +4332,38 @@
       }
     }
 
+    function drawNoCoverageHatch(ctx, x, y, w, h, label = 'SPHEREx Coverage Gap / Loading') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x, y, w, h);
+      ctx.clip();
+
+      ctx.fillStyle = '#06080e';
+      ctx.fillRect(x, y, w, h);
+
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+      ctx.lineWidth = 1.0;
+      const step = 20;
+      for (let d = -h; d < w + h; d += step) {
+        ctx.beginPath();
+        ctx.moveTo(x + d, y);
+        ctx.lineTo(x + d + h, y + h);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+
+      if (w > 60 && h > 30) {
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x + w / 2, y + h / 2);
+      }
+      ctx.restore();
+    }
+
     function drawAdjacentSkyTiling(ctx, pixelsPerArcmin) {
       const w = canvas.width || 800;
       const h = canvas.height || 600;
@@ -4265,55 +4427,11 @@
           const tileKey = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${currentLOD}`;
           visibleTileKeys.add(tileKey);
 
-          let entry = adjacentSkyTileCache.get(tileKey);
-          let activeTexture = (entry && entry.loaded) ? entry : null;
-
-          // Non-destructive texture retention: check other LOD tiers or last rendered texture
-          if (!activeTexture) {
-            for (const l of [1, 2, 0]) {
-              const fb = adjacentSkyTileCache.get(`${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${l}`);
-              if (fb && fb.loaded) {
-                activeTexture = fb;
-                break;
-              }
-            }
-          }
-          if (!activeTexture) {
-            const lastFb = lastRenderedSpatialTiles.get(`${tileRA}_${tileDec}`);
-            if (lastFb && lastFb.loaded) {
-              activeTexture = lastFb;
-            }
-          }
-
-          if (activeTexture && activeTexture.loaded) {
-            lastRenderedSpatialTiles.set(`${tileRA}_${tileDec}`, activeTexture);
-            if (diffMode) {
-              if (diffVis && activeTexture.imgDiff && activeTexture.imgDiff.complete && diffAlpha > 0.005) {
-                drawFeatheredImage(ctx, activeTexture.imgDiff, x0, y0, drawW, drawH, diffAlpha, false);
-              }
-            } else {
-              if (visA && activeTexture.img1 && activeTexture.img1.complete && alphaA > 0.005) {
-                drawFeatheredImage(ctx, activeTexture.img1, x0, y0, drawW, drawH, alphaA, false);
-              }
-              if (visB && activeTexture.img2 && activeTexture.img2.complete && alphaB > 0.005) {
-                drawFeatheredImage(ctx, activeTexture.img2, x0, y0, drawW, drawH, alphaB, false);
-              }
-            }
-          }
-
-          if (!entry && Math.abs(rawDec) <= 89.9) {
-            if (isDragging) {
-              // During active drag, don't trigger new network fetches; let existing textures smoothly pan
-              continue;
-            }
-            if (adjacentSkyTileCache.size >= 128) {
-              const oldestKey = adjacentSkyTileCache.keys().next().value;
-              if (oldestKey) adjacentSkyTileCache.delete(oldestKey);
-            }
-            adjacentSkyTileCache.set(tileKey, { loading: true, loaded: false });
-            const distSq = col * col + row * row;
-            queueTileFetch(tileKey, tileRA, tileDec, tileFovArcmin, currentLOD, distSq);
-          }
+          // Step 2 Requirement: Removed adjacent-tile canvas mosaic drawing.
+          // All wide-field celestial context is provided by continuous Aladin Lite HiPS,
+          // eliminating sliced stars, photometric checkerboard seams, and missing tile voids.
+          adjacentSkyTileCache.set(tileKey, { loading: false, loaded: true, fov: tileFovArcmin });
+          lastRenderedSpatialTiles.set(`${tileRA}_${tileDec}`, { loaded: true, fov: tileFovArcmin });
         }
       }
 
@@ -11345,6 +11463,35 @@
           }
         }
       });
+
+      const btnToggleFootprints = document.getElementById('btnToggleFootprints');
+      if (btnToggleFootprints) {
+        btnToggleFootprints.addEventListener('click', () => {
+          footprintOverlayEnabled = !footprintOverlayEnabled;
+          const lbl = document.getElementById('labelFootprints');
+          if (lbl) lbl.innerText = `Footprints: ${footprintOverlayEnabled ? 'ON' : 'Off'}`;
+          btnToggleFootprints.classList.toggle('bg-cyan-950/80', footprintOverlayEnabled);
+          btnToggleFootprints.classList.toggle('border-cyan-500', footprintOverlayEnabled);
+          btnToggleFootprints.classList.toggle('text-cyan-300', footprintOverlayEnabled);
+          drawFrame();
+        });
+      }
+
+      const btnToggleCoordGrid = document.getElementById('btnToggleCoordGrid');
+      if (btnToggleCoordGrid) {
+        btnToggleCoordGrid.addEventListener('click', () => {
+          coordGridEnabled = !coordGridEnabled;
+          const lbl = document.getElementById('labelCoordGrid');
+          if (lbl) lbl.innerText = `Grid: ${coordGridEnabled ? 'ON' : 'Off'}`;
+          btnToggleCoordGrid.classList.toggle('bg-blue-950/80', coordGridEnabled);
+          btnToggleCoordGrid.classList.toggle('border-blue-500', coordGridEnabled);
+          btnToggleCoordGrid.classList.toggle('text-blue-300', coordGridEnabled);
+          if (aladinInstance && typeof aladinInstance.showGrid === 'function') {
+            aladinInstance.showGrid(coordGridEnabled);
+          }
+          drawFrame();
+        });
+      }
     }
     window.initAutoIDAndHUDListeners = initAutoIDAndHUDListeners;
 
