@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[📢 ISSUE #42 DISPATCHED TO @coolodu — REDESIGN CITIZEN SCIENCE ONBOARDING UX]**
+  - **Issue:** [#42: Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards](https://github.com/joker0210G/spherex-hunter/issues/42)
+  - **Target Teammate:** `@coolodu` (Frontend Lead) | **Branch:** `coolodu/web-frontend` | **Track:** `web-frontend`
+  - **Objective:** Overhaul first-visit onboarding modal (`#onboardingModal`) from dense 5-slide textbook prose into a snappy, visually engaging 3-step "Cosmic Quick-Start" with visual dipole animations and a 15-second "Start Hunting" action.
+  - **Status:** Open on GitHub.
 - **[🌈 102-BAND SPECTRUM GRAPH BRIGHTENED & CHANNEL VARIATION TOOLBAR SIZED UP (@coolodu)]**
   - **High-Contrast Neon Spectral Graph Palette:**
     - Upgraded 102-band SED curve to bright glowing amber (`#f59e0b`, width 2.5px, warm fill `rgba(245, 158, 11, 0.28)`) with white-on-amber hover rings.
