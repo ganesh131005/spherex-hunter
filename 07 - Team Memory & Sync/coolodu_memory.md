@@ -3,7 +3,7 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified repositioning of the 'Ices' quick-jump section (`#spec102MolecularBar`) in `#dockPanelSpectrum` on `coolodu/web-frontend`. Moved the 5 molecular ice and gas pills (`💧 H₂O`, `❄️ Ice`, `🪐 CH₄`, `🧊 CO₂`, `🔬 CO Monoxide`) from the crowded top toolbar to their natural scientific home directly below the 'Molecular Signatures' table inside the right sidebar, unburdening the top toolbar and providing direct 1-click spectral jumping with zero layout clipping. All 18 UI contract tests and full test suites passing 100% green.
+- **Current Task:** Completed and verified consolidation of upper toolbar view modes (`Blink`, `Difference`, `Spectra`, `Aladin Sky`) into a single compact tool icon (`#btnViewModesTrigger`) with a collective popup display option (`#viewModesPopup`) on `coolodu/web-frontend`. Retained 100% backward compatibility for all legacy DOM IDs (`#wsBlink`, `#wsDiff`, `#wsSpec`, `#wsAladin`), keybindings (`B`, `D`, `S`, `A`), command palette integration, and automated test locators. All 21 UI contract tests passing 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
@@ -13,7 +13,29 @@
   - Moved direct `[A]` and `[B]` toggle buttons onto each of the 4 epoch columns on the bottom Timeline bar (`#timelineEpochCols`), allowing researchers to configure difference imaging pairs directly where temporal playback occurs.
   - Created `#epochProvenanceModal` with `#epochProvenanceList` displaying authentic NASA FITS provenance (Product IDs, instruments, pixel scales, units, coordinates, and IRSA archive links), accessible via `#btnOpenEpochProvenance` in the timeline dock.
   - Kept collapsible accordion `<details id="accordionObservationEpochs">` in the sidebar to maintain full backwards compatibility with automated test suites.
-  - Added comprehensive contract test `test_observation_epochs_option_2_streamlining_contract` in `tests/test_ui_contract.py`. All 20 UI tests passing.
+  - Added comprehensive contract test `test_observation_epochs_option_2_streamlining_contract` in `tests/test_ui_contract.py`. All 22 UI tests passing.
+- [x] **[Consolidate Blink, Difference, Spectra, and Aladin Sky into Single Tool Icon with Collective Popup Display]**:
+  - Replaced wide 4-button horizontal segmented bar in the top header with a single compact tool button (`#btnViewModesTrigger`).
+  - Single trigger displays active mode's icon (`#viewModeActiveIcon`), label (`#viewModeActiveLabel`), and dynamic rotating chevron (`#viewModeChevron`).
+  - Added collective popup flyout (`#viewModesPopup` inside `#viewModesMenuContainer`) anchored directly under the trigger, featuring:
+    - Tool 1: Multi-Epoch Flipbook Blink Comparator (`#wsBlink`, hotkey `B`)
+    - Tool 2: Numerical ZOGY Image Subtraction (`#wsDiff`, hotkey `D`)
+    - Tool 3: 102-Band SPHEREx Infrared Spectroscopy (`#wsSpec`, hotkey `S`)
+    - Tool 4: Interactive CDS Strasbourg Aladin Lite (`#wsAladin`, hotkey `A`)
+  - Implemented seamless click-to-toggle, outside click auto-dismiss, and Escape key dismiss.
+  - Added `updateActiveViewModeIndicator()` to synchronize trigger icon, label, and active highlight across mouse clicks, keyboard shortcuts, and command palette actions.
+  - Added contract test `test_view_modes_single_tool_icon_and_collective_popup_contract()` in `tests/test_ui_contract.py`.
+- [x] **[Relocate Time Step Controller to Left Vertical Toolbar with Popup Option]**:
+  - Added `#toolTimeStep` tool button to the left vertical rail with `clock` icon, tooltip, and keyboard shortcut `T`.
+  - Re-anchored `#viewportTimeStepHUD` as a clean flyout popup at `left-16` adjacent to the rail, completely clearing the center viewport canvas.
+  - Implemented Popup Options: Pinning mode toggle (`#btnPinTimeStepHUD`) to switch between permanent pinned sidebar and auto-dismiss flyout, plus close button (`#btnCloseTimeStepHUD`).
+  - Made all timestep tools 100% functional:
+    - *Epoch 1 (1999 t₁):* Jumps to Frame 1, syncs blend to 25%, updates timeline ticks and slider, draws canvas.
+    - *Morph / Blink (t₁ ↔ t₂):* Toggles smooth kinematics loop with play/pause sync across HUD and bottom dock.
+    - *Epoch 2 (2025 t₂):* Correctly jumps to final SPHEREx survey frame (`totalFrames` / Frame 4), sets blend to 100%, updates timeline.
+    - *ZOGY Difference (Δ):* Toggles numerical subtraction map and syncs with top header Difference button.
+    - *Auto-ID Dipole Scan:* Toggles automated candidate detection with pulsing status indicator.
+  - Added contract test `test_timestep_relocated_to_left_rail_with_popup_option_contract()` in `tests/test_ui_contract.py`.
 - [x] **[102-Band Spectrum Sideways Horizontal Zoom & Pan (Wavelength Expansion)]**:
   - Implemented cursor-centered sideways horizontal zoom across the 102-band spectrum ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$) via mouse wheel scroll over the spectrum canvas (`specChart`).
   - Scrolling up expands the wavelength axis sideways (zooms in up to 10.0x / 10 bands visible) allowing users to inspect minute absorption features and continuum variations across channels.
