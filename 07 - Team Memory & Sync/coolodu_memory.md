@@ -3,11 +3,15 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Issue #42 (`Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards`), Step 4 (Spatially & Temporally Accurate Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry), Step 3 (Sky Context Layer), and Issue #41 (Typography Scale & Readability).
+- **Current Task:** Completed and verified Array A1 default alignment & single-row toolbar anchoring for the 102-Band Spectrum panel, Issue #42 (`Citizen Science Onboarding Redesign`), Step 4 (Multi-Epoch Placement, Narrowband Stacking & Gaia DR3), Step 3 (Sky Context Layer), and Issue #41 (Typography Scale & Readability).
 - **Next Task:** Step 5 (Scoped Multi-Tier Caching & Quantized Coordinate Tile Store) and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[102-Band Spectrum Array A1 Default Alignment & Toolbar Anchoring]**:
+  - Ensured Array A1 (`0.750 - 1.110 µm`, Channel 1, Band 1) is strictly the active default alignment on load, target slew, and dock tab activation.
+  - Unified toolbar into a non-wrapping horizontal layout with `overflow-x-auto`, anchoring the 102-Band selector, Array Tabs, and Channel Stepper on the left starting with Array A1.
+  - Eliminated vertical layout breaking, preserving full vertical height for the spectrum chart canvas and molecular reference sidebar.
 - [x] **[Issue #42] Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards**
   - **GitHub Issue:** #42 (https://github.com/joker0210G/spherex-hunter/issues/42)
   - **Scope:** Overhauled onboarding modal (`#onboardingModal`) from 5 dense textbook slides into a punchy 3-step 'Cosmic Quick-Start', integrated interactive mini-blink simulation graphic, added '🚀 Quick Start (15s)' immediate launch button, and verified 63/63 tests pass.
