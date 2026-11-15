@@ -3,11 +3,24 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Synced all remote branches (`main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`). Resolved merge conflicts between upstream Time Step popup enhancements and viewport Step 2 overhauls. Fixed the solid white cutout fallback bug in `cutout_engine.py` and eliminated Cartesian adjacent-tile canvas seams. Integrated Level 2 exposure footprint boundary overlays (`EXP_ID`, `Detector`, `MJD`) and equatorial coordinate grid lines. Verified 100% green across all test suites (`test_ui_contract.py`: 22 passed, `test_viewport_overhaul.py`: 8 passed, `test_continuous_viewport_e2e.py`: 2 passed, `test_golden_suite.py`: 22 passed).
-- **Next Task:** Proceed with Step 3 / Step 4 (SPHEREx DR1 HiPS channel selector and seamless Aladin Lite base layer integration).
+- **Current Task:** Completed and verified full functionality for all tools in the Blink Comparator popup toolbar (`#viewportBlinkHUD`) on `coolodu/web-frontend`. Implemented left vertical tool rail button `#toolBlinkFlip` ("Blink", icon `split`), header view mode integration, interactive Edit Options preferences drawer (`#blinkEditDrawer`) with Pinning Mode toggles (`#optPinBlinkAlways` / `#optUnpinBlinkFlyout`), blink cycle rate presets (0.25s, 0.5s, 1.0s, 2.0s), transition style toggles (`#optMorphSmooth` / `#optMorphSnap`), position reset (`#btnResetBlinkPos`), draggable header handle (`#hudBlinkHeader`), rapid A/B epoch flip (`#btnHudFlipAB`), VCR transport controls (Prev, Play/Pause Blink, Next, Morph/Snap toggle), live blend scrubber (`#hudBlinkBlendSlider`), discrete epoch chips (`.blink-epoch-chip`), and multiple intuitive close options (`#btnCloseBlinkHUD`, `#btnBlinkFooterClose`, `#btnDrawerCloseBlink`, rail toggle, `B` toggle, and `Esc` dismiss). All 23 UI contract tests and 71/71 full suite passing 100% green. Verified physically via browser subagent.
+- **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Make the Blink Icon Tool Option and Its Popup Toolbar Functional]**:
+  - **Left Rail Blink Tool (`#toolBlinkFlip`):** Configured on `#leftToolRail` with `split` icon, `Blink` label, and hotkey `B` tooltip. Clicking toggles `#viewportBlinkHUD` open/closed and highlights with `blender-btn-orange-active`.
+  - **Viewport Blink HUD (`#viewportBlinkHUD`):** Anchored adjacent to the left rail at `left-16` with full Draggable Header handle (`#hudBlinkHeader`).
+  - **Interactive Edit Options Drawer (`#blinkEditDrawer`):** Added `#btnBlinkEditOptions` toggle opening a dedicated preferences drawer with:
+    1. *Pinning Mode Toggles (`#optPinBlinkAlways` vs `#optUnpinBlinkFlyout`):* Allows switching between permanently pinned viewport sidebar and auto-dismiss flyout mode (with persistence in `localStorage.spherex_blink_pinned`).
+    2. *Blink Cycle Rate Presets:* Direct 0.25s (4 FPS), 0.5s (2 FPS), 1.0s (1 FPS), and 2.0s (0.5 FPS) presets with active highlighting and bottom dock synchronization.
+    3. *Transition Style Toggles:* Direct smooth sine wave crossfade (`#optMorphSmooth`) vs instantaneous discrete hard-cut snap flip (`#optMorphSnap`).
+    4. *Position Reset Button (`#btnResetBlinkPos`):* Resets dragged position back to the left rail anchor.
+  - **Rapid A/B Epoch Flip (`#btnHudFlipAB`):** Instantaneous single-click flip between historic baseline (Frame 1: 1999 2MASS / 2010 WISE) and SPHEREx discovery stack (Frame 4: 2025 SPHEREx), automatically pausing playback for precise candidate inspection.
+  - **VCR Transport Controls:** `#btnBlinkHudPrev` (Step Back), `#btnBlinkHudPlay` (Play/Pause Blink Loop), `#btnBlinkHudNext` (Step Forward), and `#btnBlinkHudModeToggle` (Morph/Snap toggle).
+  - **Multi-Epoch Scrubber & Frame Chips:** Continuous blend slider (`#hudBlinkBlendSlider`) with live percentage and year readout (`#hudBlinkBlendVal`) plus 4 discrete epoch jump chips (`.blink-epoch-chip` for 1999, 2010, 2014, 2025).
+  - **Multiple Intuitive Close Options:** Header close `✕` (`#btnCloseBlinkHUD`), drawer close `✕` (`#btnDrawerCloseBlink`), footer quick close (`#btnBlinkFooterClose`), left rail toggle (`#toolBlinkFlip`), keyboard shortcut `B`, and `Esc` dismiss.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (23/23), Golden Suite (71/71), and physical verification via live browser subagent ([final_step_49.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/76f06a40-990c-4cd7-b7cf-4900ca4d77fe/browser_evidence/ae936dce-e2ba-4a90-b23f-178f21bebd6b/final_step_49.png)).
 - [x] **[Fetch Remote Branches & Remediate Viewport Checkerboard/Seam Defects]**:
   - Fetched all remotes with `git fetch --all --prune` and synchronized `coolodu/web-frontend` with `origin/coolodu/web-frontend`.
   - Resolved content merge conflict cleanly in `frontend/index.html` combining upstream Time Step popup auto-dismiss, `T`/`Esc` shortcuts, and Level 2 footprint (`#btnToggleFootprints`) + Coordinate Grid (`#btnToggleCoordGrid`) toggles.

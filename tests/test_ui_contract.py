@@ -797,6 +797,100 @@ def test_view_modes_single_tool_icon_and_collective_popup_contract():
     assert "btnViewModesTrigger" in html, "btnViewModesTrigger must have event listeners bound"
 
 
+def test_blink_comparator_popup_toolbar_contract():
+    """Validates that the Blink icon tool option and its popup toolbar are fully functional with edit drawer, pin/unpin, and close options."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Left rail tool option #toolBlinkFlip
+    left_rail = soup.find(id="leftToolRail")
+    assert left_rail is not None, "Missing #leftToolRail"
+    tool_blink = left_rail.find(id="toolBlinkFlip")
+    assert tool_blink is not None, "Missing #toolBlinkFlip in #leftToolRail"
+    assert tool_blink.find(attrs={"data-lucide": "split"}) is not None, "toolBlinkFlip must feature split icon"
+    assert "Blink" in tool_blink.get_text(), "toolBlinkFlip must display 'Blink' label"
+
+    # 2. Viewport Blink HUD popup is anchored adjacent to left rail
+    hud = soup.find(id="viewportBlinkHUD")
+    assert hud is not None, "Missing #viewportBlinkHUD"
+    classes = hud.get("class", [])
+    assert "left-16" in classes, f"#viewportBlinkHUD must be anchored at left-16, got {classes}"
+
+    # 3. Popup header: Reposition handle, Edit Options, Pin toggle, and Close button
+    header = hud.find(id="hudBlinkHeader")
+    assert header is not None, "Missing #hudBlinkHeader draggable repositioning handle"
+    btn_edit_opts = header.find(id="btnBlinkEditOptions")
+    assert btn_edit_opts is not None, "Missing #btnBlinkEditOptions in popup header"
+    btn_pin = header.find(id="btnPinBlinkHUD")
+    assert btn_pin is not None, "Missing #btnPinBlinkHUD in popup header"
+    btn_close = header.find(id="btnCloseBlinkHUD")
+    assert btn_close is not None, "Missing #btnCloseBlinkHUD in popup header"
+
+    # 4. Interactive Edit & Preferences Drawer
+    drawer = hud.find(id="blinkEditDrawer")
+    assert drawer is not None, "Missing #blinkEditDrawer preferences drawer"
+    opt_pin = drawer.find(id="optPinBlinkAlways")
+    opt_unpin = drawer.find(id="optUnpinBlinkFlyout")
+    assert opt_pin is not None and opt_unpin is not None, "Missing pin and unpin options in edit drawer"
+
+    speed_btns = drawer.find_all(class_=lambda c: c and "blink-speed-btn" in c)
+    assert len(speed_btns) == 4, f"Expected 4 blink speed presets, found {len(speed_btns)}"
+
+    opt_smooth = drawer.find(id="optMorphSmooth")
+    opt_snap = drawer.find(id="optMorphSnap")
+    assert opt_smooth is not None and opt_snap is not None, "Missing smooth morph and snap flip options"
+
+    btn_reset_pos = drawer.find(id="btnResetBlinkPos")
+    assert btn_reset_pos is not None, "Missing #btnResetBlinkPos in edit drawer"
+    btn_drawer_close = drawer.find(id="btnDrawerCloseBlink")
+    assert btn_drawer_close is not None, "Missing #btnDrawerCloseBlink in edit drawer"
+
+    # 5. Row 1: Active Epoch Status & Instantaneous A/B Flip Action
+    badge = hud.find(id="hudBlinkEpochBadge")
+    assert badge is not None, "Missing #hudBlinkEpochBadge"
+    btn_flip_ab = hud.find(id="btnHudFlipAB")
+    assert btn_flip_ab is not None, "Missing #btnHudFlipAB instantaneous A/B flip button"
+
+    # 6. Row 2: VCR Transport Controls
+    btn_prev = hud.find(id="btnBlinkHudPrev")
+    assert btn_prev is not None, "Missing #btnBlinkHudPrev"
+    btn_play = hud.find(id="btnBlinkHudPlay")
+    assert btn_play is not None, "Missing #btnBlinkHudPlay"
+    btn_next = hud.find(id="btnBlinkHudNext")
+    assert btn_next is not None, "Missing #btnBlinkHudNext"
+    btn_mode = hud.find(id="btnBlinkHudModeToggle")
+    assert btn_mode is not None, "Missing #btnBlinkHudModeToggle"
+
+    # 7. Row 3: Live Blend Scrubber & Epoch Chips
+    slider = hud.find(id="hudBlinkBlendSlider")
+    assert slider is not None, "Missing #hudBlinkBlendSlider"
+    val = hud.find(id="hudBlinkBlendVal")
+    assert val is not None, "Missing #hudBlinkBlendVal"
+    chips = hud.find_all(class_=lambda c: c and "blink-epoch-chip" in c)
+    assert len(chips) >= 4, f"Expected at least 4 blink epoch chips, found {len(chips)}"
+
+    # 8. Row 4: Shortcuts Legend and Secondary Close Action
+    btn_footer_close = hud.find(id="btnBlinkFooterClose")
+    assert btn_footer_close is not None, "Missing #btnBlinkFooterClose in HUD footer"
+
+    # 9. JavaScript functions and window exports
+    assert "toggleBlinkHUD" in html, "Missing toggleBlinkHUD function"
+    assert "window.toggleBlinkHUD" in html, "toggleBlinkHUD must be exported to window"
+    assert "setBlinkPinned" in html, "Missing setBlinkPinned function"
+    assert "window.setBlinkPinned" in html, "setBlinkPinned must be exported to window"
+    assert "toggleBlinkEditDrawer" in html, "Missing toggleBlinkEditDrawer function"
+    assert "window.toggleBlinkEditDrawer" in html, "toggleBlinkEditDrawer must be exported to window"
+    assert "flipBlinkAB" in html, "Missing flipBlinkAB function"
+    assert "window.flipBlinkAB" in html, "flipBlinkAB must be exported to window"
+    assert "updateBlinkHUD" in html, "Missing updateBlinkHUD function"
+    assert "window.updateBlinkHUD" in html, "updateBlinkHUD must be exported to window"
+    assert "toolBlinkFlip" in html, "JavaScript must bind listener to #toolBlinkFlip"
+    assert "btnCloseBlinkHUD" in html, "JavaScript must bind listener to #btnCloseBlinkHUD"
+    assert "btnPinBlinkHUD" in html, "JavaScript must bind listener to #btnPinBlinkHUD"
+    assert "btnBlinkFooterClose" in html, "JavaScript must bind listener to #btnBlinkFooterClose"
+    assert "btnDrawerCloseBlink" in html, "JavaScript must bind listener to #btnDrawerCloseBlink"
+
+
+
 
 
 
