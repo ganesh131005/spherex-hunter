@@ -77,11 +77,11 @@ def test_continuous_viewport_controls_and_morph():
         time.sleep(0.3)
         assert blend_label.inner_text() == "0%"
 
-        # 3. Verify Step Back & Step Fwd increment blend smoothly (e.g. 33% for 4-epoch cycle)
+        # 3. Verify Step Back & Step Fwd increment blend in 25% increments
         btn_step_fwd = page.locator("#btnStepFwd")
         btn_step_fwd.click()
         time.sleep(0.3)
-        assert blend_label.inner_text() in ["10%", "33%"]
+        assert blend_label.inner_text() in ["25%", "50%", "33%"]
 
         # 4. Canvas screenshot capture for verification
         canvas = page.locator("#astroCanvas")

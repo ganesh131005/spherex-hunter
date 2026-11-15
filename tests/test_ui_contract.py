@@ -534,6 +534,45 @@ def test_merged_102_band_information_bar_in_spectrum_panel_toolbar():
     assert "spec102WavelengthDisplay" in html, "JavaScript must reference spec102WavelengthDisplay"
 
 
+def test_snapblink_25_percent_increment_and_blend_timeline_alignment_contract():
+    """Validates that snapblink blend rate increments by exactly 25% each frame and timeline aligns with blend toolbar."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Timeline tick dots exist and are positioned at 25%, 50%, 75%, 100%
+    timeline_panel = soup.find(id="dockPanelTimeline")
+    assert timeline_panel is not None, "Missing #dockPanelTimeline in bottom dock"
+
+    tick1 = timeline_panel.find(attrs={"data-frame-tick": "1"})
+    tick2 = timeline_panel.find(attrs={"data-frame-tick": "2"})
+    tick3 = timeline_panel.find(attrs={"data-frame-tick": "3"})
+    tick4 = timeline_panel.find(attrs={"data-frame-tick": "4"})
+    assert tick1 is not None and tick2 is not None and tick3 is not None and tick4 is not None, "All 4 tick dots must exist"
+
+    # Ticks align to 25%, 50%, 75%, 100%
+    assert "25%" in (tick1.get("style", "") + " " + " ".join(tick1.get("class", []))), "Tick 1 must align at 25%"
+    assert "50%" in (tick2.get("style", "") + " " + " ".join(tick2.get("class", []))), "Tick 2 must align at 50%"
+    assert "75%" in (tick3.get("style", "") + " " + " ".join(tick3.get("class", []))), "Tick 3 must align at 75%"
+    assert "100%" in (tick4.get("style", "") + " " + " ".join(tick4.get("class", []))), "Tick 4 must align at 100%"
+
+    # 2. Timeline progress bar exists and initializes to 25% for Frame 1
+    prog = timeline_panel.find(id="timelineProgress")
+    assert prog is not None, "Missing #timelineProgress"
+    assert "25%" in prog.get("style", ""), "#timelineProgress must initialize to width 25%"
+
+    # 3. Blend toolbar controls exist with 25% initial value
+    blend_slider = timeline_panel.find(id="epochBlendSlider")
+    blend_label = timeline_panel.find(id="epochBlendLabel")
+    assert blend_slider is not None, "Missing #epochBlendSlider"
+    assert blend_label is not None, "Missing #epochBlendLabel"
+    assert blend_slider.get("value") == "25", "#epochBlendSlider must initialize to 25"
+    assert "25%" in blend_label.get_text(), "#epochBlendLabel must initialize to 25%"
+
+    # 4. JavaScript increments epochBlend by exact 25% increments
+    assert "currentFrame * 0.25" in html, "setFlipbookFrame must increment epochBlend by exact 25% increments"
+    assert "epochBlend / 0.25" in html, "Slider and loop mapping must use 25% increments"
+
+
+
 
 
 
