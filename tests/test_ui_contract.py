@@ -496,5 +496,42 @@ def test_spectrum_array_a1_default_alignment_contract():
     assert "activeChannelInArray = 1" in html, "Default activeChannelInArray must be 1"
 
 
+def test_merged_102_band_information_bar_in_spectrum_panel_toolbar():
+    """Validates the 102-Band Information Bar is merged into the 102-Band Spectrum Toolbar in the bottom dock panel."""
+    html, soup = _get_html_and_soup()
+
+    spectrum_panel = soup.find(id="dockPanelSpectrum")
+    assert spectrum_panel is not None, "Missing #dockPanelSpectrum in bottom dock"
+
+    # 1. Merged 102-Band Information Bar exists inside the spectrum panel toolbar
+    info_bar = spectrum_panel.find(id="spec102BandInfoBar")
+    assert info_bar is not None, "Missing #spec102BandInfoBar in spectrum toolbar"
+
+    # 2. Direct 102-Channel Selector and Stepper Buttons
+    chan_select = info_bar.find(id="spec102ChannelSelect")
+    assert chan_select is not None, "Missing #spec102ChannelSelect in merged info bar"
+
+    btn_prev = info_bar.find(id="spec102PrevCh")
+    btn_next = info_bar.find(id="spec102NextCh")
+    assert btn_prev is not None and btn_next is not None, "Missing #spec102PrevCh or #spec102NextCh"
+
+    # 3. Dedicated 102-Band Wavelength & Array Readout Display
+    wl_display = info_bar.find(id="spec102WavelengthDisplay")
+    assert wl_display is not None, "Missing #spec102WavelengthDisplay in merged info bar"
+
+    # 4. Molecular Ice & Gas Feature Jump Chips in the toolbar
+    mol_bar = spectrum_panel.find(id="spec102MolecularBar")
+    assert mol_bar is not None, "Missing #spec102MolecularBar in spectrum toolbar"
+    pills = mol_bar.find_all(class_=lambda c: c and "spec-mol-pill" in c)
+    assert len(pills) >= 5, f"Expected at least 5 molecular jump pills, found {len(pills)}"
+
+    # 5. JavaScript two-way synchronization and channel dispatching
+    assert "select102BandChannel" in html, "Missing select102BandChannel implementation"
+    assert "window.select102BandChannel" in html, "select102BandChannel must be exported to window"
+    assert "spec102ChannelSelect" in html, "JavaScript must reference spec102ChannelSelect"
+    assert "spec102WavelengthDisplay" in html, "JavaScript must reference spec102WavelengthDisplay"
+
+
+
 
 
