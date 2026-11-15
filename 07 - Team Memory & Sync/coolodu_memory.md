@@ -16,6 +16,19 @@
     2. Consolidated the 4 resolution metrics (`#vpLOD`, `#vpDeviceScale`, `#vpNativeSpan`, `#vpScaleStatusBadge`) into a single, cohesive optical scale block with rich hover tooltips, cutting horizontal bar bloat by ~40%.
     3. Removed the orphan separator pipe `|` in `#vpTopTargetCard` when no target name is populated (`#vpTargetDivider`).
     4. Verified all 62 automated tests (`test_ui_contract.py`, `test_golden_suite.py`, `test_viewport_overhaul_v2.py`) pass 100% green.
+- [x] **[Visual Evidence Gallery Overhaul: Ingestion of Authentic Observatory Captures]**:
+  - Ingested 20 genuine high-resolution application screenshots provided by user (`.zip` and Aladin captures).
+  - Upgraded canonical screenshots:
+    1. `03_aladin_sky_hips_view.png` (1600x899) — Full celestial sphere in Aladin Sky mode with R Draconis and bottom context bar.
+    2. `01_wise0855_observatory_blink.png` (1600x899) — Complete observatory interface with WISE 0855 dipole, streamlined HUD, target metadata, and flipbook timeline.
+    3. `04_102_band_spectrum_workbench.png` (1600x899) — Full 102-band SED graph across 6 detector arrays with molecular absorption tags ($H_2O, CH_4, CO_2, CO$).
+    4. `05_target_barnards_star_benchmark.png` (1600x900) — High proper motion benchmark.
+    5. `06_target_rw_aurigae_variable.png` (1600x900) — Eruptive variable flare benchmark.
+    6. `07_target_epsilon_indi_binary.png` (1600x899) — Brown dwarf binary companion benchmark.
+    7. `08_target_r_draconis_variable.png` (1600x899) — Pulsating Mira variable benchmark.
+    8. `09_aladin_sky_deep_starfield.png` (1600x899) — Deep starfield zoom in Aladin Lite.
+    9. `10_streamlined_viewport_canvas.png` (1308x880) — Focused canvas view with streamlined HUD.
+  - Linked all screenshots into [`README.md`](file:///d:/Workspace/NASA_Space_apps/README.md) and [`docs/README.md`](file:///d:/Workspace/NASA_Space_apps/docs/README.md) gallery grids. Pushed cleanly to `origin/main` (`49956b1`).
 - [x] **[Capture High-Resolution Application Screenshots for Validation & Aladin Sky Mode]**:
   - Developed automated headless Playwright capture script (`scripts/capture_validation_screenshots.py`) bypassing onboarding tour intercepts.
   - Captured `01_wise0855_observatory_blink.png`: Authentic multi-epoch FITS data for WISE 0855-0714 with auto-identified proper motion dipole annotation, telemetry HUD, coordinate overlay, and multi-epoch timeline.
