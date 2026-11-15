@@ -8,6 +8,12 @@
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Option 2 Streamlined: Moved A/B Pair Controls to Timeline Dock & Created Provenance Modal]**:
+  - Eliminated redundant epoch card bloat from the Inspector Sidebar by condensing Observation Epochs into a sleek **Difference Baseline Quick Card** (`Frame A`, `Frame B`, baseline years, $\Delta\theta$, and FOV warning), freeing $>250\text{px}$ of vertical height for the Visual Layers hierarchy.
+  - Moved direct `[A]` and `[B]` toggle buttons onto each of the 4 epoch columns on the bottom Timeline bar (`#timelineEpochCols`), allowing researchers to configure difference imaging pairs directly where temporal playback occurs.
+  - Created `#epochProvenanceModal` with `#epochProvenanceList` displaying authentic NASA FITS provenance (Product IDs, instruments, pixel scales, units, coordinates, and IRSA archive links), accessible via `#btnOpenEpochProvenance` in the timeline dock.
+  - Kept collapsible accordion `<details id="accordionObservationEpochs">` in the sidebar to maintain full backwards compatibility with automated test suites.
+  - Added comprehensive contract test `test_observation_epochs_option_2_streamlining_contract` in `tests/test_ui_contract.py`. All 20 UI tests passing.
 - [x] **[102-Band Spectrum Sideways Horizontal Zoom & Pan (Wavelength Expansion)]**:
   - Implemented cursor-centered sideways horizontal zoom across the 102-band spectrum ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$) via mouse wheel scroll over the spectrum canvas (`specChart`).
   - Scrolling up expands the wavelength axis sideways (zooms in up to 10.0x / 10 bands visible) allowing users to inspect minute absorption features and continuum variations across channels.
