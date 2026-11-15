@@ -15,13 +15,13 @@ results = {}
 for target_id, target_data in data.items():
     target_name = target_data["target"]
     exposures = target_data["exposures"]
-    
+
     # Group by band / detector
     by_band = defaultdict(list)
     for exp in exposures:
         band = exp["band"]
         by_band[band].append(exp)
-        
+
     pairs = []
     # Check for matched pairs within each band
     for band, exps in by_band.items():
