@@ -11,7 +11,7 @@
 | **System Lead** | `jokerodu` | `main` | Architecture, coordination & merge reviews | 🟢 Active |
 | **Astro-Data / Backend** | `darkodu` | `darkodu/astro-backend` | DR1 HiPS Context Layer, Provenance Alignment & Cross-Survey Pairs | 🟢 100% Operational |
 | **Frontend / Blink UI** | `coolodu` | `coolodu/web-frontend` | Reactive Layer Tree, Eye Toggles, Coverage Masks | 🟢 Live / Verified |
-| **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm & SNR co-addition | 🟢 Operational |
+| **Image Math / AI** | `iceodu` | `iceodu/image-math-ai` | Difference imaging algorithm, SNR co-addition & submission guide sync | 🟢 100% Operational |
 | **UX, Story & Video** | `astrodu` | `astrodu/ui-story-pitch` | Citizen science modal, slide deck & video script | 🟡 In Progress |
 
 ---
@@ -26,6 +26,19 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[📋 OFFICIAL NASA SPACE APPS SUBMISSION GUIDE & FIELD INSTRUCTIONS SYNCHRONIZED (@iceodu)]**
+  - **Comprehensive Guide Deconstruction:** Fully audited the official [NASA Space Apps Project Submission Guide](https://www.spaceappschallenge.org/resources/project-submission-guide/#project-page-form-field-instructions), 2026 Judging & Awards Guide, and all embedded hyperlinks.
+  - **Crucial Enforcements Identified & Vault Updated:**
+    - *Hard Deadline:* Sunday, November 15, 2026 @ 11:59 PM local event time (late saves/submissions ineligible for judging).
+    - *Demo Strict Limitations:* Video **must be $\le 30$ seconds**; Slide Deck **must be $\le 7$ slides** (including title and intro). Exceeding causes automatic disqualification from Global Judging.
+    - *Super Intelligence (SI) Policy:* Visible watermarks mandatory on generated media; descriptive text and metadata attribution for code, data, and audio; absolute prohibition on using/modifying NASA logos or mission branding.
+    - *Web Filter Whitelist:* Added FortiGuard web filter rating guidance to prevent judge network security blocks on the web app.
+    - *Rubric Mapping:* 5 judging criteria (Impact, Creativity, Validity, Relevance, Presentation) mapped to SPHEREx Hunter features.
+  - **Vault Files Authored / Updated:**
+    - `06 - Deliverables & Submission/Official NASA Space Apps Submission Guide & Field Instructions.md` (New comprehensive guide).
+    - `06 - Deliverables & Submission/NASA Submission Requirements & Checklist.md` (Updated field-by-field checklist).
+    - `06 - Deliverables & Submission/Demo Video Script & Storyboard (30-sec to 3-min).md` (Re-anchored strictly to official 30-second formula).
+    - `06 - Deliverables & Submission/Winning Project Pitch Deck Outline.md` (Aligned with 7-slide rule).
 - **[🎉 ISSUES #39 & #40 RESOLVED WITH PHYSICAL AUDIT & 100% PASSING CONTRACT TESTS]**
   - **Issue #39 Remediation (Backend NoneType Crash & Diagnostics):**
     1. In `backend/main.py`, guarded `fetch_real_cutout()` against `None` and checked `fov > 15.0`, raising structured HTTP 400 (`Requested Field of View exceeds 15.0 arcmin limit`) and HTTP 404 (`No archival 2MASS/DSS2 FITS cutouts available...`) instead of crashing with HTTP 500 `AttributeError`.
@@ -38,6 +51,13 @@
     3. Re-positioned dismissible alert banners (`#guidedTourBanner`, `#candidateAlertStrip`, `#noObsBanner`) to `top-28` to prevent stacking on the time-step HUD.
     4. Verified in `tests/test_ui_contract.py::test_issue_40_viewport_hud_deconfliction_contract`.
   - **Verification:** 47/47 CI unit and contract tests passing; clean ruff checks. Closed on GitHub.
+- **[🎨 TASK DISPATCHED: IMPROVE UI/UX READABILITY & TYPOGRAPHY SCALE (@coolodu)]**
+  - **Issue / Ticket:** [TASK-007](file:///m:/NASA%20Space%20Apps/07%20-%20Team%20Memory%20&%20Sync/TASK_DISPATCH/inbox/TASK-007_coolodu.md) | [1-Click GitHub Issue Submission](https://github.com/joker0210G/spherex-hunter/issues/new?title=Improve+UI%2FUX+Readability+%26+Typography+Scale%3A+Enlarge+Microscopic+9px%2F10px+Text+for+Researchers+%26+Newbies&labels=track%3Aweb-frontend%2Crole%3Acoolodu%2Cresource%3Astandard%2Cstatus%3Aneeds-refinement)
+  - **Requester:** `@jokerodu` / Citizen Feedback | **Assigned To:** `@coolodu` (`coolodu/web-frontend`)
+  - **Core Focus:**
+    - Refactor microscopic typography (`text-[9px]` & `text-[10px]`) in the SPHEREx spectral control bar, observation honesty notice banner, and molecular absorption reference table.
+    - Provide comfortable $\ge 11\text{px}$–$13\text{px}$ accessible font scales, enhanced contrast ratios, ergonomic touch/click padding (`px-3 py-1.5`), and responsive flexbox wrapping so researchers can clearly read quantitative wavelengths/fluxes and citizen science newcomers are not overwhelmed.
+  - **Status:** Dispatched to `@coolodu` inbox (`TASK-007_coolodu.md`). Under strict team guardrails, assigned directly to `@coolodu` for execution.
 - **[🎉 MASTER INTEGRATION COMPLETE ON `main`: `coolodu/web-frontend` MERGED & 100% GREEN TESTS]**
   - **Commit:** Integrated `coolodu/web-frontend` into `main` (commit `0a879ee`).
   - **Capabilities Integrated:**
