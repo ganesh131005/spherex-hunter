@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🛡️ PERSISTENT ZERO-NOISE CIRCUIT BREAKER & SINGLE-FLIGHT TAP ENGINE (@jokerodu)]**
+  - **Issue & Symptom:** Addressed startup thundering-herd error cascades and multiline `urllib3` connection pool dumps when Uvicorn restarts with NASA IRSA TAP returning 502 and ESA Gaia TAP timing out.
+  - **Disk-Backed Persistent Circuit State:** Implemented `backend/cache/circuit_state.json` persisting `irsa_tap_cooldown` and `esa_gaia_cooldown` across server restarts and Uvicorn reloads. If an archive was offline before restart, the circuit remains OPEN immediately on startup, eliminating the cold start timeout.
+  - **Single-Flight Host Locks:** Implemented double-checked mutual exclusion gates (`_IRSA_PROBE_LOCK`, `_ESA_PROBE_LOCK`). Exactly one worker thread probes an upstream host; sibling threads wait on the lock and bypass the host immediately once tripped, preventing concurrent duplicate proxy errors.
+  - **Clean Zero-Traceback Logging:** Replaced raw exception prints with clean 1-line fallback notices (`_log_tap_fallback`), completely eliminating multi-line urllib traceback spam.
+  - **Verification:** Verified via `tests/test_golden_suite.py` (`test_persistent_circuit_breakers_and_single_flight`), with 100% green pass rate across all suites (58/58 passed).
 - **[⏱️ TIME STEP CONTROLLER CLOSED BY DEFAULT FOR UNOBSTRUCTED VIEWPORT (@coolodu)]**
   - **User Request & Issue:** The Time Step Controller popup toolbar was open by default on application launch, obstructing the top-left area of the astronomical canvas viewport.
   - **Resolution:**

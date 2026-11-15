@@ -15,6 +15,9 @@ import numpy as np
 import pyvo as vo
 
 from backend.services.catalog_engine import (
+    _ESA_PROBE_LOCK,
+    _IRSA_PROBE_LOCK,
+    _log_tap_fallback,
     _make_timeout_session,
     _query_vizier_tsv,
     _safe_float,
@@ -140,24 +143,28 @@ def query_gaia_dr3(
 
     # 3. Primary: ESA Gaia TAP -> Fallback: NASA IRSA TAP -> Fallback: Local catalog_gaia cache -> Fallback: Harvard CfA VizieR
     if is_esa_gaia_available():
-        try:
-            esa_svc = vo.dal.TAPService(ESA_GAIA_TAP_URL, session=_make_timeout_session(timeout))
-            res = esa_svc.run_sync(f"{select_cols}\nFROM gaiadr3.gaia_source\n{where_clause}")
-            sources = _parse_gaia_rows(res)
-        except Exception as esa_err:
-            trip_esa_gaia_circuit(60.0)
-            print(f"ESA Gaia TAP query failed for RA {ra}, Dec {dec}, circuit open for 60s: {esa_err}")
+        with _ESA_PROBE_LOCK:
+            if is_esa_gaia_available():
+                try:
+                    esa_svc = vo.dal.TAPService(ESA_GAIA_TAP_URL, session=_make_timeout_session(min(timeout, 1.8)))
+                    res = esa_svc.run_sync(f"{select_cols}\nFROM gaiadr3.gaia_source\n{where_clause}")
+                    sources = _parse_gaia_rows(res)
+                except Exception as esa_err:
+                    trip_esa_gaia_circuit(60.0)
+                    _log_tap_fallback("ESA Gaia", str(esa_err), "NASA IRSA / Harvard VizieR")
 
     if not sources and is_irsa_tap_available():
-        try:
-            archive_host = "NASA/IPAC Infrared Science Archive (IRSA TAP)"
-            cache_tier = "LIVE_IRSA_TAP"
-            irsa_svc = vo.dal.TAPService(IRSA_TAP_URL, session=_make_timeout_session(timeout))
-            res = irsa_svc.run_sync(f"{select_cols}\nFROM gaia_dr3_source\n{where_clause}")
-            sources = _parse_gaia_rows(res)
-        except Exception as irsa_err:
-            trip_irsa_tap_circuit(60.0)
-            print(f"NASA IRSA Gaia TAP query failed for RA {ra}, Dec {dec}, circuit open for 60s: {irsa_err}")
+        with _IRSA_PROBE_LOCK:
+            if is_irsa_tap_available():
+                try:
+                    archive_host = "NASA/IPAC Infrared Science Archive (IRSA TAP)"
+                    cache_tier = "LIVE_IRSA_TAP"
+                    irsa_svc = vo.dal.TAPService(IRSA_TAP_URL, session=_make_timeout_session(min(timeout, 2.0)))
+                    res = irsa_svc.run_sync(f"{select_cols}\nFROM gaia_dr3_source\n{where_clause}")
+                    sources = _parse_gaia_rows(res)
+                except Exception as irsa_err:
+                    trip_irsa_tap_circuit(60.0)
+                    _log_tap_fallback("NASA IRSA Gaia", str(irsa_err), "Harvard CfA VizieR")
 
     if not sources:
         alt_cache_path = os.path.join(_CATALOG_GAIA_CACHE_DIR, f"gaia_{disk_key}.json")
