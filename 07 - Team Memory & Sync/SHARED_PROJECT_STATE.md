@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🛡️ CI & TEST PERMANENT FIX: PASSED 33/33 TARGET TESTS & ZERO ASYNCIO DEPRECATIONS]**
+  - **Pytest-Asyncio Fixture Loop Scope Fix:** Explicitly configured `asyncio_mode = "auto"` and `asyncio_default_fixture_loop_scope = "function"` in `pyproject.toml` (with config warning filter for non-asyncio environments), eliminating `PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset` on Python 3.12+ / pytest-asyncio in GitHub CI.
+  - **Authentic Spectral Bandpass Matching in Test Assertion:** Updated `tests/test_scene_and_metadata.py` to match the realistic astrophysics of WISE 0855 (AllWISE W2 at $4.60\,\mu\text{m}$ + SPHEREx Band 6 Stack at $4.60\,\mu\text{m}$, which is a valid matched passband pair `valid_bands is True`), while correctly checking band mismatch on Barnard's Star (2MASS $1.25\,\mu\text{m}$ vs SPHEREx $2.10\,\mu\text{m}$, `valid_bands is False`).
+  - **Full 5-Branch Synchronization:** Pushed cleanly across `main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, and `astrodu/ui-story-pitch`.
+  - **Verification:** 33/33 unit tests passing 100% green with 0 ruff errors.
 - **[🔬 102-BAND INFORMATION BAR MERGED INTO SPECTRUM TOOLBAR (@coolodu)]**
   - **Feature:** Unified the 102-Band Information Bar and direct channel selector into `#dockPanelSpectrum`'s top toolbar, anchoring it directly adjacent to the 6-Array selector and 17-channel in-array slider.
   - **Enhancements Implemented:**
