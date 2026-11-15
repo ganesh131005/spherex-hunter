@@ -23,7 +23,8 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from backend.api_v1 import make_request_id, router as api_v1_router
+from backend.api_v1 import make_request_id
+from backend.api_v1 import router as api_v1_router
 from backend.models_v1 import ProblemDetails
 from backend.services.catalog_engine import (
     crossmatch_photometry,

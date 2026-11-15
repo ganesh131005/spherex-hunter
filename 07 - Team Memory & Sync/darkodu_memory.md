@@ -3,11 +3,16 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Cleanly merged `origin/main` into `darkodu/astro-backend`, resolved all conflicts (verification service, FastAPI endpoints, shared state, and unified UI), validated with 44/44 backend/contract tests and UI contract suites passing, and pushed to GitHub (`origin darkodu/astro-backend`).
+- **Current Task:** Rectified CI Ruff import formatting in `backend/main.py` on `darkodu/astro-backend` (I001 organized imports fix); validated 100% clean ruff check and all 33 CI unit tests passing.
 - **Next Task:** Await teammate sync and manual inspection from team lead.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Rectified CI Ruff Import Formatting in `backend/main.py`:
+  - Resolved `I001 [*] Import block is un-sorted or un-formatted` caused during conflict resolution in `backend/main.py`.
+  - Split `from backend.api_v1 import make_request_id, router as api_v1_router` into sorted imports.
+  - Validated with `ruff check backend tests` (0 errors) and all 33 CI unit tests passing in 3.0s.
+  - Pushed to `origin darkodu/astro-backend`.
 - [x] Integrated `origin/main` into `darkodu/astro-backend` & Pushed to Remote GitHub:
   - Fetched and cleanly merged `origin/main` (commit `eb8b3c8`), incorporating all recent features: Dark/Light Observatory Theme (#19), Actionable Friendly Error Banners & Retry (#20), Previous Analyses / Investigation Session Persistence (#21), Save Session Snapshot & CRUD (#22), 4-Epoch VCR Flipbook (#24), and IndexedDB LRU texture cache (#30).
   - Resolved conflicts in `backend/services/verification_service.py`: unified `PLANET_X_CANDIDATE` verdict contract with fine-grained `evidence_tier` and infrared-exclusive benchmark awareness.
