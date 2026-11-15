@@ -1692,15 +1692,117 @@
         </div>
       </div>
 
-      <!-- PANEL 3: LIGHT CURVE (Multi-Epoch Historical Flux) -->
-      <div id="dockPanelLightCurve" class="h-full hidden px-4 py-2 flex items-center gap-4">
-        <div class="flex-1 h-full relative">
-          <canvas id="lightCurveChart"></canvas>
+      <!-- PANEL 3: LIGHT CURVE (Multi-Epoch Historical Flux & Time-Domain Analysis) -->
+      <div id="dockPanelLightCurve" class="h-full hidden px-3 py-1.5 flex flex-col gap-1.5 overflow-hidden">
+        <!-- Top Toolbar: Selected Point Coords, Band Filters, Mode Toggles & Phase Controls -->
+        <div class="flex items-center justify-between gap-2 bg-space-950/90 px-2.5 py-1 rounded-lg border border-space-700/80 shrink-0 text-xs font-mono">
+          <!-- Left: Selected Target Coordinate & Reset -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="flex items-center gap-1 text-cyan-400 font-bold text-[11px]">
+              <i data-lucide="crosshair" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span id="lcTargetLabel">Target: Field Center</span>
+            </span>
+            <span id="lcTargetCoords" class="text-gray-300 font-mono text-[10px] bg-space-900 px-1.5 py-0.5 rounded border border-space-700">α=133.795°, δ=-7.245°</span>
+            <button id="btnResetLCTarget" type="button" onclick="resetLightCurveToFieldCenter()" class="px-1.5 py-0.5 rounded blender-btn text-[10px] text-gray-400 hover:text-white transition" title="Reset Light Curve to Viewport Field Center">Reset</button>
+            <span id="lcFetchLoading" class="hidden text-amber-400 text-[10px] font-mono animate-pulse flex items-center gap-1">
+              <i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Fetching...
+            </span>
+          </div>
+
+          <!-- Center: Multi-Bandpass Filter Selector Pills -->
+          <div class="flex items-center gap-1 bg-space-900/90 p-0.5 rounded-lg border border-space-700" id="lcBandFilters">
+            <span class="text-gray-400 text-[10px] uppercase font-bold px-1.5">Band:</span>
+            <button type="button" onclick="setLightCurveBandFilter('ALL')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-cyan-600 text-white" data-band="ALL" title="Show All Bands Combined">All</button>
+            <button type="button" onclick="setLightCurveBandFilter('W2')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-cyan-300 hover:text-white" data-band="W2" title="WISE W2 / NEOWISE 4.6 µm">W2 (4.6µm)</button>
+            <button type="button" onclick="setLightCurveBandFilter('W1')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-emerald-300 hover:text-white" data-band="W1" title="WISE W1 3.4 µm">W1 (3.4µm)</button>
+            <button type="button" onclick="setLightCurveBandFilter('Ks')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-amber-300 hover:text-white" data-band="Ks" title="2MASS Ks 2.15 µm">Ks (2.15µm)</button>
+            <button type="button" onclick="setLightCurveBandFilter('SPHEREx')" class="lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-purple-300 hover:text-white" data-band="SPHEREx" title="SPHEREx DR1 4.6 µm">SPHEREx</button>
+          </div>
+
+          <!-- Right: Mode Switcher (Chronological vs Phase Fold) & Axis Format -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <!-- Time Axis Unit (Year vs MJD) -->
+            <button id="btnToggleLCTimeUnit" type="button" onclick="toggleLightCurveTimeUnit()" class="px-2 py-0.5 rounded blender-btn text-[10px] font-mono text-gray-300 hover:text-white border border-space-700" title="Toggle X-Axis between Calendar Year and Modified Julian Date (MJD)">
+              Axis: <span id="lcTimeUnitLabel" class="text-cyan-300 font-bold">Year</span>
+            </button>
+
+            <!-- Mode Toggle (Time vs Phase Fold) -->
+            <div class="flex items-center gap-0.5 bg-space-900 p-0.5 rounded border border-space-700">
+              <button id="btnLCModeTime" type="button" onclick="setLightCurveMode('time')" class="px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-blender-blue text-white" title="Chronological Multi-Epoch Time Series">Time Series</button>
+              <button id="btnLCModePhase" type="button" onclick="setLightCurveMode('phase')" class="px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white" title="Fold Light Curve by Trial Period (0 to 2 Phase Cycles)">Phase Fold</button>
+            </div>
+
+            <!-- Phase Period Controls (shown when in phase fold mode) -->
+            <div id="lcPhaseControls" class="hidden flex items-center gap-1 bg-space-900 px-1.5 py-0.5 rounded border border-purple-500/40">
+              <span class="text-purple-300 text-[10px] font-bold">P:</span>
+              <input id="lcPeriodInput" type="number" step="0.01" min="0.01" value="1.00" class="w-14 bg-space-950 text-purple-200 text-[10px] font-mono px-1 py-0.5 rounded border border-space-700 text-center focus:outline-none focus:border-purple-400" title="Trial Period in Days">
+              <span class="text-gray-400 text-[9px]">d</span>
+              <button type="button" onclick="stepLightCurvePeriod(-0.1)" class="px-1 py-0.2 rounded blender-btn text-[9px] text-gray-300 hover:text-white" title="Decrease Period by 0.1d">-0.1</button>
+              <button type="button" onclick="stepLightCurvePeriod(0.1)" class="px-1 py-0.2 rounded blender-btn text-[9px] text-gray-300 hover:text-white" title="Increase Period by 0.1d">+0.1</button>
+              <button id="btnAutoDetectPeriod" type="button" onclick="autoDetectLightCurvePeriod()" class="px-1.5 py-0.5 rounded bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-300 text-[9px] font-bold transition flex items-center gap-0.5" title="Run fast Lomb-Scargle period finder">
+                <i data-lucide="sparkles" class="w-2.5 h-2.5 text-purple-400"></i> Auto
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="w-48 bg-space-950 p-2 rounded border border-space-700 font-mono text-[10px] space-y-1 shrink-0">
-          <div class="text-gray-400 font-bold uppercase text-[9px] text-amber-400">Photometric History</div>
-          <div class="text-gray-300 text-[10px] font-sans">
-            Evaluates secular variability vs stationary constant flux across the 26.2-year baseline.
+
+        <!-- Main Content Area: Chart Canvas (Left) + Telemetry & Astrophysics Sidebar (Right) -->
+        <div class="flex-1 flex items-stretch gap-3 min-h-0 relative">
+          <!-- Canvas Container -->
+          <div class="flex-1 h-full relative bg-space-950/40 rounded-lg border border-space-800/80 overflow-hidden">
+            <canvas id="lightCurveChart"></canvas>
+            <!-- Overlay Notice if point has no IR matches -->
+            <div id="lcEmptyNotice" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-space-950/85 backdrop-blur-xs font-mono text-center p-3">
+              <i data-lucide="info" class="w-5 h-5 text-amber-400 mb-1"></i>
+              <span class="text-xs text-amber-300 font-bold" id="lcEmptyNoticeTitle">No Historical Photometry at this Point</span>
+              <span class="text-[10px] text-gray-400 max-w-sm mt-0.5">Click any celestial source, star, or moving candidate in the viewport to retrieve its multi-epoch light curve.</span>
+            </div>
+          </div>
+
+          <!-- Telemetry & Variability Analytics Sidebar -->
+          <div class="w-56 bg-space-950 p-2 rounded-lg border border-space-700 font-mono text-[10px] space-y-1.5 shrink-0 flex flex-col justify-between">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between border-b border-space-800 pb-1">
+                <span class="text-amber-400 font-bold uppercase tracking-wider text-[9px]">Variability Analytics</span>
+                <span id="lcSourceCountBadge" class="text-gray-400 text-[9px]">0 epochs</span>
+              </div>
+              <div class="space-y-1 text-[10px]">
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Baseline (Δt):</span>
+                  <span id="lcStatBaseline" class="text-white font-bold">26.2 yr</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Amplitude (Δm):</span>
+                  <span id="lcStatAmplitude" class="text-cyan-300 font-bold">-- mag</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-400">Mean Mag:</span>
+                  <span id="lcStatMeanMag" class="text-gray-200 font-bold">--</span>
+                </div>
+                <div class="flex items-center justify-between" title="Reduced Chi-Square test against constant flux hypothesis. Values >> 1 indicate physical variability!">
+                  <span class="text-gray-400">Const-Flux χ²ᵣ:</span>
+                  <span id="lcStatChi2" class="text-emerald-400 font-bold">--</span>
+                </div>
+                <div class="flex items-center justify-between" title="Stetson J variability index (positive = correlated multi-band flux excursions)">
+                  <span class="text-gray-400">Stetson Index J:</span>
+                  <span id="lcStatStetson" class="text-purple-300 font-bold">--</span>
+                </div>
+                <div id="lcPeriodStatRow" class="hidden flex items-center justify-between border-t border-space-800 pt-1">
+                  <span class="text-purple-300">Period (P):</span>
+                  <span id="lcStatPeriod" class="text-white font-bold">-- d</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer: Download CSV & Instructions -->
+            <div class="border-t border-space-800 pt-1.5 space-y-1">
+              <button id="btnExportLCCSV" type="button" onclick="exportLightCurveCSV()" class="w-full py-1 rounded bg-space-900 hover:bg-space-800 border border-cyan-500/40 text-cyan-300 hover:text-white text-[10px] font-bold font-mono transition flex items-center justify-center gap-1.5 shadow-sm" title="Export Light Curve Table in AAVSO / Astropy CSV format">
+                <i data-lucide="download" class="w-3 h-3 text-cyan-400"></i> Export CSV Table
+              </button>
+              <div class="text-[9px] text-gray-500 text-center font-sans">
+                Click epoch point to sync viewport flipbook
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -3844,6 +3946,61 @@
       ctx.restore();
     }
 
+    // Dynamic Selected Point Reticle for Viewport Light Curve Fetching
+    let selectedSkyPoint = null; // { ra: number, dec: number, label: string }
+    window.selectedSkyPoint = selectedSkyPoint;
+
+    function drawSelectedPointReticle(ctx, pixelsPerArcmin) {
+      if (!selectedSkyPoint) return;
+      const proj = projectSkyToTangentialArcmin(selectedSkyPoint.ra, selectedSkyPoint.dec, camera.ra, camera.dec);
+      const sx = -proj.xiArcmin * pixelsPerArcmin;
+      const sy = -proj.etaArcmin * pixelsPerArcmin;
+      const zoom = camera.zoom || 1.0;
+
+      ctx.save();
+      const r = 11 / zoom;
+      ctx.strokeStyle = '#22d3ee';
+      ctx.lineWidth = 2.0 / zoom;
+      ctx.shadowColor = '#06b6d4';
+      ctx.shadowBlur = 8 / zoom;
+
+      // Reticle Diamond
+      ctx.beginPath();
+      ctx.moveTo(sx, sy - r);
+      ctx.lineTo(sx + r, sy);
+      ctx.lineTo(sx, sy + r);
+      ctx.lineTo(sx - r, sy);
+      ctx.closePath();
+      ctx.stroke();
+
+      // Center crosshair ticks
+      const tick = 4.5 / zoom;
+      ctx.beginPath();
+      ctx.moveTo(sx - r - tick, sy); ctx.lineTo(sx - r, sy);
+      ctx.moveTo(sx + r, sy); ctx.lineTo(sx + r + tick, sy);
+      ctx.moveTo(sx, sy - r - tick); ctx.lineTo(sx, sy - r);
+      ctx.moveTo(sx, sy + r); ctx.lineTo(sx, sy + r + tick);
+      ctx.stroke();
+
+      // Central dot
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 2.5 / zoom, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Label badge above reticle
+      ctx.shadowBlur = 0;
+      const label = selectedSkyPoint.label || 'Target Point';
+      ctx.font = `bold ${Math.max(9, Math.min(13, 10 / zoom))}px monospace`;
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(8, 12, 22, 0.85)';
+      ctx.fillRect(sx - tw / 2 - (4 / zoom), sy - r - (16 / zoom), tw + (8 / zoom), 13 / zoom);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(label, sx - tw / 2, sy - r - (6 / zoom));
+
+      ctx.restore();
+    }
+
     function drawFrame() {
       const w = canvas.width;
       const h = canvas.height;
@@ -3945,6 +4102,7 @@
       // 6. AI Field Scanner Dipole Markers & Angular Distance Ruler
       drawAiDetectedCandidates(ctx, pixelsPerArcmin);
       drawMeasurementRuler(ctx, pixelsPerArcmin);
+      drawSelectedPointReticle(ctx, pixelsPerArcmin);
 
       ctx.restore();
     }
@@ -6767,6 +6925,9 @@
           const cy = - ddecCenter * pixelsPerArcmin;
           if (Math.hypot(worldX - cx, worldY - cy) <= 35 / camera.zoom) {
             lockOntoDetectedChange(chg);
+            selectedSkyPoint = { ra: chg.raCenter, dec: chg.decCenter, label: 'Candidate Dipole' };
+            fetchPointLightCurve(chg.raCenter, chg.decCenter, 'Candidate Dipole');
+            drawFrame();
             return;
           }
         }
@@ -6777,6 +6938,7 @@
         const obsEpochYr = getActiveObservationEpochYear();
         let nearestStar = null;
         let nearestDist = 28 / camera.zoom;
+        let nearestProp = null;
 
         for (let i = 0; i < gaiaSources.length; i++) {
           const src = gaiaSources[i];
@@ -6788,6 +6950,7 @@
           if (dist < nearestDist) {
             nearestDist = dist;
             nearestStar = src;
+            nearestProp = prop;
           }
         }
 
@@ -6800,16 +6963,22 @@
           playTargetLockChime();
           const pmStr = nearestStar.total_pm_mas_yr ? `${(nearestStar.total_pm_mas_yr / 1000).toFixed(2)}″/yr` : '0.00″/yr';
           showToast(`Inspecting Gaia Source ...${nearestStar.source_id.slice(-6)} (G: ${nearestStar.phot_g_mag !== null ? nearestStar.phot_g_mag.toFixed(1) : '?'}, μ: ${pmStr})`, 'info');
+          const starLabel = `Gaia ...${nearestStar.source_id.slice(-6)}`;
+          selectedSkyPoint = { ra: nearestProp ? nearestProp.ra : nearestStar.ra, dec: nearestProp ? nearestProp.dec : nearestStar.dec, label: starLabel };
+          fetchPointLightCurve(selectedSkyPoint.ra, selectedSkyPoint.dec, starLabel);
           drawFrame();
           return;
         }
       }
 
-      // If user clicked empty space with select tool, report sky coordinate
+      // If user clicked empty space with select tool, report sky coordinate and fetch point light curve
       if (activeTool === 'select') {
         const clickRa = camera.ra - (worldX / pixelsPerArcmin / cosDec) / 60.0;
         const clickDec = camera.dec - (worldY / pixelsPerArcmin) / 60.0;
+        selectedSkyPoint = { ra: clickRa, dec: clickDec, label: 'Selected Reticle' };
         showToast(`Reticle Selected: α = ${clickRa.toFixed(5)}°, δ = ${clickDec.toFixed(5)}°`, 'info');
+        fetchPointLightCurve(clickRa, clickDec, 'Selected Reticle');
+        drawFrame();
       }
     });
 
@@ -8332,44 +8501,435 @@
       }, 3000);
     }
 
-    // LIGHT CURVE CHART (Chart.js) & MULTI-SURVEY CROSS-MATCH SYNTHESIS
+    // =========================================================================
+    // LIGHT CURVE TIME-DOMAIN ENGINE (Multi-Band, Phase-Fold, Error Bars, Reticle)
+    // =========================================================================
     let lightCurveChart = null;
     let latestMultiEpochLC = null;
+    let lcActiveBandFilter = 'ALL';
+    let lcDisplayMode = 'time'; // 'time' or 'phase'
+    let lcTimeUnit = 'year';    // 'year' or 'mjd'
+    let lcTrialPeriod = 1.0;    // Days for phase folding
+    let lcFetchAbortCtrl = null;
+
+    // Custom Chart.js Plugin for Observational Error Bars (±1σ)
+    const lcErrorBarPlugin = {
+      id: 'lcErrorBars',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const yAxis = chart.scales.y;
+        if (!yAxis) return;
+
+        chart.data.datasets.forEach((dataset, datasetIdx) => {
+          const meta = chart.getDatasetMeta(datasetIdx);
+          if (!meta || meta.hidden) return;
+          const pts = dataset.rawEpochPoints;
+          if (!pts || !Array.isArray(pts)) return;
+
+          meta.data.forEach((element, idx) => {
+            const pt = pts[idx];
+            if (!pt || pt.is_upper_limit || pt.mag === null || pt.mag === undefined) return;
+            const mag = Number(pt.mag);
+            const err = Number(pt.mag_err) || 0.05;
+            const yTop = yAxis.getPixelForValue(mag - err);
+            const yBottom = yAxis.getPixelForValue(mag + err);
+            const x = element.x;
+            const capWidth = 3.5;
+
+            ctx.save();
+            ctx.strokeStyle = dataset.borderColor || '#38bdf8';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            // Whisker
+            ctx.moveTo(x, yTop);
+            ctx.lineTo(x, yBottom);
+            // Caps
+            ctx.moveTo(x - capWidth, yTop);
+            ctx.lineTo(x + capWidth, yTop);
+            ctx.moveTo(x - capWidth, yBottom);
+            ctx.lineTo(x + capWidth, yBottom);
+            ctx.stroke();
+            ctx.restore();
+          });
+        });
+      }
+    };
+
+    function setLightCurveBandFilter(band) {
+      lcActiveBandFilter = band;
+      document.querySelectorAll('#lcBandFilters .lc-band-pill').forEach(btn => {
+        const b = btn.getAttribute('data-band');
+        if (b === band) {
+          btn.className = 'lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-cyan-600 text-white shadow-sm';
+        } else {
+          btn.className = 'lc-band-pill px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white';
+        }
+      });
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.setLightCurveBandFilter = setLightCurveBandFilter;
+
+    function setLightCurveMode(mode) {
+      lcDisplayMode = mode;
+      const btnTime = document.getElementById('btnLCModeTime');
+      const btnPhase = document.getElementById('btnLCModePhase');
+      const phaseControls = document.getElementById('lcPhaseControls');
+      const periodStatRow = document.getElementById('lcPeriodStatRow');
+
+      if (mode === 'phase') {
+        if (btnTime) btnTime.className = 'px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white';
+        if (btnPhase) btnPhase.className = 'px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-purple-600 text-white';
+        if (phaseControls) phaseControls.classList.remove('hidden');
+        if (periodStatRow) periodStatRow.classList.remove('hidden');
+      } else {
+        if (btnTime) btnTime.className = 'px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-blender-blue text-white';
+        if (btnPhase) btnPhase.className = 'px-2 py-0.5 rounded text-[10px] font-bold font-mono transition bg-space-800 text-gray-400 hover:text-white';
+        if (phaseControls) phaseControls.classList.add('hidden');
+        if (periodStatRow) periodStatRow.classList.add('hidden');
+      }
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.setLightCurveMode = setLightCurveMode;
+
+    function toggleLightCurveTimeUnit() {
+      lcTimeUnit = (lcTimeUnit === 'year') ? 'mjd' : 'year';
+      const lbl = document.getElementById('lcTimeUnitLabel');
+      if (lbl) lbl.innerText = lcTimeUnit === 'year' ? 'Year' : 'MJD';
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.toggleLightCurveTimeUnit = toggleLightCurveTimeUnit;
+
+    function stepLightCurvePeriod(delta) {
+      const input = document.getElementById('lcPeriodInput');
+      if (!input) return;
+      let val = Math.max(0.01, (parseFloat(input.value) || 1.0) + delta);
+      val = Math.round(val * 100) / 100;
+      input.value = val.toFixed(2);
+      lcTrialPeriod = val;
+      const statPeriod = document.getElementById('lcStatPeriod');
+      if (statPeriod) statPeriod.innerText = `${val.toFixed(2)} d`;
+      if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
+    }
+    window.stepLightCurvePeriod = stepLightCurvePeriod;
+
+    function autoDetectLightCurvePeriod() {
+      if (!latestMultiEpochLC || latestMultiEpochLC.length < 3) {
+        showToast("Insufficient multi-epoch points for Lomb-Scargle period detection", "warning");
+        return;
+      }
+      const valid = latestMultiEpochLC.filter(p => !p.is_upper_limit && p.mag !== null && p.mjd);
+      const times = valid.map(p => Number(p.mjd));
+      const mags = valid.map(p => Number(p.mag));
+
+      const bestP = computeLombScargleBestPeriod(times, mags);
+      lcTrialPeriod = bestP;
+      const input = document.getElementById('lcPeriodInput');
+      if (input) input.value = bestP.toFixed(2);
+      const statPeriod = document.getElementById('lcStatPeriod');
+      if (statPeriod) statPeriod.innerText = `${bestP.toFixed(2)} d`;
+      setLightCurveMode('phase');
+      showToast(`Lomb-Scargle Best Period Detected: P = ${bestP.toFixed(2)} days`, 'success');
+    }
+    window.autoDetectLightCurvePeriod = autoDetectLightCurvePeriod;
+
+    function computeLombScargleBestPeriod(times, mags) {
+      if (!times || times.length < 3) return 1.0;
+      const n = times.length;
+      const meanY = mags.reduce((a, b) => a + b, 0) / n;
+      let varY = 0;
+      for (let i = 0; i < n; i++) varY += (mags[i] - meanY) ** 2;
+      if (varY <= 1e-9) return 1.0;
+
+      const minP = 0.2;
+      const maxP = 500.0;
+      const nFreq = 250;
+      let bestP = 1.0;
+      let maxPower = -1;
+
+      for (let k = 0; k < nFreq; k++) {
+        const p = minP * Math.pow(maxP / minP, k / (nFreq - 1));
+        const omega = (2 * Math.PI) / p;
+
+        let sumSin2 = 0;
+        let sumCos2 = 0;
+        for (let i = 0; i < n; i++) {
+          sumSin2 += Math.sin(2 * omega * times[i]);
+          sumCos2 += Math.cos(2 * omega * times[i]);
+        }
+        const tau = Math.atan2(sumSin2, sumCos2) / (2 * omega);
+
+        let cosSum = 0;
+        let sinSum = 0;
+        let cos2Sum = 0;
+        let sin2Sum = 0;
+
+        for (let i = 0; i < n; i++) {
+          const c = Math.cos(omega * (times[i] - tau));
+          const s = Math.sin(omega * (times[i] - tau));
+          const dy = mags[i] - meanY;
+          cosSum += dy * c;
+          sinSum += dy * s;
+          cos2Sum += c * c;
+          sin2Sum += s * s;
+        }
+
+        const power = (0.5 / varY) * (
+          (cosSum * cosSum) / (cos2Sum || 1e-6) +
+          (sinSum * sinSum) / (sin2Sum || 1e-6)
+        );
+
+        if (power > maxPower) {
+          maxPower = power;
+          bestP = p;
+        }
+      }
+      return Number(bestP.toFixed(2));
+    }
+
+    function computeVariabilityStatistics(points) {
+      const detPts = (points || []).filter(p => !p.is_upper_limit && p.mag !== null && p.mag !== undefined);
+      if (detPts.length === 0) {
+        return { count: 0, baselineYr: 0, amplitude: null, meanMag: null, chi2Red: null, stetsonJ: null };
+      }
+
+      const mjds = detPts.map(p => Number(p.mjd) || 0).filter(m => m > 0);
+      const mags = detPts.map(p => Number(p.mag));
+      const errs = detPts.map(p => Math.max(0.01, Number(p.mag_err) || 0.05));
+
+      const minMjd = Math.min(...mjds);
+      const maxMjd = Math.max(...mjds);
+      const baselineYr = mjds.length > 1 ? Number(((maxMjd - minMjd) / 365.25).toFixed(1)) : 0;
+
+      const minMag = Math.min(...mags);
+      const maxMag = Math.max(...mags);
+      const amplitude = Number((maxMag - minMag).toFixed(2));
+
+      // Weighted mean magnitude
+      let sumWeight = 0;
+      let sumWeightedMag = 0;
+      for (let i = 0; i < detPts.length; i++) {
+        const w = 1.0 / (errs[i] * errs[i]);
+        sumWeight += w;
+        sumWeightedMag += w * mags[i];
+      }
+      const meanMag = sumWeight > 0 ? sumWeightedMag / sumWeight : mags[0];
+
+      // Reduced Chi-Square against constant flux
+      let chi2 = 0;
+      for (let i = 0; i < detPts.length; i++) {
+        const diff = mags[i] - meanMag;
+        chi2 += (diff * diff) / (errs[i] * errs[i]);
+      }
+      const dof = Math.max(1, detPts.length - 1);
+      const chi2Red = Number((chi2 / dof).toFixed(2));
+
+      // Stetson J index
+      let stetsonJ = 0;
+      if (detPts.length >= 2) {
+        const n = detPts.length;
+        const factor = Math.sqrt(n / (n - 1));
+        for (let i = 0; i < n; i++) {
+          const delta = factor * (mags[i] - meanMag) / errs[i];
+          stetsonJ += Math.sign(delta) * Math.sqrt(Math.abs(delta));
+        }
+        stetsonJ = Number((stetsonJ / n).toFixed(2));
+      } else {
+        stetsonJ = 0.00;
+      }
+
+      return {
+        count: detPts.length,
+        baselineYr,
+        amplitude,
+        meanMag: Number(meanMag.toFixed(2)),
+        chi2Red,
+        stetsonJ
+      };
+    }
+
+    async function fetchPointLightCurve(ra, dec, label = 'Selected Point') {
+      const numRA = parseFloat(ra);
+      const numDec = parseFloat(dec);
+      if (isNaN(numRA) || isNaN(numDec)) return;
+
+      const lblEl = document.getElementById('lcTargetLabel');
+      const coordEl = document.getElementById('lcTargetCoords');
+      const loadingEl = document.getElementById('lcFetchLoading');
+      const emptyNotice = document.getElementById('lcEmptyNotice');
+
+      if (lblEl) lblEl.innerText = `Target: ${label}`;
+      if (coordEl) coordEl.innerText = `α=${numRA.toFixed(5)}°, δ=${numDec.toFixed(5)}°`;
+      if (loadingEl) loadingEl.classList.remove('hidden');
+      if (emptyNotice) emptyNotice.classList.add('hidden');
+
+      if (lcFetchAbortCtrl) {
+        lcFetchAbortCtrl.abort();
+      }
+      lcFetchAbortCtrl = new AbortController();
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/catalog/crossmatch?ra=${encodeURIComponent(numRA)}&dec=${encodeURIComponent(numDec)}&radius=3.0`, {
+          signal: lcFetchAbortCtrl.signal
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (loadingEl) loadingEl.classList.add('hidden');
+
+        const lcPoints = data.multi_epoch_lightcurve || [];
+        if (lcPoints.length === 0) {
+          if (emptyNotice) {
+            emptyNotice.classList.remove('hidden');
+            const emptyTitle = document.getElementById('lcEmptyNoticeTitle');
+            if (emptyTitle) emptyTitle.innerText = `No Photometry at α=${numRA.toFixed(4)}°, δ=${numDec.toFixed(4)}°`;
+          }
+          updateLightCurveChart([]);
+        } else {
+          if (emptyNotice) emptyNotice.classList.add('hidden');
+          updateLightCurveChart(lcPoints);
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        if (loadingEl) loadingEl.classList.add('hidden');
+        console.warn("fetchPointLightCurve error:", err);
+      }
+    }
+    window.fetchPointLightCurve = fetchPointLightCurve;
+
+    function resetLightCurveToFieldCenter() {
+      selectedSkyPoint = null;
+      drawFrame();
+      fetchPointLightCurve(camera.ra, camera.dec, 'Field Center');
+      showToast("Light curve reset to viewport field center", "info");
+    }
+    window.resetLightCurveToFieldCenter = resetLightCurveToFieldCenter;
+
+    function exportLightCurveCSV() {
+      if (!latestMultiEpochLC || latestMultiEpochLC.length === 0) {
+        showToast("No light curve data available to export", "warning");
+        return;
+      }
+      const targetLabel = document.getElementById('lcTargetLabel')?.innerText || 'Target';
+      const coords = document.getElementById('lcTargetCoords')?.innerText || '';
+
+      let csv = `# TARGET: ${targetLabel} (${coords})\n`;
+      csv += `# CREATED BY: SPHEREx Hunter - Team RIP (NASA Space Apps 2026)\n`;
+      csv += `epoch_label,mjd,year,band,mag,mag_err,is_upper_limit,survey\n`;
+
+      latestMultiEpochLC.forEach(p => {
+        const yr = Number(p.year) || (p.mjd ? (1858.878 + Number(p.mjd) / 365.25).toFixed(3) : '');
+        const magVal = p.is_upper_limit ? (p.upper_limit ?? '') : (p.mag ?? '');
+        const errVal = p.is_upper_limit ? '' : (p.mag_err ?? '0.05');
+        csv += `"${p.epoch_label || ''}",${p.mjd || ''},${yr},"${p.band || ''}",${magVal},${errVal},${p.is_upper_limit ? 'true' : 'false'},"${p.survey || ''}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `spherex_lightcurve_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Exported Light Curve CSV table successfully!", "success");
+    }
+    window.exportLightCurveCSV = exportLightCurveCSV;
 
     function updateLightCurveChart(lcPoints) {
       latestMultiEpochLC = Array.isArray(lcPoints) ? lcPoints : [];
       if (!lightCurveChart) return;
 
-      const validPts = latestMultiEpochLC.filter(p => p && ((p.mag !== null && p.mag !== undefined) || p.is_upper_limit));
-      if (validPts.length > 0) {
-        // Sort chronologically by MJD
-        validPts.sort((a, b) => (Number(a.mjd) || 0) - (Number(b.mjd) || 0));
-        const labels = validPts.map(p => p.epoch_label || p.band || 'Epoch');
-        const detData = validPts.map(p => (!p.is_upper_limit && p.mag !== null) ? p.mag : null);
-        const ulData = validPts.map(p => (p.is_upper_limit && p.upper_limit !== null) ? p.upper_limit : (p.is_upper_limit ? p.mag : null));
+      // Filter by active bandpass
+      let filteredPts = latestMultiEpochLC;
+      if (lcActiveBandFilter !== 'ALL') {
+        filteredPts = latestMultiEpochLC.filter(p => {
+          const b = (p.band || '').toUpperCase();
+          if (lcActiveBandFilter === 'W2') return b.includes('W2');
+          if (lcActiveBandFilter === 'W1') return b.includes('W1');
+          if (lcActiveBandFilter === 'KS') return b.includes('KS') || b.includes('2MASS');
+          if (lcActiveBandFilter === 'SPHEREX') return b.includes('SPHEREX') || b.includes('SPX');
+          return true;
+        });
+      }
 
-        lightCurveChart.data.labels = labels;
+      // Compute & update telemetry stats
+      const stats = computeVariabilityStatistics(filteredPts);
+      const statBaseEl = document.getElementById('lcStatBaseline');
+      const statAmpEl = document.getElementById('lcStatAmplitude');
+      const statMeanEl = document.getElementById('lcStatMeanMag');
+      const statChi2El = document.getElementById('lcStatChi2');
+      const statStetsonEl = document.getElementById('lcStatStetson');
+      const countBadge = document.getElementById('lcSourceCountBadge');
+
+      if (statBaseEl) statBaseEl.innerText = `${stats.baselineYr} yr`;
+      if (statAmpEl) statAmpEl.innerText = stats.amplitude !== null ? `${stats.amplitude} mag` : '--';
+      if (statMeanEl) statMeanEl.innerText = stats.meanMag !== null ? `${stats.meanMag} mag` : '--';
+      if (statChi2El) {
+        statChi2El.innerText = stats.chi2Red !== null ? String(stats.chi2Red) : '--';
+        statChi2El.className = (stats.chi2Red && stats.chi2Red > 3.0) ? 'text-amber-400 font-bold' : 'text-emerald-400 font-bold';
+      }
+      if (statStetsonEl) statStetsonEl.innerText = stats.stetsonJ !== null ? String(stats.stetsonJ) : '--';
+      if (countBadge) countBadge.innerText = `${stats.count} epochs`;
+
+      const validPts = filteredPts.filter(p => p && ((p.mag !== null && p.mag !== undefined) || p.is_upper_limit));
+      if (validPts.length === 0) {
+        lightCurveChart.data.labels = ['No Epochs in Selected Band'];
+        lightCurveChart.data.datasets = [{
+          label: 'Magnitude',
+          data: [],
+          borderColor: '#38bdf8'
+        }];
+        lightCurveChart.update();
+        return;
+      }
+
+      if (lcDisplayMode === 'phase') {
+        // Phase-Fold Mode (Φ ∈ [0.0, 2.0])
+        const periodDays = Math.max(0.01, parseFloat(document.getElementById('lcPeriodInput')?.value) || lcTrialPeriod || 1.0);
+        const t0 = Math.min(...validPts.map(p => Number(p.mjd) || 50000));
+
+        const phasePts = [];
+        validPts.forEach(p => {
+          const mjd = Number(p.mjd) || t0;
+          let phi = ((mjd - t0) / periodDays) % 1.0;
+          if (phi < 0) phi += 1.0;
+
+          // Duplicate point in cycle 2 for visual continuity [1.0, 2.0]
+          phasePts.push({ ...p, phase: phi });
+          phasePts.push({ ...p, phase: phi + 1.0 });
+        });
+
+        phasePts.sort((a, b) => a.phase - b.phase);
+
+        // Separate detections and upper limits
+        const detPts = phasePts.filter(p => !p.is_upper_limit && p.mag !== null);
+        const ulPts = phasePts.filter(p => p.is_upper_limit);
+
+        lightCurveChart.options.scales.x.type = 'linear';
+        lightCurveChart.options.scales.x.min = 0.0;
+        lightCurveChart.options.scales.x.max = 2.0;
+        lightCurveChart.options.scales.x.title = { display: true, text: `Orbital / Pulsational Phase (Φ) [P = ${periodDays.toFixed(2)}d, 2 Cycles]`, color: '#c084fc', font: { size: 9 } };
+
         lightCurveChart.data.datasets = [
           {
-            label: 'IR Detections (mag)',
-            data: detData,
-            borderColor: '#38bdf8',
-            backgroundColor: 'rgba(56, 189, 248, 0.15)',
-            fill: false,
-            tension: 0.15,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            pointBackgroundColor: '#ea7600',
+            label: 'Folded Flux (mag)',
+            data: detPts.map(p => ({ x: Number(p.phase.toFixed(3)), y: p.mag })),
+            rawEpochPoints: detPts,
+            borderColor: '#c084fc',
+            backgroundColor: 'rgba(192, 132, 252, 0.2)',
+            showLine: false,
+            pointRadius: 5.5,
+            pointHoverRadius: 8,
+            pointBackgroundColor: '#a855f7',
             pointBorderColor: '#ffffff',
             borderWidth: 1.5,
-            spanGaps: true
           },
           {
-            label: 'Non-Detection 3σ Upper Limits (mag)',
-            data: ulData,
+            label: 'Non-Detection 3σ Limits',
+            data: ulPts.map(p => ({ x: Number(p.phase.toFixed(3)), y: p.upper_limit ?? p.mag })),
+            rawEpochPoints: ulPts,
             borderColor: '#f43f5e',
             backgroundColor: 'rgba(244, 63, 94, 0.2)',
-            fill: false,
             showLine: false,
             pointRadius: 6,
             pointHoverRadius: 8,
@@ -8378,17 +8938,85 @@
             pointBackgroundColor: '#f43f5e',
             pointBorderColor: '#ffffff',
             borderWidth: 1.5,
-            spanGaps: true
           }
         ];
       } else {
-        lightCurveChart.data.labels = ['Awaiting IR Epoch Photometry'];
-        lightCurveChart.data.datasets = [{
-          label: 'Infrared Magnitude (mag)',
+        // Chronological Time Mode
+        validPts.sort((a, b) => (Number(a.mjd) || 0) - (Number(b.mjd) || 0));
+
+        // Group points by survey bandpass for distinct colors
+        const datasets = [];
+        const bandSpecs = [
+          { key: 'W2', label: 'WISE W2 (4.6 µm)', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.15)', ptColor: '#0891b2' },
+          { key: 'W1', label: 'WISE W1 (3.4 µm)', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', ptColor: '#059669' },
+          { key: 'Ks', label: '2MASS Ks (2.15 µm)', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', ptColor: '#d97706' },
+          { key: 'SPHEREx', label: 'SPHEREx DR1 (4.6 µm)', color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)', ptColor: '#9333ea' },
+        ];
+
+        // Format X values
+        const formatX = (p) => {
+          if (lcTimeUnit === 'mjd') return Number(p.mjd) || 0;
+          return Number(p.year) || Math.round((1858.878 + (Number(p.mjd) || 0) / 365.25) * 10) / 10;
+        };
+
+        bandSpecs.forEach(spec => {
+          const bPts = validPts.filter(p => !p.is_upper_limit && p.mag !== null && (p.band || '').toUpperCase().includes(spec.key.toUpperCase()));
+          if (bPts.length > 0) {
+            datasets.push({
+              label: spec.label,
+              data: bPts.map(p => ({ x: formatX(p), y: p.mag })),
+              rawEpochPoints: bPts,
+              borderColor: spec.color,
+              backgroundColor: spec.bg,
+              fill: false,
+              tension: 0.15,
+              pointRadius: 5.5,
+              pointHoverRadius: 8,
+              pointBackgroundColor: spec.ptColor,
+              pointBorderColor: '#ffffff',
+              borderWidth: 1.5,
+              spanGaps: true
+            });
+          }
+        });
+
+        // Add 3σ Upper limits dataset
+        const ulPts = validPts.filter(p => p.is_upper_limit);
+        if (ulPts.length > 0) {
+          datasets.push({
+            label: '3σ Upper Limits (mag)',
+            data: ulPts.map(p => ({ x: formatX(p), y: p.upper_limit ?? p.mag })),
+            rawEpochPoints: ulPts,
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.2)',
+            showLine: false,
+            pointRadius: 6.5,
+            pointHoverRadius: 9,
+            pointStyle: 'triangle',
+            pointRotation: 180,
+            pointBackgroundColor: '#f43f5e',
+            pointBorderColor: '#ffffff',
+            borderWidth: 1.5
+          });
+        }
+
+        lightCurveChart.options.scales.x.type = 'linear';
+        delete lightCurveChart.options.scales.x.min;
+        delete lightCurveChart.options.scales.x.max;
+        lightCurveChart.options.scales.x.title = {
+          display: true,
+          text: lcTimeUnit === 'year' ? 'Observation Epoch (Calendar Year)' : 'Observation Time (Modified Julian Date, MJD)',
+          color: '#94a3b8',
+          font: { size: 9 }
+        };
+
+        lightCurveChart.data.datasets = datasets.length > 0 ? datasets : [{
+          label: 'Magnitude',
           data: [],
           borderColor: '#38bdf8'
         }];
       }
+
       lightCurveChart.update();
     }
 
@@ -8396,30 +9024,53 @@
       const canvasLC = document.getElementById('lightCurveChart');
       if (!canvasLC || lightCurveChart) return;
       const ctxLC = canvasLC.getContext('2d');
+
       lightCurveChart = new Chart(ctxLC, {
         type: 'line',
+        plugins: [lcErrorBarPlugin],
         data: {
-          labels: ['Loading Epochs...'],
           datasets: [{
             label: 'Infrared Magnitude (mag)',
             data: [],
             borderColor: '#38bdf8',
             backgroundColor: 'rgba(56, 189, 248, 0.15)',
-            fill: false,
-            tension: 0.2,
-            pointRadius: 4,
-            pointBackgroundColor: '#ea7600'
+            pointRadius: 5
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          onClick: (e, elements) => {
+            if (!elements || elements.length === 0) return;
+            const el = elements[0];
+            const ds = lightCurveChart.data.datasets[el.datasetIndex];
+            if (!ds || !ds.rawEpochPoints) return;
+            const pt = ds.rawEpochPoints[el.index];
+            if (!pt) return;
+
+            const yr = Number(pt.year) || Math.round(1858.878 + (Number(pt.mjd) || 0) / 365.25);
+            let frameIdx = 0;
+            if (yr <= 2005) frameIdx = 0;
+            else if (yr <= 2012) frameIdx = 1;
+            else if (yr <= 2020) frameIdx = 2;
+            else frameIdx = 3;
+
+            if (typeof setBlinkFrameFromTimeline === 'function') {
+              setBlinkFrameFromTimeline('A', frameIdx);
+            }
+            showToast(`Synced Viewport to Epoch: ${pt.epoch_label || pt.survey || yr}`, 'info');
+          },
           scales: {
-            x: { ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } } },
+            x: {
+              type: 'linear',
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
             y: {
               reverse: true,
-              title: { display: true, text: 'Mag (Brighter ↑)', color: '#94a3b8', font: { size: 9 } },
-              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+              title: { display: true, text: 'Magnitude (Brighter ↑)', color: '#94a3b8', font: { size: 9 } },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 9 } },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
             }
           },
           plugins: {
@@ -8427,23 +9078,28 @@
               display: true,
               labels: {
                 color: '#94a3b8',
-                boxWidth: 10,
-                font: { family: 'JetBrains Mono', size: 9 }
+                boxWidth: 9,
+                font: { family: 'JetBrains Mono', size: 8.5 }
               }
             },
             tooltip: {
               callbacks: {
                 label: (ctx) => {
-                  const val = ctx.raw;
+                  const ds = lightCurveChart.data.datasets[ctx.datasetIndex];
+                  const pt = ds?.rawEpochPoints ? ds.rawEpochPoints[ctx.dataIndex] : null;
+                  const val = ctx.raw?.y ?? ctx.raw;
                   if (val === null || val === undefined) return '';
-                  if (ctx.datasetIndex === 1) return `> ${val} mag (3σ Upper Limit non-detection)`;
-                  return `${ctx.dataset.label}: ${val} mag`;
+                  if (pt?.is_upper_limit) return `> ${val} mag (3σ Upper Limit non-detection)`;
+                  const errStr = pt?.mag_err ? ` ± ${pt.mag_err}` : '';
+                  const surveyStr = pt?.survey ? ` [${pt.survey}]` : '';
+                  return `${ds.label}: ${val}${errStr} mag${surveyStr}`;
                 }
               }
             }
           }
         }
       });
+
       if (latestMultiEpochLC) updateLightCurveChart(latestMultiEpochLC);
     }
 

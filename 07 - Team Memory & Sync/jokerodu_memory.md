@@ -3,6 +3,12 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Redefined Astronomical Light Curve Tab & Point-Specific Reticle Engine]**:
+  - Transformed `#dockPanelLightCurve` into a full-fledged astronomical time-domain analysis workstation matching NASA/ZTF/AAVSO standards.
+  - Implemented dynamic point selection: clicking any point with Select tool, Gaia star, or candidate dipole draws an authentic cyan reticle diamond on the viewport and dynamically fetches multi-epoch IR photometry (`/api/catalog/crossmatch`) for that coordinate.
+  - Added multi-bandpass filtering (`All`, `W2`, `W1`, `Ks`, `SPHEREx`), custom $\pm 1\sigma$ error bars and $3\sigma$ upper limits, client-side Lomb-Scargle period discovery ($0.2\text{d}-500\text{d}$), double-cycle phase folding $[0.0, 2.0]$, quantitative telemetry ($\Delta t, \Delta m, \chi^2_{\text{red}}, \text{Stetson } J$), and 1-click AAVSO CSV export.
+  - Added bidirectional sync: clicking an epoch on the Chart.js canvas steps the flipbook to that observation frame.
+  - Verified 100% green pass rate across 55/55 primary tests (`test_ui_contract.py`, `test_golden_suite.py`, `test_viewport_overhaul_v2.py`).
 - [x] **[IRSA Global Circuit Breaker & Zero-TAP Fast WCS Fallback]**:
   - Implemented 20-second global circuit breaker (`_IRSA_CIRCUIT_OPEN_UNTIL`) in `backend/services/cutout_engine.py` preventing cascading FinderChart read timeouts during upstream hiccups.
   - Added `allow_live_tap=False` to `_build_degraded_gaia_wcs_fallback()` and `query_gaia_dr3()` in `backend/services/gaia_service.py`, completely eliminating 7–10s blocking ESA/IRSA TAP queries during background tile rendering.

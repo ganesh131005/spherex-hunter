@@ -797,6 +797,85 @@ def test_view_modes_single_tool_icon_and_collective_popup_contract():
     assert "btnViewModesTrigger" in html, "btnViewModesTrigger must have event listeners bound"
 
 
+def test_redefined_light_curve_time_domain_contract():
+    """Validates the redefined Light Curve tab with multi-bandpass filters, dynamic point fetching, phase-folding, and telemetry."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Dock Panel Layout & Target Coordinate Badges
+    lc_panel = soup.find(id="dockPanelLightCurve")
+    assert lc_panel is not None, "Missing #dockPanelLightCurve in bottom dock"
+
+    target_lbl = lc_panel.find(id="lcTargetLabel")
+    assert target_lbl is not None, "Missing #lcTargetLabel for point/reticle tracking"
+
+    target_coords = lc_panel.find(id="lcTargetCoords")
+    assert target_coords is not None, "Missing #lcTargetCoords badge"
+
+    btn_reset = lc_panel.find(id="btnResetLCTarget")
+    assert btn_reset is not None, "Missing #btnResetLCTarget button"
+    assert "resetLightCurveToFieldCenter" in btn_reset.get("onclick", ""), "#btnResetLCTarget must trigger resetLightCurveToFieldCenter()"
+
+    # 2. Multi-Bandpass Filter Selector Pills
+    band_filters = lc_panel.find(id="lcBandFilters")
+    assert band_filters is not None, "Missing #lcBandFilters container"
+    bands = [btn.get("data-band") for btn in band_filters.find_all(class_=lambda c: c and "lc-band-pill" in c)]
+    assert "ALL" in bands, "Missing ALL bandpass filter"
+    assert "W2" in bands, "Missing W2 bandpass filter"
+    assert "W1" in bands, "Missing W1 bandpass filter"
+    assert "Ks" in bands, "Missing Ks bandpass filter"
+    assert "SPHEREx" in bands, "Missing SPHEREx bandpass filter"
+
+    # 3. Mode Switcher & Phase Controls
+    btn_time = lc_panel.find(id="btnLCModeTime")
+    btn_phase = lc_panel.find(id="btnLCModePhase")
+    assert btn_time is not None, "Missing #btnLCModeTime button"
+    assert btn_phase is not None, "Missing #btnLCModePhase button"
+
+    phase_controls = lc_panel.find(id="lcPhaseControls")
+    assert phase_controls is not None, "Missing #lcPhaseControls container"
+    period_input = phase_controls.find(id="lcPeriodInput")
+    assert period_input is not None, "Missing #lcPeriodInput for phase folding"
+    btn_auto_period = phase_controls.find(id="btnAutoDetectPeriod")
+    assert btn_auto_period is not None, "Missing #btnAutoDetectPeriod button"
+
+    # 4. Canvas & Empty Notice
+    canvas_chart = lc_panel.find(id="lightCurveChart")
+    assert canvas_chart is not None, "Missing canvas #lightCurveChart"
+    empty_notice = lc_panel.find(id="lcEmptyNotice")
+    assert empty_notice is not None, "Missing #lcEmptyNotice overlay"
+
+    # 5. Telemetry & Variability Analytics Sidebar
+    stat_baseline = lc_panel.find(id="lcStatBaseline")
+    assert stat_baseline is not None, "Missing #lcStatBaseline telemetry element"
+    stat_amplitude = lc_panel.find(id="lcStatAmplitude")
+    assert stat_amplitude is not None, "Missing #lcStatAmplitude telemetry element"
+    stat_mean = lc_panel.find(id="lcStatMeanMag")
+    assert stat_mean is not None, "Missing #lcStatMeanMag telemetry element"
+    stat_chi2 = lc_panel.find(id="lcStatChi2")
+    assert stat_chi2 is not None, "Missing #lcStatChi2 constant flux test element"
+    stat_stetson = lc_panel.find(id="lcStatStetson")
+    assert stat_stetson is not None, "Missing #lcStatStetson index element"
+
+    btn_export = lc_panel.find(id="btnExportLCCSV")
+    assert btn_export is not None, "Missing #btnExportLCCSV button"
+    assert "exportLightCurveCSV" in btn_export.get("onclick", ""), "#btnExportLCCSV must trigger exportLightCurveCSV()"
+
+    # 6. JavaScript Core Engine Functions
+    assert "fetchPointLightCurve" in html, "Missing fetchPointLightCurve JavaScript function"
+    assert "resetLightCurveToFieldCenter" in html, "Missing resetLightCurveToFieldCenter JavaScript function"
+    assert "setLightCurveBandFilter" in html, "Missing setLightCurveBandFilter JavaScript function"
+    assert "setLightCurveMode" in html, "Missing setLightCurveMode JavaScript function"
+    assert "toggleLightCurveTimeUnit" in html, "Missing toggleLightCurveTimeUnit JavaScript function"
+    assert "stepLightCurvePeriod" in html, "Missing stepLightCurvePeriod JavaScript function"
+    assert "autoDetectLightCurvePeriod" in html, "Missing autoDetectLightCurvePeriod JavaScript function"
+    assert "computeLombScargleBestPeriod" in html, "Missing computeLombScargleBestPeriod JavaScript function"
+    assert "computeVariabilityStatistics" in html, "Missing computeVariabilityStatistics JavaScript function"
+    assert "exportLightCurveCSV" in html, "Missing exportLightCurveCSV JavaScript function"
+    assert "drawSelectedPointReticle" in html, "Missing drawSelectedPointReticle JavaScript function"
+    assert "selectedSkyPoint" in html, "Missing selectedSkyPoint state"
+
+
+
 
 
 

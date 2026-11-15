@@ -26,7 +26,15 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-## 📝 Recent Team Log & Announcements
+- **[📈 REDEFINED ASTRONOMICAL LIGHT CURVE TAB & POINT SELECTION RETICLE (@jokerodu / @coolodu)]**
+  - **Feature:** Completely redefined `#dockPanelLightCurve` in the bottom dock according to NASA / IPAC / ZTF / AAVSO scientific standards:
+    1. **Dynamic Point-Specific Fetching & Reticle:** Clicking anywhere on the sky canvas with the Select (Reticle) tool, clicking a Gaia star, or clicking an auto-detected candidate now draws a cyan reticle diamond and dynamically fetches multi-epoch IR photometry (`/api/catalog/crossmatch`) for that exact coordinate $(\alpha, \delta)$.
+    2. **Multi-Bandpass Segregation:** Segregated 2MASS $K_s$ ($2.15\,\mu\text{m}$, amber), WISE W1 ($3.4\,\mu\text{m}$, emerald), WISE W2 ($4.6\,\mu\text{m}$, cyan), and SPHEREx DR1 ($4.6\,\mu\text{m}$, purple) with one-click filter pills (`All`, `W2`, `W1`, `Ks`, `SPHEREx`).
+    3. **Photometric Error Bars & 3σ Limits:** Custom canvas Chart.js plugin renders observational $\pm 1\sigma$ error whiskers on detection points and downward triangle markers (`#f43f5e`) for upper limits.
+    4. **Client-Side Phase Folding & Lomb-Scargle:** 1-click automated period discovery scanning 0.2d to 500d with double-cycle $[0.0, 2.0]$ visualization and stepper controls.
+    5. **Quantitative Astrophysics Telemetry:** Sidebar displays baseline span $\Delta t$ (26.2 yr), amplitude $\Delta m$, reduced $\chi^2_{\text{red}}$ constant-flux test, Stetson index $J$, and one-click AAVSO CSV export.
+    6. **Bidirectional Viewport Sync:** Clicking any epoch point jumps the main flipbook timeline directly to that observation frame.
+  - **Verification:** 100% green pass rate across 55/55 primary tests (`test_ui_contract.py`, `test_golden_suite.py`, `test_viewport_overhaul_v2.py`). Zero regressions.
 - **[⏱️ TIME STEP CONTROLLER POPUP: ALL TOOLS FUNCTIONALIZED, EDIT OPTIONS DRAWER & PIN/UNPIN/CLOSE ENHANCED (@coolodu)]**
   - **Feature:** Full functional overhaul of the Time Step Controller popup toolbar (`#viewportTimeStepHUD`) anchored adjacent to the left vertical tool rail.
   - **Auto-Initialization Fix:** Resolved missing startup call by auto-initializing `initAutoIDAndHUDListeners()` on script load and DOM ready, ensuring all event listeners are actively bound immediately.
