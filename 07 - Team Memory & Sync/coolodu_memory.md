@@ -3,13 +3,8 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-<<<<<<< HEAD
-- **Current Task:** Completed and verified Issue #41 / TASK-007 (`Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies`).
+- **Current Task:** Completed and verified Issue #41 / TASK-007 (`Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies`) and merged with Step 2 priority 0 bug remediations.
 - **Next Task:** Monitor GitHub Issues board for incoming tasks and maintain clean test suites.
-=======
-- **Current Task:** Implemented and verified Step 2 of the Master Engineering Specification & Bug-Fix remediation on `coolodu/web-frontend`. Permanently resolved all 5 Priority 0 live screenshot regressions: (1) Globally locked $[0, P_{99.5}]$-clipped Asinh photometric stretch eliminating tile checkerboarding; (2) Integer coordinate bounds snapping with $+1\text{px}$ overlap eliminating vertical black seams; (3) Interaction drag lock on zoom slider and non-destructive texture retention (`lastRenderedSpatialTiles`) eliminating "Swiss cheese" black tiles during active blink; (4) Non-truncating physical device pixel scale HUD formula (`″/dev_px`); (5) Re-anchored WISE 0855 timeline to AllWISE W2 ($4.6\,\mu\text{m}$, 2010) + SPHEREx narrowband stack ($4.6\,\mu\text{m}$, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$). 43 tests passing 100% green.
-- **Next Task:** Proceed with Step 3 (Sky Context Layer & 102-Channel Selector) and coordinate with jokerodu.
->>>>>>> origin/coolodu/web-frontend
 - **Blockers:** None.
 
 ## Assigned Tasks:
@@ -19,15 +14,15 @@
   - **Scope:** Refactored `text-[9px]` & `text-[10px]` across SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`), molecular absorption reference table, viewport HUD time-step controls, and coordinate validation hints to accessible font scales ($\ge 11\text{px}$–$14\text{px}$) with comfortable click padding and WCAG AA contrast.
 
 ## Completed Tasks:
-<<<<<<< HEAD
 - [x] **[Resolved Issue #41 / TASK-007 — UI/UX Readability & Typography Scale Optimization]**:
-  - **SPHEREx Spectral Bar:**
+  - **SPHEREx Spectral Bar & 102-Band SED Neon Palette:**
     - Enlarged `#chanDisplay` from 12px to `text-sm font-bold min-w-[220px]` (14px) for clear channel and wavelength readouts.
     - Sized `#chanFluxBadge` to `text-xs font-mono font-bold px-2.5 py-1` with solid contrast badge background.
     - Sized navigation steppers `#chanPrev` and `#chanNext` to `w-8 h-8 rounded-lg text-base font-bold` for comfortable touch and click targets.
-    - Enlarged `#chanSlider` track and thumb (`w-36 h-3`).
+    - Enlarged `#chanSlider` track and thumb (`w-36 h-3 accent-amber-400`).
     - Upgraded `#spectrumNonSimultaneousNotice` from `text-[11px]` to `text-xs font-medium px-3 py-1.5` with WCAG AA compliant contrast.
     - Enhanced `#btnOpenBandScience` to `px-3.5 py-1.5 rounded-lg text-xs font-bold`.
+    - Enhanced SED curve to bright amber `#f59e0b` (fill `rgba(245, 158, 11, 0.28)`, width 2.5px), catalog photometry points to electric cyan `#00f0ff` (7px diamonds), neon glow on active array borders, and bright axis scales.
   - **Molecular Absorption Reference Sidebar:**
     - Expanded width to `w-64` and container styling to `bg-space-950/95 p-3 rounded-xl border border-space-700/80`.
     - Eliminated microscopic `text-[9px]`, replacing with `text-xs font-mono` and `font-bold` header.
@@ -37,8 +32,6 @@
     - Upgraded `#raValidationHint`, `#decValidationHint`, and FOV zoom indicator to `text-xs font-mono`.
     - Removed duplicate `role="region" aria-label="SPHEREx DR1 HiPS Context Controls"` attribute on `#aladinContextBar`.
   - **Verification:** Added `test_issue_41_typography_scale_and_readability_contract` to `tests/test_ui_contract.py`. All 13 contract tests and 58/58 CI unit tests pass 100% green. Clean ruff checks.
-- [x] **[Resolved Issues #39 & #40 — Backend NoneType Guard, FOV Clamping, Diagnostics & Viewport HUD Deconfliction]**:
-=======
 - [x] **[Step 2 Completed: Priority 0 Bug Remediations & Zoom Bar Polish]**:
   - **Bug 1 (Photometric Normalization & Stretch Locking):** Integrated `apply_locked_asinh_stretch` in `backend/services/cutout_engine.py` with `_FIELD_SKY_PARAMS` field-level caching of $(\mu_{\text{sky}}, \sigma_{\text{sky}}, P_{99.5})$ across neighbor cutouts.
   - **Bug 2 (Zero-Seam Continuous Tiling):** Implemented integer pixel snapping (`x0 = Math.floor(...)`, `drawW = (x1 - x0) + 1`) and $\cos(\delta_0)$ spherical metric scaling in `drawAdjacentSkyTiling` in `frontend/index.html`.
@@ -47,7 +40,6 @@
   - **Bug 5 (Target-Specific Timeline & WISE 0855 W2 Baseline):** Re-anchored WISE 0855 in `backend/services/scene_service.py` to AllWISE W2 ($4.6\,\mu\text{m}$, 2010) and SPHEREx narrowband stack ($4.6\,\mu\text{m}$, Band 6, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$), establishing true bandpass matching.
   - **Verification:** 43 passed across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
 - [x] **[Resolved Issues #39 & #40 — Backend NoneType Guard, FOV Clamping, Diagnostic Details, & Viewport HUD Deconfliction]**:
->>>>>>> origin/coolodu/web-frontend
   - **Issue #39 (Backend NoneType Crash & Error Details):**
     - In `backend/main.py`, guarded `fetch_real_cutout()` return value against `None`, raising structured HTTP 404 problem detail instead of throwing `AttributeError: 'NoneType' object has no attribute 'get'` on `response.headers["X-Cache"]`.
     - Added HTTP 400 validation when `fov > 15.0` arcmin explaining the limit.
