@@ -5,6 +5,7 @@ Compare new exposure counts with cached counts and analyze cross-survey pairs.
 """
 
 import json
+
 import pyvo as vo
 
 service = vo.dal.TAPService("https://irsa.ipac.caltech.edu/TAP")
