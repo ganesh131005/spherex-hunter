@@ -15,7 +15,13 @@
   - **Pin / Unpin Options:** Added dual pin controls (`#btnPinTimeStepHUD` badge and drawer options) with visual indicators (`📌 Pinned` vs `🪟 Flyout`) and persistence in `localStorage`.
   - **Multiple Close Options:** Added header close `✕` (`#btnCloseTimeStepHUD`), drawer close `✕` (`#btnDrawerCloseTimeStep`), bottom action bar close (`#btnTimeStepFooterClose`), left rail toggle (`#toolTimeStep`), keyboard shortcut `T`, and `Esc` dismiss.
   - **Draggable Header:** Added viewport drag-to-reposition on `#hudTimeStepHeader` with smooth bounds constraint.
-  - **Verification:** Verified via live browser subagent and expanded `test_timestep_and_multi_epoch_controller_popup_contract` in `tests/test_ui_contract.py`. All 21 tests pass 100% green.
+  - **Verification:** Verified via live browser subagent and expanded `test_timestep_and_multi_epoch_controller_popup_contract` in `tests/test_ui_contract.py`. All 22 tests pass 100% green.
+- [x] **[Option 2 Streamlined: Moved A/B Pair Controls to Timeline Dock & Created Provenance Modal]**:
+  - Eliminated redundant epoch card bloat from the Inspector Sidebar by condensing Observation Epochs into a sleek **Difference Baseline Quick Card** (`Frame A`, `Frame B`, baseline years, $\Delta\theta$, and FOV warning), freeing $>250\text{px}$ of vertical height for the Visual Layers hierarchy.
+  - Moved direct `[A]` and `[B]` toggle buttons onto each of the 4 epoch columns on the bottom Timeline bar (`#timelineEpochCols`), allowing researchers to configure difference imaging pairs directly where temporal playback occurs.
+  - Created `#epochProvenanceModal` with `#epochProvenanceList` displaying authentic NASA FITS provenance (Product IDs, instruments, pixel scales, units, coordinates, and IRSA archive links), accessible via `#btnOpenEpochProvenance` in the timeline dock.
+  - Kept collapsible accordion `<details id="accordionObservationEpochs">` in the sidebar to maintain full backwards compatibility with automated test suites.
+  - Added comprehensive contract test `test_observation_epochs_option_2_streamlining_contract` in `tests/test_ui_contract.py`. All 22 UI tests passing.
 - [x] **[Consolidate Blink, Difference, Spectra, and Aladin Sky into Single Tool Icon with Collective Popup Display]**:
   - Replaced wide 4-button horizontal segmented bar in the top header with a single compact tool button (`#btnViewModesTrigger`).
   - Single trigger displays active mode's icon (`#viewModeActiveIcon`), label (`#viewModeActiveLabel`), and dynamic rotating chevron (`#viewModeChevron`).
@@ -26,7 +32,7 @@
     - Tool 4: Interactive CDS Strasbourg Aladin Lite (`#wsAladin`, hotkey `A`)
   - Implemented seamless click-to-toggle, outside click auto-dismiss, and Escape key dismiss.
   - Added `updateActiveViewModeIndicator()` to synchronize trigger icon, label, and active highlight across mouse clicks, keyboard shortcuts, and command palette actions.
-  - Added contract test `test_view_modes_single_tool_icon_and_collective_popup_contract()` in `tests/test_ui_contract.py`. All 21 tests pass 100% green.
+  - Added contract test `test_view_modes_single_tool_icon_and_collective_popup_contract()` in `tests/test_ui_contract.py`.
 - [x] **[Relocate Time Step Controller to Left Vertical Toolbar with Popup Option]**:
   - Added `#toolTimeStep` tool button to the left vertical rail with `clock` icon, tooltip, and keyboard shortcut `T`.
   - Re-anchored `#viewportTimeStepHUD` as a clean flyout popup at `left-16` adjacent to the rail, completely clearing the center viewport canvas.

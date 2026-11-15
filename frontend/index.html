@@ -1512,21 +1512,49 @@
             <i data-lucide="skip-forward" class="w-4 h-4"></i>
           </button>
 
-          <!-- Active Frame Input Box -->
-          <div class="flex items-center gap-1 ml-2 pl-2 border-l border-space-700">
+          <!-- Active Frame Input Box & Provenance Modal Trigger -->
+          <div class="flex items-center gap-1.5 ml-2 pl-2 border-l border-space-700">
             <span class="text-gray-400 text-xs">Frame:</span>
             <span id="frameBadge" class="px-2 py-0.5 rounded bg-blender-blue text-white font-bold text-xs">1</span>
             <span class="text-gray-500 text-xs">/ 4</span>
+            <button id="btnOpenEpochProvenance" type="button" onclick="openEpochsProvenanceModal()" class="ml-1.5 px-2 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-cyan-500/30 text-[10px] font-mono flex items-center gap-1 transition" title="View Full NASA Provenance & Astrometric Offsets for All Epochs">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span class="hidden md:inline">Provenance</span>
+            </button>
           </div>
         </div>
 
-        <!-- Center: Interactive Epoch Timeline Track with Ticks (Aligned to 25% increments matching the Blend Toolbar) -->
-        <div class="flex-1 flex flex-col justify-center px-3 max-w-2xl min-w-[180px]">
-          <div class="grid grid-cols-4 w-full text-[10px] text-gray-300 mb-1.5 whitespace-nowrap font-mono select-none text-right">
-            <span class="pr-1 font-medium">1999 (2MASS)</span>
-            <span class="pr-1 font-medium">2010 (W1)</span>
-            <span class="pr-1 font-medium">2014 (unWISE)</span>
-            <span class="text-blender-orange font-bold">2025 (SPHEREx)</span>
+        <!-- Center: Interactive Epoch Timeline Track with Ticks & Direct Pair Controls (Option 2 Streamlined) -->
+        <div class="flex-1 flex flex-col justify-center px-3 max-w-2xl min-w-[200px]">
+          <div id="timelineEpochCols" class="grid grid-cols-4 w-full text-[10px] text-gray-300 mb-1.5 whitespace-nowrap font-mono select-none">
+            <div class="flex items-center justify-between px-1" data-timeline-epoch="1">
+              <span class="truncate font-medium text-gray-300" id="timelineEpochTitle_1">1999 (2MASS)</span>
+              <div class="flex items-center gap-0.5 ml-1">
+                <button type="button" onclick="setBlinkFrameFromTimeline('A', 0)" class="btn-timeline-set-a px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-blue text-white ring-1 ring-white/60 shadow-sm" title="Assign as Blink Frame A">A</button>
+                <button type="button" onclick="setBlinkFrameFromTimeline('B', 0)" class="btn-timeline-set-b px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-800 text-gray-400 hover:text-white" title="Assign as Blink Frame B">B</button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between px-1" data-timeline-epoch="2">
+              <span class="truncate font-medium text-gray-300" id="timelineEpochTitle_2">2010 (W1)</span>
+              <div class="flex items-center gap-0.5 ml-1">
+                <button type="button" onclick="setBlinkFrameFromTimeline('A', 1)" class="btn-timeline-set-a px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-800 text-gray-400 hover:text-white" title="Assign as Blink Frame A">A</button>
+                <button type="button" onclick="setBlinkFrameFromTimeline('B', 1)" class="btn-timeline-set-b px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-800 text-gray-400 hover:text-white" title="Assign as Blink Frame B">B</button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between px-1" data-timeline-epoch="3">
+              <span class="truncate font-medium text-gray-300" id="timelineEpochTitle_3">2014 (unWISE)</span>
+              <div class="flex items-center gap-0.5 ml-1">
+                <button type="button" onclick="setBlinkFrameFromTimeline('A', 2)" class="btn-timeline-set-a px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-800 text-gray-400 hover:text-white" title="Assign as Blink Frame A">A</button>
+                <button type="button" onclick="setBlinkFrameFromTimeline('B', 2)" class="btn-timeline-set-b px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-800 text-gray-400 hover:text-white" title="Assign as Blink Frame B">B</button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between px-1" data-timeline-epoch="4">
+              <span class="truncate text-blender-orange font-bold" id="timelineEpochTitle_4">2025 (SPHEREx)</span>
+              <div class="flex items-center gap-0.5 ml-1">
+                <button type="button" onclick="setBlinkFrameFromTimeline('A', 3)" class="btn-timeline-set-a px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-800 text-gray-400 hover:text-white" title="Assign as Blink Frame A">A</button>
+                <button type="button" onclick="setBlinkFrameFromTimeline('B', 3)" class="btn-timeline-set-b px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-orange text-white ring-1 ring-white/60 shadow-sm" title="Assign as Blink Frame B">B</button>
+              </div>
+            </div>
           </div>
           <div class="relative w-full h-2.5 bg-space-800 rounded-full flex items-center shadow-inner">
             <div id="timelineProgress" class="absolute left-0 h-full bg-gradient-to-r from-amber-500 to-blender-orange rounded-full transition-all duration-150 shadow-sm" style="width: 25%;"></div>
@@ -1683,6 +1711,32 @@
   <!-- ========================================================================= -->
   <!-- 4. MODALS & OVERLAYS                                                      -->
   <!-- ========================================================================= -->
+
+  <!-- NASA OBSERVATION EPOCHS PROVENANCE & ASTROMETRY MODAL (Option 2 Streamlined) -->
+  <div id="epochProvenanceModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="NASA Observation Epochs Provenance">
+    <div class="bg-space-900 border border-space-700 rounded-xl max-w-2xl w-full p-5 shadow-2xl space-y-4 font-mono text-xs">
+      <div class="flex items-center justify-between border-b border-space-700 pb-2.5">
+        <div class="flex items-center gap-2 text-white font-bold text-sm">
+          <i data-lucide="database" class="w-4 h-4 text-cyan-400"></i>
+          <span>NASA Data Provenance & Astrometric Baseline</span>
+        </div>
+        <button id="btnCloseEpochProvenanceModal" class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition" title="Close Provenance Modal">✕</button>
+      </div>
+
+      <div class="text-gray-300 text-[11px] font-sans leading-relaxed">
+        Authentic FITS raster provenance, survey instruments, and proper-motion displacement offsets (Δθ) for all observations loaded in the active scene.
+      </div>
+
+      <div id="epochProvenanceList" class="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+        <!-- Dynamically populated by renderEpochProvenanceModal() -->
+      </div>
+
+      <div class="flex items-center justify-between border-t border-space-700 pt-3 text-[10px] text-gray-400">
+        <span>Verified against NASA IRSA FinderChart & AllWISE Holdings</span>
+        <button id="btnDismissEpochProvenance" class="px-3 py-1.5 rounded blender-btn text-xs font-semibold text-gray-200 hover:text-white">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- CITIZEN SCIENCE DISCOVERY MODAL -->
   <div id="flagModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
@@ -2961,6 +3015,104 @@
       renderSceneCollection(window.scene);
       updateFrameLabel();
       drawFrame();
+      syncTimelineEpochControls();
+    }
+
+    function setBlinkFrameFromTimeline(slot, epochIndex) {
+      if (!window.scene || !Array.isArray(window.scene.epochs)) return;
+      const ep = window.scene.epochs[epochIndex];
+      if (!ep) return;
+      setBlinkFrame(slot, ep.id);
+      syncTimelineEpochControls();
+    }
+
+    function syncTimelineEpochControls() {
+      if (!window.scene || !Array.isArray(window.scene.epochs)) return;
+      const epochs = window.scene.epochs;
+      const activePair = window.scene.active_blink_pair || {};
+
+      epochs.forEach((ep, idx) => {
+        const colIdx = idx + 1;
+        const titleEl = document.getElementById(`timelineEpochTitle_${colIdx}`);
+        if (titleEl) {
+          const year = (ep.obs_date || '').split('-')[0] || '';
+          titleEl.textContent = `${year} (${ep.survey})`;
+          titleEl.title = `${ep.survey} ${ep.band} · ${ep.obs_date} (MJD ${ep.mjd}) · Δθ: ${ep.displacement_arcsec?.toFixed?.(1) ?? '0.0'}"`;
+        }
+
+        const col = document.querySelector(`[data-timeline-epoch="${colIdx}"]`);
+        if (col) {
+          const btnA = col.querySelector('.btn-timeline-set-a');
+          const btnB = col.querySelector('.btn-timeline-set-b');
+
+          const isFrameA = (activePair.frame_a_id === ep.id);
+          const isFrameB = (activePair.frame_b_id === ep.id);
+
+          if (btnA) {
+            btnA.className = isFrameA
+              ? 'btn-timeline-set-a px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-blue text-white ring-1 ring-white/60 shadow-sm'
+              : 'btn-timeline-set-a px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-800 text-gray-400 hover:text-white';
+          }
+          if (btnB) {
+            btnB.className = isFrameB
+              ? 'btn-timeline-set-b px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-orange text-white ring-1 ring-white/60 shadow-sm'
+              : 'btn-timeline-set-b px-1.5 py-0.2 rounded text-[8px] font-bold font-mono transition bg-blender-800 text-gray-400 hover:text-white';
+          }
+        }
+      });
+    }
+
+    function openEpochsProvenanceModal() {
+      const modal = document.getElementById('epochProvenanceModal');
+      const list = document.getElementById('epochProvenanceList');
+      if (!modal || !list) return;
+
+      const epochs = (window.scene && Array.isArray(window.scene.epochs)) ? window.scene.epochs : [];
+      if (epochs.length === 0) {
+        list.innerHTML = `<div class="p-4 text-gray-400 text-center italic">No observation epochs currently loaded in the active scene.</div>`;
+      } else {
+        list.innerHTML = epochs.map((ep, idx) => `
+          <div class="p-3 bg-space-950/80 rounded-lg border border-space-700/80 space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full ${ep.status === 'loaded' ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
+                <span class="font-bold text-gray-100 text-xs">${escapeHtml(ep.survey)}</span>
+                <span class="text-cyan-300 font-mono text-[11px] font-semibold">${escapeHtml(ep.band)}</span>
+                <span class="text-gray-400 font-mono text-[10px]">(${ep.wavelength_um} µm)</span>
+              </div>
+              <span class="text-amber-400 font-mono font-bold text-xs bg-amber-950/60 px-2 py-0.5 rounded border border-amber-600/40">Δθ: ${ep.displacement_arcsec?.toFixed?.(1) ?? '0.0'}"</span>
+            </div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] text-gray-300 font-mono bg-space-900/60 p-2 rounded border border-space-800">
+              <div><span class="text-gray-400">Date:</span> ${ep.obs_date} (MJD ${ep.mjd})</div>
+              <div><span class="text-gray-400">Pixel Scale:</span> ${ep.pixel_scale_arcsec}"/px</div>
+              <div><span class="text-gray-400">Instrument:</span> ${escapeHtml(ep.instrument || 'N/A')}</div>
+              <div><span class="text-gray-400">Units:</span> ${escapeHtml(ep.units || 'N/A')}</div>
+              <div class="col-span-2 truncate"><span class="text-gray-400">Product ID:</span> ${escapeHtml(ep.product_id || 'N/A')}</div>
+              <div class="col-span-2"><span class="text-gray-400">Cutout Center:</span> RA ${ep.cutout_center?.ra_deg?.toFixed?.(5) ?? 0}°, Dec ${ep.cutout_center?.dec_deg?.toFixed?.(5) ?? 0}°</div>
+            </div>
+            ${ep.exceeds_fov ? `
+            <div class="text-[10px] font-mono text-amber-300 flex items-center gap-1.5 bg-amber-950/60 p-2 rounded border border-amber-600/60">
+              <i data-lucide="alert-circle" class="w-4 h-4 text-amber-400 shrink-0"></i>
+              <span>Displacement exceeds ${ep.fov_arcmin}' FOV! Space motion auto-centered this epoch.</span>
+            </div>` : ''}
+            ${ep.product_url ? `
+            <div class="pt-0.5 flex justify-end">
+              <a href="${ep.product_url}" target="_blank" rel="noopener" class="text-cyan-400 hover:text-cyan-300 hover:underline text-[11px] inline-flex items-center gap-1 font-mono">
+                <span>View Raw NASA IRSA Product</span>
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>` : ''}
+          </div>
+        `).join('');
+      }
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeEpochsProvenanceModal() {
+      const modal = document.getElementById('epochProvenanceModal');
+      if (modal) modal.classList.add('hidden');
     }
 
     function selectEpochFrame(epochId) {
@@ -2977,6 +3129,7 @@
         drawFrame();
       }
       renderSceneCollection(window.scene);
+      syncTimelineEpochControls();
     }
 
     function toggleEpochInfo(epochId) {
@@ -3140,18 +3293,70 @@
         </div>
       `;
 
-      // 2. Epochs Section (Tree Group)
+      // 2. Epochs & Difference Baseline Section (Option 2 Streamlined)
+      const epA = epochs.find(e => e.id === activePair.frame_a_id) || epochs[0];
+      const epB = epochs.find(e => e.id === activePair.frame_b_id) || epochs[epochs.length - 1];
+      const baselineYears = (epA && epB && epA.obs_date && epB.obs_date)
+        ? Math.abs(parseInt(epB.obs_date.split('-')[0]) - parseInt(epA.obs_date.split('-')[0])).toFixed(1)
+        : '15.0';
+      const totalDisplacement = (epB && typeof epB.displacement_arcsec === 'number') ? epB.displacement_arcsec : 0;
+      const hasFovExceeded = epochs.some(e => e.exceeds_fov);
+
       html += `
-        <div class="p-2.5 space-y-2" role="group" aria-label="Observation Epochs Tree">
+        <div class="p-2.5 space-y-2 bg-space-950/60 rounded border border-space-700/70" role="group" aria-label="Observation Epochs Tree">
           <div class="flex items-center justify-between text-gray-300 font-semibold text-[10px] uppercase tracking-wider">
             <span class="flex items-center gap-1.5">
-              <i data-lucide="calendar" class="w-3.5 h-3.5 text-cyan-400"></i>
-              <span>Observation Epochs (${epochs.length})</span>
+              <i data-lucide="git-compare" class="w-3.5 h-3.5 text-blender-orange"></i>
+              <span>Observation Epochs & Difference Baseline</span>
             </span>
-            <span class="text-[9px] font-mono text-gray-400">Proper-Motion Aligned</span>
+            <span class="text-[9px] font-mono text-cyan-400">Proper-Motion Aligned</span>
           </div>
 
-          <div class="space-y-1.5">
+          <!-- Difference Baseline Quick Card -->
+          <div class="p-2 bg-space-900/90 rounded border border-space-700/80 space-y-1.5 font-mono text-xs">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded bg-blender-blue text-white text-[8.5px] font-bold">FRAME A</span>
+                <span class="text-gray-200 text-[10px] font-bold">${escapeHtml(epA ? epA.survey + ' ' + epA.band : 'Epoch A')}</span>
+              </div>
+              <span class="text-[9px] text-gray-400">${epA ? epA.obs_date : ''}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded bg-blender-orange text-white text-[8.5px] font-bold">FRAME B</span>
+                <span class="text-gray-200 text-[10px] font-bold">${escapeHtml(epB ? epB.survey + ' ' + epB.band : 'Epoch B')}</span>
+              </div>
+              <span class="text-[9px] text-gray-400">${epB ? epB.obs_date : ''}</span>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-space-700/60 text-[9px]">
+              <span class="text-gray-400">Baseline: <span class="text-gray-200 font-bold">${baselineYears} Yrs</span></span>
+              <span class="text-amber-400 font-bold">Δθ: ${totalDisplacement.toFixed(1)}"</span>
+              <button type="button" onclick="openEpochsProvenanceModal()" class="text-cyan-400 hover:text-cyan-300 underline flex items-center gap-1 cursor-pointer" title="View Full NASA Provenance for All Epochs">
+                <i data-lucide="info" class="w-2.5 h-2.5"></i>
+                <span>Provenance</span>
+              </button>
+            </div>
+            ${hasFovExceeded ? `
+            <div class="text-[9px] text-amber-300 bg-amber-950/50 p-1 rounded border border-amber-800/60 flex items-center gap-1">
+              <i data-lucide="alert-circle" class="w-3 h-3 text-amber-400 shrink-0"></i>
+              <span>Displacement exceeds 3' FOV! Centered via space motion.</span>
+            </div>` : ''}
+            <div class="text-[8.5px] text-gray-400 italic pt-0.5 text-right">
+              Tip: Switch A / B pairs directly on Bottom Timeline buttons.
+            </div>
+          </div>
+
+          <!-- Collapsible Detailed Epoch Cards (Accordion) -->
+          <details id="accordionObservationEpochs" class="group border border-space-700/60 rounded bg-space-900/40">
+            <summary class="p-1.5 text-[9px] font-mono text-gray-400 hover:text-gray-200 cursor-pointer flex items-center justify-between select-none">
+              <span class="flex items-center gap-1">
+                <i data-lucide="chevron-right" class="w-3 h-3 group-open:rotate-90 transition-transform"></i>
+                <span>Individual Epoch Cards (${epochs.length})</span>
+              </span>
+              <span class="text-[8.5px] text-cyan-400 group-open:hidden">Expand Cards</span>
+              <span class="text-[8.5px] text-gray-400 hidden group-open:inline">Collapse</span>
+            </summary>
+            <div class="p-1.5 space-y-1.5 border-t border-space-700/50">
       `;
 
       epochs.forEach((ep, idx) => {
@@ -3203,7 +3408,7 @@
         `;
       });
 
-      html += `</div></div>`;
+      html += `</div></details></div>`;
 
       // 3. Layers Hierarchy Section (Tree Group)
       html += `
@@ -3266,6 +3471,7 @@
 
       container.innerHTML = html;
       updateInspectorFriendlyDetails(sceneData.target_key || currentTargetKey, sceneData);
+      syncTimelineEpochControls();
       if (window.lucide) lucide.createIcons();
     }
 
@@ -7352,6 +7558,28 @@
         });
       }
     }
+
+    // =========================================================================
+    // NASA OBSERVATION EPOCHS PROVENANCE MODAL (Option 2 Streamlining)
+    // =========================================================================
+    (function initEpochProvenanceModal() {
+      const modal = document.getElementById('epochProvenanceModal');
+      const closeBtn = document.getElementById('btnCloseEpochProvenanceModal');
+      const dismissBtn = document.getElementById('btnDismissEpochProvenance');
+
+      if (closeBtn) closeBtn.addEventListener('click', closeEpochsProvenanceModal);
+      if (dismissBtn) dismissBtn.addEventListener('click', closeEpochsProvenanceModal);
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeEpochsProvenanceModal();
+        });
+      }
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+          closeEpochsProvenanceModal();
+        }
+      });
+    })();
 
     // =========================================================================
     // TEMPORAL OBSERVATION DATE SEARCH & RANGE FILTER (Issue #11)
