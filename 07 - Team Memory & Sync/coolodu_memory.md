@@ -3,11 +3,16 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Step 5 (Scoped Multi-Tier Caching & Quantized Coordinate Tile Store) of the Master Engineering Specification on `coolodu/web-frontend`. Implemented integer micro-degree quantization ($10^{-5}$ deg) with deterministic cache keys (`${release}:${pipeVer}:${prodType}:${targetSlug}:ep${epochFrame}:ch${channel}:fov${fovArcsec}:ra${raMicro}_dec${decMicro}:lod${lod}`), conditional HTTP 304 ETag revalidation in FastAPI backend and client fetcher, byte budgeting and eviction tracking in `window.cacheTelemetry` (tracking `l0Hits`, `l1Hits`, `httpCacheHits`, `http304Count`, `uncachedNetworkFetches`, `byteBudgetUsed`, `evictions`), Safari/Firefox cross-browser `scheduleIdle` prefetching, and `navigator.connection.saveData` Data-Saver compliance. All 45 tests passing 100% green. Also merged with Issue #42 and Array A1 toolbar anchoring.
-- **Next Task:** Step 6 (Progressive Detail on Zoom-In, Nearest-Neighbor Pixelation & Vector Overlays).
+- **Current Task:** Completed and verified Merged 102-Band Information Bar & Responsive Molecular Feature Toolbar in `#dockPanelSpectrum` on `coolodu/web-frontend`. Unified 102-band channel selector (`#spec102ChannelSelect`), prev/next steppers (`#spec102PrevCh`, `#spec102NextCh`), exact wavelength readout display (`#spec102WavelengthDisplay`), Array A1–A6 tabs, 17-channel in-array slider, and responsive 1-click molecular jump pills (`#spec102MolecularBar` for H₂O, H₂O Ice, CH₄, CO₂ Ice, CO) with full two-way synchronization to HiPS cube slicing. All 25 UI contract and spectral tests passing 100% green.
+- **Next Task:** Step 6 (Progressive Detail on Zoom-In, Nearest-Neighbor Pixelation & Vector Overlays) and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Merged 102-Band Information Bar into Spectrum Panel Toolbar]**:
+  - Integrated `#spec102BandInfoBar` with `#spec102ChannelSelect`, `#spec102PrevCh`, `#spec102NextCh`, and `#spec102WavelengthDisplay` directly adjacent to 6-Array tabs and 17-channel in-array slider.
+  - Sized and styled responsive molecular absorption pills (`.spec-mol-pill` jumping to bands 25, 56, 60, 79, 89) visible across all viewport dimensions.
+  - Implemented bidirectional sync between spectrum channel selector and HiPS all-sky navigator (`switchHiPSChannel` and `select102BandChannel`).
+  - Added full test coverage in `tests/test_ui_contract.py` (`test_merged_102_band_information_bar_in_spectrum_panel_toolbar`).
 - [x] **[102-Band Spectrum Array A1 Default Alignment & Toolbar Anchoring]**:
   - Ensured Array A1 (`0.750 - 1.110 µm`, Channel 1, Band 1) is strictly the active default alignment on load, target slew, and dock tab activation.
   - Unified toolbar into a non-wrapping horizontal layout with `overflow-x-auto`, anchoring the 102-Band selector, Array Tabs, and Channel Stepper on the left starting with Array A1.
