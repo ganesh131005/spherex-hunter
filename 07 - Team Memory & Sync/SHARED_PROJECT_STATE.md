@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🎨 ISSUE #38 RESOLVED ON `coolodu/web-frontend` & CLOSED ON GITHUB]**
+  - **Commit:** `376a7f1` pushed to `origin/coolodu/web-frontend`.
+  - **Remediation:**
+    1. **4-Tab Inspector Grid:** Replaced flex row with 4-column responsive grid (`grid grid-cols-4 gap-1 min-w-0`) and text truncation to prevent label overflow and edge clipping in the 380px panel.
+    2. **Sticky Header Bleed Barrier:** Added reinforced bottom border (`border-b border-space-700/90`), `shadow-md`, and `pt-2` top clearance on `#inspectorPanelLayers` to completely eliminate scrolling content bleeding behind tabs.
+    3. **Nav Bar Responsive Collapse:** Verified secondary action buttons cleanly collapse into `#headerMoreActionsDropdown` on screens <1400px.
+  - **Verification:** 100% test pass rate across `test_ui_contract.py` and `test_viewport_overhaul_v2.py`. Issue #38 closed on GitHub via `github_bridge.py`.
 - **[GitHub Native Issue #40 Created — Fix Viewport HUD Overlap Between Time Step Controller and Top Telemetry / Stretch Controls]**
   - **Issue #40 Link:** https://github.com/joker0210G/spherex-hunter/issues/40
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
@@ -36,6 +43,19 @@
   - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`
   - **Checklist Scope:** Items #7, #12, #24 (Helpful Error Explanations, Coordinate/FOV Boundaries, Safe Failure Handling).
   - **Forensic Diagnosis:** `backend/main.py` crashes with `AttributeError: 'NoneType' object has no attribute 'get'` when `fetch_real_cutout()` returns `None`, returning HTTP 500 instead of a structured 404/503. The frontend displays a vague boilerplate "Something interrupted loading this view" rather than diagnosing the out-of-bounds FOV (559.76') or upstream archive miss.
+- **[🚀 `coolodu/web-frontend` SYNCHRONIZED & PUSHED WITH VIEWPORT OVERHAUL V2 + OPENROUTER AI]**
+  - **Commit:** `ec16982` pushed cleanly to `origin/coolodu/web-frontend`.
+  - **Merged Capabilities:** Seamlessly integrated Viewport Overhaul v2 (logarithmic zoom bar, dual scale thresholds, scoped L0/L1 cache, 102 IRSA channels, raw pixel inspection mode, and Gaia EPSF astrometry) with teammate's OpenRouter AI integration (`ac611c7`).
+  - **Verification:** 100% test pass rate across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
+- **[🔭 SPHEREx HUNTER VIEWPORT OVERHAUL COMPLETE (STEPS 0–6 DEPLOYED & VERIFIED)]**
+  - **Full Compliance with Master Engineering Specification v2:**
+    1. **Interactive Logarithmic Zoom Bar (Step 2):** Mounted vertical control dock (`#viewportZoomBar`) with `#btnVpZoomIn`, continuous logarithmic slider (`#vpZoomSlider`, $0.4\text{x}\text{--}8.0\text{x}$, ARIA `role="slider"`, vertical orientation), `#btnVpZoomOut`, `#btnVpZoomReset` ($15'$ reset), and `#btnToggleNativePixels` nearest-neighbor raw pixel toggle (`gl.NEAREST` / `image-rendering: pixelated`).
+    2. **Dual-Threshold Resolution HUD:** Added live screen scale (`arcsec/device_px`), native pixel span (`N×M px (6.15″)`), and dual threshold status indicators: **HiPS Native ($12.88''/\text{px}$)** vs **Exposure Native ($6.15''/\text{px}$)**.
+    3. **Cursor-Centered Invariant Zoom:** Replaced simple center-scaling with mathematical cursor-centered zoom preserving the celestial point under the mouse during wheel and pinch gestures.
+    4. **Deterministic 102-Channel Metadata (Step 3):** Authored `scripts/generate_spherex_channels.py` extracting official IRSA parameters ($0.753\text{--}4.988\,\mu\text{m}$, Bands 1–6, resolving powers $R \in [35, 130]$ with Band 4 $R=35$, Band 5 $R=112$, Band 6 $R=128$) into `frontend/src/data/spherex_102_channels.json`. Added persistent HUD credit `Credit: NASA / JPL-Caltech / IPAC (SPHEREx DR1)`.
+    5. **WISE 0855 Narrowband Stack & Gaia DR3 Astrometry (Step 4):** Updated `demo_cache/wise0855/exposures.json` with authentic $4.6\,\mu\text{m}$ narrowband stack record ($\text{S/N} = 5.82\sigma$, $N_{\text{exp}} = 26$, MJD range). Expanded `ExposureItem` Pydantic model with archival stack schema. Implemented `propagate_gaia_sources_to_epoch` (`astropy.coordinates.SkyCoord.apply_space_motion`) and `compute_astrometric_residuals`.
+    6. **Scoped Byte-Budgeted Cache Engine (Step 5):** Scoped L0 RAM LRU and L1 IndexedDB (`spherex_tile_store`) strictly to calibrated exposure cutouts and ZOGY products using integer micro-degree quantized keys. Added cross-browser idle prefetching (`scheduleIdle`) and telemetry counters (`l0Hits`, `l1Hits`, `httpCacheHits`, `http304Count`, `uncachedNetworkFetches`).
+    7. **Local HiPS Fixture & Automated Tests (Step 6):** Created lightweight local recorded HiPS fixture in `tests/fixtures/hips_spherex_dr1_sample/` (`properties`, `Moc.fits`, `Norder0..1` tiles). Authored `tests/test_viewport_overhaul_v2.py` (7 tests). 61/61 unit, golden, and contract tests passing 100% green with clean ruff linting.
 - **[🎉 MASTER INTEGRATION COMPLETE ON `main`: ALL 37 REPOSITORY ISSUES RESOLVED, LIVE-VERIFIED & CLOSED]**
   - **Track Integrations:** Synchronized `darkodu/astro-backend` (Issue #34: 2MASS separation threshold, filter segregation, ZOGY arcsinh stretch) and `coolodu/web-frontend` (Issue #32: responsive header, Issue #33: dynamic frustum streaming, Issue #35: BYOK Gemini AI, Issue #36: celestial reticle & curve-pinned diamonds, Issue #37: 2MASS all-sky Aladin mode).
   - **Zero Ghost Closures 3-Point Audit Complete:** 100% of symbols, DOM elements, and endpoints verified in active code, commits recorded, and automated tests passing (**103 passed, 9 skipped, 0 failures**; all 33 CI unit tests pass in 1.8s; clean ruff checks).

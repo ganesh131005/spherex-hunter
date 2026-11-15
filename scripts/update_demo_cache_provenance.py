@@ -3,9 +3,9 @@ Update demo_cache manifest and files with data_release and pipeline_version,
 and refresh SHA-256 checksums.
 """
 
+import hashlib
 import json
 import os
-import hashlib
 
 CACHE_DIR = "demo_cache"
 DATA_RELEASE = "DR1"
@@ -40,7 +40,7 @@ for tid, tmeta in manifest["targets"].items():
     tmeta["pipeline_version"] = PIPELINE_VERSION
     if tid in dr1_counts:
         tmeta["public_exposures_total"] = dr1_counts[tid]
-    
+
     tdir = os.path.join(CACHE_DIR, tid)
     if os.path.exists(tdir):
         for fname in os.listdir(tdir):
@@ -48,19 +48,19 @@ for tid, tmeta in manifest["targets"].items():
             if fname.endswith(".json"):
                 with open(fpath, "r", encoding="utf-8") as jf:
                     jdata = json.load(jf)
-                
+
                 # Update provenance if present or add
                 if "provenance" not in jdata:
                     jdata["provenance"] = {}
                 jdata["provenance"]["data_release"] = DATA_RELEASE
                 jdata["provenance"]["pipeline_version"] = PIPELINE_VERSION
-                
+
                 if fname == "exposures.json" and tid in dr1_counts:
                     jdata["count_public_total"] = dr1_counts[tid]
-                
+
                 with open(fpath, "w", encoding="utf-8") as jf:
                     json.dump(jdata, jf, indent=2)
-                
+
                 # Update checksum
                 if "checksums" in tmeta and fname in tmeta["checksums"]:
                     tmeta["checksums"][fname] = sha256_file(fpath)

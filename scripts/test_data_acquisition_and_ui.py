@@ -2,10 +2,9 @@
 Diagnostic script for SPHEREx Hunter Data Acquisition & UI Endpoints.
 Probes boundaries, error handling, network timeouts, edge cases, and response schemas.
 """
-import sys
 import json
-import urllib.request
 import urllib.error
+import urllib.request
 
 BASE_URL = "http://127.0.0.1:8000"
 
@@ -143,13 +142,13 @@ def main():
         json.dump(results, f, indent=2)
 
     failed = [r for r in results if not r["passed"]]
-    print(f"\n==========================================")
+    print("\n==========================================")
     print(f"Total Tests: {len(results)}, Passed: {len(results)-len(failed)}, Failed: {len(failed)}")
     if failed:
         print("FAILURES:")
         for f in failed:
             print(f" - {f['test']}: {f['notes']} | status {f['status']}")
-    print(f"==========================================")
+    print("==========================================")
 
 if __name__ == "__main__":
     main()

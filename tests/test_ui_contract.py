@@ -245,3 +245,61 @@ def test_issue_37_aladin_real_survey_contract():
     # 2. Status badge indicates 2MASS All-Sky IR
     assert "2MASS All-Sky IR (Online)" in html, "Missing '2MASS All-Sky IR (Online)' status badge label"
     assert "spherex_allsky_cube" not in html, "Broken 3D data cube HiPS URL must be removed from active base surveys"
+
+
+def test_viewport_overhaul_v2_contract():
+    """Validates Master Engineering Specification v2: Interactive Zoom Bar, Dual Scale Thresholds, and Scoped Caching."""
+    import json
+    html, soup = _get_html_and_soup()
+
+    # 1. Interactive Zoom Bar container & ARIA accessibility
+    zoom_bar = soup.find(id="viewportZoomBar")
+    assert zoom_bar is not None, "Missing #viewportZoomBar container"
+    assert soup.find(id="btnVpZoomIn") is not None, "Missing #btnVpZoomIn button"
+    assert soup.find(id="btnVpZoomOut") is not None, "Missing #btnVpZoomOut button"
+    assert soup.find(id="btnVpZoomReset") is not None, "Missing #btnVpZoomReset button"
+    assert soup.find(id="btnToggleNativePixels") is not None, "Missing #btnToggleNativePixels button"
+
+    slider = soup.find(id="vpZoomSlider")
+    assert slider is not None, "Missing #vpZoomSlider"
+    assert slider.get("role") == "slider", "Slider must have role='slider'"
+    assert slider.get("aria-orientation") == "vertical"
+    assert float(slider.get("min")) == 0.4
+    assert float(slider.get("max")) == 8.0
+
+    # 2. Dual Scale Thresholds Tooltip & Telemetry in HUD
+    tooltip = soup.find(id="vpZoomTooltip")
+    assert tooltip is not None, "Missing #vpZoomTooltip container"
+    assert "12.9″/px" in str(tooltip), "HiPS native scale indicator (12.9″/px) missing in tooltip"
+    assert "6.15″/px" in str(tooltip), "Exposure native scale indicator (6.15″/px) missing in tooltip"
+
+    assert soup.find(id="vpDeviceScale") is not None, "Missing #vpDeviceScale readout in HUD"
+    assert soup.find(id="vpNativeSpan") is not None, "Missing #vpNativeSpan readout in HUD"
+    assert soup.find(id="vpScaleStatusBadge") is not None, "Missing #vpScaleStatusBadge in HUD"
+    assert "NASA/JPL/IPAC" in html, "Visible NASA/JPL/IPAC attribution missing in viewport HUD"
+
+    # 3. JavaScript Logic: isNativePixelsMode and initViewportZoomBar exist
+    assert "isNativePixelsMode" in html, "Missing isNativePixelsMode state flag"
+    assert "initViewportZoomBar" in html, "Missing initViewportZoomBar initialization"
+    assert "cacheTelemetry" in html, "Missing window.cacheTelemetry counters"
+
+    # 4. Deterministic 102-channel table generated and valid
+    channels_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "src", "data", "spherex_102_channels.json")
+    assert os.path.exists(channels_path), f"Missing generated channel file: {channels_path}"
+    with open(channels_path, "r", encoding="utf-8") as f:
+        ch_data = json.load(f)
+    assert ch_data["total_channels"] == 102
+    assert len(ch_data["channels"]) == 102
+    assert ch_data["channels"][-1]["resolving_power"] == 128
+
+    # 5. Gaia Space Motion & Residuals Engine exists
+    from backend.services.gaia_service import compute_astrometric_residuals, propagate_gaia_sources_to_epoch
+    res = propagate_gaia_sources_to_epoch(
+        [{"ra": 133.795, "dec": -7.245, "pm_ra_mas_yr": 100.0, "pm_dec_mas_yr": -50.0, "parallax_mas": 10.0}],
+        target_mjd=60800.0
+    )
+    assert len(res) == 1
+    assert "ra_propagated" in res[0]
+    residuals = compute_astrometric_residuals(None, res)
+    assert residuals["status"] == "ok"
+    assert "median_offset_arcsec" in residuals

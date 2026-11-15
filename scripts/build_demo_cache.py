@@ -13,15 +13,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 import numpy as np
-from astropy.coordinates import SkyCoord
-import astropy.units as u
 from astropy.io import fits
-from astropy.wcs import WCS
 
-from backend.science.preprocessing import preprocess_spherex_hdu
 from backend.science.differencing import construct_gaussian_psf, zogy_subtraction
-from backend.services.metadata_schema import VERIFIED_PRESETS
-from backend.services.motion_service import propagate_target_epoch
+from backend.science.preprocessing import preprocess_spherex_hdu
 
 CACHE_DIR = "demo_cache"
 
