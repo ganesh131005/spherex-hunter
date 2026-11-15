@@ -216,6 +216,20 @@
       max-width: 100vw;
       overflow-x: hidden !important;
     }
+    /* Vertical Zoom Slider custom styling (Step 2 Specification) */
+    #vpZoomSlider {
+      -webkit-appearance: slider-vertical;
+      writing-mode: vertical-lr;
+      direction: rtl;
+    }
+    #vpZoomSlider::-webkit-slider-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #22d3ee;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(34, 211, 238, 0.7);
+    }
   </style>
 </head>
 <body class="h-screen flex flex-col bg-space-950 text-xs w-full max-w-full overflow-x-hidden">
@@ -641,12 +655,13 @@
           <button class="hips-landmark-btn px-1.5 py-0.5 rounded bg-space-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-[10px] text-gray-300 border border-space-700 transition" data-target="rdraconis" title="R Draconis (Pulsating Mira Variable)">🔴 R Drac</button>
         </div>
         <div class="h-4 w-px bg-space-700"></div>
-        <!-- Label and Honesty Notice -->
+        <!-- Label, Attribution and Honesty Notice (Step 3 Specification) -->
         <div class="flex items-center gap-1 text-amber-400 font-medium">
           <i data-lucide="info" class="w-3 h-3 text-amber-400 shrink-0"></i>
-          <span id="aladinContextNotice" class="text-[10px] font-semibold text-amber-300 truncate max-w-[200px]" title="DR1 all-sky mosaic: context only, not used for detection">DR1 all-sky mosaic: context only, not used for detection</span>
+          <span id="aladinContextNotice" class="text-[10px] font-semibold text-amber-300 truncate max-w-[280px]" title="DR1 all-sky mosaic: Co-added context only (blurs moving objects) — not used for transient/mover detection">DR1 Co-Added Context (Blurs Movers)</span>
         </div>
         <div class="flex items-center gap-1.5">
+          <span class="px-1.5 py-0.5 rounded bg-space-800 border border-space-700 text-gray-400 text-[9px] font-mono shrink-0 hidden md:inline" title="Authentic Data Source: NASA/JPL-Caltech/IPAC SPHEREx DR1">NASA/JPL/IPAC</span>
           <span id="aladinLayerStatus" class="px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 font-mono font-bold text-[9px]">DR1 HiPS Ready</span>
           <div id="aladinFallbackAlert" class="hidden text-[10px] text-amber-200 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-600/60 flex items-center gap-1">
             <i data-lucide="alert-triangle" class="w-3 h-3 text-amber-400 shrink-0"></i>
@@ -743,16 +758,75 @@
         </button>
       </div>
 
+      <!-- INTERACTIVE LOGARITHMIC ZOOM BAR & DUAL-SCALE CONTROLLER (v2 Specification: Step 2) -->
+      <nav id="viewportZoomBar" aria-label="Observatory Viewport Zoom Controls"
+        class="absolute right-3.5 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-1.5 bg-space-900/90 backdrop-blur-md p-1.5 rounded-xl border border-space-700/80 shadow-2xl font-mono select-none">
+        <!-- Zoom In Button -->
+        <button id="btnVpZoomIn" class="w-7 h-7 rounded-lg bg-space-800 hover:bg-space-700 active:bg-cyan-600 text-gray-200 hover:text-white transition flex items-center justify-center text-sm font-bold shadow-sm"
+          title="Zoom In (Scale Up +15%) [Key W / Wheel Up]" aria-label="Zoom in">
+          +
+        </button>
+
+        <!-- Vertical Slider Track Container with Tooltip -->
+        <div class="relative py-1 flex flex-col items-center group">
+          <!-- Dual Threshold Scale Tooltip -->
+          <div id="vpZoomTooltip" class="absolute -left-28 top-2 hidden group-hover:flex flex-col items-end gap-1 text-[9px] pointer-events-none transition-all z-30">
+            <span class="px-1.5 py-0.5 rounded bg-purple-950/95 border border-purple-500/70 text-purple-300 font-bold whitespace-nowrap shadow-md">
+              🟣 HiPS: 12.9″/px
+            </span>
+            <span class="px-1.5 py-0.5 rounded bg-cyan-950/95 border border-cyan-500/70 text-cyan-300 font-bold whitespace-nowrap shadow-md">
+              🔬 Exp: 6.15″/px
+            </span>
+          </div>
+
+          <!-- Vertical Range Input (Rotated Slider) -->
+          <input type="range" id="vpZoomSlider"
+            min="0.4" max="8.0" step="0.05" value="1.0"
+            orient="vertical"
+            role="slider"
+            aria-orientation="vertical"
+            aria-valuemin="0.4" aria-valuemax="8.0" aria-valuenow="1.0"
+            aria-label="Observatory Viewport Zoom Level"
+            aria-valuetext="Zoom 1.0x (Standard Science FOV 3.0 arcmin)"
+            class="w-2 h-32 bg-space-950 rounded-lg appearance-none cursor-pointer accent-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+            style="writing-mode: vertical-lr; direction: rtl;" />
+        </div>
+
+        <!-- Zoom Out Button -->
+        <button id="btnVpZoomOut" class="w-7 h-7 rounded-lg bg-space-800 hover:bg-space-700 active:bg-cyan-600 text-gray-200 hover:text-white transition flex items-center justify-center text-sm font-bold shadow-sm"
+          title="Zoom Out (Scale Down -15%) [Key S / Wheel Down]" aria-label="Zoom out">
+          −
+        </button>
+
+        <div class="h-px w-5 bg-space-700 my-0.5"></div>
+
+        <!-- 1-Click Scale Reset (⟲ Default 15' Science Scale) -->
+        <button id="btnVpZoomReset" class="w-7 h-7 rounded-lg bg-space-850 hover:bg-space-700 active:bg-amber-600 text-cyan-300 hover:text-white transition flex items-center justify-center text-xs font-bold"
+          title="Reset Zoom to 1.0x (15′ Default Science FOV)" aria-label="Reset zoom to 1.0x">
+          ⟲
+        </button>
+
+        <!-- Nearest-Neighbor Raw Pixel Toggle (🔬 1:1 Show Native Pixels) -->
+        <button id="btnToggleNativePixels" class="w-7 h-7 rounded-lg bg-space-850 hover:bg-cyan-900/60 active:bg-cyan-600 text-gray-300 hover:text-cyan-200 transition flex items-center justify-center text-xs font-bold"
+          title="Toggle Nearest-Neighbor Raw Detector Pixels (gl.NEAREST / pixelated)" aria-label="Toggle raw native pixels view" aria-pressed="false">
+          <i data-lucide="grid" class="w-3.5 h-3.5"></i>
+        </button>
+      </nav>
+
       <!-- BOTTOM VIEWPORT HUD (Collision-Proof Flex Bar: Issue #27) -->
       <div class="absolute bottom-2.5 left-3 right-3 pointer-events-none flex items-end justify-between gap-3 z-10">
-        <!-- Bottom-Left Live Cursor Telemetry HUD -->
-        <div class="text-[10px] font-mono flex items-center gap-2.5 bg-space-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg max-w-[calc(100%-210px)] overflow-hidden whitespace-nowrap">
+        <!-- Bottom-Left Live Cursor Telemetry HUD with Dual Resolution Thresholds -->
+        <div class="text-[10px] font-mono flex items-center gap-2 bg-space-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg max-w-[calc(100%-210px)] overflow-hidden whitespace-nowrap">
           <span>RA: <b id="vpRA" class="text-gray-200">133.79513°</b></span>
           <span>Dec: <b id="vpDec" class="text-gray-200">-7.24515°</b></span>
           <span>FOV: <b id="vpFOV" class="text-gray-200">3.00'</b></span>
           <span>Zoom: <b id="vpZoom" class="text-gray-200">1.0x</b></span>
           <span class="pl-2 border-l border-space-700">LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
-          <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold truncate max-w-[45vw]" title="Optical Lens: Contiguous NASA FITS Master Field">🔭 FITS Master</span>
+          <span class="pl-2 border-l border-space-700 hidden sm:inline">Scale: <b id="vpDeviceScale" class="text-gray-300">--</b></span>
+          <span class="pl-2 border-l border-space-700 hidden md:inline">Span: <b id="vpNativeSpan" class="text-cyan-300">--</b></span>
+          <span id="vpScaleStatusBadge" class="pl-2 border-l border-space-700 text-purple-300 font-bold truncate">🟣 HiPS: 12.9″/px</span>
+          <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold truncate max-w-[25vw]" title="Optical Lens: Contiguous NASA FITS Master Field">🔭 FITS Master</span>
+          <span class="pl-2 border-l border-space-700 text-gray-500 text-[9px] hidden lg:inline" title="Credit: NASA / JPL-Caltech / IPAC (SPHEREx DR1)">NASA/JPL/IPAC</span>
         </div>
 
         <!-- Bottom-Right Enlarged 36x36px Celestial Compass Rose & Dynamic Scale Bar (Issue #27) -->
@@ -2219,14 +2293,38 @@
     let blinkMorphMode = 'morph';  // 'morph' (continuous crossfade) or 'snap' (discrete hard cut)
 
     // =========================================================================
-    // ISSUE #13: CLIENT-SIDE L0/L0.5 SPATIAL TILE CACHE & REQUEST CANCELLATION
+    // STEP 5: SCOPED BYTE-BUDGETED CACHING ENGINE (Amendment A5)
+    // Custom L0 RAM LRU (64MB) + L1 IndexedDB strictly scope to calibrated exposure
+    // cutouts and difference products. HiPS tiles are managed by Aladin/HTTP cache.
     // =========================================================================
     const clientRamTileCache = new Map();
     const MAX_RAM_TILES = 128;
-    const IDB_NAME = 'spherex_tile_store';
-    const IDB_STORE = 'tiles';
+    const IDB_NAME = 'spherex_tile_store'; // IndexedDB store for calibrated exposure cutouts & difference products
+    const IDB_STORE = 'cutout_products';
     const IDB_MAX_ENTRIES = 256;
     let activeCutoutAbortController = null;
+
+    // Telemetry counters for cache performance audit (Amendment A5)
+    window.cacheTelemetry = {
+      l0Hits: 0,
+      l1Hits: 0,
+      httpCacheHits: 0,
+      http304Count: 0,
+      uncachedNetworkFetches: 0
+    };
+
+    // Cross-browser idle scheduling fallback for Safari / Firefox (Amendment A5)
+    const scheduleIdle = (typeof window !== 'undefined' && window.requestIdleCallback)
+      ? window.requestIdleCallback.bind(window)
+      : ((cb) => setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 15 }), 200));
+
+    function isDataSaverActive() {
+      try {
+        return Boolean(navigator?.connection?.saveData);
+      } catch (e) {
+        return false;
+      }
+    }
 
     function fetchWithCancellation(url) {
       if (activeCutoutAbortController) {
@@ -2236,19 +2334,25 @@
       return fetch(url, { signal: activeCutoutAbortController.signal });
     }
 
-    function getClientSpatialKey(ra, dec, fov, lod, targetKey) {
-      const binRa = Math.round(parseFloat(ra) / 0.05) * 0.05;
-      const binDec = Math.round(parseFloat(dec) / 0.05) * 0.05;
-      return `${targetKey || 'sky'}_${binRa.toFixed(2)}_${binDec.toFixed(2)}_fov${Number(fov).toFixed(1)}_lod${lod}`;
+    // Quantized deterministic cache keys: integer micro-degrees prevent float miss jitter (Amendment A5)
+    function getClientSpatialKey(ra, dec, fov, lod, targetKey, channel = 1) {
+      const release = 'DR1';
+      const pipeVer = '2.1.0';
+      const prodType = 'cutout';
+      const targetSlug = (targetKey || 'sky').toLowerCase();
+      const raMicro = Math.round(parseFloat(ra) * 1e5);
+      const decMicro = Math.round(parseFloat(dec) * 1e5);
+      const fovArcsec = Math.round(parseFloat(fov) * 60.0);
+      return `${release}:${pipeVer}:${prodType}:${targetSlug}:ch${channel}:fov${fovArcsec}:ra${raMicro}_dec${decMicro}:lod${lod}`;
     }
 
     function openTileIDB() {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         if (typeof indexedDB === 'undefined') {
           resolve(null);
           return;
         }
-        const req = indexedDB.open(IDB_NAME, 1);
+        const req = indexedDB.open(IDB_NAME, 2);
         req.onupgradeneeded = () => {
           const db = req.result;
           if (!db.objectStoreNames.contains(IDB_STORE)) {
@@ -2263,6 +2367,7 @@
 
     async function getTileFromClientCache(cacheKey) {
       if (clientRamTileCache.has(cacheKey)) {
+        window.cacheTelemetry.l0Hits++;
         const entry = clientRamTileCache.get(cacheKey);
         // Refresh LRU order
         clientRamTileCache.delete(cacheKey);
@@ -2279,6 +2384,7 @@
           getReq.onsuccess = () => {
             const rec = getReq.result;
             if (rec && rec.payload) {
+              window.cacheTelemetry.l1Hits++;
               rec.last_accessed = Date.now();
               store.put(rec);
               clientRamTileCache.set(cacheKey, rec.payload);
@@ -3050,11 +3156,14 @@
     // =========================================================================
     // DRAW REAL ASTRONOMICAL FITS IMAGERY (Single Continuous Optical Telescope Lens)
     // =========================================================================
+    let isNativePixelsMode = false;
+    window.isNativePixelsMode = false;
+
     function drawFeatheredImage(ctx, img, x, y, w, h, alpha = 1.0, featherEdges = false) {
       ctx.save();
       ctx.globalAlpha = Math.max(0.0, Math.min(1.0, alpha));
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
+      ctx.imageSmoothingEnabled = !isNativePixelsMode;
+      ctx.imageSmoothingQuality = isNativePixelsMode ? 'low' : 'high';
       ctx.drawImage(img, x, y, w + 0.5, h + 0.5);
 
       // Smooth edge vignette: softly blends borders into continuous space when standalone
@@ -3282,7 +3391,7 @@
       // Continuous camera transform (Pan & Zoom)
       ctx.translate(w / 2 + camera.panX, h / 2 + camera.panY);
       ctx.scale(camera.zoom, camera.zoom);
-      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingEnabled = !isNativePixelsMode;
 
       const pixelsPerArcmin = getActivePixelsPerArcmin(w, h);
 
@@ -3811,8 +3920,53 @@
       document.getElementById('vpDec').innerText = `${coords.dec.toFixed(5)}°`;
       document.getElementById('propRA').innerText = `${coords.ra.toFixed(5)}°`;
       document.getElementById('propDec').innerText = `${coords.dec.toFixed(5)}°`;
-      document.getElementById('vpFOV').innerText = `${(camera.fov / camera.zoom).toFixed(2)}'`;
-      document.getElementById('vpZoom').innerText = `${camera.zoom.toFixed(1)}x`;
+      const effFov = camera.fov / (camera.zoom || 1.0);
+      document.getElementById('vpFOV').innerText = `${effFov.toFixed(2)}'`;
+      document.getElementById('vpZoom').innerText = `${(camera.zoom || 1.0).toFixed(1)}x`;
+
+      // Update vertical zoom bar slider & ARIA state (Step 2)
+      const zoomSlider = document.getElementById('vpZoomSlider');
+      if (zoomSlider && document.activeElement !== zoomSlider) {
+        zoomSlider.value = (camera.zoom || 1.0).toFixed(2);
+        zoomSlider.setAttribute('aria-valuenow', (camera.zoom || 1.0).toFixed(2));
+        zoomSlider.setAttribute('aria-valuetext', `Zoom ${(camera.zoom || 1.0).toFixed(1)}x (FOV ${effFov.toFixed(2)} arcmin)`);
+      }
+
+      // Compute physical device-pixel scale & native SPHEREx pixel span (Amendment A1)
+      const dpr = window.devicePixelRatio || 1.0;
+      const wCss = (canvas && canvas.clientWidth) ? canvas.clientWidth : 800;
+      const hCss = (canvas && canvas.clientHeight) ? canvas.clientHeight : 600;
+      const arcsecPerDevicePx = (effFov * 60.0) / (wCss * dpr);
+
+      const devScaleEl = document.getElementById('vpDeviceScale');
+      if (devScaleEl) {
+        devScaleEl.innerText = `${arcsecPerDevicePx.toFixed(1)}″/dev-px`;
+      }
+
+      const nativeSpanEl = document.getElementById('vpNativeSpan');
+      if (nativeSpanEl) {
+        const spanX = Math.round((effFov * 60.0) / 6.15);
+        const spanY = Math.round((spanX * hCss) / wCss);
+        nativeSpanEl.innerText = `${spanX}×${spanY} px (6.15″)`;
+      }
+
+      // Dual-threshold status indicator: HiPS Native (12.88"/px) vs Exposure Native (6.15"/px)
+      const statusBadge = document.getElementById('vpScaleStatusBadge');
+      if (statusBadge) {
+        if (arcsecPerDevicePx <= 4.0) {
+          statusBadge.innerText = "🔍 Exp Magnified (<4″/px)";
+          statusBadge.className = "pl-2 border-l border-space-700 text-amber-300 font-bold truncate";
+        } else if (arcsecPerDevicePx <= 6.15) {
+          statusBadge.innerText = "🔬 Exposure Native (6.15″/px)";
+          statusBadge.className = "pl-2 border-l border-space-700 text-cyan-300 font-bold truncate";
+        } else if (arcsecPerDevicePx <= 12.88) {
+          statusBadge.innerText = "🟣 HiPS Native (12.9″/px)";
+          statusBadge.className = "pl-2 border-l border-space-700 text-purple-300 font-bold truncate";
+        } else {
+          statusBadge.innerText = "🌌 Wide Sky Context";
+          statusBadge.className = "pl-2 border-l border-space-700 text-gray-400 font-bold truncate";
+        }
+      }
 
       const scaleLine = document.getElementById('vpScaleBarLine');
       const scaleLabel = document.getElementById('vpScaleBarLabel');
@@ -4039,6 +4193,14 @@
           const res = await fetchWithCancellation(url);
           if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
+          if (res.status === 304) {
+            window.cacheTelemetry.http304Count++;
+          } else if (res.headers.get('X-Cache') === 'HIT' || res.headers.get('X-Cache-Tier') === 'L1_RAM') {
+            window.cacheTelemetry.httpCacheHits++;
+          } else {
+            window.cacheTelemetry.uncachedNetworkFetches++;
+          }
+
           data = await res.json();
           await saveTileToClientCache(cacheKey, data);
         }
@@ -4116,6 +4278,29 @@
 
         // Live CSA NEOSSat Asteroid Tracking Cross-Match (Task 4)
         loadCSANeossatData(camera.ra, camera.dec, camera.fov);
+
+        // Proactive idle pre-fetching of adjacent LOD zoom tiers (Step 5 / Amendment A5)
+        if (!isDataSaverActive()) {
+          scheduleIdle(() => {
+            const altTiers = (currentLOD === 1) ? [0, 2] : ((currentLOD === 0) ? [1] : [1]);
+            altTiers.forEach(async (altLOD) => {
+              const altFov = (altLOD === 2) ? 8.0 : ((altLOD === 0) ? 1.5 : 3.0);
+              const altKey = getClientSpatialKey(camera.ra, camera.dec, altFov, altLOD, targetKey);
+              const inMem = clientRamTileCache.has(altKey);
+              if (!inMem) {
+                let altUrl = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${altFov}&lod=${altLOD}`;
+                if (targetKey) altUrl += `&target=${targetKey}`;
+                try {
+                  const altRes = await fetch(altUrl);
+                  if (altRes.ok) {
+                    const altData = await altRes.json();
+                    await saveTileToClientCache(altKey, altData);
+                  }
+                } catch (e) {}
+              }
+            });
+          });
+        }
       } catch (err) {
         if (err && err.name === 'AbortError') return;
         console.error("Failed to load real FITS cutout:", err);
@@ -5466,13 +5651,28 @@
       }
     });
 
-    // Mouse wheel zoom
+    // Mouse wheel zoom with cursor-centered invariant celestial point (Step 2 Specification)
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-      camera.zoom = Math.min(8.0, Math.max(0.4, camera.zoom * zoomFactor));
-      updateCoordinateReadouts();
-      drawFrame();
+      const zoomFactor = e.deltaY < 0 ? 1.12 : 0.89;
+      const oldZoom = camera.zoom || 1.0;
+      const newZoom = Math.min(8.0, Math.max(0.4, oldZoom * zoomFactor));
+      if (Math.abs(newZoom - oldZoom) > 1e-4) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const w = canvas.width || 800;
+        const h = canvas.height || 600;
+        // Celestial world point under cursor before zoom
+        const worldX = (mouseX - (w / 2 + camera.panX)) / oldZoom;
+        const worldY = (mouseY - (h / 2 + camera.panY)) / oldZoom;
+        // Shift pan so celestial point under mouse stays invariant
+        camera.panX = mouseX - (w / 2) - worldX * newZoom;
+        camera.panY = mouseY - (h / 2) - worldY * newZoom;
+        camera.zoom = newZoom;
+        updateCoordinateReadouts();
+        drawFrame();
+      }
     }, { passive: false });
 
     // Keyboard controls for WASD / Space / Shift / Backquote
@@ -5770,6 +5970,101 @@
       if (inputDec) inputDec.addEventListener('input', validateDecHint);
       validateRaHint();
       validateDecHint();
+    })();
+
+    // =========================================================================
+    // INTERACTIVE LOGARITHMIC ZOOM BAR & DUAL-SCALE CONTROLLER (Step 2)
+    // =========================================================================
+    (function initViewportZoomBar() {
+      const btnIn = document.getElementById('btnVpZoomIn');
+      const btnOut = document.getElementById('btnVpZoomOut');
+      const btnReset = document.getElementById('btnVpZoomReset');
+      const slider = document.getElementById('vpZoomSlider');
+      const btnNative = document.getElementById('btnToggleNativePixels');
+
+      if (btnIn) {
+        btnIn.addEventListener('click', () => {
+          camera.zoom = Math.min(8.0, (camera.zoom || 1.0) * 1.15);
+          updateCoordinateReadouts();
+          drawFrame();
+        });
+      }
+
+      if (btnOut) {
+        btnOut.addEventListener('click', () => {
+          camera.zoom = Math.max(0.4, (camera.zoom || 1.0) / 1.15);
+          updateCoordinateReadouts();
+          drawFrame();
+        });
+      }
+
+      if (btnReset) {
+        btnReset.addEventListener('click', () => {
+          camera.zoom = 1.0;
+          camera.panX = 0;
+          camera.panY = 0;
+          updateCoordinateReadouts();
+          drawFrame();
+          if (typeof showToast === 'function') {
+            showToast('Viewport scale reset to 1.0x (15′ Default Science Scale).', 'info');
+          }
+        });
+      }
+
+      if (slider) {
+        slider.addEventListener('input', (e) => {
+          const val = parseFloat(e.target.value);
+          if (!isNaN(val) && val >= 0.4 && val <= 8.0) {
+            camera.zoom = val;
+            updateCoordinateReadouts();
+            drawFrame();
+          }
+        });
+
+        slider.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            camera.zoom = Math.min(8.0, (camera.zoom || 1.0) * 1.05);
+          } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            camera.zoom = Math.max(0.4, (camera.zoom || 1.0) / 1.05);
+          } else if (e.key === 'PageUp') {
+            e.preventDefault();
+            camera.zoom = Math.min(8.0, (camera.zoom || 1.0) * 1.25);
+          } else if (e.key === 'PageDown') {
+            e.preventDefault();
+            camera.zoom = Math.max(0.4, (camera.zoom || 1.0) / 1.25);
+          } else if (e.key === 'Home') {
+            e.preventDefault();
+            camera.zoom = 0.4;
+          } else if (e.key === 'End') {
+            e.preventDefault();
+            camera.zoom = 8.0;
+          }
+          updateCoordinateReadouts();
+          drawFrame();
+        });
+      }
+
+      if (btnNative) {
+        btnNative.addEventListener('click', () => {
+          isNativePixelsMode = !isNativePixelsMode;
+          window.isNativePixelsMode = isNativePixelsMode;
+          btnNative.setAttribute('aria-pressed', isNativePixelsMode ? 'true' : 'false');
+          btnNative.classList.toggle('bg-cyan-600', isNativePixelsMode);
+          btnNative.classList.toggle('text-white', isNativePixelsMode);
+          btnNative.classList.toggle('bg-space-850', !isNativePixelsMode);
+          btnNative.classList.toggle('text-gray-300', !isNativePixelsMode);
+
+          if (canvas) {
+            canvas.style.imageRendering = isNativePixelsMode ? 'pixelated' : 'auto';
+          }
+          drawFrame();
+          if (typeof showToast === 'function') {
+            showToast(isNativePixelsMode ? 'Nearest-Neighbor Native Pixels Active (Raw detector pixels, zero smoothing)' : 'Bilinear Smoothing Active', 'info');
+          }
+        });
+      }
     })();
 
     // Audio Toggle
