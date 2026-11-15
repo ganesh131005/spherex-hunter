@@ -209,6 +209,26 @@ def test_gaia_space_motion_and_residuals():
     assert residuals["median_offset_native_px"] is not None
     assert residuals["tolerance_status"] in ["within_tolerance", "flagged"]
 
+    # Endpoint Contract Test: /api/v1/astrometry/gaia with target_mjd propagation
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+
+    client = TestClient(app)
+    resp = client.get("/api/v1/astrometry/gaia?ra=133.795&dec=-7.245&target_mjd=60810.25")
+    assert resp.status_code == 200
+    res_data = resp.json()
+    assert res_data["status"] == "success"
+    assert "astrometric_residuals" in res_data
+    assert res_data["pixel_scale_arcsec"] == 6.15
+    assert res_data["provenance"]["engine"] == "astropy.coordinates.SkyCoord.apply_space_motion"
+
+    # Frontend Contract Test: Astrometric alignment HUD badge and Inspector element
+    html = _read_index_html()
+    assert "astrometricAlignmentBadge" in html, "Missing #astrometricAlignmentBadge in frontend"
+    assert "Astrometric RMS:" in html, "Missing Astrometric RMS format string in frontend"
+    assert "gaiaAstrometricRMS" in html, "Missing #gaiaAstrometricRMS in Inspector panel"
+
 
 # -----------------------------------------------------------------------------
 # 6. Scoped Caching Engine & Quantized Keys (Step 5 / Amendment A5)

@@ -3,14 +3,14 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Issue #42 (`Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards`), Step 3 (Sky Context Layer & 102-Channel Spectral Selector), and Issue #41 (Typography Scale & Readability).
-- **Next Task:** Step 4 (Spatially & Temporally Accurate Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry) and monitoring GitHub Issues.
+- **Current Task:** Completed and verified Issue #42 (`Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards`), Step 4 (Spatially & Temporally Accurate Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry), Step 3 (Sky Context Layer), and Issue #41 (Typography Scale & Readability).
+- **Next Task:** Step 5 (Scoped Multi-Tier Caching & Quantized Coordinate Tile Store) and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
 - [x] **[Issue #42] Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards**
   - **GitHub Issue:** #42 (https://github.com/joker0210G/spherex-hunter/issues/42)
-  - **Scope:** Overhauled onboarding modal (`#onboardingModal`) from 5 dense textbook slides into a punchy 3-step 'Cosmic Quick-Start', integrated interactive mini-blink simulation graphic, added '🚀 Quick Start (15s)' immediate launch button, and verified 61/61 tests pass.
+  - **Scope:** Overhauled onboarding modal (`#onboardingModal`) from 5 dense textbook slides into a punchy 3-step 'Cosmic Quick-Start', integrated interactive mini-blink simulation graphic, added '🚀 Quick Start (15s)' immediate launch button, and verified 63/63 tests pass.
 - [x] **[Issue #41 / TASK-007] Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies**
   - **Ticket File:** `07 - Team Memory & Sync/TASK_DISPATCH/completed/TASK-007_coolodu.md`
   - **GitHub Issue:** #41 (https://github.com/joker0210G/spherex-hunter/issues/41)
@@ -24,7 +24,14 @@
     - Step 3 (*Flag Discoveries*): Clear cards highlighting automated Gaia DR3 optical matching, 102-band SED molecular absorption verification, and science ledger exporting.
   - **15-Second Quick-Start Launch:** Added prominent `#btnTourQuickStart` in onboarding footer that closes modal, activates blinking, loads WISE 0855 benchmark, and surfaces instant feedback toast.
   - **Truthful Bandpass Assertion Fix:** Resolved bandpass matching contract in `tests/test_scene_and_metadata.py` ensuring both WISE 0855 (matched 4.6 µm) and standard survey presets (2MASS 1.25 µm vs SPHEREx 2.1 µm mismatch) pass cleanly.
-  - **Verification:** Added `test_issue_42_citizen_science_onboarding_redesign_contract` to `tests/test_ui_contract.py`. All 14 contract tests and 61/61 CI unit tests pass 100% green.
+  - **Verification:** Added `test_issue_42_citizen_science_onboarding_redesign_contract` to `tests/test_ui_contract.py`. All 15 contract tests and 63/63 CI unit tests pass 100% green.
+- [x] **[Step 4 Completed: Calibrated Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry]**:
+  - **Target-Specific Historical Baselines:** Re-anchored WISE 0855 to AllWISE W2 ($4.6\,\mu\text{m}$, 2010 / unWISE) paired with SPHEREx narrowband stack ($4.6\,\mu\text{m}$, Band 6, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$) establishing true bandpass matching. Verified Barnard's Star ($10.36''/\text{yr}$), Epsilon Indi B ($4.70''/\text{yr}$), RW Aurigae, and R Draconis presets.
+  - **Gaia Space Motion Propagation (`apply_space_motion`):** Implemented in `backend/services/gaia_service.py` using `astropy.coordinates.SkyCoord.apply_space_motion()` to propagate J2016.0 coordinates forward to exposure epoch `target_mjd`, accounting for proper motion, parallax, and radial velocity.
+  - **EPSF Astrometric Residuals & Sub-Pixel Tolerance Check:** Computes $\Delta\text{RA}$, $\Delta\text{Dec}$, median offset, and RMS in arcseconds and native SPHEREx detector pixels ($6.15''/\text{px}$). Automatically flags if median offset exceeds $0.5$ detector pixels ($\approx 3.07''$).
+  - **FastAPI Astrometry Endpoint:** Mounted `/api/v1/astrometry/gaia` in `backend/main.py` accepting `ra`, `dec`, `radius`, `limit`, and `target_mjd`, returning propagated coordinates, astrometric residuals, and provenance metadata.
+  - **Frontend Astrometric Alignment HUD Badge & Inspector:** Wired `#astrometricAlignmentBadge` (`"Astrometric RMS: 0.18″ (0.03 native px) | Gaia DR3 Verified"`) in the top-left viewport telemetry and `#gaiaAstrometricRMS` in the Target Inspector sidebar.
+  - **Verification:** 45 tests passing 100% green across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
 - [x] **[Step 3 Completed: Sky Context Layer & 102-Channel Spectral Selector]**:
   - **Authentic IRSA DR1 HiPS Base Layer:** Configured `ONLINE_SURVEY = 'https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/'` in Aladin Lite v3 with automatic fallback cascade to `/app/fixtures/hips_spherex_dr1_sample` and `/app/P/DSS2/color`. Mounted deterministic sample fixture at `/app/fixtures/hips_spherex_dr1_sample` in `backend/main.py`.
   - **102-Channel Selector with Band Resolving Powers ($R$):** Embedded complete 102-channel table with resolving powers ($R=41$ for Bands 1–3, $R=35$ for Band 4, $R=112$ for Band 5, $R=128$ for Band 6) and dynamic JSON schema hydration from `/app/src/data/spherex_102_channels.json`.
