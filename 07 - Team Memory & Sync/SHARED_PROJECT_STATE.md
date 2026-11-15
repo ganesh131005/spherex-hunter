@@ -27,6 +27,16 @@
 
 ## 📝 Recent Team Log & Announcements
 ## 📝 Recent Team Log & Announcements
+- **[⏱️ RELOCATED TIME STEP CONTROLLER TO LEFT TOOLBAR WITH POPUP OPTION (@coolodu)]**
+  - **Feature:** Moved the floating Time Step Controller (`#viewportTimeStepHUD`) out of the center viewport canvas and anchored it adjacent to the left vertical tool rail (`#leftToolRail`, `left-16`, `top-14`).
+  - **Tool Rail Integration & Popup Mode:** Added `#toolTimeStep` (shortcut `T`) to the left rail to toggle the popup open/closed, added a Pinning mode toggle (`#btnPinTimeStepHUD`) for permanent pinned vs auto-dismiss flyout, and added an explicit close button (`#btnCloseTimeStepHUD`).
+  - **Full Functional Tool Suite:**
+    1. *Epoch 1 (1999 t₁):* Jumps to Frame 1 (1999 2MASS baseline), syncs blend to 25%, updates timeline slider and tick highlights, and draws canvas.
+    2. *Blink / Morph (t₁ ↔ t₂):* Toggles continuous smooth morph across $\Delta t$, syncs play/pause icons, and updates bottom dock status.
+    3. *Epoch 2 (2025 t₂):* Accurately jumps to the final SPHEREx frame (`totalFrames` / Frame 4) with 100% blend and timeline sync.
+    4. *ZOGY Difference (Δ):* Toggles numerical subtraction map and syncs with header Difference button.
+    5. *Auto-ID Dipole Scan:* Toggles automated candidate detection with pulsing indicator dot.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (20/20) including `test_timestep_relocated_to_left_rail_with_popup_option_contract`.
 - **[🔬 102-BAND SPECTRUM SIDEWAYS HORIZONTAL ZOOM & PAN (@coolodu)]**
   - **Feature:** Implemented cursor-centered sideways horizontal zoom and drag-pan across the 102-band spectrum chart ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$), replacing vertical height resizing with sideways wavelength expansion.
   - **Interaction Mechanics:**

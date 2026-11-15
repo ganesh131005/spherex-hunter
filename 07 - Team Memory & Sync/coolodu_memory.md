@@ -3,11 +3,22 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified repositioning of the 'Ices' quick-jump section (`#spec102MolecularBar`) in `#dockPanelSpectrum` on `coolodu/web-frontend`. Moved the 5 molecular ice and gas pills (`💧 H₂O`, `❄️ Ice`, `🪐 CH₄`, `🧊 CO₂`, `🔬 CO Monoxide`) from the crowded top toolbar to their natural scientific home directly below the 'Molecular Signatures' table inside the right sidebar, unburdening the top toolbar and providing direct 1-click spectral jumping with zero layout clipping. All 18 UI contract tests and full test suites passing 100% green.
+- **Current Task:** Completed and verified relocation of the Time Step Controller (`#viewportTimeStepHUD`) to the left vertical tool rail (`#leftToolRail`) with interactive popup option on `coolodu/web-frontend`. Added `#toolTimeStep` on the left rail, anchored the controller flyout cleanly at `left-16` (adjacent to the rail), added a Pinned/Flyout mode switch (`#btnPinTimeStepHUD`), and fully wired all sub-tools (Epoch 1 1999 jump, Continuous Morph/Blink play/pause, Epoch 2 2025 SPHEREx survey jump, ZOGY Numerical Difference Map, and Auto-ID scan). All 20 UI contract tests passing 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Relocate Time Step Controller to Left Vertical Toolbar with Popup Option]**:
+  - Added `#toolTimeStep` tool button to the left vertical rail with `clock` icon, tooltip, and keyboard shortcut `T`.
+  - Re-anchored `#viewportTimeStepHUD` as a clean flyout popup at `left-16` adjacent to the rail, completely clearing the center viewport canvas.
+  - Implemented Popup Options: Pinning mode toggle (`#btnPinTimeStepHUD`) to switch between permanent pinned sidebar and auto-dismiss flyout, plus close button (`#btnCloseTimeStepHUD`).
+  - Made all timestep tools 100% functional:
+    - *Epoch 1 (1999 t₁):* Jumps to Frame 1, syncs blend to 25%, updates timeline ticks and slider, draws canvas.
+    - *Morph / Blink (t₁ ↔ t₂):* Toggles smooth kinematics loop with play/pause sync across HUD and bottom dock.
+    - *Epoch 2 (2025 t₂):* Correctly jumps to final SPHEREx survey frame (`totalFrames` / Frame 4), sets blend to 100%, updates timeline.
+    - *ZOGY Difference (Δ):* Toggles numerical subtraction map and syncs with top header Difference button.
+    - *Auto-ID Dipole Scan:* Toggles automated candidate detection with pulsing status indicator.
+  - Added contract test `test_timestep_relocated_to_left_rail_with_popup_option_contract()` in `tests/test_ui_contract.py`.
 - [x] **[102-Band Spectrum Sideways Horizontal Zoom & Pan (Wavelength Expansion)]**:
   - Implemented cursor-centered sideways horizontal zoom across the 102-band spectrum ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$) via mouse wheel scroll over the spectrum canvas (`specChart`).
   - Scrolling up expands the wavelength axis sideways (zooms in up to 10.0x / 10 bands visible) allowing users to inspect minute absorption features and continuum variations across channels.

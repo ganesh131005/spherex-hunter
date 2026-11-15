@@ -638,6 +638,52 @@ def test_ice_jump_chips_positioned_below_molecular_signatures():
     assert "CO" in pills_text, "Missing CO pill"
 
 
+def test_timestep_relocated_to_left_rail_with_popup_option_contract():
+    """Validates that the Time Step controller is relocated to the left vertical toolbar with an interactive popup option."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Left tool rail contains #toolTimeStep button
+    rail = soup.find(id="leftToolRail")
+    assert rail is not None, "Missing #leftToolRail"
+    tool_timestep = rail.find(id="toolTimeStep")
+    assert tool_timestep is not None, "Missing #toolTimeStep on left tool rail"
+    assert "clock" in str(tool_timestep).lower() or "step" in str(tool_timestep).lower()
+
+    # 2. Time Step HUD popup is anchored adjacent to the left rail (left-16)
+    hud = soup.find(id="viewportTimeStepHUD")
+    assert hud is not None, "Missing #viewportTimeStepHUD"
+    classes = hud.get("class", [])
+    assert "left-16" in classes, f"#viewportTimeStepHUD must be anchored at left-16, got {classes}"
+
+    # 3. Popup options: Close button and Pinned/Flyout mode button exist
+    btn_close = hud.find(id="btnCloseTimeStepHUD")
+    assert btn_close is not None, "Missing #btnCloseTimeStepHUD in popup header"
+    btn_pin = hud.find(id="btnPinTimeStepHUD")
+    assert btn_pin is not None, "Missing #btnPinTimeStepHUD for popup pinning option"
+
+    # 4. Primary functional tools exist inside the popup
+    delta_display = hud.find(id="hudTimeStepDelta")
+    assert delta_display is not None, "Missing #hudTimeStepDelta"
+    btn_prev = hud.find(id="btnHudStepPrev")
+    assert btn_prev is not None, "Missing #btnHudStepPrev"
+    btn_morph = hud.find(id="btnHudBlinkMorph")
+    assert btn_morph is not None, "Missing #btnHudBlinkMorph"
+    btn_next = hud.find(id="btnHudStepNext")
+    assert btn_next is not None, "Missing #btnHudStepNext"
+    btn_diff = hud.find(id="btnHudDiffMode")
+    assert btn_diff is not None, "Missing #btnHudDiffMode"
+    btn_autoid = hud.find(id="btnAutoDetectPill")
+    assert btn_autoid is not None, "Missing #btnAutoDetectPill"
+
+    # 5. JavaScript toggle function and shortcuts exported
+    assert "toggleTimeStepHUD" in html, "Missing toggleTimeStepHUD function"
+    assert "window.toggleTimeStepHUD" in html, "toggleTimeStepHUD must be exported to window"
+    assert "toolTimeStep" in html, "JavaScript must bind listener to #toolTimeStep"
+    assert "btnCloseTimeStepHUD" in html, "JavaScript must bind listener to #btnCloseTimeStepHUD"
+    assert "btnPinTimeStepHUD" in html, "JavaScript must bind listener to #btnPinTimeStepHUD"
+
+
+
 
 
 
