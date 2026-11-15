@@ -26,6 +26,26 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🛡️ CATALOG ENGINE GLOBAL CIRCUIT BREAKER & MULTI-SURVEY RESILIENT FALLBACKS (@jokerodu)]**
+  - **Issue & Symptom:** Addressed backend log spam and latency cascades caused by NASA IRSA TAP returning `502 Server Error: Proxy Error` on `irsa.ipac.caltech.edu/TAP/sync` and ESA Gaia TAP returning `ConnectTimeout` (6.0s timeout) during viewport clicks and light curve queries.
+  - **Global Circuit Breakers:**
+    - Implemented `_IRSA_TAP_CIRCUIT_OPEN_UNTIL` and `_ESA_GAIA_CIRCUIT_OPEN_UNTIL` in `backend/services/catalog_engine.py` and `backend/services/gaia_service.py` with 60-second cooldowns.
+    - Exported `is_irsa_tap_available()`, `trip_irsa_tap_circuit()`, `is_esa_gaia_available()`, and `trip_esa_gaia_circuit()`.
+    - Once tripped, queries for 2MASS, AllWISE, NEOWISE-R, SPHEREx, and Gaia immediately bypass the failing upstream servers, preventing redundant 502 connection attempts and connection stalls.
+  - **Third-Tier Harvard CfA VizieR Gaia Fallback:**
+    - Integrated authentic Harvard CfA VizieR `I/355/gaiadr3` fallback into `query_gaia_dr3` in both `catalog_engine.py` and `gaia_service.py`.
+    - If both ESA and IRSA fail or are in cooldown, authentic Gaia DR3 astrometry (pmRA, pmDE, Plx, Gmag, BPmag, RPmag, RV) is parsed directly from VizieR in <1.5s with zero mock data.
+  - **Spatial Proximity RAM Caching:**
+    - Added spatial tolerance match ($\le 10$ arcsec / $0.003^\circ$) in `crossmatch_photometry` so repeated micro-clicks around the same star/reticle resolve in 0.0006s without triggering parallel external thread pools.
+  - **Client-Side Debounce Guard:**
+    - Added 250ms coordinate-distance debounce in `fetchPointLightCurve` (`frontend/index.html`) to skip duplicate micro-clicks.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py`, `test_golden_suite.py`, and `test_viewport_overhaul_v2.py` (58/58 passing).
+- **[👁️ UPPER HORIZONTAL TOOLBAR BLINK FUNCTIONALITY & VISIBLE VIEW MODES POPUP (@coolodu)]**
+  - **Feature:** Resolved header clipping issue (`overflow-visible` on `<header>`), made the Blink tool icon (`#btnViewModesTrigger`) fully functional, and ensured the collective View Modes popup toolbar (`#viewModesPopup`) is prominently visible beneath the upper horizontal toolbar.
+  - **Root Cause & Fix:** `<header>` had `overflow-hidden`, which clipped all dropdowns and popups anchored in the top bar. Changed to `overflow-visible` with high stacking context (`z-40`).
+  - **Single Tool Trigger & Blink Playback:** Clicking `#btnViewModesTrigger` now toggles the collective popup toolbar and directly controls Blink comparator playback (starts flipbook loop, plays/pauses multi-epoch animation, redraws frame, and ensures `#viewportBlinkHUD` is active).
+  - **Visible Collective Popup Menu:** Displays all 4 view mode tools (Blink Comparator, Difference Imaging, 102-Band Spectra, and Aladin Sky Map) with quick close button `✕` (`#btnCloseViewModesPopup`), `Esc` dismiss, and outside-click dismiss.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (26/26) and verified live in browser subagent.
 - **[🔍 102-BAND SPECTRUM 2D SPOT POPUPS & INTERACTIVE INSPECTOR ENGINE (@jokerodu)]**
   - **Feature & Fix:** Solved missing popups/tooltips on spots in the 102-band spectrum chart (Dataset 1 Catalog Photometry diamonds e.g. WISE W2, and Dataset 2 Molecular Feature diamonds e.g. CO₂ Ice, H₂O, CH₄, CO).
   - **Root Cause:** Due to large vertical flux discrepancies between the SED curve (e.g. 2224 µJy) and photometry points (e.g. 566 µJy), 1D X-axis index snapping (`axis: 'x'`) pulled Chart.js's tooltip position to the top of the canvas, and hovering directly on spots with slight X-offset caused Dataset 1/2 to evaluate to null. Furthermore, clicking on points lacked dedicated interactive popup feedback.

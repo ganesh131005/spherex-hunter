@@ -105,6 +105,60 @@ def _query_vizier_tsv(
     return rows
 
 
+_IRSA_TAP_CIRCUIT_OPEN_UNTIL: float = 0.0
+_ESA_GAIA_CIRCUIT_OPEN_UNTIL: float = 0.0
+
+
+def is_irsa_tap_available() -> bool:
+    global _IRSA_TAP_CIRCUIT_OPEN_UNTIL
+    return time.time() >= _IRSA_TAP_CIRCUIT_OPEN_UNTIL
+
+
+def trip_irsa_tap_circuit(duration_s: float = 60.0):
+    global _IRSA_TAP_CIRCUIT_OPEN_UNTIL
+    _IRSA_TAP_CIRCUIT_OPEN_UNTIL = max(_IRSA_TAP_CIRCUIT_OPEN_UNTIL, time.time() + duration_s)
+
+
+def is_esa_gaia_available() -> bool:
+    global _ESA_GAIA_CIRCUIT_OPEN_UNTIL
+    return time.time() >= _ESA_GAIA_CIRCUIT_OPEN_UNTIL
+
+
+def trip_esa_gaia_circuit(duration_s: float = 60.0):
+    global _ESA_GAIA_CIRCUIT_OPEN_UNTIL
+    _ESA_GAIA_CIRCUIT_OPEN_UNTIL = max(_ESA_GAIA_CIRCUIT_OPEN_UNTIL, time.time() + duration_s)
+
+
+def _append_gaia_row(sources: list, center_ra: float, center_dec: float, src_id, s_ra: float, s_dec: float,
+                     pmra: float, pmdec: float, plx: float | None, g_mag: float | None,
+                     bp_mag: float | None, rp_mag: float | None, bp_rp: float | None, rv: float | None):
+    total_pm = float(round(np.hypot(pmra, pmdec), 2))
+    pm_angle = float(round(np.degrees(np.arctan2(pmra, pmdec)) % 360.0, 2)) if total_pm > 0 else 0.0
+    dist_pc = float(round(1000.0 / plx, 2)) if plx is not None and plx > 0.1 else None
+    dx_arcsec = float(round((s_ra - center_ra) * np.cos(np.radians(center_dec)) * 3600.0, 2))
+    dy_arcsec = float(round((s_dec - center_dec) * 3600.0, 2))
+    g_flux_ujy = round(3229e6 * (10.0 ** (-0.4 * g_mag)), 3) if g_mag is not None else None
+    sources.append({
+        "source_id": str(src_id),
+        "ra": s_ra,
+        "dec": s_dec,
+        "g_mag": g_mag,
+        "g_flux_ujy": g_flux_ujy,
+        "bp_mag": bp_mag,
+        "rp_mag": rp_mag,
+        "bp_rp": bp_rp,
+        "pmra_mas_yr": pmra,
+        "pmdec_mas_yr": pmdec,
+        "total_pm_mas_yr": total_pm,
+        "pm_angle_deg": pm_angle,
+        "parallax_mas": plx,
+        "distance_pc": dist_pc,
+        "radial_velocity_kms": rv,
+        "is_high_proper_motion": total_pm > 50.0,
+        "offset_arcsec": {"dx": dx_arcsec, "dy": dy_arcsec}
+    })
+
+
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache", "catalog_gaia")
 os.makedirs(CACHE_DIR, exist_ok=True)
 
@@ -117,6 +171,7 @@ def query_gaia_dr3(
     """
     Queries ESA Gaia DR3 via Virtual Observatory TAP for stars within radius_arcmin of (ra, dec).
     Returns astrometric positions, proper motion vectors, parallax distances, and magnitudes.
+    Falls back gracefully across ESA Gaia TAP -> NASA IRSA TAP -> Harvard CfA VizieR (I/355/gaiadr3).
     """
     ra, dec, radius_arcmin = validate_coordinates(ra, dec, radius_arcmin)
     radius_arcmin = float(np.clip(radius_arcmin, 0.2, 15.0))
@@ -138,105 +193,131 @@ def query_gaia_dr3(
 
     sources = []
     query_error = None
+    archive_used = "Gaia DR3 (European Space Agency / ICRS J2016.0)"
 
-    # 2. Query ESA Gaia TAP service (with NASA IRSA gaia_dr3_source fallback)
-    try:
-        import pyvo
-        select_cols = f"""
-        SELECT TOP {limit}
-            source_id, ra, dec,
-            pmra, pmdec, pmra_error, pmdec_error,
-            parallax, parallax_error,
-            phot_g_mean_mag, phot_bp_mean_mag, phot_rp_mean_mag, bp_rp,
-            radial_velocity
-        """
-        where_clause = f"""
-        WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra:.5f}, {dec:.5f}, {radius_deg:.5f}))
-        ORDER BY phot_g_mean_mag ASC
-        """
+    select_cols = f"""
+    SELECT TOP {limit}
+        source_id, ra, dec,
+        pmra, pmdec, pmra_error, pmdec_error,
+        parallax, parallax_error,
+        phot_g_mean_mag, phot_bp_mean_mag, phot_rp_mean_mag, bp_rp,
+        radial_velocity
+    """
+    where_clause = f"""
+    WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra:.5f}, {dec:.5f}, {radius_deg:.5f}))
+    ORDER BY phot_g_mean_mag ASC
+    """
+
+    # 2. Query ESA Gaia TAP service (if circuit available)
+    if is_esa_gaia_available():
         try:
+            import pyvo
             service = pyvo.dal.TAPService(
                 "https://gea.esac.esa.int/tap-server/tap",
-                session=_make_timeout_session(6.0),
+                session=_make_timeout_session(3.5),
             )
             results = service.search(f"{select_cols}\nFROM gaiadr3.gaia_source\n{where_clause}")
+            for row in results:
+                s_ra = float(row["ra"]) if row["ra"] is not None and not np.isnan(row["ra"]) else ra
+                s_dec = float(row["dec"]) if row["dec"] is not None and not np.isnan(row["dec"]) else dec
+                pmra = float(row["pmra"]) if row["pmra"] is not None and not np.isnan(row["pmra"]) else 0.0
+                pmdec = float(row["pmdec"]) if row["pmdec"] is not None and not np.isnan(row["pmdec"]) else 0.0
+                plx = float(row["parallax"]) if row["parallax"] is not None and not np.isnan(row["parallax"]) else None
+                g_mag = float(round(row["phot_g_mean_mag"], 2)) if row["phot_g_mean_mag"] is not None and not np.isnan(row["phot_g_mean_mag"]) else None
+                bp_mag = float(round(row["phot_bp_mean_mag"], 2)) if row["phot_bp_mean_mag"] is not None and not np.isnan(row["phot_bp_mean_mag"]) else None
+                rp_mag = float(round(row["phot_rp_mean_mag"], 2)) if row["phot_rp_mean_mag"] is not None and not np.isnan(row["phot_rp_mean_mag"]) else None
+                bp_rp = float(round(row["bp_rp"], 2)) if row["bp_rp"] is not None and not np.isnan(row["bp_rp"]) else None
+                rv = float(round(row["radial_velocity"], 2)) if row["radial_velocity"] is not None and not np.isnan(row["radial_velocity"]) else None
+
+                _append_gaia_row(sources, ra, dec, row["source_id"], s_ra, s_dec, pmra, pmdec, plx, g_mag, bp_mag, rp_mag, bp_rp, rv)
         except Exception as esa_err:
-            print(f"ESA Gaia TAP query failed for ({ra}, {dec}), trying IRSA gaia_dr3_source fallback: {esa_err}")
+            trip_esa_gaia_circuit(60.0)
+            print(f"ESA Gaia TAP query failed for ({ra}, {dec}), circuit open for 60s: {esa_err}")
+
+    # 3. Fallback to NASA IRSA TAP gaia_dr3_source (if circuit available)
+    if not sources and is_irsa_tap_available():
+        try:
+            import pyvo
             irsa_service = pyvo.dal.TAPService(
                 "https://irsa.ipac.caltech.edu/TAP",
-                session=_make_timeout_session(8.0),
+                session=_make_timeout_session(3.5),
             )
             results = irsa_service.search(f"{select_cols}\nFROM gaia_dr3_source\n{where_clause}")
+            archive_used = "Gaia DR3 (NASA IRSA TAP / ICRS J2016.0)"
+            for row in results:
+                s_ra = float(row["ra"]) if row["ra"] is not None and not np.isnan(row["ra"]) else ra
+                s_dec = float(row["dec"]) if row["dec"] is not None and not np.isnan(row["dec"]) else dec
+                pmra = float(row["pmra"]) if row["pmra"] is not None and not np.isnan(row["pmra"]) else 0.0
+                pmdec = float(row["pmdec"]) if row["pmdec"] is not None and not np.isnan(row["pmdec"]) else 0.0
+                plx = float(row["parallax"]) if row["parallax"] is not None and not np.isnan(row["parallax"]) else None
+                g_mag = float(round(row["phot_g_mean_mag"], 2)) if row["phot_g_mean_mag"] is not None and not np.isnan(row["phot_g_mean_mag"]) else None
+                bp_mag = float(round(row["phot_bp_mean_mag"], 2)) if row["phot_bp_mean_mag"] is not None and not np.isnan(row["phot_bp_mean_mag"]) else None
+                rp_mag = float(round(row["phot_rp_mean_mag"], 2)) if row["phot_rp_mean_mag"] is not None and not np.isnan(row["phot_rp_mean_mag"]) else None
+                bp_rp = float(round(row["bp_rp"], 2)) if row["bp_rp"] is not None and not np.isnan(row["bp_rp"]) else None
+                rv = float(round(row["radial_velocity"], 2)) if row["radial_velocity"] is not None and not np.isnan(row["radial_velocity"]) else None
 
-        for row in results:
-            src_id = str(row["source_id"])
-            s_ra = float(row["ra"]) if row["ra"] is not None and not np.isnan(row["ra"]) else ra
-            s_dec = float(row["dec"]) if row["dec"] is not None and not np.isnan(row["dec"]) else dec
+                _append_gaia_row(sources, ra, dec, row["source_id"], s_ra, s_dec, pmra, pmdec, plx, g_mag, bp_mag, rp_mag, bp_rp, rv)
+        except Exception as irsa_err:
+            trip_irsa_tap_circuit(60.0)
+            print(f"NASA IRSA gaia_dr3_source TAP failed for ({ra}, {dec}), circuit open for 60s: {irsa_err}")
 
-            pmra = float(row["pmra"]) if row["pmra"] is not None and not np.isnan(row["pmra"]) else 0.0
-            pmdec = float(row["pmdec"]) if row["pmdec"] is not None and not np.isnan(row["pmdec"]) else 0.0
-            total_pm = float(round(np.hypot(pmra, pmdec), 2))
+    # 4. Fallback to Harvard CfA VizieR (I/355/gaiadr3)
+    if not sources:
+        try:
+            vrows = _query_vizier_tsv(
+                source="I/355/gaiadr3",
+                ra=ra,
+                dec=dec,
+                radius_arcmin=radius_arcmin,
+                limit=limit,
+                out_cols="Source,RAJ2000,DEJ2000,pmRA,pmDE,Plx,Gmag,BPmag,RPmag,BP-RP,RV",
+                timeout_s=6.0,
+            )
+            for r in vrows:
+                s_ra = _safe_float(r.get("RAJ2000"))
+                s_dec = _safe_float(r.get("DEJ2000"))
+                if s_ra is None or s_dec is None:
+                    continue
+                pmra = _safe_float(r.get("pmRA")) or 0.0
+                pmdec = _safe_float(r.get("pmDE")) or 0.0
+                plx = _safe_float(r.get("Plx"))
+                g_mag = _safe_float(r.get("Gmag"))
+                bp_mag = _safe_float(r.get("BPmag"))
+                rp_mag = _safe_float(r.get("RPmag"))
+                bp_rp = _safe_float(r.get("BP-RP"))
+                rv = _safe_float(r.get("RV"))
 
-            # Position angle: 0 = North, 90 = East, 180 = South, 270 = West
-            pm_angle = float(round(np.degrees(np.arctan2(pmra, pmdec)) % 360.0, 2)) if total_pm > 0 else 0.0
+                _append_gaia_row(sources, ra, dec, r.get("Source", ""), s_ra, s_dec, pmra, pmdec, plx, g_mag, bp_mag, rp_mag, bp_rp, rv)
+            if sources:
+                archive_used = "Gaia DR3 (Harvard CfA VizieR I/355/gaiadr3 / ICRS J2016.0)"
+        except Exception as viz_err:
+            query_error = f"All Gaia DR3 catalog mirrors failed: {viz_err}"
+            print(f"Harvard VizieR Gaia fallback failed for ({ra}, {dec}): {viz_err}")
 
-            plx = float(row["parallax"]) if row["parallax"] is not None and not np.isnan(row["parallax"]) else None
-            dist_pc = float(round(1000.0 / plx, 2)) if plx is not None and plx > 0.1 else None
-
-            g_mag = float(round(row["phot_g_mean_mag"], 2)) if row["phot_g_mean_mag"] is not None and not np.isnan(row["phot_g_mean_mag"]) else None
-            bp_mag = float(round(row["phot_bp_mean_mag"], 2)) if row["phot_bp_mean_mag"] is not None and not np.isnan(row["phot_bp_mean_mag"]) else None
-            rp_mag = float(round(row["phot_rp_mean_mag"], 2)) if row["phot_rp_mean_mag"] is not None and not np.isnan(row["phot_rp_mean_mag"]) else None
-            bp_rp = float(round(row["bp_rp"], 2)) if row["bp_rp"] is not None and not np.isnan(row["bp_rp"]) else None
-
-            rv = float(round(row["radial_velocity"], 2)) if row["radial_velocity"] is not None and not np.isnan(row["radial_velocity"]) else None
-
-            # Offset from field center in arcseconds
-            dx_arcsec = float(round((s_ra - ra) * np.cos(np.radians(dec)) * 3600.0, 2))
-            dy_arcsec = float(round((s_dec - dec) * 3600.0, 2))
-
-            g_flux_ujy = round(3229e6 * (10.0 ** (-0.4 * g_mag)), 3) if g_mag is not None else None
-            sources.append({
-                "source_id": src_id,
-                "ra": s_ra,
-                "dec": s_dec,
-                "g_mag": g_mag,
-                "g_flux_ujy": g_flux_ujy,
-                "bp_mag": bp_mag,
-                "rp_mag": rp_mag,
-                "bp_rp": bp_rp,
-                "pmra_mas_yr": pmra,
-                "pmdec_mas_yr": pmdec,
-                "total_pm_mas_yr": total_pm,
-                "pm_angle_deg": pm_angle,
-                "parallax_mas": plx,
-                "distance_pc": dist_pc,
-                "radial_velocity_kms": rv,
-                "is_high_proper_motion": total_pm > 50.0,
-                "offset_arcsec": {"dx": dx_arcsec, "dy": dy_arcsec}
-            })
-
-    except Exception as e:
-        query_error = str(e)
-        print(f"ESA Gaia TAP query failed for ({ra}, {dec}): {e}")
+    if not sources and not query_error:
+        # Valid cone search with 0 stars
+        pass
+    elif not sources and query_error:
+        pass
 
     high_pm_count = sum(1 for s in sources if s.get("is_high_proper_motion", False))
 
     response_payload = {
-        "status": "unavailable" if query_error else "success",
-        "message": f"ESA Gaia TAP unreachable: {query_error}" if query_error else None,
+        "status": "unavailable" if (query_error and not sources) else "success",
+        "message": f"Gaia DR3 archives unreachable: {query_error}" if (query_error and not sources) else None,
         "cached": False,
         "query": {
             "center_ra": ra,
             "center_dec": dec,
             "radius_arcmin": radius_arcmin,
-            "catalog": "Gaia DR3 (European Space Agency / ICRS J2016.0)"
+            "catalog": archive_used
         },
         "total_sources": len(sources),
         "high_proper_motion_count": high_pm_count,
         "sources": sources
     }
 
-    if query_error:
+    if query_error and not sources:
         return response_payload  # never cache a failed query
 
     # Cache payload
@@ -310,37 +391,41 @@ def query_2mass_psc(
             "offset_arcsec": {"dx": dx_arcsec, "dy": dy_arcsec}
         })
 
-    # 1. Query NASA IRSA TAP Service (with Harvard CfA VizieR II/246/out fallback)
-    try:
-        import pyvo
-        tap = pyvo.dal.TAPService(
-            "https://irsa.ipac.caltech.edu/TAP",
-            session=_make_timeout_session(6.0),
-        )
-        query = f"""
-        SELECT TOP {limit}
-            designation, ra, dec,
-            j_m, h_m, k_m,
-            j_msigcom, h_msigcom, k_msigcom,
-            ph_qual
-        FROM fp_psc
-        WHERE CONTAINS(POINT('J2000', ra, dec), CIRCLE('J2000', {ra:.5f}, {dec:.5f}, {radius_deg:.5f})) = 1
-        ORDER BY j_m ASC
-        """
-        results = tap.search(query)
-
-        for row in results:
-            _append_2mass_row(
-                row["designation"],
-                float(row["ra"]),
-                float(row["dec"]),
-                _safe_float(row["j_m"]),
-                _safe_float(row["h_m"]),
-                _safe_float(row["k_m"]),
-                row["ph_qual"],
+    # 1. Query NASA IRSA TAP Service (if circuit available, with Harvard CfA VizieR II/246/out fallback)
+    if is_irsa_tap_available():
+        try:
+            import pyvo
+            tap = pyvo.dal.TAPService(
+                "https://irsa.ipac.caltech.edu/TAP",
+                session=_make_timeout_session(3.5),
             )
-    except Exception as irsa_err:
-        print(f"NASA IRSA 2MASS TAP query failed for ({ra}, {dec}), trying Harvard VizieR fallback: {irsa_err}")
+            query = f"""
+            SELECT TOP {limit}
+                designation, ra, dec,
+                j_m, h_m, k_m,
+                j_msigcom, h_msigcom, k_msigcom,
+                ph_qual
+            FROM fp_psc
+            WHERE CONTAINS(POINT('J2000', ra, dec), CIRCLE('J2000', {ra:.5f}, {dec:.5f}, {radius_deg:.5f})) = 1
+            ORDER BY j_m ASC
+            """
+            results = tap.search(query)
+
+            for row in results:
+                _append_2mass_row(
+                    row["designation"],
+                    float(row["ra"]),
+                    float(row["dec"]),
+                    _safe_float(row["j_m"]),
+                    _safe_float(row["h_m"]),
+                    _safe_float(row["k_m"]),
+                    row["ph_qual"],
+                )
+        except Exception as irsa_err:
+            trip_irsa_tap_circuit(60.0)
+            print(f"NASA IRSA 2MASS TAP query failed for ({ra}, {dec}), circuit open for 60s: {irsa_err}")
+
+    if not sources:
         try:
             vrows = _query_vizier_tsv(
                 source="II/246/out",
@@ -349,7 +434,7 @@ def query_2mass_psc(
                 radius_arcmin=radius_arcmin,
                 limit=limit,
                 out_cols="2MASS,RAJ2000,DEJ2000,Jmag,Hmag,Kmag,Qflg",
-                timeout_s=8.0,
+                timeout_s=6.0,
             )
             for r in vrows:
                 s_ra = _safe_float(r.get("RAJ2000"))
@@ -366,7 +451,7 @@ def query_2mass_psc(
                     r.get("Qflg", ""),
                 )
         except Exception as viz_err:
-            query_error = f"IRSA: {irsa_err}; VizieR: {viz_err}"
+            query_error = f"2MASS mirrors failed: {viz_err}"
             print(f"All 2MASS catalog mirrors failed for ({ra}, {dec}): {query_error}")
 
     response_payload = {
@@ -607,38 +692,42 @@ def query_wise_catalog(
             "offset_arcsec": {"dx": dx_arcsec, "dy": dy_arcsec},
         })
 
-    # 1. AllWISE via IRSA TAP (with Harvard CfA VizieR II/328/allwise fallback)
-    try:
-        import pyvo
-        tap = pyvo.dal.TAPService(
-            "https://irsa.ipac.caltech.edu/TAP",
-            session=_make_timeout_session(timeout_s),
-        )
-        allwise_q = f"""
-        SELECT TOP {limit}
-            designation, ra, dec,
-            w1mpro, w1sigmpro, w2mpro, w2sigmpro,
-            w3mpro, w4mpro, pmra, pmdec
-        FROM allwise_p3as_psd
-        WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra:.5f}, {dec:.5f}, {radius_deg:.5f}))
-        """
-        results = tap.search(allwise_q)
-        for row in results:
-            _append_wise_row(
-                row["designation"],
-                float(row["ra"]),
-                float(row["dec"]),
-                _safe_float(row["w1mpro"]),
-                _safe_float(row["w1sigmpro"]),
-                _safe_float(row["w2mpro"]),
-                _safe_float(row["w2sigmpro"]),
-                _safe_float(row["w3mpro"]),
-                _safe_float(row["w4mpro"]),
-                _safe_float(row["pmra"]),
-                _safe_float(row["pmdec"]),
+    # 1. AllWISE via IRSA TAP (if circuit available, with Harvard CfA VizieR II/328/allwise fallback)
+    if is_irsa_tap_available():
+        try:
+            import pyvo
+            tap = pyvo.dal.TAPService(
+                "https://irsa.ipac.caltech.edu/TAP",
+                session=_make_timeout_session(3.5),
             )
-    except Exception as irsa_err:
-        print(f"NASA IRSA AllWISE query failed for ({ra}, {dec}), trying Harvard VizieR fallback: {irsa_err}")
+            allwise_q = f"""
+            SELECT TOP {limit}
+                designation, ra, dec,
+                w1mpro, w1sigmpro, w2mpro, w2sigmpro,
+                w3mpro, w4mpro, pmra, pmdec
+            FROM allwise_p3as_psd
+            WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra:.5f}, {dec:.5f}, {radius_deg:.5f}))
+            """
+            results = tap.search(allwise_q)
+            for row in results:
+                _append_wise_row(
+                    row["designation"],
+                    float(row["ra"]),
+                    float(row["dec"]),
+                    _safe_float(row["w1mpro"]),
+                    _safe_float(row["w1sigmpro"]),
+                    _safe_float(row["w2mpro"]),
+                    _safe_float(row["w2sigmpro"]),
+                    _safe_float(row["w3mpro"]),
+                    _safe_float(row["w4mpro"]),
+                    _safe_float(row["pmra"]),
+                    _safe_float(row["pmdec"]),
+                )
+        except Exception as irsa_err:
+            trip_irsa_tap_circuit(60.0)
+            print(f"NASA IRSA AllWISE query failed for ({ra}, {dec}), circuit open for 60s: {irsa_err}")
+
+    if not sources:
         try:
             archive_used = "Harvard CfA VizieR AllWISE (II/328/allwise)"
             vrows = _query_vizier_tsv(
@@ -648,7 +737,7 @@ def query_wise_catalog(
                 radius_arcmin=radius_arcmin,
                 limit=limit,
                 out_cols="AllWISE,RAJ2000,DEJ2000,W1mag,e_W1mag,W2mag,e_W2mag,W3mag,W4mag,pmRA,pmDE",
-                timeout_s=max(timeout_s, 8.0),
+                timeout_s=max(timeout_s, 6.0),
             )
             for r in vrows:
                 s_ra = _safe_float(r.get("RAJ2000"))
@@ -669,7 +758,7 @@ def query_wise_catalog(
                     _safe_float(r.get("pmDE")),
                 )
         except Exception as viz_err:
-            query_error = f"IRSA: {irsa_err}; VizieR: {viz_err}"
+            query_error = f"WISE mirrors failed: {viz_err}"
             print(f"All WISE mirrors failed for ({ra}, {dec}): {query_error}")
 
     # Sort spatially nearest-first so primary counterpart matches center coordinates
@@ -678,34 +767,37 @@ def query_wise_catalog(
     )
 
     # 2. Best-effort NEOWISE-R single-exposure epoch light curve query (15 arcsec cone)
-    try:
-        import pyvo
-        neo_tap = pyvo.dal.TAPService(
-            "https://irsa.ipac.caltech.edu/TAP",
-            session=_make_timeout_session(neowise_timeout_s),
-        )
-        neo_q = f"""
-        SELECT TOP 30 mjd, ra, dec, w1mpro, w2mpro
-        FROM neowiser_p1bs_psd
-        WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra:.5f}, {dec:.5f}, 0.00417))
-        """
-        neo_res = neo_tap.search(neo_q)
-        for row in neo_res:
-            mjd_val = _safe_float(row["mjd"])
-            s_ra = _safe_float(row["ra"])
-            s_dec = _safe_float(row["dec"])
-            if mjd_val is None or s_ra is None or s_dec is None:
-                continue
-            neowise_epochs.append({
-                "mjd": round(mjd_val, 4),
-                "ra": s_ra,
-                "dec": s_dec,
-                "w1_mag": _safe_float(row["w1mpro"]),
-                "w2_mag": _safe_float(row["w2mpro"]),
-            })
-        neowise_epochs.sort(key=lambda ep: ep["mjd"])
-    except Exception as neo_err:
-        print(f"NEOWISE-R single-exposure query skipped/timed out for ({ra}, {dec}): {neo_err}")
+    # Only attempted when IRSA TAP circuit is available
+    if is_irsa_tap_available():
+        try:
+            import pyvo
+            neo_tap = pyvo.dal.TAPService(
+                "https://irsa.ipac.caltech.edu/TAP",
+                session=_make_timeout_session(neowise_timeout_s),
+            )
+            neo_q = f"""
+            SELECT TOP 30 mjd, ra, dec, w1mpro, w2mpro
+            FROM neowiser_p1bs_psd
+            WHERE 1=CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', {ra:.5f}, {dec:.5f}, 0.00417))
+            """
+            neo_res = neo_tap.search(neo_q)
+            for row in neo_res:
+                mjd_val = _safe_float(row["mjd"])
+                s_ra = _safe_float(row["ra"])
+                s_dec = _safe_float(row["dec"])
+                if mjd_val is None or s_ra is None or s_dec is None:
+                    continue
+                neowise_epochs.append({
+                    "mjd": round(mjd_val, 4),
+                    "ra": s_ra,
+                    "dec": s_dec,
+                    "w1_mag": _safe_float(row["w1mpro"]),
+                    "w2_mag": _safe_float(row["w2mpro"]),
+                })
+            neowise_epochs.sort(key=lambda ep: ep["mjd"])
+        except Exception as neo_err:
+            trip_irsa_tap_circuit(60.0)
+            print(f"NEOWISE-R single-exposure query skipped/timed out for ({ra}, {dec}): {neo_err}")
 
     has_error = bool(query_error and not sources)
     response_payload = {
@@ -796,11 +888,14 @@ def query_spherex_archive(
     cone_succeeded = False
     query_error = None
     coverage_type = "DR1_REFERENCE_PLANES"
-    in_outage_cooldown = (not force_refresh) and (_SPHEREX_LAST_OUTAGE_AT > 0.0) and ((_time.time() - _SPHEREX_LAST_OUTAGE_AT) < 120.0)
+    in_outage_cooldown = (not force_refresh) and (
+        ((_SPHEREX_LAST_OUTAGE_AT > 0.0) and ((_time.time() - _SPHEREX_LAST_OUTAGE_AT) < 120.0))
+        or not is_irsa_tap_available()
+    )
 
     # 1. Direct spatial cone search on spherex.obscore
     if in_outage_cooldown:
-        query_error = "IRSA SPHEREx TAP recently unreachable (120s retry cooldown active)."
+        query_error = "IRSA SPHEREx TAP recently unreachable or circuit open (cooldown active)."
     else:
         try:
             import pyvo
@@ -824,7 +919,8 @@ def query_spherex_archive(
         except Exception as e:
             query_error = str(e)
             _SPHEREX_LAST_OUTAGE_AT = _time.time()
-            print(f"IRSA spherex.obscore cone query failed/timed out for ({ra}, {dec}): {e}")
+            trip_irsa_tap_circuit(60.0)
+            print(f"IRSA spherex.obscore cone query failed/timed out for ({ra}, {dec}), circuit open for 60s: {e}")
 
     direct_hits_count = len(planes) if coverage_type == "DIRECT_FIELD_HIT" else 0
 
@@ -924,6 +1020,22 @@ def crossmatch_photometry(
         if cache_key in _XMATCH_RAM_CACHE:
             _XMATCH_RAM_CACHE.move_to_end(cache_key)
             return dict(_XMATCH_RAM_CACHE[cache_key])
+
+        # Proximity cache match in RAM (< 10 arcsec / 0.003 deg)
+        for ck, cdata in reversed(_XMATCH_RAM_CACHE.items()):
+            c_coords = cdata.get("coordinates") or {}
+            c_ra = c_coords.get("ra")
+            c_dec = c_coords.get("dec")
+            c_rad = c_coords.get("radius_arcmin")
+            if c_ra is not None and c_dec is not None and c_rad is not None:
+                if abs(float(c_rad) - float(radius_arcmin)) <= 0.2:
+                    dist_deg = float(np.hypot((float(ra) - float(c_ra)) * np.cos(np.radians(float(dec))), float(dec) - float(c_dec)))
+                    if dist_deg <= 0.003:  # ~10 arcsec
+                        res_copy = dict(cdata)
+                        res_copy["cached"] = True
+                        res_copy["spatial_cache_hit"] = True
+                        return res_copy
+
         disk_path = os.path.join(CACHE_DIR_XMATCH, f"{cache_key}.json")
         if os.path.exists(disk_path):
             try:

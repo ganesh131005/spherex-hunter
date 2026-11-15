@@ -3,11 +3,18 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and physically verified Issue #43: Time-Domain Light Curve Tab Enhancements & Upgrades on `coolodu/web-frontend`. Implemented interactive point details with SNR & microjansky flux (`#lcSelectedPointDetails`), Lomb-Scargle spectral power sparkline (`#lcPowerSparkline`), outlier flagging & masking with $\chi^2_{\text{red}}$ recalculation (`#btnToggleOutlierMask`, `#lcMaskedSection`, `#btnClearLCMasks`, `Shift+Click`), responsive flex-wrap dock toolbar, and harmonic least-squares phase model curve overlay (`#btnToggleLCModelCurve`). All 25/25 UI contract tests pass 100% green. Verified physically in live browser subagent.
+- **Current Task:** Completed and verified making the Blink icon in the upper horizontal toolbar fully functional and making the collective View Modes popup toolbar (`#viewModesPopup`) prominently visible beneath the top toolbar on `coolodu/web-frontend`. Resolved `<header>` clipping (`overflow-visible`), enabled visibility and interactive toggle on `#btnViewModesTrigger`, wired Blink flipbook play/pause & HUD triggers, added quick close button `✕`, and verified live in browser with all 26 contract tests passing 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Make Upper Horizontal Toolbar Blink Icon Functional & Make Popup Toolbar Visible]**:
+  - Resolved CSS overflow clipping on top `<header>` by changing `overflow-hidden` to `overflow-visible` with high stacking context (`z-40`).
+  - Rendered `#viewModesPopup` directly beneath the top toolbar with high-contrast styling (`border-cyan-500/60`, backdrop blur, deep shadow `0 12px 40px rgba(0,0,0,0.85)`).
+  - Included all 4 view mode tools: Blink Comparator (`#wsBlink`, B), Difference Imaging (`#wsDiff`, D), 102-Band Spectra (`#wsSpec`, S), and Aladin Sky Map (`#wsAladin`, A).
+  - Added dedicated close button `✕` (`#btnCloseViewModesPopup`) in addition to `Esc` and outside-click dismiss.
+  - Made `#btnViewModesTrigger` fully functional: clicking toggles the popup toolbar and directly controls Blink comparator playback (play/pause toggle, frame redraw, and Blink HUD visibility).
+  - Verified live in browser with subagent screenshot evidence (`final_step_46.png`) and verified all 26 tests in `tests/test_ui_contract.py` pass.
 - [x] **[Issue #43: Further Enhancements & Upgrades for Time-Domain Light Curve Tab]**:
   - **Interactive Point Details:** Tooltips and telemetry sidebar detail card (`#lcSelectedPointDetails`) displaying observational SNR ($\approx 1.0857/\sigma_m$), instrument/survey passband, calibrated infrared flux in $\mu\text{Jy}$ (`calcCalibratedFluxMicroJy`), observation date/MJD, and outlier status.
   - **Frequency Power Sparkline:** Added mini-canvas display (`#lcPowerSparkline`, `#lcPowerSparklineContainer`) showing the full Lomb-Scargle spectral power distribution across scanned trial periods ($0.2\text{d} - 500\text{d}$) with live peak period indicator (`#lcPowerPeakLabel`).
