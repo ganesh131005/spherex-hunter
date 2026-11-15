@@ -3,11 +3,22 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Resolved and closed GitHub Issue #38 (`fix(ui-ux): inspector 4-tab horizontal clipping, sticky header content bleed, and top bar button overflow`). Merged Viewport Overhaul v2 from `darkodu/astro-backend`. All tests passing (100%). Pushed to `origin/coolodu/web-frontend`.
-- **Next Task:** Ready for next team dispatch or main branch integration review with jokerodu.
+- **Current Task:** Resolved and verified Issues #39 (`Fix Backend 500 NoneType Crash on Archive Miss`) and #40 (`Fix Viewport HUD Overlap Between Time Step Controller and Top Telemetry / Stretch Controls`). Both verified with 3-point physical audit and passing automated tests (47/47 CI unit & contract tests passed). Pushed to `origin/coolodu/web-frontend`.
+- **Next Task:** Maintain clean status, monitor GitHub Issues for incoming tasks.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Resolved Issues #39 & #40 — Backend NoneType Guard, FOV Clamping, Diagnostic Details, & Viewport HUD Deconfliction]**:
+  - **Issue #39 (Backend NoneType Crash & Error Details):**
+    - In `backend/main.py`, guarded `fetch_real_cutout()` return value against `None`, raising structured HTTP 404 problem detail instead of throwing `AttributeError: 'NoneType' object has no attribute 'get'` on `response.headers["X-Cache"]`.
+    - Added HTTP 400 validation when `fov > 15.0` arcmin explaining the limit.
+    - Clamped FOV to `[1.0, 15.0]` in `loadSkyCutout()` and parsed backend `errJson.detail`.
+    - Enhanced `formatFriendlyError()` to extract and surface specific backend explanation strings for FOV limit exceedances and coordinate misses.
+  - **Issue #40 (Viewport HUD Deconfliction):**
+    - Re-positioned `#viewportTimeStepHUD` and `#aladinContextBar` to `top-14` (56px down), providing complete vertical clearance below the top telemetry row.
+    - Top-left target telemetry chip (`#vpTargetName`, `#vpFrameLabel`) at `top-3 left-3` and top-right colormap stretch controls at `top-3 right-3` now have 100% unobstructed horizontal breathing room across all screen widths.
+    - Re-positioned pop-down alert banners (`#guidedTourBanner`, `#candidateAlertStrip`, `#noObsBanner`) to `top-28`.
+  - **Automated Verification:** Added `test_issue_39_cutout_error_diagnostics_and_clamping_contract` and `test_issue_40_viewport_hud_deconfliction_contract` to `tests/test_ui_contract.py`. All 12 UI contract tests and all 47 CI unit tests passed. Clean ruff check.
 - [x] **[Resolved Issue #38 — Inspector Tab Clipping, Content Bleed, and Nav Overflow (Commit `376a7f1`)]**:
   - **4-Tab Inspector Grid (`#propertiesSidebar`):** Replaced flex container with 4-column responsive grid (`grid grid-cols-4 gap-1 min-w-0`) and text truncation, ensuring `Layers`, `Target`, `Cands`, and `Photo` fit cleanly within the 380px panel without overflowing or getting clipped.
   - **Sticky Header Baseline Barrier (`#inspectorPanelLayers`):** Upgraded sticky header container with `shadow-md` and reinforced bottom border (`border-b border-space-700/90`), and added `pt-2` top clearance to `#inspectorPanelLayers` to completely eliminate scrolling layer metadata bleed.

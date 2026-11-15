@@ -608,9 +608,9 @@
       <!-- Primary Astronomical Canvas -->
       <canvas id="astroCanvas" class="w-full h-full block filter-grayscale"></canvas>
 
-      <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Continuous Mapping & Change Detection) -->
+      <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Continuous Mapping & Change Detection: Issue #40 Deconflicted) -->
       <div id="viewportTimeStepHUD"
-        class="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none">
+        class="absolute top-14 left-1/2 -translate-x-1/2 z-20 flex flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none max-w-[90vw]">
         <!-- Time Step Indicator -->
         <div class="flex items-center gap-1.5 text-cyan-300 font-bold border-r border-space-700 pr-2">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
@@ -653,7 +653,8 @@
 
       <!-- SPHEREx DR1 HiPS Context Controls Overlay (Google Maps Style Multi-Resolution Navigator) -->
       <div id="aladinContextBar"
-        class="absolute top-3 left-1/2 -translate-x-1/2 z-20 hidden flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700/90 shadow-2xl text-xs select-none max-w-[98%]"
+        class="absolute top-14 left-1/2 -translate-x-1/2 z-20 hidden flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700/90 shadow-2xl text-xs select-none max-w-[95%]"
+        role="region" aria-label="SPHEREx DR1 HiPS Context Controls">
         role="region" aria-label="SPHEREx DR1 HiPS Context Controls">
         <!-- Google Maps Multi-Resolution Zoom Stepper -->
         <div class="flex items-center gap-1 bg-space-950/90 px-1.5 py-0.5 rounded border border-space-800">
@@ -724,8 +725,8 @@
         </div>
       </div>
 
-      <!-- FIRST 10 SECONDS GUIDED DEMO TOUR BANNER -->
-      <div id="guidedTourBanner" class="absolute top-14 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-blender-orange/70 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 text-xs z-20 max-w-xl transition-all">
+      <!-- FIRST 10 SECONDS GUIDED DEMO TOUR BANNER (Issue #40 Positioned Below HUD) -->
+      <div id="guidedTourBanner" class="absolute top-28 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-blender-orange/70 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 text-xs z-20 max-w-xl transition-all">
         <div class="w-7 h-7 rounded-lg bg-blender-orange/20 border border-blender-orange flex items-center justify-center text-blender-orange shrink-0">
           <i data-lucide="sparkles" class="w-4 h-4"></i>
         </div>
@@ -749,7 +750,7 @@
       </div>
 
       <!-- INLINE CANDIDATE SELECTION ALERT STRIP (Dismissible, only shows on candidate selection) -->
-      <div id="candidateAlertStrip" class="hidden absolute top-14 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-cyan-500/70 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 text-xs z-20 max-w-xl">
+      <div id="candidateAlertStrip" class="hidden absolute top-28 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-cyan-500/70 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 text-xs z-20 max-w-xl">
         <i data-lucide="flag" class="w-4 h-4 text-cyan-400 shrink-0"></i>
         <div id="candidateAlertText" class="text-gray-200 text-xs font-mono flex-1 truncate">
           Selected Candidate at RA 133.79513°, Dec -7.24515°
@@ -761,18 +762,18 @@
       </div>
 
       <!-- TEMPORAL NO OBSERVATIONS BANNER (Issue #11) -->
-      <div id="noObsBanner" class="hidden absolute top-14 left-1/2 -translate-x-1/2 bg-amber-950/90 border border-amber-500/80 text-amber-200 px-4 py-2 rounded-lg text-xs font-mono shadow-2xl flex items-center gap-2 z-30">
+      <div id="noObsBanner" class="hidden absolute top-28 left-1/2 -translate-x-1/2 bg-amber-950/90 border border-amber-500/80 text-amber-200 px-4 py-2 rounded-lg text-xs font-mono shadow-2xl flex items-center gap-2 z-30">
         <i data-lucide="calendar-x" class="w-4 h-4 text-amber-400"></i>
         <span>No observations found in selected range. <span id="noObsDetailText"></span></span>
         <button id="btnCloseNoObsBanner" class="text-amber-400 hover:text-white ml-2 text-xs">✕</button>
       </div>
 
-      <!-- TOP-LEFT VIEWPORT TARGET TELEMETRY CHIP (Minimal & Unobtrusive) -->
-      <div class="absolute top-3 left-3 pointer-events-none text-xs font-mono space-y-0.5 bg-space-900/85 backdrop-blur-md px-3 py-2 rounded-lg border border-space-700 text-gray-300 shadow-lg">
-        <div class="flex items-center gap-2">
-          <span id="vpTargetName" class="text-white font-bold text-xs tracking-wide">WISE 0855-0714</span>
+      <!-- TOP-LEFT VIEWPORT TARGET TELEMETRY CHIP (Issue #40 Deconflicted & Non-Overlapping) -->
+      <div class="absolute top-3 left-3 pointer-events-none text-xs font-mono space-y-0.5 bg-space-900/85 backdrop-blur-md px-3 py-2 rounded-lg border border-space-700 text-gray-300 shadow-lg max-w-[calc(100vw-380px)] sm:max-w-md z-10">
+        <div class="flex items-center gap-2 truncate">
+          <span id="vpTargetName" class="text-white font-bold text-xs tracking-wide truncate">WISE 0855-0714</span>
           <span class="text-space-500">|</span>
-          <span id="vpFrameLabel" class="text-blender-orange font-semibold text-[11px]">(Frame 1) 2MASS Baseline 1999</span>
+          <span id="vpFrameLabel" class="text-blender-orange font-semibold text-[11px] truncate">(Frame 1) 2MASS Baseline 1999</span>
         </div>
         <div id="gaiaCrossMatchBadge" class="hidden text-[10px] font-mono mt-1 px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all">
           <span id="gaiaCrossMatchIcon"></span>
@@ -4210,7 +4211,9 @@
       currentLOD = getTargetLODFromZoom();
       updateLODBadge(currentLOD);
 
-      const reqFov = (currentLOD === 2) ? 10.0 : ((currentLOD === 0) ? 1.5 : fov);
+      // Clamp FOV to valid [1.0, 15.0] arcminute range (Issue #39)
+      const clampedFov = Math.max(1.0, Math.min(15.0, Number(fov) || 3.0));
+      const reqFov = (currentLOD === 2) ? 10.0 : ((currentLOD === 0) ? 1.5 : clampedFov);
       const cacheKey = getClientSpatialKey(ra, dec, reqFov, currentLOD, targetKey);
       let data = await getTileFromClientCache(cacheKey);
 
@@ -4227,7 +4230,17 @@
           if (targetKey) url += `&target=${targetKey}`;
 
           const res = await fetchWithCancellation(url);
-          if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          if (!res.ok) {
+            let errorDetail = '';
+            try {
+              const errJson = await res.json();
+              errorDetail = errJson.detail || errJson.message || '';
+            } catch (_) {}
+            const err = new Error(errorDetail || `HTTP ${res.status}: ${res.statusText}`);
+            err.status = res.status;
+            err.detail = errorDetail;
+            throw err;
+          }
 
           if (res.status === 304) {
             window.cacheTelemetry.http304Count++;
@@ -8241,9 +8254,23 @@
       let lastRetryCallback = null;
 
       function formatFriendlyError(err, context = 'general') {
-        const raw = (err && err.message) ? String(err.message) : String(err || '');
+        const raw = (err && (err.detail || err.message)) ? String(err.detail || err.message) : String(err || '');
         const lower = raw.toLowerCase();
 
+        if (lower.includes('exceeds 15.0') || lower.includes('exceeds 15.0 arcmin')) {
+          return {
+            title: 'Field of View Exceeds 15.0′ Limit',
+            explanation: raw || 'The requested Field of View exceeds the 15.0 arcminute limit for high-resolution archival cutouts.',
+            remediation: 'Use the vertical zoom bar on the right or reset zoom (15\') to bring the sky field within archival bounds.'
+          };
+        }
+        if (lower.includes('no archival 2mass/dss2 fits cutouts available') || (lower.includes('no archival') && lower.includes('available at ra'))) {
+          return {
+            title: 'No Archival FITS Cutout at Coordinates',
+            explanation: raw,
+            remediation: 'Check sky coordinates, select a calibrated landmark preset (e.g. WISE 0855), or slew Aladin Sky map to a surveyed field.'
+          };
+        }
         if (lower.includes('invalid_coordinates') || context === 'coordinates') {
           return {
             title: 'Invalid Sky Coordinates',

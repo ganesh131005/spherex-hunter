@@ -26,6 +26,18 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🎉 ISSUES #39 & #40 RESOLVED WITH PHYSICAL AUDIT & 100% PASSING CONTRACT TESTS]**
+  - **Issue #39 Remediation (Backend NoneType Crash & Diagnostics):**
+    1. In `backend/main.py`, guarded `fetch_real_cutout()` against `None` and checked `fov > 15.0`, raising structured HTTP 400 (`Requested Field of View exceeds 15.0 arcmin limit`) and HTTP 404 (`No archival 2MASS/DSS2 FITS cutouts available...`) instead of crashing with HTTP 500 `AttributeError`.
+    2. In `frontend/index.html`, clamped `fov` to `[1.0, 15.0]` in `loadSkyCutout()` and parsed backend error JSON `detail`.
+    3. Enhanced `formatFriendlyError()` to extract specific diagnostic detail explanations into friendly user-facing cards.
+    4. Verified in `tests/test_ui_contract.py::test_issue_39_cutout_error_diagnostics_and_clamping_contract`.
+  - **Issue #40 Remediation (Viewport HUD Deconfliction):**
+    1. Re-positioned `#viewportTimeStepHUD` and `#aladinContextBar` to `top-14` (vertically deconflicted with 56px clearance below the top telemetry row).
+    2. Top-left card (`#vpTargetName`, `#vpFrameLabel`) at `top-3 left-3` and top-right stretch controls at `top-3 right-3` now have 100% unobstructed horizontal breathing room across all screen widths.
+    3. Re-positioned dismissible alert banners (`#guidedTourBanner`, `#candidateAlertStrip`, `#noObsBanner`) to `top-28` to prevent stacking on the time-step HUD.
+    4. Verified in `tests/test_ui_contract.py::test_issue_40_viewport_hud_deconfliction_contract`.
+  - **Verification:** 47/47 CI unit and contract tests passing; clean ruff checks.
 - **[GitHub Native Issue #39 Created — Fix Backend 500 NoneType Crash on Archive Miss and Provide Actionable Diagnostic Details in Error Dialog]**
   - **Issue #39 Link:** https://github.com/joker0210G/spherex-hunter/issues/39
   - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`

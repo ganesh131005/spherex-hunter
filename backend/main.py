@@ -297,10 +297,20 @@ def get_cutout(
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         fov_val = float(fov) if isinstance(fov, (int, float, str)) else 3.0
+        if fov_val > 15.0:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Requested Field of View ({fov_val:.1f}') exceeds 15.0 arcmin limit. Please zoom in."
+            )
         lod_val = int(lod) if isinstance(lod, (int, str)) else 1
         is_refresh = bool(force_refresh or refresh or bypass_cache)
         target_sanitized = sanitize_target_name(target) if target else None
         data = fetch_real_cutout(ra=ra_deg, dec=dec_deg, fov_arcmin=fov_val, target_key=target_sanitized, lod=lod_val, force_refresh=is_refresh)
+        if not data or not isinstance(data, dict):
+            raise HTTPException(
+                status_code=404,
+                detail=f"No archival 2MASS/DSS2 FITS cutouts available at RA {ra_deg:.4f}°, Dec {dec_deg:.4f}° within {fov_val:.1f}' arcmin."
+            )
         if start_date or end_date or exact_date:
             data = dict(data)
             data["temporal_filter"] = query_observation_timeline(
