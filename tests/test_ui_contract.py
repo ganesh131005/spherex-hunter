@@ -1028,6 +1028,26 @@ def test_blink_comparator_popup_toolbar_contract():
     assert "btnDrawerCloseBlink" in html, "JavaScript must bind listener to #btnDrawerCloseBlink"
 
 
+def test_spectrum_102_band_spot_popup_and_2d_hit_contract():
+    """Validates 2D hit-testing and rich interactive spot popup in the 102-band spectrum chart."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Floating Rich Interactive Popup for 102-Band Spectrum Spots exists
+    popup = soup.find(id="specSpotPopup")
+    assert popup is not None, "Missing #specSpotPopup floating container in spectrum chart"
+    assert soup.find(id="specSpotTitle") is not None, "Missing #specSpotTitle in spot popup"
+    assert soup.find(id="specSpotBody") is not None, "Missing #specSpotBody in spot popup"
+    assert soup.find(id="specSpotAction") is not None, "Missing #specSpotAction in spot popup"
+    assert soup.find(id="btnCloseSpecSpotPopup") is not None, "Missing #btnCloseSpecSpotPopup"
+
+    # 2. JavaScript 2D hit detection and popup lifecycle functions
+    assert "findNearestSpectrumSpot" in html, "Missing findNearestSpectrumSpot 2D hit-testing function"
+    assert "showSpecSpotPopup" in html, "Missing showSpecSpotPopup function"
+    assert "hideSpecSpotPopup" in html, "Missing hideSpecSpotPopup function"
+    assert "pinSpecSpotPopup" in html, "Missing pinSpecSpotPopup function"
+
+
+
 
 
 

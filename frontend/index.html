@@ -1819,8 +1819,17 @@
 
         <!-- Middle: Canvas & Molecular Absorption Legend -->
         <div class="flex-1 flex items-center gap-3 min-h-0 relative">
-          <div class="flex-1 h-full relative">
+          <div class="flex-1 h-full relative" id="specChartContainer">
             <canvas id="spectrumChart"></canvas>
+            <!-- Floating Rich Interactive Popup for 102-Band Spectrum Spots (Photometry & Molecular Signatures) -->
+            <div id="specSpotPopup" class="absolute z-50 hidden flex-col gap-1.5 p-3 rounded-xl bg-space-950/98 backdrop-blur-xl border border-cyan-500/70 shadow-2xl font-mono text-xs max-w-xs transition-opacity duration-150 select-none">
+              <div class="flex items-center justify-between gap-2 border-b border-space-700/80 pb-1.5">
+                <span id="specSpotTitle" class="font-bold flex items-center gap-1.5 text-cyan-300"></span>
+                <button id="btnCloseSpecSpotPopup" type="button" class="text-gray-400 hover:text-white px-1.5 py-0.5 rounded hover:bg-space-800 text-xs font-bold" title="Close Popup">✕</button>
+              </div>
+              <div id="specSpotBody" class="space-y-1 text-xs text-gray-200"></div>
+              <div id="specSpotAction" class="pt-1.5 border-t border-space-700/80 flex items-center justify-between text-xs"></div>
+            </div>
           </div>
           <!-- Molecular Reference Sidebar -->
           <div class="w-64 bg-space-950/95 p-3 rounded-xl border border-space-700/80 font-mono text-xs space-y-2 shrink-0 shadow-md">
@@ -6209,14 +6218,25 @@
                   const pt = spectrumPointMeta[idx];
                   const ptX = chart.scales.x.getPixelForValue(idx);
                   const ptY = chart.scales.y.getPixelForValue(val);
-                  if (ptX >= left && ptX <= right && ptY >= top - 20 && ptY <= bottom + 20) {
+                  if (ptX >= left && ptX <= right && ptY >= top - 25 && ptY <= bottom + 25) {
                     ctx.save();
-                    ctx.fillStyle = '#00f0ff';
+                    const ptLabel = `${pt.band || 'Photometry'} (${Number(pt.flux_ujy).toFixed(1)} µJy)`;
                     ctx.font = 'bold 9px "JetBrains Mono", monospace';
-                    const ptLabel = pt.band || 'Photometry';
                     const labelW = ctx.measureText(ptLabel).width;
-                    const lx = (ptX + labelW + 6 > right) ? (ptX - labelW - 6) : (ptX + 6);
-                    const ly = (ptY + 12 > bottom) ? (ptY - 6) : (ptY + 12);
+                    const lx = (ptX + labelW + 8 > right) ? (ptX - labelW - 8) : (ptX + 8);
+                    const ly = (ptY + 14 > bottom) ? (ptY - 8) : (ptY + 12);
+
+                    // High-contrast background pill
+                    ctx.fillStyle = 'rgba(10, 15, 30, 0.85)';
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 1.0;
+                    ctx.beginPath();
+                    ctx.roundRect ? ctx.roundRect(lx - 4, ly - 9, labelW + 8, 13, 3) : ctx.rect(lx - 4, ly - 9, labelW + 8, 13);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Text
+                    ctx.fillStyle = '#00f0ff';
                     ctx.fillText(ptLabel, lx, ly);
                     ctx.restore();
                   }
@@ -6229,6 +6249,9 @@
 
       let spectrumPointMeta = {};
       let molPointMeta = {};
+      let isSpecSpotPinned = false;
+      let pinnedSpotData = null;
+
       window._setSpectrumPointMeta = (m) => { spectrumPointMeta = m || {}; };
       window._setMolPointMeta = (m) => { molPointMeta = m || {}; };
 
@@ -6260,9 +6283,9 @@
               fill: false,
               showLine: false,
               borderWidth: 2.0,
-              pointRadius: 7,
-              pointHoverRadius: 10,
-              pointHitRadius: 25,
+              pointRadius: 8,
+              pointHoverRadius: 12,
+              pointHitRadius: 28,
               pointStyle: 'rectRot',
               spanGaps: false
             },
@@ -6277,9 +6300,9 @@
               fill: false,
               showLine: false,
               borderWidth: 2.0,
-              pointRadius: 7,
-              pointHoverRadius: 11,
-              pointHitRadius: 25,
+              pointRadius: 8,
+              pointHoverRadius: 12,
+              pointHitRadius: 28,
               pointStyle: 'rectRot',
               spanGaps: false
             }
@@ -6298,7 +6321,18 @@
             const chartArea = specChart.chartArea;
             if (!chartArea) return;
             const clickX = evt.x !== undefined ? evt.x : (evt.native ? evt.native.offsetX : 0);
+            const clickY = evt.y !== undefined ? evt.y : (evt.native ? evt.native.offsetY : 0);
             if (clickX < chartArea.left || clickX > chartArea.right) return;
+
+            // 1. Check if clicked near an interactive spot in 2D Euclidean space
+            const hitSpot = findNearestSpectrumSpot(clickX, clickY, 30);
+            if (hitSpot) {
+              pinSpecSpotPopup(hitSpot);
+              if (hitSpot.type === 'mol' && hitSpot.data && hitSpot.data.channel) {
+                select102BandChannel(hitSpot.data.channel);
+              }
+              return;
+            }
 
             const curMin = (specZoomMinIndex !== null) ? specZoomMinIndex : 0;
             const curMax = (specZoomMaxIndex !== null) ? specZoomMaxIndex : 101;
@@ -6306,14 +6340,14 @@
             const clickedIdx = curMin + ratio * (curMax - curMin);
             const clickedWl = 0.75 + (clickedIdx / 101) * (5.00 - 0.75);
 
-            // 1. Check if clicked near a molecular feature spot
+            // 2. Check if clicked near a molecular feature spot by wavelength
             const clickedMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - clickedWl) <= 0.08);
             if (clickedMol && clickedMol.channel && typeof select102BandChannel === 'function') {
               select102BandChannel(clickedMol.channel);
               return;
             }
 
-            // 2. Otherwise determine which array and channel
+            // 3. Otherwise determine which array and channel
             for (const [k, def] of Object.entries(SPHEREX_ARRAY_DEFS)) {
               if (clickedWl >= def.min_um && clickedWl <= def.max_um) {
                 activeArray = k;
@@ -6348,7 +6382,16 @@
                   if (!items || !items.length) return '';
                   const wl = items[0].label;
                   const numWl = parseFloat(wl);
-                  const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - numWl) < 0.10);
+
+                  // Prioritize direct catalog photometry hit
+                  const photItem = items.find(it => it.datasetIndex === 1);
+                  if (photItem && spectrumPointMeta[photItem.dataIndex]) {
+                    const pm = spectrumPointMeta[photItem.dataIndex];
+                    return `λ = ${wl} µm • ${pm.band} (${pm.survey})`;
+                  }
+
+                  // Precise molecular match (tight tolerance 0.05 um to prevent stealing nearby bands)
+                  const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - numWl) <= 0.05);
                   if (nearMol) {
                     return `λ = ${wl} µm • ${nearMol.label}`;
                   }
@@ -6373,16 +6416,16 @@
                   // Proximity fallback for molecular spots (if not directly hovered on dataset 2)
                   const hasMolItem = items.some(it => it.datasetIndex === 2);
                   if (!hasMolItem) {
-                    const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - wl) <= 0.12);
+                    const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - wl) <= 0.06);
                     if (nearMol) {
                       extra.push(`🧊 Feature: ${nearMol.label} — ${nearMol.desc || 'Ice/Gas Band'}`);
                     }
                   }
 
-                  // Proximity fallback for catalog photometry spots (if hover is within ±0.14 µm)
+                  // Proximity fallback for catalog photometry spots (if hover is within ±0.08 µm)
                   const hasPhotItem = items.some(it => it.datasetIndex === 1);
                   if (!hasPhotItem && spectrumPointMeta) {
-                    const nearPhot = Object.values(spectrumPointMeta).find(p => Math.abs(p.wavelength_um - wl) <= 0.14);
+                    const nearPhot = Object.values(spectrumPointMeta).find(p => Math.abs(p.wavelength_um - wl) <= 0.08);
                     if (nearPhot) {
                       extra.push(`💎 Catalog Spot: ${nearPhot.band} (${nearPhot.survey}) — ${Number(nearPhot.flux_ujy).toFixed(1)} µJy (${nearPhot.mag} mag)`);
                     }
@@ -6497,6 +6540,214 @@
       if (btnZoomIn) btnZoomIn.addEventListener('click', () => zoomSpectrumHorizontalAt(0.5, 0.75));
       if (btnZoomOut) btnZoomOut.addEventListener('click', () => zoomSpectrumHorizontalAt(0.5, 1.33));
       if (btnZoomReset) btnZoomReset.addEventListener('click', () => applySpectrumHorizontalZoom(null, null));
+
+      // -----------------------------------------------------------------------
+      // 2D SPOT HIT-TESTING & INTERACTIVE HOVER/CLICK POPUP (Issue #36 / User Feedback)
+      // -----------------------------------------------------------------------
+      const specSpotPopup = document.getElementById('specSpotPopup');
+      const specSpotTitle = document.getElementById('specSpotTitle');
+      const specSpotBody = document.getElementById('specSpotBody');
+      const specSpotAction = document.getElementById('specSpotAction');
+      const btnCloseSpecSpotPopup = document.getElementById('btnCloseSpecSpotPopup');
+
+      function findNearestSpectrumSpot(clientX, clientY, maxDistPx = 30) {
+        if (!specChart || !specChart.chartArea || !specChart.scales || !specChart.scales.x || !specChart.scales.y) return null;
+        const { left, right, top, bottom } = specChart.chartArea;
+        if (clientX < left - 10 || clientX > right + 10 || clientY < top - 10 || clientY > bottom + 10) return null;
+
+        const sedData = (specChart.data.datasets && specChart.data.datasets[0]) ? specChart.data.datasets[0].data : [];
+        let nearest = null;
+        let minDist = maxDistPx;
+
+        // 1. Check Catalog Photometry spots (Dataset 1)
+        if (specChart.data.datasets && specChart.data.datasets[1] && specChart.data.datasets[1].data) {
+          specChart.data.datasets[1].data.forEach((val, idx) => {
+            if (val !== null && val !== undefined && spectrumPointMeta[idx]) {
+              const pt = spectrumPointMeta[idx];
+              const ptX = specChart.scales.x.getPixelForValue(idx);
+              const ptY = specChart.scales.y.getPixelForValue(val);
+              if (ptX >= left - 5 && ptX <= right + 5 && ptY >= top - 25 && ptY <= bottom + 25) {
+                const dist = Math.hypot(clientX - ptX, clientY - ptY);
+                if (dist < minDist) {
+                  minDist = dist;
+                  const sedFlux = (sedData && sedData.length > idx) ? sedData[idx] : null;
+                  nearest = {
+                    type: 'photometry',
+                    data: pt,
+                    x: ptX,
+                    y: ptY,
+                    dist: dist,
+                    idx: idx,
+                    sedFlux: sedFlux
+                  };
+                }
+              }
+            }
+          });
+        }
+
+        // 2. Check Molecular Absorption Feature spots (Dataset 2 / Annotations)
+        MOLECULAR_ANNOTATIONS.forEach(mol => {
+          let molX;
+          if (specChart.scales.x) {
+            const idx = Math.max(0, Math.min(101, ((mol.wavelength - 0.75) / 4.25) * 101));
+            molX = specChart.scales.x.getPixelForValue(idx);
+          } else {
+            molX = left + ((mol.wavelength - 0.75) / 4.25) * (right - left);
+          }
+
+          if (molX >= left - 5 && molX <= right + 5) {
+            const wlIdx = Math.max(0, Math.min(101, Math.round(((mol.wavelength - 0.75) / 4.25) * 101)));
+            const sedFlux = (sedData && sedData.length > wlIdx) ? sedData[wlIdx] : null;
+            let molY = bottom - 14;
+            if (sedFlux !== null && sedFlux !== undefined && specChart.scales.y) {
+              molY = Math.max(top + 10, Math.min(bottom - 10, specChart.scales.y.getPixelForValue(sedFlux)));
+            }
+            const dist = Math.hypot(clientX - molX, clientY - molY);
+            if (dist < minDist) {
+              minDist = dist;
+              nearest = {
+                type: 'mol',
+                data: mol,
+                x: molX,
+                y: molY,
+                dist: dist,
+                idx: wlIdx,
+                sedFlux: sedFlux
+              };
+            }
+          }
+        });
+
+        return nearest;
+      }
+
+      function showSpecSpotPopup(spot, isPinned = false) {
+        if (!specSpotPopup || !spot) return;
+        const container = document.getElementById('specChartContainer');
+        if (!container) return;
+        const rect = container.getBoundingClientRect();
+
+        if (spot.type === 'photometry') {
+          const pt = spot.data;
+          const sedF = spot.sedFlux !== null && spot.sedFlux !== undefined ? Number(spot.sedFlux).toFixed(1) : '?';
+          const diff = (spot.sedFlux !== null && spot.sedFlux !== undefined) ? (pt.flux_ujy - spot.sedFlux).toFixed(1) : null;
+          const diffStr = diff !== null ? (Number(diff) > 0 ? `+${diff}` : `${diff}`) : '';
+
+          specSpotTitle.innerHTML = `<span class="w-2.5 h-2.5 rotate-45 border border-white bg-cyan-400 inline-block shadow-sm"></span> <span>${pt.band || 'Catalog'} Photometry</span>`;
+          specSpotBody.innerHTML = `
+            <div class="flex justify-between text-gray-300"><span>Survey:</span><span class="text-white font-bold">${pt.survey || 'Archival Catalog'}</span></div>
+            <div class="flex justify-between text-gray-300"><span>Wavelength:</span><span class="text-cyan-300 font-bold">${pt.wavelength_um} µm</span></div>
+            <div class="flex justify-between text-gray-300"><span>Measured Flux:</span><span class="text-emerald-300 font-bold">${Number(pt.flux_ujy).toFixed(1)} µJy</span></div>
+            <div class="flex justify-between text-gray-300"><span>Magnitude:</span><span class="text-amber-300 font-bold">${pt.mag !== null && pt.mag !== undefined ? `${pt.mag} mag` : 'N/A'}</span></div>
+            <div class="flex justify-between text-gray-300 pt-1 border-t border-space-800"><span>SED Model:</span><span class="text-orange-300">${sedF} µJy ${diffStr ? `(${diffStr} µJy)` : ''}</span></div>
+          `;
+          specSpotAction.innerHTML = `
+            <span class="text-gray-400">${isPinned ? '📌 Pinned' : 'Hover Spot'}</span>
+            <span class="text-cyan-400 font-bold">${pt.band}</span>
+          `;
+        } else if (spot.type === 'mol') {
+          const mol = spot.data;
+          const sedF = spot.sedFlux !== null && spot.sedFlux !== undefined ? Number(spot.sedFlux).toFixed(1) : '?';
+          let arrayId = 'A1';
+          let chInArray = 1;
+          for (const [k, def] of Object.entries(SPHEREX_ARRAY_DEFS)) {
+            if (mol.wavelength >= def.min_um && mol.wavelength <= def.max_um) {
+              arrayId = k;
+              const step = (def.max_um - def.min_um) / 16.0;
+              chInArray = Math.max(1, Math.min(17, Math.round((mol.wavelength - def.min_um) / step) + 1));
+              break;
+            }
+          }
+          const chNum = mol.channel || (SPHEREX_ARRAY_DEFS[arrayId].start_band + chInArray - 1);
+
+          specSpotTitle.innerHTML = `<span class="w-2.5 h-2.5 rotate-45 border border-white inline-block shadow-sm" style="background-color: ${mol.color || '#fb923c'}"></span> <span>${mol.label}</span>`;
+          specSpotBody.innerHTML = `
+            <div class="flex justify-between text-gray-300"><span>Bandpass:</span><span class="text-cyan-300 font-bold">${mol.wavelength.toFixed(2)} µm</span></div>
+            <div class="flex justify-between text-gray-300"><span>Detector:</span><span class="text-white font-bold">${arrayId} · Ch ${chInArray}/17 (Band ${chNum})</span></div>
+            <div class="flex justify-between text-gray-300"><span>SED Flux:</span><span class="text-orange-300 font-bold">${sedF} µJy</span></div>
+            <div class="text-[10px] text-gray-400 italic pt-1 border-t border-space-800 leading-tight">${mol.desc || 'Molecular absorption feature'}</div>
+          `;
+          specSpotAction.innerHTML = `
+            <span class="text-gray-400">${isPinned ? '📌 Pinned' : 'Click to inspect'}</span>
+            <button type="button" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-700 text-cyan-300 hover:text-white border border-space-700 font-bold transition" onclick="select102BandChannel(${chNum})">Band ${chNum} ➔</button>
+          `;
+        }
+
+        const popupW = 230;
+        const popupH = 140;
+        let leftPx = spot.x + 14;
+        let topPx = spot.y - 40;
+
+        if (leftPx + popupW > rect.width - 10) {
+          leftPx = spot.x - popupW - 14;
+        }
+        if (leftPx < 10) leftPx = 10;
+        if (topPx + popupH > rect.height - 10) {
+          topPx = rect.height - popupH - 10;
+        }
+        if (topPx < 10) topPx = 10;
+
+        specSpotPopup.style.left = `${Math.round(leftPx)}px`;
+        specSpotPopup.style.top = `${Math.round(topPx)}px`;
+        specSpotPopup.classList.remove('hidden');
+        specSpotPopup.classList.add('flex');
+        if (isPinned) {
+          specSpotPopup.classList.remove('pointer-events-none');
+        } else {
+          specSpotPopup.classList.add('pointer-events-none');
+        }
+      }
+
+      function hideSpecSpotPopup(force = false) {
+        if (!specSpotPopup) return;
+        if (isSpecSpotPinned && !force) return;
+        isSpecSpotPinned = false;
+        pinnedSpotData = null;
+        specSpotPopup.classList.add('hidden');
+        specSpotPopup.classList.remove('flex');
+        specSpotPopup.classList.add('pointer-events-none');
+      }
+
+      function pinSpecSpotPopup(spot) {
+        isSpecSpotPinned = true;
+        pinnedSpotData = spot;
+        showSpecSpotPopup(spot, true);
+        if (typeof playTargetLockChime === 'function') playTargetLockChime();
+      }
+
+      if (btnCloseSpecSpotPopup) {
+        btnCloseSpecSpotPopup.addEventListener('click', (e) => {
+          e.stopPropagation();
+          hideSpecSpotPopup(true);
+        });
+      }
+
+      chartCanvas.addEventListener('mousemove', (e) => {
+        if (isPanningSpec) return;
+        const rect = chartCanvas.getBoundingClientRect();
+        const clientX = e.clientX - rect.left;
+        const clientY = e.clientY - rect.top;
+
+        const spot = findNearestSpectrumSpot(clientX, clientY, 26);
+        if (spot) {
+          chartCanvas.style.cursor = 'pointer';
+          if (!isSpecSpotPinned) {
+            showSpecSpotPopup(spot, false);
+          }
+        } else {
+          chartCanvas.style.cursor = (specZoomMinIndex !== null) ? 'grab' : 'crosshair';
+          if (!isSpecSpotPinned) {
+            hideSpecSpotPopup(false);
+          }
+        }
+      });
+
+      chartCanvas.addEventListener('mouseleave', () => {
+        if (!isSpecSpotPinned) {
+          hideSpecSpotPopup(false);
+        }
+      });
 
       // Bind Array Tab Click Events
       document.querySelectorAll('.array-tab').forEach(tab => {

@@ -26,6 +26,16 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🔍 102-BAND SPECTRUM 2D SPOT POPUPS & INTERACTIVE INSPECTOR ENGINE (@jokerodu)]**
+  - **Feature & Fix:** Solved missing popups/tooltips on spots in the 102-band spectrum chart (Dataset 1 Catalog Photometry diamonds e.g. WISE W2, and Dataset 2 Molecular Feature diamonds e.g. CO₂ Ice, H₂O, CH₄, CO).
+  - **Root Cause:** Due to large vertical flux discrepancies between the SED curve (e.g. 2224 µJy) and photometry points (e.g. 566 µJy), 1D X-axis index snapping (`axis: 'x'`) pulled Chart.js's tooltip position to the top of the canvas, and hovering directly on spots with slight X-offset caused Dataset 1/2 to evaluate to null. Furthermore, clicking on points lacked dedicated interactive popup feedback.
+  - **2D Euclidean Hit-Testing (`findNearestSpectrumSpot`):** Added 26–30px Euclidean distance detection (`Math.hypot(x - ptX, y - ptY)`) accurately resolving both Catalog Photometry diamonds and Molecular Signatures regardless of zoom level or vertical distance from the SED curve.
+  - **Floating Rich Interactive Popup Card (`#specSpotPopup`):** Added dedicated glassmorphic card anchored directly to the spot:
+    - *Photometry:* Band badge, Survey source (`CatWISE2020` / `Live Archive Match`), Wavelength, Measured Flux ($\mu\text{Jy}$), Apparent Magnitude ($m$), and SED Model baseline comparison.
+    - *Molecular Features:* Molecule name, Wavelength, Detector Array, Channel, SED Flux, Science Context, and 1-click `[Band X ➔]` navigation.
+    - *Pin on Click:* Clicking any spot pins the popup open for inspection and auto-selects the corresponding channel (`select102BandChannel(ch)`).
+  - **Visual Badging:** Added high-contrast background pill labels for all catalog photometry points on canvas and tightened molecular title tolerances to prevent title hijacking.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (26/26) including new `test_spectrum_102_band_spot_popup_and_2d_hit_contract`, and full Golden Suite (58/58 total).
 - **[✅ ISSUE #43 COMPLETED: TIME-DOMAIN LIGHT CURVE TAB ENHANCEMENTS & UPGRADES (@coolodu)]**
   - **Issue Link:** [#43: [Feature] Further Enhancements & Upgrades for Time-Domain Light Curve Tab](https://github.com/joker0210G/spherex-hunter/issues/43)
   - **Assigned Teammate:** `@coolodu` (Track: `web-frontend`, Resource Profile: `standard`)
@@ -35,7 +45,7 @@
     3. **Outlier Flagging & Masking:** Tool to exclude cosmic ray artifacts and bad photometry from statistical metrics ($\chi^2_{\text{red}}$, mean magnitude, amplitude) via button `#btnToggleOutlierMask` and `Shift+Click` point toggling, with live masked count badge (`#lcMaskedCountBadge`) and one-click clear button (`#btnClearLCMasks`).
     4. **Responsive Dock Layout:** Fine-tuned `#dockPanelLightCurve` toolbar with `flex-wrap xl:flex-nowrap`, preserving full height and responsiveness across displays.
     5. **Fitted Analytical Model Curve:** Added optional sinusoidal harmonic fit curve (`#btnToggleLCModelCurve`, `#lcModelCurveLabel`) across the folded phase domain $[0.0, 2.0]$ computed via weighted least-squares regression.
-  - **Verification:** 100% green pass rate across `test_ui_contract.py` (25/25) including `test_issue_43_light_curve_enhancements_contract()`, full test suite (73/73), and physical verification via browser subagent ([final_step_61.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/76f06a40-990c-4cd7-b7cf-4900ca4d77fe/browser_evidence/2720cd7c-6b3c-44bf-be2b-7587de23e209/final_step_61.png)).
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (25/25) including `test_issue_43_light_curve_enhancements_contract()`, full test suite (73/73), and physical verification via browser subagent.
 - **[⚡ BLINK COMPARATOR POPUP TOOLBAR & RAIL TOOL FUNCTIONALIZED (@coolodu)]**
   - **Feature:** Full functional implementation of the Blink Comparator tool option on the left vertical rail (`#toolBlinkFlip`) and its companion interactive popup toolbar (`#viewportBlinkHUD`).
   - **Left Rail Blink Tool:** Configured `#toolBlinkFlip` on `#leftToolRail` with `split` icon and `Blink` label; clicking activates the tool, sets `blender-btn-orange-active`, and toggles `#viewportBlinkHUD`.
