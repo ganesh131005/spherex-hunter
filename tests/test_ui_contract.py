@@ -875,6 +875,66 @@ def test_redefined_light_curve_time_domain_contract():
     assert "selectedSkyPoint" in html, "Missing selectedSkyPoint state"
 
 
+def test_issue_43_light_curve_enhancements_contract():
+    """Validates Issue #43 upgrades: Point details (SNR/µJy), Lomb-Scargle sparkline, outlier masking, harmonic model fit, and responsive layout."""
+    html, soup = _get_html_and_soup()
+    lc_panel = soup.find(id="dockPanelLightCurve")
+    assert lc_panel is not None, "Missing #dockPanelLightCurve"
+
+    # 1. Interactive Point Details Box in Telemetry Sidebar
+    details_box = lc_panel.find(id="lcSelectedPointDetails")
+    assert details_box is not None, "Missing #lcSelectedPointDetails box"
+    assert details_box.find(id="lcDetailSurvey") is not None, "Missing #lcDetailSurvey"
+    assert details_box.find(id="lcDetailDate") is not None, "Missing #lcDetailDate"
+    assert details_box.find(id="lcDetailFlux") is not None, "Missing #lcDetailFlux"
+    assert details_box.find(id="lcDetailSNR") is not None, "Missing #lcDetailSNR"
+    assert details_box.find(id="lcDetailStatus") is not None, "Missing #lcDetailStatus"
+    assert "calcCalibratedFluxMicroJy" in html, "Missing calcCalibratedFluxMicroJy function"
+    assert "window.calcCalibratedFluxMicroJy" in html, "calcCalibratedFluxMicroJy must be exported to window"
+
+    # 2. Lomb-Scargle Frequency Power Sparkline
+    sparkline_container = lc_panel.find(id="lcPowerSparklineContainer")
+    assert sparkline_container is not None, "Missing #lcPowerSparklineContainer"
+    sparkline_canvas = sparkline_container.find(id="lcPowerSparkline")
+    assert sparkline_canvas is not None, "Missing canvas #lcPowerSparkline"
+    assert sparkline_container.find(id="lcPowerPeakLabel") is not None, "Missing #lcPowerPeakLabel"
+    assert lc_panel.find(id="lcStatPower") is not None, "Missing #lcStatPower in sidebar"
+    assert "renderLombScargleSparkline" in html, "Missing renderLombScargleSparkline function"
+    assert "window.renderLombScargleSparkline" in html, "renderLombScargleSparkline must be exported to window"
+
+    # 3. Outlier Flagging & Masking Tool
+    btn_mask = lc_panel.find(id="btnToggleOutlierMask")
+    assert btn_mask is not None, "Missing #btnToggleOutlierMask button in toolbar"
+    assert "toggleLightCurveMaskMode" in btn_mask.get("onclick", ""), "#btnToggleOutlierMask must trigger toggleLightCurveMaskMode()"
+    assert btn_mask.find(id="lcMaskModeLabel") is not None, "Missing #lcMaskModeLabel"
+
+    masked_section = lc_panel.find(id="lcMaskedSection")
+    assert masked_section is not None, "Missing #lcMaskedSection in sidebar"
+    assert masked_section.find(id="lcMaskedCountBadge") is not None, "Missing #lcMaskedCountBadge"
+    btn_clear_masks = masked_section.find(id="btnClearLCMasks")
+    assert btn_clear_masks is not None, "Missing #btnClearLCMasks"
+    assert "clearLightCurveMasks" in btn_clear_masks.get("onclick", ""), "#btnClearLCMasks must trigger clearLightCurveMasks()"
+
+    assert "toggleLightCurveMaskMode" in html, "Missing toggleLightCurveMaskMode function"
+    assert "clearLightCurveMasks" in html, "Missing clearLightCurveMasks function"
+    assert "isPointMasked" in html, "Missing isPointMasked function"
+    assert "getLCPointKey" in html, "Missing getLCPointKey function"
+    assert "window.lcMaskedPointIds" in html, "lcMaskedPointIds must be exported to window"
+
+    # 4. Fitted Harmonic Model Curve in Phase Space
+    btn_model = lc_panel.find(id="btnToggleLCModelCurve")
+    assert btn_model is not None, "Missing #btnToggleLCModelCurve in #lcPhaseControls"
+    assert "toggleLightCurveModelCurve" in btn_model.get("onclick", ""), "#btnToggleLCModelCurve must trigger toggleLightCurveModelCurve()"
+    assert btn_model.find(id="lcModelCurveLabel") is not None, "Missing #lcModelCurveLabel"
+    assert "toggleLightCurveModelCurve" in html, "Missing toggleLightCurveModelCurve function"
+    assert "Harmonic Model Fit" in html, "Harmonic Model Fit dataset must be implemented in phase fold mode"
+
+    # 5. Responsive Dock Toolbar Layout
+    toolbar = lc_panel.find(class_=lambda c: c and "bg-space-950/90" in c)
+    assert toolbar is not None, "Missing top toolbar in dockPanelLightCurve"
+    assert "flex-wrap" in toolbar.get("class", []), "Light curve toolbar must have responsive flex-wrap"
+
+
 def test_blink_comparator_popup_toolbar_contract():
     """Validates that the Blink icon tool option and its popup toolbar are fully functional with edit drawer, pin/unpin, and close options."""
     html, soup = _get_html_and_soup()

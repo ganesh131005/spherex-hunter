@@ -26,6 +26,16 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[✅ ISSUE #43 COMPLETED: TIME-DOMAIN LIGHT CURVE TAB ENHANCEMENTS & UPGRADES (@coolodu)]**
+  - **Issue Link:** [#43: [Feature] Further Enhancements & Upgrades for Time-Domain Light Curve Tab](https://github.com/joker0210G/spherex-hunter/issues/43)
+  - **Assigned Teammate:** `@coolodu` (Track: `web-frontend`, Resource Profile: `standard`)
+  - **Scope Completed:**
+    1. **Interactive Point Details:** Tooltips and telemetry sidebar detail card (`#lcSelectedPointDetails`) displaying observational SNR ($\text{SNR} \approx 1.0857/\sigma_m$), instrument/survey passband, calibrated infrared flux in $\mu\text{Jy}$ (`calcCalibratedFluxMicroJy`), observation date/MJD, and outlier status.
+    2. **Frequency Power Sparkline:** Added mini-canvas display (`#lcPowerSparkline`, `#lcPowerSparklineContainer`) showing the full Lomb-Scargle spectral power distribution across scanned trial periods ($0.2\text{d} - 500\text{d}$) with live peak period indicator (`#lcPowerPeakLabel`).
+    3. **Outlier Flagging & Masking:** Tool to exclude cosmic ray artifacts and bad photometry from statistical metrics ($\chi^2_{\text{red}}$, mean magnitude, amplitude) via button `#btnToggleOutlierMask` and `Shift+Click` point toggling, with live masked count badge (`#lcMaskedCountBadge`) and one-click clear button (`#btnClearLCMasks`).
+    4. **Responsive Dock Layout:** Fine-tuned `#dockPanelLightCurve` toolbar with `flex-wrap xl:flex-nowrap`, preserving full height and responsiveness across displays.
+    5. **Fitted Analytical Model Curve:** Added optional sinusoidal harmonic fit curve (`#btnToggleLCModelCurve`, `#lcModelCurveLabel`) across the folded phase domain $[0.0, 2.0]$ computed via weighted least-squares regression.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (25/25) including `test_issue_43_light_curve_enhancements_contract()`, full test suite (73/73), and physical verification via browser subagent ([final_step_61.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/76f06a40-990c-4cd7-b7cf-4900ca4d77fe/browser_evidence/2720cd7c-6b3c-44bf-be2b-7587de23e209/final_step_61.png)).
 - **[⚡ BLINK COMPARATOR POPUP TOOLBAR & RAIL TOOL FUNCTIONALIZED (@coolodu)]**
   - **Feature:** Full functional implementation of the Blink Comparator tool option on the left vertical rail (`#toolBlinkFlip`) and its companion interactive popup toolbar (`#viewportBlinkHUD`).
   - **Left Rail Blink Tool:** Configured `#toolBlinkFlip` on `#leftToolRail` with `split` icon and `Blink` label; clicking activates the tool, sets `blender-btn-orange-active`, and toggles `#viewportBlinkHUD`.
