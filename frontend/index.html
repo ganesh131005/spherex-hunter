@@ -9505,10 +9505,26 @@
     }
     window.computeVariabilityStatistics = computeVariabilityStatistics;
 
+    let _lastLCRa = null;
+    let _lastLCDec = null;
+    let _lastLCTime = 0;
+
     async function fetchPointLightCurve(ra, dec, label = 'Selected Point') {
       const numRA = parseFloat(ra);
       const numDec = parseFloat(dec);
       if (isNaN(numRA) || isNaN(numDec)) return;
+
+      const now = Date.now();
+      if (_lastLCRa !== null && _lastLCDec !== null) {
+        const timeDiff = now - _lastLCTime;
+        const dCoord = Math.hypot(numRA - _lastLCRa, numDec - _lastLCDec);
+        if (timeDiff < 250 && dCoord < 0.001) {
+          return; // Skip rapid duplicate micro-clicks
+        }
+      }
+      _lastLCRa = numRA;
+      _lastLCDec = numDec;
+      _lastLCTime = now;
 
       const lblEl = document.getElementById('lcTargetLabel');
       const coordEl = document.getElementById('lcTargetCoords');
