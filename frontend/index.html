@@ -369,6 +369,20 @@
               <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Interactive all-sky HiPS cube navigator</p>
             </div>
           </button>
+
+          <!-- Tool 5: Time Step Controller -->
+          <button id="wsTimeStep" onclick="window.toggleTimeStepHUD && window.toggleTimeStepHUD(true); event.stopPropagation();" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-cyan-500/40 transition flex items-start gap-2.5 group" title="Multi-Epoch Time Step Controller HUD (Hotkey: T)">
+            <div class="w-7 h-7 rounded-md bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-cyan-900 transition">
+              <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Time Step Controller</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-cyan-300 border border-cyan-500/30">T</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">15-year baseline, epoch stepper & ZOGY differencing</p>
+            </div>
+          </button>
         </div>
       </div>
     </div>
@@ -401,10 +415,10 @@
 
       <!-- Compact Coordinates Popover Trigger -->
       <div class="relative">
-        <button id="btnToggleCoordsPopover" class="flex items-center gap-1.5 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
-          <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange"></i>
-          <span id="quickCoordsLabel" class="text-[11px] hidden sm:inline">133.795°, -7.245°</span>
-          <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
+        <button id="btnToggleCoordsPopover" onclick="window.toggleCoordsPopover && window.toggleCoordsPopover(); event.stopPropagation();" class="cursor-pointer flex items-center gap-1.5 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
+          <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange pointer-events-none"></i>
+          <span id="quickCoordsLabel" class="text-[11px] hidden sm:inline pointer-events-none">133.795°, -7.245°</span>
+          <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400 pointer-events-none"></i>
         </button>
 
         <!-- Floating Coordinates Popover Card -->
@@ -611,9 +625,9 @@
         </button>
 
         <!-- Time Step Controller Tool with Popup Option (User Request) -->
-        <button id="toolTimeStep" class="w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
-          <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
-          <span class="text-[8px] font-mono leading-none">Step</span>
+        <button id="toolTimeStep" onclick="window.toggleTimeStepHUD && window.toggleTimeStepHUD(); event.stopPropagation();" class="cursor-pointer w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400 pointer-events-none"></i>
+          <span class="text-[8px] font-mono leading-none pointer-events-none">Step</span>
         </button>
 
         <!-- Auto-Identification of Motion Dipoles & Transients -->
@@ -8849,17 +8863,31 @@
     const coordsPopover = document.getElementById('coordsPopover');
     const btnCloseCoordsPopover = document.getElementById('btnCloseCoordsPopover');
 
+    function toggleCoordsPopover(force) {
+      const popover = document.getElementById('coordsPopover');
+      if (!popover) return;
+      const willShow = (typeof force === 'boolean') ? force : popover.classList.contains('hidden');
+      if (willShow) {
+        popover.classList.remove('hidden');
+        const inputRA = document.getElementById('inputRA');
+        if (inputRA) setTimeout(() => inputRA.focus(), 50);
+      } else {
+        popover.classList.add('hidden');
+      }
+    }
+    window.toggleCoordsPopover = toggleCoordsPopover;
+
     if (btnToggleCoordsPopover && coordsPopover) {
       btnToggleCoordsPopover.addEventListener('click', (e) => {
         e.stopPropagation();
-        coordsPopover.classList.toggle('hidden');
+        toggleCoordsPopover();
       });
       if (btnCloseCoordsPopover) {
-        btnCloseCoordsPopover.addEventListener('click', () => coordsPopover.classList.add('hidden'));
+        btnCloseCoordsPopover.addEventListener('click', () => toggleCoordsPopover(false));
       }
       document.addEventListener('click', (e) => {
         if (!coordsPopover.contains(e.target) && !btnToggleCoordsPopover.contains(e.target)) {
-          coordsPopover.classList.add('hidden');
+          toggleCoordsPopover(false);
         }
       });
     }
