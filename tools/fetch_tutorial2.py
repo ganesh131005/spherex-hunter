@@ -1,5 +1,4 @@
 import urllib.request
-import re
 
 url = "https://caltech-ipac.github.io/irsa-tutorials/spherex-cutouts/"
 print(f"Fetching {url}...")

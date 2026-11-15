@@ -1,4 +1,3 @@
-import re
 
 with open('flash3.js', 'r', encoding='utf-8', errors='ignore') as f:
     text = f.read()

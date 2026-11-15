@@ -1,4 +1,3 @@
-import urllib.parse
 
 ra = 133.786245
 dec = -7.244372

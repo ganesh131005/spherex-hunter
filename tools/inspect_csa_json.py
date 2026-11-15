@@ -1,6 +1,6 @@
-import urllib.request
-import ssl
 import json
+import ssl
+import urllib.request
 
 ctx = ssl._create_unverified_context()
 url = "https://donnees-data.asc-csa.gc.ca/api/action/package_show?id=62d8033b-87b6-4322-8d5f-e26bebf934c1"
