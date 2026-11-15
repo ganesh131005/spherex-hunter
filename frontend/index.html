@@ -1319,8 +1319,7 @@
         <!-- Visual Separator between Time Gap pill and Panel Collapse button -->
         <div class="h-4 w-px bg-space-700 mx-1 hidden sm:block"></div>
 
-        <button id="btnToggleDock" class="px-2 py-1 rounded blender-btn text-gray-300 hover:text-white flex items-center gap-1 text-[10px]" title="Minimize / Expand Bottom Panel">
-          <span class="hidden md:inline text-gray-400">Panel</span>
+        <button id="btnToggleDock" class="p-1 rounded blender-btn text-gray-300 hover:text-white flex items-center justify-center transition" title="Minimize / Expand Bottom Panel">
           <i id="dockCollapseIcon" data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
         </button>
       </div>
@@ -4921,6 +4920,27 @@
       if (chanSlider && parseInt(chanSlider.value) !== activeChannelInArray) {
         chanSlider.value = activeChannelInArray;
       }
+
+      // Synchronize 102-Band Information & Selector Bar in Spectrum Toolbar
+      const specSel = document.getElementById('spec102ChannelSelect');
+      if (specSel && specSel.value !== String(absoluteBand)) {
+        specSel.value = String(absoluteBand);
+      }
+      const specDisp = document.getElementById('spec102WavelengthDisplay');
+      if (specDisp) {
+        specDisp.innerText = `${wl} µm (Band ${absoluteBand} · Array ${activeArray})`;
+      }
+
+      // Synchronize HiPS 102-Channel Selector and Wavelength Display
+      const hipsSel = document.getElementById('hipsChannelSelect');
+      if (hipsSel && hipsSel.value !== String(absoluteBand)) {
+        hipsSel.value = String(absoluteBand);
+      }
+      const hipsDisp = document.getElementById('hipsWavelengthDisplay');
+      if (hipsDisp) {
+        hipsDisp.textContent = `${wl} μm (Band ${activeArray.replace('A', '')})`;
+      }
+      selectedHiPSChannel = absoluteBand;
 
       // Update array tabs active styling
       document.querySelectorAll('.array-tab').forEach(tab => {

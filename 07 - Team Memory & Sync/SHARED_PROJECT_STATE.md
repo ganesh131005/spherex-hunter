@@ -35,6 +35,10 @@
     3. **15-Second Quick-Start Action:** Added prominent `#btnTourQuickStart` button in footer that dismisses guide, activates blink cycling, and auto-loads WISE 0855 with immediate user toast.
     4. **Truthful Bandpass Assertion Alignment:** Reconciled `tests/test_scene_and_metadata.py` to assert truthful bandpass matching on WISE 0855 ($4.6\,\mu\text{m}$ stack) and mismatch on default 2MASS/SPHEREx pairs.
   - **Verification:** 100% green pass rate across `test_ui_contract.py` (14/14), `test_scene_and_metadata.py` (6/6), CI unit suite (61/61), and Golden Suite (22/22). Closed on GitHub.
+- **[🌐 ALL 5 TEAM BRANCHES SYNCHRONIZED & PUSHED TO GITHUB (Commit `689a25b`)]**
+  - **Branches Pushed:** `main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`.
+  - **State:** 100% aligned with minimal bottom dock collapse icon (`#btnToggleDock`), Viewport Overhaul Steps 3 & 4 (SPHEREx HiPS context layer, 102 channels, narrowband stacking, Gaia DR3 space motion), and Issue #42 onboarding dispatch.
+  - **Verification:** 23/23 tests green. Zero merge conflicts. All remote tracking tips identical at `689a25b`.
 - **[🛰️ STEP 4 COMPLETED: CALIBRATED MULTI-EPOCH PLACEMENT, NARROWBAND STACKING & GAIA DR3 ASTROMETRY (@coolodu)]**
   - **Target-Specific Historical Baselines:** Re-anchored WISE 0855 to AllWISE W2 ($4.6\,\mu\text{m}$, 2010 / unWISE) paired with SPHEREx narrowband stack ($4.6\,\mu\text{m}$, Band 6, $N_{\text{exp}}=26$, $\text{S/N}=5.82\sigma$) establishing true bandpass matching. Verified Barnard's Star ($10.36''/\text{yr}$), Epsilon Indi B ($4.70''/\text{yr}$), RW Aurigae, and R Draconis presets.
   - **Gaia Space Motion Propagation (`apply_space_motion`):** Implemented in `backend/services/gaia_service.py` using `astropy.coordinates.SkyCoord.apply_space_motion()` to propagate J2016.0 coordinates forward to exposure epoch `target_mjd`, accounting for proper motion, parallax, and radial velocity.
