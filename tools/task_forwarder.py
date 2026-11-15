@@ -6,12 +6,11 @@ Allows teammates with asymmetrical resources (laptop specs / token quotas)
 to forward, claim, execute, and deliver tasks seamlessly via Git.
 """
 
-import os
-import sys
 import argparse
 import datetime
+import os
 import re
-import json
+import sys
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SYNC_DIR = os.path.join(BASE_DIR, "07 - Team Memory & Sync", "TASK_DISPATCH")
@@ -63,7 +62,7 @@ def get_next_task_id():
 def update_board():
     ensure_dirs()
     tasks = []
-    
+
     # Read inbox tasks
     for f in sorted(os.listdir(INBOX_DIR)):
         if not f.endswith(".md"): continue
@@ -109,7 +108,7 @@ def update_board():
         table_content = "\n".join(rows)
 
     board_text = f"""# 📋 Team RIP: Master Task Forwarding Board
-> **Live Task Forwarding Ledger** | Synced via Git across all branches  
+> **Live Task Forwarding Ledger** | Synced via Git across all branches
 > **Last Updated:** {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | **Active Tasks:** {len([t for t in tasks if t.get('status') != 'COMPLETED'])}
 
 ---
@@ -140,7 +139,7 @@ def cmd_dispatch(args):
     ensure_dirs()
     task_id = get_next_task_id()
     now_str = datetime.datetime.now().isoformat()
-    
+
     meta = {
         "task_id": task_id,
         "title": args.title,
@@ -183,14 +182,14 @@ def cmd_dispatch(args):
 def cmd_list(args):
     ensure_dirs()
     update_board()
-    
+
     inbox_files = [f for f in os.listdir(INBOX_DIR) if f.endswith(".md")]
     completed_files = [f for f in os.listdir(COMPLETED_DIR) if f.endswith(".md")]
-    
+
     print("\n" + "="*80)
     print("🛰️  TEAM RIP: ASYMMETRIC TASK FORWARDING & DELEGATION BOARD")
     print("="*80)
-    
+
     if not inbox_files:
         print("\n🟢 INBOX: No pending tasks. Queue is clear!")
     else:
@@ -282,7 +281,7 @@ def cmd_claim(args):
 
     update_board()
     print(f"🔵 [CLAIMED] Task {task_id} is now claimed by @{worker}.")
-    print(f"   You can now execute this task with your high specs / tokens!")
+    print("   You can now execute this task with your high specs / tokens!")
 
 def cmd_complete(args):
     ensure_dirs()

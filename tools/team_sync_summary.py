@@ -11,10 +11,9 @@ Provides a beginner-friendly terminal dashboard summarizing:
 """
 
 import os
-import sys
-import subprocess
-import json
 import re
+import subprocess
+import sys
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 STATE_FILE = os.path.join(BASE_DIR, "07 - Team Memory & Sync", "SHARED_PROJECT_STATE.md")
@@ -56,7 +55,6 @@ def get_branch_latest_commits(branch_ref, count=2):
 def get_open_github_issues():
     # Use github_bridge logic
     try:
-        bridge_path = os.path.join(BASE_DIR, "tools", "github_bridge.py")
         sys.path.insert(0, os.path.join(BASE_DIR, "tools"))
         import github_bridge
         issues = github_bridge._request("/issues?state=open")
@@ -71,7 +69,7 @@ def get_recent_announcements(max_items=3):
         return []
     with open(STATE_FILE, "r", encoding="utf-8") as f:
         content = f.read()
-    
+
     announcements = []
     log_match = re.search(r"## 📝 Recent Team Log & Announcements\s*\n(.*?)(?=\n##|\Z)", content, re.DOTALL)
     if log_match:

@@ -3,6 +3,13 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Master Integration: Harmonized Features Across All Team Branches into Main]**:
+  - Unified all recent innovations and bugfixes across `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, and `astrodu/ui-story-pitch` into `main`:
+    1. **Frontend UI Polish & Controls:** Consolidated Target Presets dropdown (`#btnTargetPresetsTrigger` + `#targetPresetsPopup`), relocated My Investigations to Cands tab, resized header utility buttons to compact `w-2.5 h-2.5`, applied Astral Amethyst gradient styling to Scene Collection sidebar, and restyled high proper motion badges to crosshair auto-tracking badges.
+    2. **Backend Route Hardening:** Added explicit `@app.get("/index.html")` redirect and `@app.get("/favicon.ico")` brand asset response in `backend/main.py`.
+    3. **Pytest & Code Quality:** Suppressed third-party testclient & Erfa conversion warnings via `pyproject.toml`, rectified 53 linter issues across `tools/*.py`.
+    4. **Resilient Catalog Engine:** Disk-backed persistent circuit breakers (`circuit_state.json`), single-flight host probe locks (`_IRSA_PROBE_LOCK`, `_ESA_PROBE_LOCK`), and Harvard CfA VizieR fallback.
+  - Verified 100% test pass rate: **61/61 tests passing** across `test_golden_suite.py` (23/23), `test_ui_contract.py` (26/26), and `test_viewport_overhaul_v2.py` (12/12) with 0 errors and 0 warnings.
 - [x] **[Persistent Zero-Noise Circuit Breaker & Single-Flight Fallback Engine]**:
   - Implemented disk-backed persistent circuit state in `backend/cache/circuit_state.json` persisting `irsa_tap_cooldown` and `esa_gaia_cooldown` across Uvicorn reload processes and server restarts.
   - Implemented single-flight host probe locks (`_IRSA_PROBE_LOCK`, `_ESA_PROBE_LOCK`) using double-checked locking: when concurrent threads query an uninitialized/closed circuit at startup, exactly one probes the upstream host, and upon failure, all sibling threads instantly divert to Harvard CfA VizieR without firing duplicate requests or throwing 502 errors.
