@@ -3,11 +3,22 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified relocation of the Time Step Controller (`#viewportTimeStepHUD`) to the left vertical tool rail (`#leftToolRail`) with interactive popup option on `coolodu/web-frontend`. Added `#toolTimeStep` on the left rail, anchored the controller flyout cleanly at `left-16` (adjacent to the rail), added a Pinned/Flyout mode switch (`#btnPinTimeStepHUD`), and fully wired all sub-tools (Epoch 1 1999 jump, Continuous Morph/Blink play/pause, Epoch 2 2025 SPHEREx survey jump, ZOGY Numerical Difference Map, and Auto-ID scan). All 20 UI contract tests passing 100% green.
+- **Current Task:** Completed and verified consolidation of upper toolbar view modes (`Blink`, `Difference`, `Spectra`, `Aladin Sky`) into a single compact tool icon (`#btnViewModesTrigger`) with a collective popup display option (`#viewModesPopup`) on `coolodu/web-frontend`. Retained 100% backward compatibility for all legacy DOM IDs (`#wsBlink`, `#wsDiff`, `#wsSpec`, `#wsAladin`), keybindings (`B`, `D`, `S`, `A`), command palette integration, and automated test locators. All 21 UI contract tests passing 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Consolidate Blink, Difference, Spectra, and Aladin Sky into Single Tool Icon with Collective Popup Display]**:
+  - Replaced wide 4-button horizontal segmented bar in the top header with a single compact tool button (`#btnViewModesTrigger`).
+  - Single trigger displays active mode's icon (`#viewModeActiveIcon`), label (`#viewModeActiveLabel`), and dynamic rotating chevron (`#viewModeChevron`).
+  - Added collective popup flyout (`#viewModesPopup` inside `#viewModesMenuContainer`) anchored directly under the trigger, featuring:
+    - Tool 1: Multi-Epoch Flipbook Blink Comparator (`#wsBlink`, hotkey `B`)
+    - Tool 2: Numerical ZOGY Image Subtraction (`#wsDiff`, hotkey `D`)
+    - Tool 3: 102-Band SPHEREx Infrared Spectroscopy (`#wsSpec`, hotkey `S`)
+    - Tool 4: Interactive CDS Strasbourg Aladin Lite (`#wsAladin`, hotkey `A`)
+  - Implemented seamless click-to-toggle, outside click auto-dismiss, and Escape key dismiss.
+  - Added `updateActiveViewModeIndicator()` to synchronize trigger icon, label, and active highlight across mouse clicks, keyboard shortcuts, and command palette actions.
+  - Added contract test `test_view_modes_single_tool_icon_and_collective_popup_contract()` in `tests/test_ui_contract.py`. All 21 tests pass 100% green.
 - [x] **[Relocate Time Step Controller to Left Vertical Toolbar with Popup Option]**:
   - Added `#toolTimeStep` tool button to the left vertical rail with `clock` icon, tooltip, and keyboard shortcut `T`.
   - Re-anchored `#viewportTimeStepHUD` as a clean flyout popup at `left-16` adjacent to the rail, completely clearing the center viewport canvas.

@@ -26,7 +26,16 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
-## 📝 Recent Team Log & Announcements
+- **[👁️ CONSOLIDATED VIEW MODES INTO SINGLE TOOL ICON WITH COLLECTIVE POPUP DISPLAY (@coolodu)]**
+  - **Feature:** Replaced the wide 4-button segmented bar in the top header with a single compact observatory tool button (`#btnViewModesTrigger`) with an integrated collective flyout menu (`#viewModesPopup`).
+  - **Single Tool Trigger:** Displays the active mode's icon (`#viewModeActiveIcon`), mode label (`#viewModeActiveLabel`, defaults to 'Blink'), and dynamic rotating chevron (`#viewModeChevron`). Hover effects and Blender dark-theme styling seamlessly match the UI header aesthetic.
+  - **Collective Popup Display Options:**
+    1. *Blink Comparator (`#wsBlink`, Hotkey: B):* Multi-epoch flipbook & continuous kinematics morph.
+    2. *Difference Imaging (`#wsDiff`, Hotkey: D):* Numerical ZOGY sub-pixel PSF reference subtraction ($I_2 - I_1$).
+    3. *102-Band Spectra (`#wsSpec`, Hotkey: S):* SPHEREx $0.75 - 5.00\,\mu\text{m}$ spectrophotometry & ice bands.
+    4. *Aladin Sky Map (`#wsAladin`, Hotkey: A):* Interactive CDS Strasbourg all-sky HiPS cube navigator.
+  - **UX & Synchronization:** Supports click-to-toggle, click outside dismiss, and `Escape` key dismiss. Switching modes via mouse click, hotkeys (`B`, `D`, `S`, `A`), command palette, or automated scripts instantly updates the trigger icon, label, and active popup highlight.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (21/21) including `test_view_modes_single_tool_icon_and_collective_popup_contract`. Zero regressions in viewport, spectra, and backend contract test suites.
 - **[⏱️ RELOCATED TIME STEP CONTROLLER TO LEFT TOOLBAR WITH POPUP OPTION (@coolodu)]**
   - **Feature:** Moved the floating Time Step Controller (`#viewportTimeStepHUD`) out of the center viewport canvas and anchored it adjacent to the left vertical tool rail (`#leftToolRail`, `left-16`, `top-14`).
   - **Tool Rail Integration & Popup Mode:** Added `#toolTimeStep` (shortcut `T`) to the left rail to toggle the popup open/closed, added a Pinning mode toggle (`#btnPinTimeStepHUD`) for permanent pinned vs auto-dismiss flyout, and added an explicit close button (`#btnCloseTimeStepHUD`).

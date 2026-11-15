@@ -683,6 +683,48 @@ def test_timestep_relocated_to_left_rail_with_popup_option_contract():
     assert "btnPinTimeStepHUD" in html, "JavaScript must bind listener to #btnPinTimeStepHUD"
 
 
+def test_view_modes_single_tool_icon_and_collective_popup_contract():
+    """Validates that Blink, Difference, Spectra, and Aladin Sky tools are consolidated into a single tool icon with a collective popup option."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Single tool trigger button in header
+    menu_container = soup.find(id="viewModesMenuContainer")
+    assert menu_container is not None, "Missing #viewModesMenuContainer"
+
+    trigger_btn = menu_container.find(id="btnViewModesTrigger")
+    assert trigger_btn is not None, "Missing #btnViewModesTrigger in header"
+    assert trigger_btn.find(id="viewModeActiveLabel") is not None, "Missing #viewModeActiveLabel in trigger button"
+    assert trigger_btn.find(id="viewModeChevron") is not None, "Missing #viewModeChevron in trigger button"
+
+    # 2. Collective popup container and all 4 mode options
+    popup = menu_container.find(id="viewModesPopup")
+    assert popup is not None, "Missing #viewModesPopup container"
+
+    ws_blink = popup.find(id="wsBlink")
+    assert ws_blink is not None, "Missing #wsBlink inside collective viewModesPopup"
+    assert "B" in ws_blink.get_text(), "Missing hotkey B badge on #wsBlink"
+
+    ws_diff = popup.find(id="wsDiff")
+    assert ws_diff is not None, "Missing #wsDiff inside collective viewModesPopup"
+    assert "D" in ws_diff.get_text(), "Missing hotkey D badge on #wsDiff"
+
+    ws_spec = popup.find(id="wsSpec")
+    assert ws_spec is not None, "Missing #wsSpec inside collective viewModesPopup"
+    assert "S" in ws_spec.get_text(), "Missing hotkey S badge on #wsSpec"
+
+    ws_aladin = popup.find(id="wsAladin")
+    assert ws_aladin is not None, "Missing #wsAladin inside collective viewModesPopup"
+    assert "A" in ws_aladin.get_text(), "Missing hotkey A badge on #wsAladin"
+
+    # 3. JavaScript functions and event wiring
+    assert "toggleViewModesPopup" in html, "Missing toggleViewModesPopup JavaScript function"
+    assert "closeViewModesPopup" in html, "Missing closeViewModesPopup JavaScript function"
+    assert "updateActiveViewModeIndicator" in html, "Missing updateActiveViewModeIndicator JavaScript function"
+    assert "window.toggleViewModesPopup" in html, "toggleViewModesPopup must be exported to window"
+    assert "btnViewModesTrigger" in html, "btnViewModesTrigger must have event listeners bound"
+
+
+
 
 
 

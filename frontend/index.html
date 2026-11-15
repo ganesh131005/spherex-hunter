@@ -293,28 +293,80 @@
         </div>
       </div>
 
-      <!-- Segmented View Mode Control -->
-      <div class="flex items-center bg-space-950 p-0.5 rounded-lg border border-space-700 gap-0.5 shadow-inner">
-        <button id="wsBlink" class="blender-btn blender-btn-active px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Multi-Epoch Flipbook Blink Comparator (Hotkey: B)">
-          <i data-lucide="split" class="w-3.5 h-3.5 text-cyan-400"></i>
-          <span>Blink</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">B</kbd>
+      <!-- Single Collective View Modes Tool with Popup Option (Blink, Difference, Spectra, Aladin Sky) -->
+      <div class="relative shrink-0" id="viewModesMenuContainer">
+        <!-- The Single View Modes Tool Button -->
+        <button id="btnViewModesTrigger" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-space-700 shadow-md hover:border-cyan-500/60 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective modes menu)">
+          <span id="viewModeActiveIconWrapper" class="flex items-center justify-center">
+            <i id="viewModeActiveIcon" data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
+          </span>
+          <span id="viewModeActiveLabel" class="font-bold text-white tracking-wide">Blink</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" id="viewModeChevron"></i>
         </button>
-        <button id="wsDiff" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Numerical ZOGY Image Subtraction (Hotkey: D)">
-          <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span>Difference</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">D</kbd>
-        </button>
-        <button id="wsSpec" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="102-Band SPHEREx Infrared Spectroscopy (Hotkey: S)">
-          <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i>
-          <span>Spectra</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">S</kbd>
-        </button>
-        <button id="wsAladin" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Interactive CDS Strasbourg Aladin Lite (Hotkey: A)">
-          <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Aladin Sky</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">A</kbd>
-        </button>
+
+        <!-- Collective Popup Display Menu (Flyout anchored below the tool icon) -->
+        <div id="viewModesPopup" class="absolute top-full left-0 mt-1.5 w-64 bg-space-900/98 backdrop-blur-xl border border-space-700 rounded-xl shadow-2xl p-2 z-50 hidden flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
+          <div class="flex items-center justify-between px-2 py-1 text-[10px] text-gray-400 uppercase tracking-wider font-sans font-bold border-b border-space-800 pb-1.5 mb-1">
+            <span class="flex items-center gap-1.5"><i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i> View Modes</span>
+            <kbd class="text-[9px] font-mono text-gray-400">Esc to close</kbd>
+          </div>
+
+          <!-- Tool 1: Blink Comparator -->
+          <button id="wsBlink" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-cyan-500/40 transition flex items-start gap-2.5 group blender-btn-active" title="Multi-Epoch Flipbook Blink Comparator (Hotkey: B)">
+            <div class="w-7 h-7 rounded-md bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-cyan-900 transition">
+              <i data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Blink Comparator</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-cyan-300 border border-cyan-500/30">B</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Multi-epoch flipbook & smooth continuous morph</p>
+            </div>
+          </button>
+
+          <!-- Tool 2: Numerical Difference -->
+          <button id="wsDiff" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-amber-500/40 transition flex items-start gap-2.5 group" title="Numerical ZOGY Image Subtraction (Hotkey: D)">
+            <div class="w-7 h-7 rounded-md bg-amber-950/80 border border-amber-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-amber-900 transition">
+              <i data-lucide="layers" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Difference Imaging</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-amber-300 border border-amber-500/30">D</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">ZOGY sub-pixel PSF reference subtraction (I₂ - I₁)</p>
+            </div>
+          </button>
+
+          <!-- Tool 3: 102-Band Spectra -->
+          <button id="wsSpec" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-emerald-500/40 transition flex items-start gap-2.5 group" title="102-Band SPHEREx Infrared Spectroscopy (Hotkey: S)">
+            <div class="w-7 h-7 rounded-md bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-emerald-900 transition">
+              <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">102-Band Spectra</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-emerald-300 border border-emerald-500/30">S</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">0.75 - 5.0 µm spectrophotometry & ice bands</p>
+            </div>
+          </button>
+
+          <!-- Tool 4: Aladin Sky Map -->
+          <button id="wsAladin" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-blue-500/40 transition flex items-start gap-2.5 group" title="Interactive CDS Strasbourg Aladin Lite (Hotkey: A)">
+            <div class="w-7 h-7 rounded-md bg-blue-950/80 border border-blue-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-blue-900 transition">
+              <i data-lucide="globe" class="w-4 h-4 text-blue-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Aladin Sky Map</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-blue-300 border border-blue-500/30">A</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Interactive all-sky HiPS cube navigator</p>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -4788,14 +4840,80 @@
 
     // =========================================================================
     // WORKSPACE MODE SWITCHER (Blink, Diff, Spectrum, Aladin)
+    // Single Tool Trigger & Collective Popup Flyout
     // =========================================================================
     const wsBlink = document.getElementById('wsBlink');
     const wsDiff = document.getElementById('wsDiff');
     const wsSpec = document.getElementById('wsSpec');
     const wsAladin = document.getElementById('wsAladin');
 
+    const btnViewModesTrigger = document.getElementById('btnViewModesTrigger');
+    const viewModesPopup = document.getElementById('viewModesPopup');
+    const viewModesMenuContainer = document.getElementById('viewModesMenuContainer');
+    const viewModeActiveLabel = document.getElementById('viewModeActiveLabel');
+    const viewModeActiveIconWrapper = document.getElementById('viewModeActiveIconWrapper');
+    const viewModeChevron = document.getElementById('viewModeChevron');
+
+    function toggleViewModesPopup(forceOpen) {
+      if (!viewModesPopup) return;
+      const isOpen = !viewModesPopup.classList.contains('hidden');
+      const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !isOpen;
+      if (shouldOpen) {
+        viewModesPopup.classList.remove('hidden');
+        viewModesPopup.classList.add('flex');
+        if (viewModeChevron) viewModeChevron.classList.add('rotate-180');
+      } else {
+        viewModesPopup.classList.add('hidden');
+        viewModesPopup.classList.remove('flex');
+        if (viewModeChevron) viewModeChevron.classList.remove('rotate-180');
+      }
+    }
+
+    function closeViewModesPopup() {
+      toggleViewModesPopup(false);
+    }
+
+    if (btnViewModesTrigger) {
+      btnViewModesTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleViewModesPopup();
+      });
+    }
+
+    // Dismiss view modes popup on outside click
+    document.addEventListener('click', (e) => {
+      if (viewModesMenuContainer && !viewModesMenuContainer.contains(e.target)) {
+        closeViewModesPopup();
+      }
+    });
+
+    // Dismiss view modes popup on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeViewModesPopup();
+      }
+    });
+
+    function updateActiveViewModeIndicator(mode, iconName, labelText, colorClass) {
+      if (viewModeActiveLabel) {
+        viewModeActiveLabel.textContent = labelText;
+      }
+      if (viewModeActiveIconWrapper) {
+        viewModeActiveIconWrapper.innerHTML = `<i id="viewModeActiveIcon" data-lucide="${iconName}" class="w-4 h-4 ${colorClass || 'text-cyan-400'}"></i>`;
+        if (window.lucide) lucide.createIcons();
+      }
+      closeViewModesPopup();
+    }
+
+    // Export helpers to window for tests & global access
+    window.toggleViewModesPopup = toggleViewModesPopup;
+    window.closeViewModesPopup = closeViewModesPopup;
+    window.updateActiveViewModeIndicator = updateActiveViewModeIndicator;
+
     function resetWorkspaceButtons() {
-      [wsBlink, wsDiff, wsSpec, wsAladin].forEach(b => b.classList.remove('blender-btn-active'));
+      [wsBlink, wsDiff, wsSpec, wsAladin].forEach(b => {
+        if (b) b.classList.remove('blender-btn-active');
+      });
       document.getElementById('aladinContainer').classList.add('hidden');
       const contextBar = document.getElementById('aladinContextBar');
       if (contextBar) {
@@ -4808,6 +4926,7 @@
     wsBlink.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsBlink.classList.add('blender-btn-active');
+      updateActiveViewModeIndicator('blink', 'split', 'Blink', 'text-cyan-400');
       diffMode = false;
       updateFrameLabel();
       drawFrame();
@@ -4817,6 +4936,7 @@
     wsDiff.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsDiff.classList.add('blender-btn-active');
+      updateActiveViewModeIndicator('diff', 'layers', 'Difference', 'text-amber-400');
       diffMode = true;
       stopFlipbook();
       updateFrameLabel();
@@ -4826,6 +4946,7 @@
     wsSpec.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsSpec.classList.add('blender-btn-active');
+      updateActiveViewModeIndicator('spec', 'activity', 'Spectra', 'text-emerald-400');
       diffMode = false;
       document.getElementById('propertiesSidebar').classList.remove('hidden');
       loadSpectrumData(camera.ra, camera.dec, currentTargetKey);
@@ -4835,6 +4956,7 @@
     wsAladin.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsAladin.classList.add('blender-btn-active');
+      updateActiveViewModeIndicator('aladin', 'globe', 'Aladin Sky', 'text-blue-400');
       document.getElementById('aladinContainer').classList.remove('hidden');
       const contextBar = document.getElementById('aladinContextBar');
       if (contextBar) {
