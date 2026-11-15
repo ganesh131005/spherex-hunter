@@ -1439,16 +1439,6 @@
               <input type="range" id="chanSlider" min="1" max="17" value="1" class="w-36 h-3 bg-space-700 rounded-lg cursor-pointer accent-amber-400">
               <span id="chanFluxBadge" class="text-amber-300 font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-amber-950/80 border border-amber-500/50 shadow-sm">1.00 rel</span>
             </div>
-
-            <!-- Molecular Absorption Feature Jump Chips (Merged 102-Band Signatures) -->
-            <div class="flex items-center gap-1 bg-space-950/90 px-2 py-1 rounded-xl border border-space-700/80 text-xs font-mono shrink-0" id="spec102MolecularBar">
-              <span class="text-gray-400 text-xs uppercase font-sans font-bold pr-1">Ices:</span>
-              <button class="spec-mol-pill px-1.5 py-0.5 rounded text-xs font-medium bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 text-sky-300 transition" data-channel="25" title="Jump to H₂O Vapor Band (1.40 µm)">💧 H₂O</button>
-              <button class="spec-mol-pill px-1.5 py-0.5 rounded text-xs font-medium bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 transition" data-channel="56" title="Jump to H₂O Water Ice Band (3.05 µm)">❄️ Ice</button>
-              <button class="spec-mol-pill px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 transition" data-channel="60" title="Jump to CH₄ Methane Band (3.30 µm)">🪐 CH₄</button>
-              <button class="spec-mol-pill px-1.5 py-0.5 rounded text-xs font-medium bg-amber-950/80 hover:bg-amber-900 border border-amber-500/40 text-amber-300 transition" data-channel="79" title="Jump to CO₂ Ice Band (4.27 µm)">🧊 CO₂</button>
-              <button class="spec-mol-pill px-1.5 py-0.5 rounded text-xs font-medium bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 transition" data-channel="89" title="Jump to CO Monoxide Band (4.67 µm)">🔬 CO</button>
-            </div>
           </div>
 
           <!-- Right: Non-simultaneous observations honesty notice, Dock Zoom Indicator & Science Guide -->
@@ -1494,6 +1484,21 @@
             <div class="flex justify-between items-center text-xs py-0.5"><span class="text-emerald-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-sm"></span>CH₄ Methane:</span><span class="text-gray-100 font-bold">3.30 µm</span></div>
             <div class="flex justify-between items-center text-xs py-0.5"><span class="text-amber-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow-sm"></span>CO₂ Ice:</span><span class="text-gray-100 font-bold">4.27 µm</span></div>
             <div class="flex justify-between items-center text-xs py-0.5"><span class="text-rose-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block shadow-sm"></span>CO Monoxide:</span><span class="text-gray-100 font-bold">4.67 µm</span></div>
+
+            <!-- Molecular Absorption Feature Jump Chips (Ices located below Molecular Signatures) -->
+            <div id="spec102MolecularBar" class="pt-2 border-t border-space-700/80 space-y-1.5">
+              <div class="flex items-center justify-between text-xs uppercase tracking-wider text-gray-400 font-sans font-bold">
+                <span class="flex items-center gap-1"><span class="text-cyan-400">❄️</span> Jump to Ices:</span>
+                <span class="text-xs font-mono text-cyan-400/80 font-normal">Click Band</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button class="spec-mol-pill px-2 py-1 rounded-lg text-xs font-medium bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 text-sky-300 transition text-center shadow-sm" data-channel="25" title="Jump to H₂O Vapor Band (1.40 µm)">💧 H₂O</button>
+                <button class="spec-mol-pill px-2 py-1 rounded-lg text-xs font-medium bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 transition text-center shadow-sm" data-channel="56" title="Jump to H₂O Water Ice Band (3.05 µm)">❄️ Ice</button>
+                <button class="spec-mol-pill px-2 py-1 rounded-lg text-xs font-medium bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 transition text-center shadow-sm" data-channel="60" title="Jump to CH₄ Methane Band (3.30 µm)">🪐 CH₄</button>
+                <button class="spec-mol-pill px-2 py-1 rounded-lg text-xs font-medium bg-amber-950/80 hover:bg-amber-900 border border-amber-500/40 text-amber-300 transition text-center shadow-sm" data-channel="79" title="Jump to CO₂ Ice Band (4.27 µm)">🧊 CO₂</button>
+                <button class="spec-mol-pill col-span-2 px-2 py-1 rounded-lg text-xs font-medium bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-rose-300 transition text-center shadow-sm" data-channel="89" title="Jump to CO Monoxide Band (4.67 µm)">🔬 CO Monoxide</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
