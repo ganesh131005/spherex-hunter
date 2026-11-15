@@ -4,6 +4,7 @@
 
 [![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Observatory-orange.svg)](https://joker0210G.github.io/spherex-hunter/)
+[![Deploy with Vercel](https://img.shields.io/badge/Deploy%20with-Vercel-black?logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjoker0210G%2Fspherex-hunter)
 [![Python Tests](https://img.shields.io/badge/pytest-62%2F62%20passing-brightgreen.svg)](tests/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com)
 [![NASA SPHEREx](https://img.shields.io/badge/NASA-SPHEREx%20DR1-critical.svg)](https://spherex.caltech.edu)
@@ -12,6 +13,9 @@ SPHEREx Hunter is an interactive astronomical observatory and multi-epoch blink 
 
 🌐 **Live Web Observatory (GitHub Pages):**  
 👉 **[https://joker0210G.github.io/spherex-hunter/](https://joker0210G.github.io/spherex-hunter/)**
+
+⚡ **Deploy to Vercel (1-Click):**  
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjoker0210G%2Fspherex-hunter)
 
 ---
 

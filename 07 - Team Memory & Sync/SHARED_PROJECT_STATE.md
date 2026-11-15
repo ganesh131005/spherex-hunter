@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⚡ VERCEL CLOUD DEPLOYMENT & 1-CLICK HOSTING SUPPORT (@jokerodu / Team Lead)]**
+  - **Objective:** Enable high-performance, root-domain cloud deployment on Vercel (`vercel.json`) with edge CDN caching and 1-click cloning.
+  - **Implemented Actions:**
+    1. **`vercel.json` Configuration:** Defined SPA rewrites routing `/` and `/app` directly to `frontend/index.html`, preserving static asset subdirectories (`/assets/`, `/vendor/`, `/src/`) with optimized HTTP caching (`max-age=86400`).
+    2. **`.vercelignore` Hygiene:** Excluded Python caches, local FITS caches, `.git`, and tests from cloud deployment payloads.
+    3. **1-Click Deploy Button:** Integrated official Vercel deploy badge and button into `README.md`.
+  - **Verification:** Verified 52/52 passing tests (`test_ui_contract.py` & `test_golden_suite.py`) with zero regressions.
+
 - **[🌐 GITHUB PAGES AUTOMATED DEPLOYMENT & CLIENT RESILIENCY (@jokerodu / Team Lead)]**
   - **Objective:** Deploy SPHEREx Hunter client as a live, standalone web application on GitHub Pages (`https://joker0210G.github.io/spherex-hunter/`).
   - **Implemented Actions:**

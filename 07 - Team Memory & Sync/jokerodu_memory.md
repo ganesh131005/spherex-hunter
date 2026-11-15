@@ -3,6 +3,12 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Vercel Cloud Deployment & Clean Root Routing Configuration]**:
+  - Created `vercel.json` with SPA routing rules, `/app/` legacy compatibility rewrites, and granular static caching headers for high-speed delivery of FITS spectra and HiPS tiles.
+  - Added `.vercelignore` to optimize build sizes and keep cloud microVM deployments lean.
+  - Added 1-click **Deploy with Vercel** button and badge to `README.md`.
+  - Installed official Vercel plugin (`antigravity-plugins-partners/plugin/vercel-plugin`).
+  - Verified 100% test pass rate (52/52 passing).
 - [x] **[Automated GitHub Pages Deployment & Client-Side Subpath Resiliency]**:
   - Implemented `.github/workflows/deploy-pages.yml` with official `actions/deploy-pages@v4` and `actions/upload-pages-artifact@v3` for automated deployment to GitHub Pages (`https://joker0210G.github.io/spherex-hunter/`).
   - Adapted frontend static asset paths (`logo.svg`, `aladin.js`, `spherex_102_channels.json`) to relative paths with fallback detection so the client runs out-of-the-box on both local `/app/` routes and GitHub Pages subpaths.
