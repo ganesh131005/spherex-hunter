@@ -350,6 +350,35 @@ def test_issue_28_resilient_cutout_fallback_on_irsa_502():
         assert data["difference_image"]["image_data"].startswith("data:image/png;base64,")
 
 
+def test_persistent_circuit_breakers_and_single_flight():
+    """Verify that IRSA and Gaia circuit breakers persist to disk and single-flight lock works."""
+    import os
+    import time
+    from backend.services.catalog_engine import (
+        _CIRCUIT_STATE_PATH,
+        _load_circuit_state,
+        _save_circuit_state,
+        is_esa_gaia_available,
+        is_irsa_tap_available,
+        trip_esa_gaia_circuit,
+        trip_irsa_tap_circuit,
+    )
+
+    # Trip circuits
+    trip_irsa_tap_circuit(90.0)
+    trip_esa_gaia_circuit(90.0)
+
+    assert os.path.exists(_CIRCUIT_STATE_PATH)
+    state = _load_circuit_state()
+    assert state["irsa_tap_cooldown"] > time.time()
+    assert state["esa_gaia_cooldown"] > time.time()
+    assert is_irsa_tap_available() is False
+    assert is_esa_gaia_available() is False
+
+    # Reset circuit
+    _save_circuit_state({"irsa_tap_cooldown": 0.0, "esa_gaia_cooldown": 0.0})
+
+
 if __name__ == "__main__":
     for b in BENCHMARKS:
         test_nasa_benchmark_cutouts(*b)

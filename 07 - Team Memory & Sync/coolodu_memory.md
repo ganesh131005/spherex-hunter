@@ -3,11 +3,17 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified making the Blink icon in the upper horizontal toolbar fully functional and making the collective View Modes popup toolbar (`#viewModesPopup`) prominently visible beneath the top toolbar on `coolodu/web-frontend`. Resolved `<header>` clipping (`overflow-visible`), enabled visibility and interactive toggle on `#btnViewModesTrigger`, wired Blink flipbook play/pause & HUD triggers, added quick close button `✕`, and verified live in browser with all 26 contract tests passing 100% green.
+- **Current Task:** Completed default closure of the Time Step Controller popup toolbar (`#viewportTimeStepHUD`). Closed by default to keep the main astronomical canvas viewport completely unobstructed on initial load. Users can open and close the Time Step Controller on demand from the left sidebar tool rail (`#toolTimeStep`, Step icon) or with hotkey `T`.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Close Time Step Controller by Default to Free Viewport & Open from Sidebar on Demand]**:
+  - Closed `#viewportTimeStepHUD` by default by setting `class="hidden ..."` in `frontend/index.html`, eliminating viewport occlusion on initial startup.
+  - Set `#toolTimeStep` on the left sidebar tool rail to idle state by default (removed `blender-btn-active`).
+  - Maintained full on-demand toggle capability: clicking `#toolTimeStep` ("Step") in the left sidebar or pressing hotkey `T` toggles the controller open with active indicator styling, full time stepping, blink speed control, and options drawer.
+  - Added quiet initialization to `setTimeStepPinned(pinned, silent=true)` to eliminate redundant toast notifications when the controller is initially closed.
+  - Updated contract test `test_timestep_relocated_to_left_rail_with_popup_option_contract` in `tests/test_ui_contract.py` asserting `hidden` class on load. Verified 100% green pass rate across all 58 baseline contract tests.
 - [x] **[Make Upper Horizontal Toolbar Blink Icon Functional & Make Popup Toolbar Visible]**:
   - Resolved CSS overflow clipping on top `<header>` by changing `overflow-hidden` to `overflow-visible` with high stacking context (`z-40`).
   - Rendered `#viewModesPopup` directly beneath the top toolbar with high-contrast styling (`border-cyan-500/60`, backdrop blur, deep shadow `0 12px 40px rgba(0,0,0,0.85)`).
