@@ -23,6 +23,7 @@
 - [x] Guide darkodu, coolodu, iceodu, and astrodu to fetch repository and execute forwarded tasks.
 - [x] Review upcoming feature PRs from team branches into `main`.
 - [x] **[Release Integration Complete (`coolodu/web-frontend` -> `main`)]**: Merged verified `coolodu/web-frontend` work (Issues `#8`–`#31`, Integrated AI Science Co-Pilot, resilient IRSA 502 fallback, scientific cache lifecycle, `/app/P/DSS2/color/*` local HiPS fallback route, `94/94` non-Playwright `pytest` verification) into `main` and pushed to `origin/main` (0 open GitHub issues remaining).
+- [x] **[Continuous Dynamic Frustum Tile Streaming on Pan & Zoom Resolved & Verified Live]**: Fixed static 3x3 neighbor clustering and scale mismatch bug in `frontend/index.html`. Replaced static offsets with dynamic world-space frustum raycaster, unified center and neighbor tile FOV scaling, removed wireframe seams (`strokeRect` and dark edge vignettes), and verified via Playwright E2E suite (`tests/test_continuous_viewport_e2e.py` 2/2 passing).
 
 ## Notes & Technical Decisions:
 - Astropy `reproject_interp` will be the standard for spatial grid alignment.

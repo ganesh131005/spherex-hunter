@@ -2908,15 +2908,15 @@
     // =========================================================================
     // DRAW REAL ASTRONOMICAL FITS IMAGERY (Single Continuous Optical Telescope Lens)
     // =========================================================================
-    function drawFeatheredImage(ctx, img, x, y, w, h, alpha = 1.0) {
+    function drawFeatheredImage(ctx, img, x, y, w, h, alpha = 1.0, featherEdges = false) {
       ctx.save();
       ctx.globalAlpha = Math.max(0.0, Math.min(1.0, alpha));
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(img, x, y, w, h);
+      ctx.drawImage(img, x, y, w + 0.5, h + 0.5);
 
-      // Smooth edge vignette: softly blends rectangular cutout borders into continuous space
-      if (!diffMode) {
+      // Smooth edge vignette: softly blends borders into continuous space when standalone
+      if (!diffMode && featherEdges) {
         const feather = Math.max(6, Math.min(24, w * 0.06));
         const bg = '#06080e';
 
@@ -3168,15 +3168,16 @@
       }
 
       // 2. Draw current active master astronomical image centered at exact world coordinates
+      const masterFov = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin();
+      const rw = masterFov * pixelsPerArcmin;
+      const rh = masterFov * pixelsPerArcmin;
+
       if (diffMode) {
         const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
         const diffVis = diffLayer ? diffLayer.visible : true;
         if (diffVis && realDiffImg && realDiffImg.complete) {
-          const afov = realDiffImg.fov || ((currentLOD === 2) ? 10.0 : (currentLOD === 0 ? 1.5 : getActiveFovArcmin()));
-          const rw = afov * pixelsPerArcmin;
-          const rh = afov * pixelsPerArcmin;
           ctx.globalAlpha = diffAlpha;
-          ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw, rh);
+          ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw + 0.5, rh + 0.5);
           ctx.globalAlpha = 1.0;
         }
       } else {
@@ -3191,21 +3192,18 @@
         const alphaB = epochBlend * opacityB * lodFade;
 
         if (visA && realEpoch1Img && realEpoch1Img.complete && alphaA > 0.005) {
-          const afov = realEpoch1Img.fov || ((currentLOD === 2) ? 10.0 : (currentLOD === 0 ? 1.5 : getActiveFovArcmin()));
-          const rw = afov * pixelsPerArcmin;
-          const rh = afov * pixelsPerArcmin;
-          drawFeatheredImage(ctx, realEpoch1Img, -rw / 2, -rh / 2, rw, rh, alphaA);
+          drawFeatheredImage(ctx, realEpoch1Img, -rw / 2, -rh / 2, rw, rh, alphaA, false);
         }
 
         if (visB && realEpoch2Img && realEpoch2Img.complete && alphaB > 0.005) {
-          const bfov = realEpoch2Img.fov || ((currentLOD === 2) ? 10.0 : (currentLOD === 0 ? 1.5 : getActiveFovArcmin()));
-          const rw = bfov * pixelsPerArcmin;
-          const rh = bfov * pixelsPerArcmin;
-          drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB);
+          drawFeatheredImage(ctx, realEpoch2Img, -rw / 2, -rh / 2, rw, rh, alphaB, false);
         }
       }
 
-      // 3. Draw Coverage Mask Overlay (transparent NaN / unobserved boundary mask)
+      // 3. Issue #10: Continuous Raytracing Sky Tiling & dynamic frustum fill (seamless adjacent coverage)
+      drawAdjacentSkyTiling(ctx, pixelsPerArcmin);
+
+      // 4. Draw Coverage Mask Overlay (transparent NaN / unobserved boundary mask)
       if (covLayer && covLayer.visible && realCoverageMaskImg && realCoverageMaskImg.complete) {
         const mfov = realCoverageMaskImg.fov || getActiveFovArcmin();
         const mw = mfov * pixelsPerArcmin;
@@ -3215,16 +3213,11 @@
         ctx.globalAlpha = 1.0;
       }
 
-      // 4. Draw Gaia DR3 Astrometry Overlay (Epoch-propagated + WCS TAN projected)
+      // 5. Draw Gaia DR3 Astrometry Overlay (Epoch-propagated + WCS TAN projected)
       const gaiaVis = gaiaLayer ? gaiaLayer.visible : gaiaOverlayEnabled;
       const gaiaAlpha = gaiaLayer ? gaiaLayer.opacity : 0.85;
       if (gaiaVis) {
         drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha);
-      }
-
-      // 5. Issue #10: Continuous Raytracing Sky Tiling & adjacent boundary preview
-      if (camera.zoom < 0.98 || Math.abs(camera.panX) > 60 || Math.abs(camera.panY) > 60) {
-        drawAdjacentSkyTiling(ctx, pixelsPerArcmin);
       }
 
       // 6. AI Field Scanner Dipole Markers & Angular Distance Ruler
@@ -3275,73 +3268,86 @@
     }
 
     function drawAdjacentSkyTiling(ctx, pixelsPerArcmin) {
-      const tileFovArcmin = getActiveFovArcmin();
+      const w = canvas.width || 800;
+      const h = canvas.height || 600;
+
+      // Master tile FOV guarantees pixel-perfect matching scale between center and neighbors
+      const tileFovArcmin = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin();
       const tileSize = tileFovArcmin * pixelsPerArcmin;
+      if (tileSize <= 0) return;
+
       const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
 
       const layerA = getSceneLayer('base_epoch_a');
       const layerB = getSceneLayer('base_epoch_b');
       const diffLayer = getSceneLayer('diff_image');
 
-      const offsets = [
-        [-1, 0], [1, 0], [0, -1], [0, 1],
-        [-1, -1], [1, -1], [-1, 1], [1, 1]
-      ];
+      const visA = layerA ? layerA.visible : true;
+      const visB = layerB ? layerB.visible : true;
+      const alphaA = (1.0 - epochBlend) * (layerA ? layerA.opacity : 1.0);
+      const alphaB = epochBlend * (layerB ? layerB.opacity : 1.0);
+      const diffVis = diffLayer ? diffLayer.visible : true;
+      const diffAlpha = (diffLayer ? diffLayer.opacity : 1.0);
+
+      // Frustum Bounding Box in World Coordinates
+      const minWorldX = (0 - (w / 2 + camera.panX)) / camera.zoom;
+      const maxWorldX = (w - (w / 2 + camera.panX)) / camera.zoom;
+      const minWorldY = (0 - (h / 2 + camera.panY)) / camera.zoom;
+      const maxWorldY = (h - (h / 2 + camera.panY)) / camera.zoom;
+
+      // Determine visible column & row grid range with a 1-tile buffer
+      const minCol = Math.max(-6, Math.floor((minWorldX - tileSize / 2) / tileSize) - 1);
+      const maxCol = Math.min(6, Math.ceil((maxWorldX + tileSize / 2) / tileSize) + 1);
+      const minRow = Math.max(-6, Math.floor((minWorldY - tileSize / 2) / tileSize) - 1);
+      const maxRow = Math.min(6, Math.ceil((maxWorldY + tileSize / 2) / tileSize) + 1);
 
       ctx.save();
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
-      ctx.lineWidth = 1.0;
-      ctx.setLineDash([4, 6]);
 
-      offsets.forEach(([ox, oy]) => {
-        const cx = ox * tileSize;
-        const cy = oy * tileSize;
-        const x0 = cx - tileSize / 2;
-        const y0 = cy - tileSize / 2;
-
-        const dra = - (ox * tileFovArcmin / 60.0) / cosDec;
-        const ddec = - (oy * tileFovArcmin / 60.0);
-        const rawDec = camera.dec + ddec;
-        const rawRA = ((camera.ra + dra) % 360 + 360) % 360;
-        const tileRA = rawRA.toFixed(3);
-        const tileDec = Math.max(-89.9, Math.min(89.9, rawDec)).toFixed(3);
-        const tileKey = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${currentLOD}`;
-
-        const entry = adjacentSkyTileCache.get(tileKey);
-        if (entry && entry.loaded) {
-          if (diffMode) {
-            const diffVis = diffLayer ? diffLayer.visible : true;
-            const diffAlpha = (diffLayer ? diffLayer.opacity : 1.0) * 0.92;
-            if (diffVis && entry.imgDiff && entry.imgDiff.complete && diffAlpha > 0.005) {
-              drawFeatheredImage(ctx, entry.imgDiff, x0, y0, tileSize, tileSize, diffAlpha);
-            }
-          } else {
-            const visA = layerA ? layerA.visible : true;
-            const visB = layerB ? layerB.visible : true;
-            const alphaA = (1.0 - epochBlend) * (layerA ? layerA.opacity : 1.0) * 0.92;
-            const alphaB = epochBlend * (layerB ? layerB.opacity : 1.0) * 0.92;
-            if (visA && entry.img1 && entry.img1.complete && alphaA > 0.005) {
-              drawFeatheredImage(ctx, entry.img1, x0, y0, tileSize, tileSize, alphaA);
-            }
-            if (visB && entry.img2 && entry.img2.complete && alphaB > 0.005) {
-              drawFeatheredImage(ctx, entry.img2, x0, y0, tileSize, tileSize, alphaB);
-            }
+      for (let col = minCol; col <= maxCol; col++) {
+        for (let row = minRow; row <= maxRow; row++) {
+          if (col === 0 && row === 0) {
+            // Center tile is handled by master image drawer
+            continue;
           }
-        } else if (!entry && Math.abs(rawDec) <= 89.9) {
-          if (adjacentSkyTileCache.size >= 48) {
-            const oldestKey = adjacentSkyTileCache.keys().next().value;
-            if (oldestKey) adjacentSkyTileCache.delete(oldestKey);
+
+          const cx = col * tileSize;
+          const cy = row * tileSize;
+          const x0 = cx - tileSize / 2;
+          const y0 = cy - tileSize / 2;
+
+          // Tangential sky coordinate mapping (East=xi+, North=eta+)
+          const dra = - (col * tileFovArcmin / 60.0) / cosDec;
+          const ddec = - (row * tileFovArcmin / 60.0);
+          const rawDec = camera.dec + ddec;
+          const rawRA = ((camera.ra + dra) % 360 + 360) % 360;
+          const tileRA = rawRA.toFixed(3);
+          const tileDec = Math.max(-89.9, Math.min(89.9, rawDec)).toFixed(3);
+          const tileKey = `${tileRA}_${tileDec}_${tileFovArcmin.toFixed(1)}_${currentLOD}`;
+
+          const entry = adjacentSkyTileCache.get(tileKey);
+          if (entry && entry.loaded) {
+            if (diffMode) {
+              if (diffVis && entry.imgDiff && entry.imgDiff.complete && diffAlpha > 0.005) {
+                drawFeatheredImage(ctx, entry.imgDiff, x0, y0, tileSize, tileSize, diffAlpha, false);
+              }
+            } else {
+              if (visA && entry.img1 && entry.img1.complete && alphaA > 0.005) {
+                drawFeatheredImage(ctx, entry.img1, x0, y0, tileSize, tileSize, alphaA, false);
+              }
+              if (visB && entry.img2 && entry.img2.complete && alphaB > 0.005) {
+                drawFeatheredImage(ctx, entry.img2, x0, y0, tileSize, tileSize, alphaB, false);
+              }
+            }
+          } else if (!entry && Math.abs(rawDec) <= 89.9) {
+            if (adjacentSkyTileCache.size >= 128) {
+              const oldestKey = adjacentSkyTileCache.keys().next().value;
+              if (oldestKey) adjacentSkyTileCache.delete(oldestKey);
+            }
+            adjacentSkyTileCache.set(tileKey, { loading: true, loaded: false });
+            fetchAndDecodeAdjacentTile(tileKey, tileRA, tileDec, tileFovArcmin, currentLOD);
           }
-          adjacentSkyTileCache.set(tileKey, { loading: true, loaded: false });
-          fetchAndDecodeAdjacentTile(tileKey, tileRA, tileDec, tileFovArcmin, currentLOD);
         }
-
-        ctx.strokeRect(x0, y0, tileSize, tileSize);
-
-        ctx.fillStyle = 'rgba(148, 163, 184, 0.45)';
-        ctx.font = '9px monospace';
-        ctx.fillText(`${tileRA}°, ${tileDec}°`, x0 + 8, y0 + 16);
-      });
+      }
 
       ctx.restore();
     }

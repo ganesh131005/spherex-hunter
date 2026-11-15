@@ -505,3 +505,12 @@
   - Dynamically computes visible viewport frustum bounds in world celestial space.
   - Automatically queries and renders adjacent near-sky tiles around the viewport focus.
   - Panning in any direction streams real astronomical starlight with zero black borders.
+- **[Continuous Dynamic Frustum Tile Streaming on Pan & Zoom - 100% Resolved & Verified Live]**
+  - **Issue Reported:** Viewport panning shifted center focus but did not stream tiles to fill the exposed area, leaving a black void on the left half of the screen; adjacent tiles had mismatched scale, visible wireframe `strokeRect` borders, and edge vignette seams.
+  - **Root Cause:** Hardcoded static 3x3 neighbor grid anchored to initial `(0, 0)` offset caused the cluster to slide off-screen during pan, exposing an empty black void on the opposite side. Center tile was also scaled to a hardcoded 10.0' in LOD 2 while neighbors were 7.5', and `ctx.strokeRect` / dark edge vignettes produced visible wireframe seams.
+  - **Fix Implemented:**
+    1. Replaced static 3x3 offsets with a **World-Space Frustum Raycaster** calculating visible column and row ranges (`[minCol..maxCol]`, `[minRow..maxRow]`) based on visible screen boundaries (`minWorldX`, `maxWorldX`, `minWorldY`, `maxWorldY`).
+    2. Synchronized master and adjacent tile FOV to `masterFov = (realEpoch1Img && realEpoch1Img.fov) ? realEpoch1Img.fov : getActiveFovArcmin()`, ensuring exact 1:1 sub-pixel scale and resolution parity across all tiles.
+    3. Removed wireframe dashed border `strokeRect` and coordinate text overlays; disabled perimeter edge vignette gradients (`featherEdges = false`) and applied a 0.5px sub-pixel overlap (`w + 0.5`, `h + 0.5`), completely eliminating black seams between touching tiles.
+    4. Rendered adjacent tiles before coverage mask and Gaia DR3 astrometry overlays, ensuring seamless star reticles sit cleanly across all tiles.
+  - **Automated Verification:** Added `test_continuous_viewport_frustum_tiling_on_pan` in `tests/test_continuous_viewport_e2e.py`. Verified 2/2 tests green (100% pass rate) on Microsoft Edge in headless browser mode, confirming dynamic tile streaming on +300px pan with 0 errors.
