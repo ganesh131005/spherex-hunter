@@ -1,5 +1,5 @@
-import urllib.request
 import ssl
+import urllib.request
 
 ctx = ssl._create_unverified_context()
 url = "https://data.asc-csa.gc.ca/dataset/neossat"

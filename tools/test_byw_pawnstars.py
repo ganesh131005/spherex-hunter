@@ -1,5 +1,4 @@
 import urllib.request
-import json
 
 url = "http://byw.tools/pawnstars?ra=133.786245&dec=-7.244372&size=704"
 print(f"Querying {url}...")
