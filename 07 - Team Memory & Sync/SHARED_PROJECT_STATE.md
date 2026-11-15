@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[📌 ISSUE #43 CREATED: TIME-DOMAIN LIGHT CURVE ENHANCEMENTS & UPGRADES (@coolodu)]**
+  - **Issue Link:** [#43: [Feature] Further Enhancements & Upgrades for Time-Domain Light Curve Tab](https://github.com/joker0210G/spherex-hunter/issues/43)
+  - **Assigned Teammate:** `@coolodu` (Track: `web-frontend`, Resource Profile: `standard`)
+  - **Scope:** Interactive point details with SNR/flux (µJy), Lomb-Scargle power sparkline, bad epoch outlier masking, compact layout fine-tuning, and model curve overlay.
 - **[📈 REDEFINED ASTRONOMICAL LIGHT CURVE TAB & POINT SELECTION RETICLE (@jokerodu / @coolodu)]**
   - **Feature:** Completely redefined `#dockPanelLightCurve` in the bottom dock according to NASA / IPAC / ZTF / AAVSO scientific standards:
     1. **Dynamic Point-Specific Fetching & Reticle:** Clicking anywhere on the sky canvas with the Select (Reticle) tool, clicking a Gaia star, or clicking an auto-detected candidate now draws a cyan reticle diamond and dynamically fetches multi-epoch IR photometry (`/api/catalog/crossmatch`) for that exact coordinate $(\alpha, \delta)$.
