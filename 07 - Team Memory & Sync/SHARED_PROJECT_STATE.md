@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #39 Created — Fix Backend 500 NoneType Crash on Archive Miss and Provide Actionable Diagnostic Details in Error Dialog]**
+  - **Issue #39 Link:** https://github.com/joker0210G/spherex-hunter/issues/39
+  - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`
+  - **Checklist Scope:** Items #7, #12, #24 (Helpful Error Explanations, Coordinate/FOV Boundaries, Safe Failure Handling).
+  - **Forensic Diagnosis:** `backend/main.py` crashes with `AttributeError: 'NoneType' object has no attribute 'get'` when `fetch_real_cutout()` returns `None`, returning HTTP 500 instead of a structured 404/503. The frontend displays a vague boilerplate "Something interrupted loading this view" rather than diagnosing the out-of-bounds FOV (559.76') or upstream archive miss.
 - **[🎨 ISSUE #38 RESOLVED ON `coolodu/web-frontend` & CLOSED ON GITHUB]**
   - **Commit:** `376a7f1` pushed to `origin/coolodu/web-frontend`.
   - **Remediation:**
