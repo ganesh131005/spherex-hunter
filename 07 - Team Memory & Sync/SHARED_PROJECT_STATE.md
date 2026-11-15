@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #40 Created — Fix Viewport HUD Overlap Between Time Step Controller and Top Telemetry / Stretch Controls]**
+  - **Issue #40 Link:** https://github.com/joker0210G/spherex-hunter/issues/40
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Checklist Scope:** Items #3 & #5 (Clear Controls & Screen Size Usability).
+  - **Forensic Diagnosis:** `#viewportTimeStepHUD` at `absolute top-3 left-1/2 -translate-x-1/2 z-20` directly collides horizontally with the top-left target chip (`#vpTargetName`, `#vpFrameLabel`) and top-right colormap stretch buttons (`Stretch: Gray Invert Thermal`), burying metadata text and button labels on displays under 1600px.
 - **[GitHub Native Issue #39 Created — Fix Backend 500 NoneType Crash on Archive Miss and Provide Actionable Diagnostic Details in Error Dialog]**
   - **Issue #39 Link:** https://github.com/joker0210G/spherex-hunter/issues/39
   - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`
