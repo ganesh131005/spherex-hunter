@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⏱️ TIME STEP CONTROLLER CLOSED BY DEFAULT FOR UNOBSTRUCTED VIEWPORT (@coolodu)]**
+  - **User Request & Issue:** The Time Step Controller popup toolbar was open by default on application launch, obstructing the top-left area of the astronomical canvas viewport.
+  - **Resolution:**
+    - Added `hidden` to `#viewportTimeStepHUD` in `frontend/index.html` by default, guaranteeing edge-to-edge observatory viewport visibility on initial page load.
+    - Set the left sidebar tool button `#toolTimeStep` ("Step") to idle state initially (removed `blender-btn-active`).
+    - Kept complete interactive toggle workflow: clicking `#toolTimeStep` in the left sidebar or pressing hotkey `T` immediately summons the Time Step Controller popup with active tool highlight.
+    - Added `silent=true` guard to `setTimeStepPinned` on initialization to avoid unwanted toast notifications while hidden.
+    - Updated contract test `test_timestep_relocated_to_left_rail_with_popup_option_contract` in `tests/test_ui_contract.py` asserting `hidden` on load. Verified 100% green pass rate across all 58 baseline tests.
 - **[🛡️ CATALOG ENGINE GLOBAL CIRCUIT BREAKER & MULTI-SURVEY RESILIENT FALLBACKS (@jokerodu)]**
   - **Issue & Symptom:** Addressed backend log spam and latency cascades caused by NASA IRSA TAP returning `502 Server Error: Proxy Error` on `irsa.ipac.caltech.edu/TAP/sync` and ESA Gaia TAP returning `ConnectTimeout` (6.0s timeout) during viewport clicks and light curve queries.
   - **Global Circuit Breakers:**
