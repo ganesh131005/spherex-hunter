@@ -3,6 +3,9 @@ NASA Space Apps Challenge 2026 - Golden Verification Suite
 Validates the 5 NASA Benchmark Targets, WCS Astrometry, Difference Imaging,
 and 102-Band Infrared Spectrophotometry against the Spec-Kit requirements.
 """
+import os
+import time
+
 try:
     import pytest
 except ImportError:
@@ -15,6 +18,15 @@ except ImportError:
         mark = _DummyMark()
 from astropy.coordinates import SkyCoord
 
+from backend.services.catalog_engine import (
+    _CIRCUIT_STATE_PATH,
+    _load_circuit_state,
+    _save_circuit_state,
+    is_esa_gaia_available,
+    is_irsa_tap_available,
+    trip_esa_gaia_circuit,
+    trip_irsa_tap_circuit,
+)
 from backend.services.cutout_engine import fetch_real_cutout, get_102_band_spectrum
 
 BENCHMARKS = [
@@ -352,19 +364,6 @@ def test_issue_28_resilient_cutout_fallback_on_irsa_502():
 
 def test_persistent_circuit_breakers_and_single_flight():
     """Verify that IRSA and Gaia circuit breakers persist to disk and single-flight lock works."""
-    import os
-    import time
-
-    from backend.services.catalog_engine import (
-        _CIRCUIT_STATE_PATH,
-        _load_circuit_state,
-        _save_circuit_state,
-        is_esa_gaia_available,
-        is_irsa_tap_available,
-        trip_esa_gaia_circuit,
-        trip_irsa_tap_circuit,
-    )
-
     # Trip circuits
     trip_irsa_tap_circuit(90.0)
     trip_esa_gaia_circuit(90.0)
