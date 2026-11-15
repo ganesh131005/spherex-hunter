@@ -1,5 +1,5 @@
-import urllib.request
 import re
+import urllib.request
 
 url = 'http://byw.tools/static/flash3.js'
 headers = {'User-Agent': 'Mozilla/5.0'}

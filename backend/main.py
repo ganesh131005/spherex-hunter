@@ -231,6 +231,21 @@ def root(request: Request):
         ]
     }
 
+
+@app.get("/index.html")
+def root_index_redirect():
+    """Redirects /index.html directly to /app/index.html to avoid 404s from standard root queries."""
+    return RedirectResponse(url="/app/index.html", status_code=307)
+
+
+@app.get("/favicon.ico")
+def root_favicon():
+    """Serves the SVG logo or 204 No Content for browser default /favicon.ico probes."""
+    fav_path = os.path.join(FRONTEND_DIR, "assets", "logo.svg")
+    if os.path.exists(fav_path):
+        return FileResponse(fav_path, media_type="image/svg+xml")
+    return Response(status_code=204)
+
 @app.get("/api/health")
 def health_check():
     return {

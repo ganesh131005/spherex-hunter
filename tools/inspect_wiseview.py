@@ -1,6 +1,6 @@
 import urllib.request
+
 from bs4 import BeautifulSoup
-import re
 
 url = 'http://byw.tools/wiseview'
 headers = {'User-Agent': 'Mozilla/5.0'}
