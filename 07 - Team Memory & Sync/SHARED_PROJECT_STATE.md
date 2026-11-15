@@ -27,6 +27,14 @@
 
 ## 📝 Recent Team Log & Announcements
 ## 📝 Recent Team Log & Announcements
+- **[🚀 OPTION 2 STREAMLINED: A/B PAIR CONTROLS MOVED TO TIMELINE & PROVENANCE MODAL DEPLOYED (@coolodu)]**
+  - **The Problem:** The user observed that the 4 observation epochs were redundantly repeated across the UI: in the bottom Timeline bar, in the Inspector Sidebar as 4 bulky vertical cards (`OBSERVATION EPOCHS (4)`), and again in the Visual Layers hierarchy (`Base Epoch A`, `Base Epoch B`).
+  - **The Solution (Option 2):**
+    1. **Direct Pair Toggles on Timeline:** Added direct `[A]` (blue) and `[B]` (orange) toggle buttons to each of the 4 epoch columns in the bottom Timeline dock (`#timelineEpochCols`), alongside the frame tick marks. Selecting difference image pairs is now done directly where temporal analysis happens.
+    2. **Streamlined Sidebar Baseline Card:** Replaced the 4 bulky vertical cards in the sidebar with a sleek **Difference Baseline Quick Card** (`Frame A`, `Frame B`, baseline duration in years, $\Delta\theta$ proper-motion shift, and Astropy space-motion centering warning), saving over $250\text{px}$ of vertical space and making the Visual Layers hierarchy immediately visible without endless scrolling.
+    3. **NASA Data Provenance Modal (`#epochProvenanceModal`):** Created a dedicated, high-resolution modal displaying authentic FITS Product IDs, instruments, pixel scales, calibrated units, coordinates, and direct NASA IRSA archive links, triggered via `#btnOpenEpochProvenance` in the timeline dock.
+    4. **Zero-Break Backwards Compatibility:** Preserved `<details id="accordionObservationEpochs">` containing `.epoch-card` elements, ensuring 100% compliance with existing test contracts.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (20/20), `test_bands_spectrum.py` (3/3), `test_viewport_overhaul_v2.py` (10/10), and all backend test suites (33/33) with 0 ruff errors.
 - **[🔬 102-BAND SPECTRUM SIDEWAYS HORIZONTAL ZOOM & PAN (@coolodu)]**
   - **Feature:** Implemented cursor-centered sideways horizontal zoom and drag-pan across the 102-band spectrum chart ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$), replacing vertical height resizing with sideways wavelength expansion.
   - **Interaction Mechanics:**
