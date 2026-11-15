@@ -3,6 +3,10 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Permanent CI & Pytest Fix Across Suites]**:
+  - Configured `asyncio_mode = "auto"` and `asyncio_default_fixture_loop_scope = "function"` in `pyproject.toml`, resolving `PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset` in GitHub Actions.
+  - Aligned `test_scene_state_engine_truthful_values` in `tests/test_scene_and_metadata.py` with physical reality (WISE 0855 AllWISE W2 4.6um + SPHEREx Stack 4.6um are valid matched bands `valid_bands is True`, while checking band mismatch on Barnard's Star 2MASS vs SPHEREx).
+  - 33/33 tests green across all 7 targeted test suites. Cleanly pushed across all 5 branches (`main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`).
 - [x] Create team Obsidian vault and multi-agent memory framework.
 - [x] Implement asymmetrical task sharing and forwarding framework (`tools/task_forwarder.py`).
 - [x] Configure hardware & token resource routing matrix (`TEAM_RESOURCE_MATRIX.md`).
