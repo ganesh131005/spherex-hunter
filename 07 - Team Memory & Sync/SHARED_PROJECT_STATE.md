@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #37 Created — Fix Aladin Sky Mode Rendering Blank Black Void Due to Unsupported 3D Data Cube HiPS URL]**
+  - **Issue #37 Link:** https://github.com/joker0210G/spherex-hunter/issues/37
+  - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
+  - **Checklist Scope:** Items #17, #23, #25 (Scientific Data Integrity, Real vs Mock Honesty, Usable Astronomical Viewer).
+  - **Forensic Diagnosis:** `DR1_HIPS_CUBE_URL` points to an unsliceable 102-layer 3D data cube endpoint (`dataproduct_type = cube`), causing Aladin Lite v3 to fail silently and render total blackness while the UI misleadingly claims `DR1 Cube (HiPS Online)` with a floating pin.
 - **[GitHub Native Issues #34, #35, and #36 Created from Deep-Dive Validation & Screen Captures]**
   - **Issue #34 (Backend Data Integrity):** [Fix Light Curve False Crossmatch & Band Mismatch and ZOGY Flat-Gray Difference Display](https://github.com/joker0210G/spherex-hunter/issues/34) (Role: `@darkodu` | Track: `feature-backend`)
   - **Issue #35 (Real AI & BYOK):** [Implement Real LLM Integration with BYOK (Bring Your Own Key) for AI Science Co-Pilot](https://github.com/joker0210G/spherex-hunter/issues/35) (Role: `@coolodu` | Track: `web-frontend`)
