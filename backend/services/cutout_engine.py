@@ -13,6 +13,7 @@ import base64
 import io
 import math
 import os
+import threading
 import time
 import zlib
 from collections import OrderedDict
@@ -25,6 +26,12 @@ from PIL import Image
 from scipy.ndimage import gaussian_filter
 
 from backend.science.differencing import construct_gaussian_psf, zogy_subtraction
+
+# Outbound concurrency semaphore & transient negative cache to prevent upstream NASA IRSA socket exhaustion
+_IRSA_FETCH_SEMAPHORE = threading.BoundedSemaphore(4)
+_TRANSIENT_NEGATIVE_CACHE = OrderedDict()
+_MAX_NEGATIVE_CACHE = 128
+_NEGATIVE_CACHE_TTL = 15.0  # seconds
 
 # Benchmark target bookmarks. Only literature-sourced astrometry / classification lives here:
 # coordinates (SIMBAD ICRS), proper motion (Gaia DR3 / Luhman 2014), nominal effective temperature.
@@ -659,52 +666,68 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                             d1, d2 = None, None
                             hdr1, hdr2 = None, None
 
-    # If not in fresh cache, query NASA IRSA Caltech FinderChart API (up to 2 attempts, 10s timeout)
+    # If not in fresh cache, query NASA IRSA Caltech FinderChart API (up to 2 attempts, 8s timeout, max 4 concurrent)
     if d1 is None or d2 is None:
         last_err = None
-        for attempt in range(2):
-            try:
-                ctx = ssl._create_unverified_context()
-                subset_size = max(1.0, min(15.0, float(fov_arcmin)))
-                url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
-                req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
-                xml_data = urllib.request.urlopen(req, context=ctx, timeout=10.0).read()
-                root = ET.fromstring(xml_data)
+        now_check = time.time()
+        is_neg_cached = False
+        if not force_refresh and cache_id in _TRANSIENT_NEGATIVE_CACHE:
+            if (now_check - _TRANSIENT_NEGATIVE_CACHE[cache_id]) < _NEGATIVE_CACHE_TTL:
+                is_neg_cached = True
+                last_err = "Transient upstream failure (cooldown active)"
+            else:
+                _TRANSIENT_NEGATIVE_CACHE.pop(cache_id, None)
 
-                url_2mass, url_dss = None, None
-                for elem in root.iter('fitsurl'):
-                    u = elem.text
-                    if not u: continue
-                    if 'survey=2mass' in u and 'twomass_bands=j' in u and not url_2mass:
-                        url_2mass = u
-                    if 'survey=dss' in u and ('poss2ukstu_red' in u or 'poss1_red' in u) and not url_dss:
-                        url_dss = u
-
-                if url_2mass and url_dss:
-                    raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=10.0).read()
-                    raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=10.0).read()
-
+        if not is_neg_cached:
+            with _IRSA_FETCH_SEMAPHORE:
+                for attempt in range(2):
                     try:
-                        with open(p1, "wb") as f: f.write(raw1)
-                        with open(p2, "wb") as f: f.write(raw2)
-                        auto_prune_disk_cache(max_mb=DEFAULT_DISK_QUOTA_MB, target_mb=DEFAULT_PRUNE_TARGET_MB)
-                    except OSError as disk_err:
-                        print(f"Cache disk write warning (non-fatal): {disk_err}")
+                        ctx = ssl._create_unverified_context()
+                        subset_size = max(1.0, min(15.0, float(fov_arcmin)))
+                        url = f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?locstr={ra}+{dec}&survey=2mass,dss&subsetsize={subset_size}"
+                        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 SPHERExHunter/5.2'})
+                        xml_data = urllib.request.urlopen(req, context=ctx, timeout=8.0).read()
+                        root = ET.fromstring(xml_data)
 
-                    with fits.open(io.BytesIO(raw1)) as h1:
-                        d1 = np.nan_to_num(h1[0].data.astype(float))
-                        hdr1 = h1[0].header.copy()
-                    with fits.open(io.BytesIO(raw2)) as h2:
-                        d2 = np.nan_to_num(h2[0].data.astype(float))
-                        hdr2 = h2[0].header.copy()
-                    cache_tier = "LIVE_IRSA_FETCH"
-                    disk_cached_ts = time.time()
-                    is_stale_disk = False
-                    break
-            except Exception as err:
-                last_err = err
-                if attempt < 1:
-                    time.sleep(0.5)
+                        url_2mass, url_dss = None, None
+                        for elem in root.iter('fitsurl'):
+                            u = elem.text
+                            if not u: continue
+                            if 'survey=2mass' in u and 'twomass_bands=j' in u and not url_2mass:
+                                url_2mass = u
+                            if 'survey=dss' in u and ('poss2ukstu_red' in u or 'poss1_red' in u) and not url_dss:
+                                url_dss = u
+
+                        if url_2mass and url_dss:
+                            raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=8.0).read()
+                            raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=8.0).read()
+
+                            try:
+                                with open(p1, "wb") as f: f.write(raw1)
+                                with open(p2, "wb") as f: f.write(raw2)
+                                auto_prune_disk_cache(max_mb=DEFAULT_DISK_QUOTA_MB, target_mb=DEFAULT_PRUNE_TARGET_MB)
+                            except OSError as disk_err:
+                                print(f"Cache disk write warning (non-fatal): {disk_err}")
+
+                            with fits.open(io.BytesIO(raw1)) as h1:
+                                d1 = np.nan_to_num(h1[0].data.astype(float))
+                                hdr1 = h1[0].header.copy()
+                            with fits.open(io.BytesIO(raw2)) as h2:
+                                d2 = np.nan_to_num(h2[0].data.astype(float))
+                                hdr2 = h2[0].header.copy()
+                            cache_tier = "LIVE_IRSA_FETCH"
+                            disk_cached_ts = time.time()
+                            is_stale_disk = False
+                            _TRANSIENT_NEGATIVE_CACHE.pop(cache_id, None)
+                            break
+                    except Exception as err:
+                        last_err = err
+                        if attempt < 1:
+                            time.sleep(0.3)
+                if d1 is None or d2 is None:
+                    if len(_TRANSIENT_NEGATIVE_CACHE) >= _MAX_NEGATIVE_CACHE:
+                        _TRANSIENT_NEGATIVE_CACHE.popitem(last=False)
+                    _TRANSIENT_NEGATIVE_CACHE[cache_id] = time.time()
         if (d1 is None or d2 is None) and stale_fallback_paths and not force_refresh:
             sp1, sp2, smtime = stale_fallback_paths
             try:
@@ -1163,7 +1186,15 @@ def _build_degraded_gaia_wcs_fallback(
 # =========================================================================
 # UNIVERSAL COORDINATE ENTRY POINT (NO SHORTCUTS, NO BYPASSES)
 # =========================================================================
-def fetch_real_cutout(ra: float, dec: float, fov_arcmin: float = 3.0, target_key: str = None, lod: int = 1, force_refresh: bool = False) -> dict:
+def fetch_real_cutout(
+    ra: float,
+    dec: float,
+    fov_arcmin: float = 3.0,
+    target_key: str = None,
+    lod: int = 1,
+    force_refresh: bool = False,
+    include_spectrum: bool = False
+) -> dict:
     """
     Universal Astronomical Pipeline:
     Processes ANY celestial coordinates (including the 5 NASA validation benchmarks)
