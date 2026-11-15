@@ -1074,6 +1074,41 @@ def test_scene_collection_right_toolbar_gradient_contract():
     assert sidebar.find(id="inspectorPanelLayers") is not None, "Missing #inspectorPanelLayers"
 
 
+def test_target_presets_single_tool_icon_and_collective_popup_contract():
+    """Validates that benchmark target presets (WISE 0855, Barnard's Star, etc.) are consolidated into a single tool icon with a collective popup option."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Target presets menu container and trigger in header
+    container = soup.find(id="targetPresetsMenuContainer")
+    assert container is not None, "Missing #targetPresetsMenuContainer in header"
+
+    trigger = container.find(id="btnTargetPresetsTrigger")
+    assert trigger is not None, "Missing #btnTargetPresetsTrigger"
+    assert trigger.find(id="targetPresetsActiveLabel") is not None, "Missing #targetPresetsActiveLabel"
+    assert trigger.find(id="targetPresetsChevron") is not None, "Missing #targetPresetsChevron"
+
+    # 2. Collective popup container and target options
+    popup = container.find(id="targetPresetsPopup")
+    assert popup is not None, "Missing #targetPresetsPopup"
+    assert popup.find(id="btnCloseTargetPresetsPopup") is not None, "Missing #btnCloseTargetPresetsPopup"
+
+    target_btns = popup.find_all("button", class_="target-btn")
+    assert len(target_btns) >= 5, f"Expected at least 5 benchmark .target-btn buttons in popup, found {len(target_btns)}"
+    targets_present = {b.get("data-target") for b in target_btns}
+    assert "wise0855" in targets_present, "Missing wise0855 in popup"
+    assert "barnard" in targets_present, "Missing barnard in popup"
+    assert "epsindi" in targets_present, "Missing epsindi in popup"
+    assert "rwaur" in targets_present, "Missing rwaur in popup"
+    assert "rdraconis" in targets_present, "Missing rdraconis in popup"
+
+    # 3. JavaScript functions and window exports
+    assert "toggleTargetPresetsPopup" in html, "Missing toggleTargetPresetsPopup function"
+    assert "closeTargetPresetsPopup" in html, "Missing closeTargetPresetsPopup function"
+    assert "window.toggleTargetPresetsPopup" in html, "toggleTargetPresetsPopup must be exported to window"
+    assert "btnTargetPresetsTrigger" in html, "btnTargetPresetsTrigger must be bound in JavaScript"
+
+
+
 
 
 

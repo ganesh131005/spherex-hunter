@@ -393,25 +393,120 @@
     </div>
 
     <!-- Center: Curated Target Selector & Quick Search -->
-    <div class="flex items-center gap-1 bg-space-950 p-1 px-2 rounded-lg border border-space-700 shadow-inner shrink-0">
+    <div class="flex items-center gap-2 shrink-0">
 
       <!-- Command Palette / Target Switcher Button -->
-      <button id="btnOpenCommandPalette" class="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-space-850 hover:bg-space-800 px-2 py-0.5 rounded border border-space-700 transition" title="Search targets and coordinates (Ctrl+K)">
-        <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
+      <button id="btnOpenCommandPalette" class="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-space-950 hover:bg-space-850 px-2.5 py-1.5 rounded-lg border border-space-700 transition shadow-inner" title="Search targets and coordinates (Ctrl+K)">
+        <i data-lucide="search" class="w-3.5 h-3.5 text-cyan-400"></i>
         <span id="activeTargetBadgeName" class="font-semibold text-white truncate max-w-[100px] sm:max-w-[120px]">WISE 0855</span>
         <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-gray-400 border border-white/10">Ctrl+K</kbd>
       </button>
 
-      <div class="w-[1px] h-4 bg-space-700/80 mx-0.5"></div>
+      <!-- Single Collective Target Presets Tool with Popup Option (wise0855, barnard, epsindi, rwaur, etc.) -->
+      <div class="relative shrink-0" id="targetPresetsMenuContainer">
+        <!-- The Single Target Presets Tool Button -->
+        <button id="btnTargetPresetsTrigger" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-amber-500/50 shadow-md hover:border-amber-400 transition-all select-none" title="Curated Benchmark Targets: WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis, Orion (Click to toggle targets popup)">
+          <span id="targetPresetsActiveIconWrapper" class="flex items-center justify-center">
+            <i id="targetPresetsActiveIcon" data-lucide="target" class="w-4 h-4 text-amber-400"></i>
+          </span>
+          <span id="targetPresetsActiveLabel" class="font-bold text-white tracking-wide">WISE 0855</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" id="targetPresetsChevron"></i>
+        </button>
 
-      <!-- Quick Preset Buttons (Preserves .target-btn for E2E tests) -->
-      <div class="flex items-center gap-1">
-        <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="wise0855" title="WISE 0855-0714 (Cold Y-Dwarf, ~250 K)">WISE 0855</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="barnard" title="Barnard's Star (10.36 &quot;/yr Proper Motion)">Barnard's Star</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">Eps Indi B</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden sm:inline-block" data-target="rwaur" title="RW Aurigae (T-Tauri Variable)">RW Aur</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden md:inline-block" data-target="rdraconis" title="R Draconis (Mira Variable)">R Dra</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden lg:inline-block" data-target="orion" title="Orion Nebula Core (H II Star-Forming Region)">Orion</button>
+        <!-- Collective Popup Display Menu (Flyout anchored below the tool icon) -->
+        <div id="targetPresetsPopup" class="absolute top-full left-0 mt-2 w-80 bg-space-900/98 backdrop-blur-xl border border-amber-500/60 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] p-2.5 z-50 flex flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
+          <div class="flex items-center justify-between px-2 py-1 text-[10px] text-gray-300 uppercase tracking-wider font-sans font-bold border-b border-space-800 pb-1.5 mb-1">
+            <span class="flex items-center gap-1.5 text-amber-300"><i data-lucide="compass" class="w-3.5 h-3.5 text-amber-400"></i> Curated Targets</span>
+            <div class="flex items-center gap-2">
+              <kbd class="text-[9px] font-mono text-gray-400">Esc to close</kbd>
+              <button id="btnCloseTargetPresetsPopup" type="button" class="w-5 h-5 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-space-800 transition text-xs font-bold" title="Close popup">✕</button>
+            </div>
+          </div>
+
+          <!-- Target 1: WISE 0855 -->
+          <button class="target-btn w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-amber-500/40 transition flex items-start gap-2.5 group blender-btn-active" data-target="wise0855" title="WISE 0855-0714 (Cold Y-Dwarf, ~250 K)">
+            <div class="w-7 h-7 rounded-md bg-amber-950/80 border border-amber-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-amber-900 transition">
+              <span class="text-sm">🪐</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">WISE 0855-0714</span>
+                <span class="text-[9px] text-amber-300 font-mono px-1.5 py-0.2 bg-amber-950/60 rounded border border-amber-700/50">Y-Dwarf</span>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Coldest substellar brown dwarf (~250 K), 8.12"/yr PM</p>
+            </div>
+          </button>
+
+          <!-- Target 2: Barnard's Star -->
+          <button class="target-btn w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-cyan-500/40 transition flex items-start gap-2.5 group" data-target="barnard" title="Barnard's Star (10.36 &quot;/yr Proper Motion)">
+            <div class="w-7 h-7 rounded-md bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-cyan-900 transition">
+              <span class="text-sm">⚡</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Barnard's Star</span>
+                <span class="text-[9px] text-cyan-300 font-mono px-1.5 py-0.2 bg-cyan-950/60 rounded border border-cyan-700/50">M4.0V</span>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Fastest proper motion star in night sky (10.36"/yr northward)</p>
+            </div>
+          </button>
+
+          <!-- Target 3: Epsilon Indi B -->
+          <button class="target-btn w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-emerald-500/40 transition flex items-start gap-2.5 group" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">
+            <div class="w-7 h-7 rounded-md bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-emerald-900 transition">
+              <span class="text-sm">🌌</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Epsilon Indi B</span>
+                <span class="text-[9px] text-emerald-300 font-mono px-1.5 py-0.2 bg-emerald-950/60 rounded border border-emerald-700/50">T1+T6</span>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Binary brown dwarf companion, 4.70"/yr proper motion</p>
+            </div>
+          </button>
+
+          <!-- Target 4: RW Aurigae -->
+          <button class="target-btn w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-orange-500/40 transition flex items-start gap-2.5 group" data-target="rwaur" title="RW Aurigae (T-Tauri Variable)">
+            <div class="w-7 h-7 rounded-md bg-orange-950/80 border border-orange-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-orange-900 transition">
+              <span class="text-sm">✨</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">RW Aurigae</span>
+                <span class="text-[9px] text-orange-300 font-mono px-1.5 py-0.2 bg-orange-950/60 rounded border border-orange-700/50">T-Tauri</span>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Eruptive young stellar object with 2.8x flare amplitude</p>
+            </div>
+          </button>
+
+          <!-- Target 5: R Draconis -->
+          <button class="target-btn w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-purple-500/40 transition flex items-start gap-2.5 group" data-target="rdraconis" title="R Draconis (Mira Variable)">
+            <div class="w-7 h-7 rounded-md bg-purple-950/80 border border-purple-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-purple-900 transition">
+              <span class="text-sm">💫</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">R Draconis</span>
+                <span class="text-[9px] text-purple-300 font-mono px-1.5 py-0.2 bg-purple-950/60 rounded border border-purple-700/50">Mira</span>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Pulsating asymptotic giant branch Mira variable (3.4x)</p>
+            </div>
+          </button>
+
+          <!-- Target 6: Orion Nebula Core -->
+          <button class="target-btn w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-rose-500/40 transition flex items-start gap-2.5 group" data-target="orion" title="Orion Nebula Core (H II Star-Forming Region)">
+            <div class="w-7 h-7 rounded-md bg-rose-950/80 border border-rose-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-rose-900 transition">
+              <span class="text-sm">🔭</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Orion Nebula Core</span>
+                <span class="text-[9px] text-rose-300 font-mono px-1.5 py-0.2 bg-rose-950/60 rounded border border-rose-700/50">H II</span>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Messier 42 starburst & complex organic ice absorption</p>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -5839,8 +5934,76 @@
     }
 
     // =========================================================================
-    // TARGET PRESETS & COORDINATE SEARCH
+    // TARGET PRESETS & COLLECTIVE POPUP TOOLBAR
     // =========================================================================
+    const btnTargetPresetsTrigger = document.getElementById('btnTargetPresetsTrigger');
+    const targetPresetsPopup = document.getElementById('targetPresetsPopup');
+    const targetPresetsMenuContainer = document.getElementById('targetPresetsMenuContainer');
+    const targetPresetsActiveLabel = document.getElementById('targetPresetsActiveLabel');
+    const targetPresetsActiveIconWrapper = document.getElementById('targetPresetsActiveIconWrapper');
+    const targetPresetsChevron = document.getElementById('targetPresetsChevron');
+    const btnCloseTargetPresetsPopup = document.getElementById('btnCloseTargetPresetsPopup');
+
+    function toggleTargetPresetsPopup(forceOpen) {
+      if (!targetPresetsPopup) return;
+      const isOpen = !targetPresetsPopup.classList.contains('hidden');
+      const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !isOpen;
+      if (shouldOpen) {
+        targetPresetsPopup.classList.remove('hidden');
+        targetPresetsPopup.classList.add('flex');
+        if (targetPresetsChevron) targetPresetsChevron.classList.add('rotate-180');
+      } else {
+        targetPresetsPopup.classList.add('hidden');
+        targetPresetsPopup.classList.remove('flex');
+        if (targetPresetsChevron) targetPresetsChevron.classList.remove('rotate-180');
+      }
+    }
+
+    function closeTargetPresetsPopup() {
+      toggleTargetPresetsPopup(false);
+    }
+
+    if (btnTargetPresetsTrigger) {
+      btnTargetPresetsTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleTargetPresetsPopup();
+        // If target active, center camera on current target
+        if (currentTargetKey && TARGETS[currentTargetKey]) {
+          const t = TARGETS[currentTargetKey];
+          camera.ra = t.raDeg;
+          camera.dec = t.decDeg;
+          camera.panX = 0;
+          camera.panY = 0;
+          drawFrame();
+        }
+      });
+    }
+
+    if (btnCloseTargetPresetsPopup) {
+      btnCloseTargetPresetsPopup.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeTargetPresetsPopup();
+      });
+    }
+
+    // Dismiss target presets popup on outside click
+    document.addEventListener('click', (e) => {
+      if (targetPresetsMenuContainer && !targetPresetsMenuContainer.contains(e.target)) {
+        closeTargetPresetsPopup();
+      }
+    });
+
+    // Dismiss target presets popup on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeTargetPresetsPopup();
+      }
+    });
+
+    // Export helpers to window for tests & global access
+    window.toggleTargetPresetsPopup = toggleTargetPresetsPopup;
+    window.closeTargetPresetsPopup = closeTargetPresetsPopup;
+
     document.querySelectorAll('.target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-target');
@@ -5863,6 +6026,10 @@
       document.getElementById('vpTargetName').innerText = t.name;
       const abn = document.getElementById('activeTargetBadgeName');
       if (abn) abn.innerText = t.name;
+      if (targetPresetsActiveLabel && t.name) {
+        targetPresetsActiveLabel.innerText = t.name;
+      }
+      closeTargetPresetsPopup();
       const tdn = document.getElementById('targetDetailName');
       if (tdn) tdn.innerText = t.name;
       const propT = document.getElementById('propTarget');

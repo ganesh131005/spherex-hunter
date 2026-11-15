@@ -3,11 +3,25 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed comprehensive code quality and error remediation across the entire repository on `coolodu/web-frontend`. Rectified all 53 linting and formatting issues across `tools/` (unused imports, trailing whitespace, unformatted blocks, unused variables). Re-ran repository-wide audits with 100% clean results: 0 ruff errors across `backend/`, `tools/`, and `tests/`; 0 browser console errors/exceptions; 49/49 contract tests passing green; and working tree clean.
+- **Current Task:** Completed and physically verified consolidation of curated target preset buttons (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis, Orion) in the top upper horizontal toolbar into a single compact tool icon (`#btnTargetPresetsTrigger`) with an interactive collective popup toolbar (`#targetPresetsPopup`) formatted identically to the Blink View Modes toolbar on `coolodu/web-frontend`. Tested live in browser subagent, verified target switching and telescope slew, and confirmed all 28 UI contract tests pass 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Consolidate Curated Targets into Single Tool Icon with Collective Popup Toolbar]**:
+  - Replaced the horizontal row of individual preset buttons in the upper header with a single compact tool button (`#btnTargetPresetsTrigger`).
+  - Displays active target icon (`#targetPresetsActiveIcon`), active target label (`#targetPresetsActiveLabel`, defaults to 'WISE 0855'), and dynamic rotating chevron (`#targetPresetsChevron`).
+  - Added collective popup toolbar flyout (`#targetPresetsPopup` inside `#targetPresetsMenuContainer`) anchored directly beneath the trigger:
+    1. *WISE 0855-0714 (`data-target="wise0855"`):* Coldest substellar brown dwarf (~250 K), 8.12"/yr PM.
+    2. *Barnard's Star (`data-target="barnard"`):* Fastest proper motion star in night sky (10.36"/yr northward).
+    3. *Epsilon Indi B (`data-target="epsindi"`):* Binary brown dwarf companion, 4.70"/yr proper motion.
+    4. *RW Aurigae (`data-target="rwaur"`):* Eruptive young stellar object with 2.8x flare amplitude.
+    5. *R Draconis (`data-target="rdraconis"`):* Pulsating asymptotic giant branch Mira variable (3.4x).
+    6. *Orion Nebula Core (`data-target="orion"`):* Messier 42 starburst & complex organic ice absorption.
+  - Implemented click-to-toggle, outside click auto-dismiss, `Esc` key dismiss, and header close button `✕` (`#btnCloseTargetPresetsPopup`).
+  - Wired `selectTarget(key)` to update trigger label and active button highlight automatically.
+  - Added contract test `test_target_presets_single_tool_icon_and_collective_popup_contract()` in `tests/test_ui_contract.py`. All 28 tests passing.
+  - Physically verified in live browser subagent ([`final_step_91.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_91.png)).
 - [x] **[Repository-Wide Error & Code Quality Remediation]**:
   - Ran ruff audit and rectified 53 formatting, unused import, and syntax issues across `tools/*.py`.
   - Verified 0 ruff errors across `backend/`, `tools/`, and `tests/`.

@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🪐 CONSOLIDATED TARGET PRESETS INTO SINGLE TOOL ICON & COLLECTIVE POPUP (@coolodu)]**
+  - **Feature:** Replaced the wide row of curated target preset buttons in the upper horizontal toolbar with a single compact tool button (`#btnTargetPresetsTrigger`) and collective popup toolbar (`#targetPresetsPopup`), matching the architecture and styling of the Blink View Modes toolbar.
+  - **Single Tool Trigger:** Displays the active target's icon (`#targetPresetsActiveIcon`), active target name (`#targetPresetsActiveLabel`), and dynamic rotating chevron (`#targetPresetsChevron`). Clicking re-centers the observatory canvas and toggles the popup menu.
+  - **Collective Target Popup Menu:** Features all 6 curated targets (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis, and Orion Nebula Core) with rich science descriptions, spectral classes, active highlight, and hotkey/click navigation.
+  - **UX & Dismiss Options:** Supports outside-click auto-dismiss, `Esc` key dismiss, and header close button `✕` (`#btnCloseTargetPresetsPopup`). Selecting a target slews the canvas, loads FITS cutouts, updates target telemetry, and updates the trigger label.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (28/28) and physically verified in live browser subagent ([final_step_91.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_91.png)).
 - **[🧹 REPOSITORY-WIDE CODE QUALITY & LINTING REMEDIATION (@coolodu)]**
   - **Audit & Remediation:** Ran complete ruff audit across repository tools, resolving 53 formatting, unused import, and syntax issues in `tools/*.py`.
   - **Results:** 100% clean across all modules:
