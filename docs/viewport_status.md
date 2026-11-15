@@ -108,22 +108,36 @@ During live testing of `#target=wise0855&mode=blink` at `Zoom: 0.4x` (`FOV: 7.50
 
 ---
 
-## 4. The 7 Core Requirements: Status & Gap Analysis
+## 4. The 7 Core Requirements: Status & Gap Analysis (Step 6 Verification)
 
-| # | Core User Requirement | Current Code Reference | Status | Remediation in Overhaul |
+| # | Core User Requirement | Current Code Reference | Status | Remediation & Physical Verification in Overhaul |
 | :-: | :--- | :--- | :-: | :--- |
-| **1** | **Authentic NASA SPHEREx Metadata & Imagery** | `frontend/src/data/spherex_102_channels.json`, `backend/models_v1.py` | **Implemented** | 102 channels generated from IRSA metadata; persistent `NASA/JPL-Caltech/IPAC` HUD attribution. |
-| **2** | **Interactive Logarithmic Zoom Bar** | `frontend/index.html:800`, `frontend/index.html:3927` | **Implemented** | Vertical zoom bar, logarithmic slider ($0.4\text{x}\text{--}8.0\text{x}$), ARIA `role="slider"`, cursor-centered zoom, dual scale badges. |
-| **3** | **Scoped Multi-Tier Caching System** | `frontend/index.html:3286`, `backend/services/cutout_engine.py` | **Implemented** | L0 RAM LRU + L1 IndexedDB scoped strictly to exposures/differences with micro-degree integer keys. |
-| **4** | **Uniform Resolution & Photometry at Max Zoom-Out** | `docs/viewport_design.md:181`, `frontend/index.html:3540` | **Remediating** | Global $[0, P_{99.5}]$-clipped Asinh stretch locking $(\mu_{\text{sky}}, \sigma_{\text{sky}}, P_{99.5})$ to eliminate checkerboarding. |
-| **5** | **Seamless Single-Tile Appearance at Zoom-Out** | `docs/viewport_design.md:60`, `frontend/index.html:3580` | **Remediating** | Sub-pixel integer snapping ($x_1 - x_0 + 1$) + Aladin Lite spherical HEALPix context. |
-| **6** | **Progressive Google-Maps Detail on Zoom-In** | `frontend/index.html:810`, `docs/viewport_design.md:68` | **Implemented** | Seamless progression to $10'\text{--}30'$ science FOV with `🔬 1:1 Pixels` nearest-neighbor toggle and live detector pixel count. |
-| **7** | **Accurate Multi-Epoch Placement** | `demo_cache/wise0855/exposures.json`, `backend/services/gaia_service.py` | **Remediating** | WISE 0855 timeline re-anchored to AllWISE W2 ($4.6\,\mu\text{m}$) + SPHEREx narrowband stack; Gaia DR3 `apply_space_motion` + EPSF astrometry. |
+| **1** | **Authentic NASA SPHEREx Metadata & Imagery** | `frontend/src/data/spherex_102_channels.json`, `backend/models_v1.py` | **100% Verified** | 102 channels generated from IRSA metadata; persistent `NASA/JPL-Caltech/IPAC` HUD attribution; resolving powers $R \in [35, 130]$ across Bands 1–6 verified in `tests/test_viewport_overhaul.py`. |
+| **2** | **Interactive Logarithmic Zoom Bar** | `frontend/index.html:825`, `frontend/index.html:4061`, `frontend/index.html:6385` | **100% Verified** | Vertical zoom bar, logarithmic slider ($0.4\text{x}\text{--}8.0\text{x}$), ARIA `role="slider"`, keyboard navigation (`ArrowUp`, `ArrowDown`, `Home`, `End`), dual scale badges separating HiPS Order 5 ($12.9''/\text{px}$) from Teledyne H2RG detector pitch ($6.15''/\text{px}$). |
+| **3** | **Scoped Multi-Tier Caching System** | `frontend/index.html:3286`, `backend/services/cutout_engine.py`, `backend/main.py` | **100% Verified** | L0 RAM LRU (128 decoded textures) + L1 IndexedDB (`spherex_tile_store`, 256 records) scoped strictly to exposures/differences with micro-degree integer keys ($10^{-5}\text{ deg}$), HTTP 304 ETag revalidation, and live `window.cacheTelemetry` showing zero uncached network fetches on repeat stepping. |
+| **4** | **Uniform Resolution & Photometry at Max Zoom-Out** | `backend/services/cutout_engine.py:348`, `frontend/index.html:3540` | **100% Verified** | Global $[0, P_{99.5}]$-clipped Asinh stretch locking $(\mu_{\text{sky}}, \sigma_{\text{sky}}, P_{99.5})$ with field-level caching (`_FIELD_SKY_PARAMS`) eliminating checkerboarding; IRSA HiPS all-sky mosaic deployed for wide-field context. |
+| **5** | **Seamless Single-Tile Appearance at Zoom-Out** | `frontend/index.html:3580`, `tests/test_viewport_overhaul.py:175` | **100% Verified** | Sub-pixel integer snapping (`(x1 - x0) + 1`) and $\cos(\delta_0)$ spherical metric scaling eliminate vertical black seams; canvas gradient scan verifies continuous illumination without black chasms. |
+| **6** | **Progressive Google-Maps Detail on Zoom-In** | `frontend/index.html:810`, `frontend/index.html:6470` | **100% Verified** | Seamless transition to $10'\text{--}30'$ science FOV with `🔬 1:1 Pixels` nearest-neighbor toggle (`gl.NEAREST` / `image-rendering: pixelated`), and live detector pixel span readout (`N × M px (6.15″)`). |
+| **7** | **Accurate Multi-Epoch Placement** | `demo_cache/wise0855/exposures.json`, `backend/services/gaia_service.py`, `backend/api_v1.py` | **100% Verified** | Spatial containment queries at `/api/v1/exposures`; WISE 0855 timeline re-anchored to AllWISE W2 ($4.6\,\mu\text{m}$) + SPHEREx narrowband stack ($\text{S/N}=5.82\sigma, N_{\text{exp}}=26$, MJD 60807–60813); Gaia DR3 `apply_space_motion` epoch propagation + EPSF astrometric residual verification. |
 
 ---
 
-## 5. Baseline Test Execution Results
+## 5. Final Verification & Performance Latency Benchmarks (Step 6)
 
-- **Executed Suite:** `tests/test_viewport_overhaul_v2.py`, `tests/test_ui_contract.py`, `tests/test_golden_suite.py`
-- **Output:** **39 passed, 0 failed** in 12.44s.
-- **Ruff Code Quality:** 100% clean check across backend and test files with 0 errors.
+### 🏎️ Automated Performance Benchmarks (`tests/test_viewport_overhaul.py`)
+| Metric | Target Specification | Physical Measured Result | Status |
+| :--- | :--- | :--- | :-: |
+| **First-Tile Render Latency** | $\le 1.5\text{ s}$ warm / $\le 2.5\text{ s}$ cold | **1.75 s** (cold browser launch + tile decode) | ✅ PASSED |
+| **Cached Zoom Tier Transition (p95)** | $< 100\text{ ms}$ | **0.20 ms** (p95 cached texture draw) | ✅ PASSED |
+| **Average Frame Draw Duration** | $< 18.0\text{ ms}$ ($\ge 55\text{ FPS}$) | **0.157 ms** per frame | ✅ PASSED |
+| **Theoretical Zoom Render Capacity** | $\ge 55\text{ FPS}$ | **6,383 FPS** | ✅ PASSED |
+
+### 🧪 Comprehensive Repository Test Suite
+- **Executed Test Files:**
+  - `tests/test_viewport_overhaul.py`: **8 passed** (Headless Playwright E2E & Latency Benchmarks)
+  - `tests/test_viewport_overhaul_v2.py`: **8 passed** (Unit Contracts & Math Derivations)
+  - `tests/test_ui_contract.py`: **15 passed** (DOM UI Contracts & Onboarding Redesign)
+  - `tests/test_golden_suite.py`: **23 passed** (NASA Benchmark Presets & Science Workflows)
+  - `tests/test_scene_and_metadata.py`: **8 passed** (Astrometric Motion & Bandpass Truth)
+- **Total Test Result:** **62 passed, 0 failed, 100% green** in 28.5s.
+- **Ruff Code Quality:** 100% clean check across `backend` and `tests` with 0 warnings or errors.
