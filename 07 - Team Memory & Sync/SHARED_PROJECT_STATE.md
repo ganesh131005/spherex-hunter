@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issues #34, #35, and #36 Created from Deep-Dive Validation & Screen Captures]**
+  - **Issue #34 (Backend Data Integrity):** [Fix Light Curve False Crossmatch & Band Mismatch and ZOGY Flat-Gray Difference Display](https://github.com/joker0210G/spherex-hunter/issues/34) (Role: `@darkodu` | Track: `feature-backend`)
+  - **Issue #35 (Real AI & BYOK):** [Implement Real LLM Integration with BYOK (Bring Your Own Key) for AI Science Co-Pilot](https://github.com/joker0210G/spherex-hunter/issues/35) (Role: `@coolodu` | Track: `web-frontend`)
+  - **Issue #36 (UI Ergonomics & Viewport):** [Fix Viewport Cursor Invisibility, Coordinate Popover Positioning, and Spectrum Chart Baseline Clipping](https://github.com/joker0210G/spherex-hunter/issues/36) (Role: `@coolodu` | Track: `web-frontend`)
 - **[GitHub Native Issue #32 Created — Fix Top Header Horizontal Overflow Hiding Landmark Target Presets and Observatory Controls on Standard Displays]**
   - **Issue #32 Link:** https://github.com/joker0210G/spherex-hunter/issues/32
   - **Track:** `web-frontend` | **Role:** `@coolodu` | **Resource:** `resource:standard`
