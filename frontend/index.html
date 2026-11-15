@@ -315,7 +315,7 @@
       <!-- Single Collective View Modes Tool with Popup Option (Blink, Difference, Spectra, Aladin Sky) -->
       <div class="relative shrink-0" id="viewModesMenuContainer">
         <!-- The Single View Modes Tool Button -->
-        <button id="btnViewModesTrigger" onclick="window.toggleViewModesPopup && window.toggleViewModesPopup(); event.stopPropagation();" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective popup toolbar)">
+        <button id="btnViewModesTrigger" type="button" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective popup toolbar)">
           <span id="viewModeActiveIconWrapper" class="flex items-center justify-center pointer-events-none">
             <i id="viewModeActiveIcon" data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
           </span>
@@ -523,17 +523,13 @@
         </div>
       </div>
     </div>
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- Right: Telemetry, Coordinates Popover, Primary Actions & Overflow -->
     <div class="flex items-center gap-1.5 shrink-0">
 
       <!-- Compact Coordinates Popover Trigger -->
       <div class="relative">
-        <button id="btnToggleCoordsPopover" onclick="window.toggleCoordsPopover && window.toggleCoordsPopover(); event.stopPropagation();" class="cursor-pointer flex items-center gap-1.5 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
+        <button id="btnToggleCoordsPopover" type="button" class="cursor-pointer flex items-center gap-1.5 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
           <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange pointer-events-none"></i>
           <span id="quickCoordsLabel" class="text-[11px] hidden sm:inline pointer-events-none">133.795°, -7.245°</span>
           <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400 pointer-events-none"></i>
@@ -715,7 +711,7 @@
         </button>
 
         <!-- Time Step Controller Tool with Popup Option (User Request) -->
-        <button id="toolTimeStep" onclick="window.toggleTimeStepHUD && window.toggleTimeStepHUD(); event.stopPropagation();" class="cursor-pointer w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
+        <button id="toolTimeStep" type="button" class="cursor-pointer w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400 pointer-events-none"></i>
           <span class="text-[8px] font-mono leading-none pointer-events-none">Step</span>
         </button>
