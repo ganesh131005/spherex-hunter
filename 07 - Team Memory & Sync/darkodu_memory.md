@@ -3,11 +3,15 @@
 > **Branch:** `darkodu/astro-backend`
 
 ## Personal Status:
-- **Current Task:** Successfully merged `origin/main` into `darkodu/astro-backend`, resolved all conflicts across cutout engine, multi-survey catalog synthesis, and 102-band spectrophotometry, verified with full test suite passing green.
-- **Next Task:** Await teammate sync and team review with @jokerodu.
+- **Current Task:** Resolved "center tile alone has high resolution" by implementing dynamic per-tile resolution streaming and multi-tile spatial mosaic caching.
+- **Next Task:** Await teammate sync and manual testing check.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] Continuous Multi-Tile Spatial Mosaic & Dynamic Per-Tile Resolution:
+  - Eliminated dummy dashed empty wireframe rectangles (`drawAdjacentSkyTiling`).
+  - Implemented dynamic optical center tracking in `checkAndStreamVisibleTiles`: when the user pans to an adjacent field or star and zooms in, `streamTileAt` fetches the Deep Core LOD 0 ($1.5'$) high-resolution cutout for *that specific viewing coordinate*.
+  - Upgraded `drawFrame()` to render all cached tiles in `spatialTileCache` side-by-side seamlessly, preserving previous fields and eliminating dark rectangular border seams.
 - [x] Merged `origin/main` into `darkodu/astro-backend` & Resolved All Cutout Engine Conflicts:
   - Fetched and cleanly integrated `origin/main` (including multi-survey catalog synthesis, ESA/IRSA fallback Gaia service, Draggable splitters, and updated batch scripts).
   - Reconciled `backend/services/cutout_engine.py`: merged ZOGY differencing and float32 streaming with multi-survey anchored SED models (`crossmatch_photometry`), 6-array LVF channel dates, and non-simultaneity disclaimers.

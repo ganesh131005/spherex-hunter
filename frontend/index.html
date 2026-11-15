@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -78,7 +79,10 @@
       overflow: hidden;
       user-select: none;
     }
-    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
 
     /* Button primitives */
     .blender-btn {
@@ -88,17 +92,20 @@
       color: #cbd5e1;
       transition: all 0.12s ease;
     }
+
     .blender-btn:hover {
       background-color: #212c44;
       border-color: #3b4d73;
       color: #ffffff;
     }
+
     .blender-btn-active {
       background-color: #1f6feb !important;
       border-color: #388bfd !important;
       color: #ffffff !important;
       box-shadow: 0 0 10px rgba(31, 111, 235, 0.35);
     }
+
     .blender-btn-orange-active {
       background-color: #ea7600 !important;
       border-color: #ff9124 !important;
@@ -107,22 +114,46 @@
     }
 
     /* Scrollbar styling */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0a0e17; }
-    ::-webkit-scrollbar-thumb { background: #283550; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3c4c6f; }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
 
-    input[type=range] { accent-color: #1f6feb; }
+    ::-webkit-scrollbar-track {
+      background: #0a0e17;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #283550;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3c4c6f;
+    }
+
+    input[type=range] {
+      accent-color: #1f6feb;
+    }
 
     /* Canvas colormap filters */
-    .filter-grayscale { filter: none; }
-    .filter-inverted { filter: invert(1) hue-rotate(180deg); }
-    .filter-thermal { filter: contrast(1.3) saturate(1.8) hue-rotate(190deg); }
+    .filter-grayscale {
+      filter: none;
+    }
+
+    .filter-inverted {
+      filter: invert(1) hue-rotate(180deg);
+    }
+
+    .filter-thermal {
+      filter: contrast(1.3) saturate(1.8) hue-rotate(190deg);
+    }
 
     /* Tooltips */
     .tooltip-hint {
       position: relative;
     }
+
     .tooltip-hint:hover::after {
       content: attr(data-tooltip);
       position: absolute;
@@ -139,84 +170,124 @@
       white-space: nowrap;
       z-index: 60;
       pointer-events: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     /* Subtle pulse animation */
     @keyframes pulse-subtle {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.85; transform: scale(1.02); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.85;
+        transform: scale(1.02);
+      }
     }
-    .animate-pulse-subtle { animation: pulse-subtle 3s infinite ease-in-out; }
+
+    .animate-pulse-subtle {
+      animation: pulse-subtle 3s infinite ease-in-out;
+    }
   </style>
 </head>
+
 <body class="h-screen flex flex-col bg-space-950 text-xs">
 
   <!-- ========================================================================= -->
   <!-- 1. TOP OBSERVATORY HEADER (48px / h-12)                                    -->
   <!-- ========================================================================= -->
-  <header class="h-12 bg-space-900 border-b border-space-700 px-3 flex items-center justify-between z-30 shrink-0 text-xs gap-3 shadow-md">
+  <header
+    class="h-12 bg-space-900 border-b border-space-700 px-3 flex items-center justify-between z-30 shrink-0 text-xs gap-3 shadow-md">
 
     <!-- Left: Branding & Workspace Mode Segmented Control -->
     <div class="flex items-center gap-3 shrink-0">
       <!-- App Brand & Logo -->
-      <div class="flex items-center gap-2.5 pr-3 border-r border-space-700 cursor-pointer group" id="btnHeaderBrand" title="SPHEREx Hunter: Hunt for Planet Nine, ultra-cool Brown Dwarfs, and Near-Earth Asteroids across 102 NASA SPHEREx infrared spectral bands with multi-epoch blink astrometry and difference imaging. Click to open Mission Guide.">
-        <div class="w-8 h-8 rounded-lg bg-space-950 border border-space-700 flex items-center justify-center relative shadow-md shadow-orange-950/40 group-hover:border-blender-orange transition-all">
-          <img src="/app/assets/logo.svg" alt="SPHEREx Hunter Logo" class="w-6 h-6 object-contain drop-shadow-[0_0_6px_rgba(234,118,0,0.5)] transition-transform group-hover:scale-110" />
+      <div class="flex items-center gap-2.5 pr-3 border-r border-space-700 cursor-pointer group" id="btnHeaderBrand"
+        title="SPHEREx Hunter: Hunt for Planet Nine, ultra-cool Brown Dwarfs, and Near-Earth Asteroids across 102 NASA SPHEREx infrared spectral bands with multi-epoch blink astrometry and difference imaging. Click to open Mission Guide.">
+        <div
+          class="w-8 h-8 rounded-lg bg-space-950 border border-space-700 flex items-center justify-center relative shadow-md shadow-orange-950/40 group-hover:border-blender-orange transition-all">
+          <img src="/app/assets/logo.svg" alt="SPHEREx Hunter Logo"
+            class="w-6 h-6 object-contain drop-shadow-[0_0_6px_rgba(234,118,0,0.5)] transition-transform group-hover:scale-110" />
         </div>
         <div class="flex flex-col">
           <div class="flex items-baseline gap-1">
             <span class="font-bold text-white tracking-wide text-sm font-sans">SPHEREx</span>
             <span class="text-blender-orange font-bold text-xs tracking-wider">HUNTER</span>
           </div>
-          <span class="text-[9px] text-gray-400 font-mono hidden xl:inline leading-none">102-Band NASA IR Observatory</span>
+          <span class="text-[9px] text-gray-400 font-mono hidden xl:inline leading-none">102-Band NASA IR
+            Observatory</span>
         </div>
       </div>
 
       <!-- Segmented View Mode Control -->
       <div class="flex items-center bg-space-950 p-0.5 rounded-lg border border-space-700 gap-0.5 shadow-inner">
-        <button id="wsBlink" class="blender-btn blender-btn-active px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Multi-Epoch Flipbook Blink Comparator (Hotkey: B)">
+        <button id="wsBlink"
+          class="blender-btn blender-btn-active px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all"
+          title="Multi-Epoch Flipbook Blink Comparator (Hotkey: B)">
           <i data-lucide="split" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span>Blink</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">B</kbd>
+          <kbd
+            class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">B</kbd>
         </button>
-        <button id="wsDiff" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Numerical ZOGY Image Subtraction (Hotkey: D)">
+        <button id="wsDiff"
+          class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all"
+          title="Numerical ZOGY Image Subtraction (Hotkey: D)">
           <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i>
           <span>Difference</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">D</kbd>
+          <kbd
+            class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">D</kbd>
         </button>
-        <button id="wsSpec" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="102-Band SPHEREx Infrared Spectroscopy (Hotkey: S)">
+        <button id="wsSpec"
+          class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all"
+          title="102-Band SPHEREx Infrared Spectroscopy (Hotkey: S)">
           <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i>
           <span>Spectra</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">S</kbd>
+          <kbd
+            class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">S</kbd>
         </button>
-        <button id="wsAladin" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Interactive CDS Strasbourg Aladin Lite (Hotkey: A)">
+        <button id="wsAladin"
+          class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all"
+          title="Interactive CDS Strasbourg Aladin Lite (Hotkey: A)">
           <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-400"></i>
           <span>Aladin Sky</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">A</kbd>
+          <kbd
+            class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">A</kbd>
         </button>
       </div>
     </div>
 
     <!-- Center: Curated Target Selector & Quick Search -->
-    <div class="flex items-center gap-1.5 bg-space-950 p-1 px-2.5 rounded-lg border border-space-700 shadow-inner overflow-x-auto shrink min-w-0">
+    <div
+      class="flex items-center gap-1.5 bg-space-950 p-1 px-2.5 rounded-lg border border-space-700 shadow-inner overflow-x-auto shrink min-w-0">
 
       <!-- Command Palette / Target Switcher Button -->
-      <button id="btnOpenCommandPalette" class="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-space-850 hover:bg-space-800 px-2 py-0.5 rounded border border-space-700 transition" title="Search targets and coordinates (Ctrl+K)">
+      <button id="btnOpenCommandPalette"
+        class="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-space-850 hover:bg-space-800 px-2 py-0.5 rounded border border-space-700 transition"
+        title="Search targets and coordinates (Ctrl+K)">
         <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
         <span id="activeTargetBadgeName" class="font-semibold text-white truncate max-w-[120px]">WISE 0855</span>
-        <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-gray-400 border border-white/10">Ctrl+K</kbd>
+        <kbd
+          class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-gray-400 border border-white/10">Ctrl+K</kbd>
       </button>
 
       <div class="w-[1px] h-4 bg-space-700/80 mx-1"></div>
 
       <!-- Quick Preset Buttons (Preserves .target-btn for E2E tests) -->
       <div class="flex items-center gap-1">
-        <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="wise0855" title="WISE 0855-0714 (Cold Y-Dwarf, ~250 K)">WISE 0855</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="barnard" title="Barnard's Star (10.36 "/yr Proper Motion)">Barnard's Star</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">Eps Indi B</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rwaur" title="RW Aurigae (T-Tauri Variable)">RW Aur</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="rdraconis" title="R Draconis (Mira Variable)">R Dra</button>
+        <button
+          class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded"
+          data-target="wise0855" title="WISE 0855-0714 (Cold Y-Dwarf, ~250 K)">WISE 0855</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded"
+          data-target="barnard" title="Barnard's Star (10.36 " /yr Proper Motion)">Barnard's Star</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded"
+          data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">Eps Indi B</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded"
+          data-target="rwaur" title="RW Aurigae (T-Tauri Variable)">RW Aur</button>
+        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded"
+          data-target="rdraconis" title="R Draconis (Mira Variable)">R Dra</button>
       </div>
     </div>
 
@@ -225,14 +296,17 @@
 
       <!-- Compact Coordinates Popover Trigger -->
       <div class="relative">
-        <button id="btnToggleCoordsPopover" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
+        <button id="btnToggleCoordsPopover"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition"
+          title="Edit celestial coordinates & field of view">
           <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange"></i>
           <span id="quickCoordsLabel" class="text-[11px]">133.795°, -7.245°</span>
           <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
         </button>
 
         <!-- Floating Coordinates Popover Card -->
-        <div id="coordsPopover" class="hidden absolute right-0 top-10 mt-1 w-80 bg-space-900 border border-space-700 rounded-lg p-3.5 shadow-2xl z-50 space-y-3 font-mono">
+        <div id="coordsPopover"
+          class="hidden absolute right-0 top-10 mt-1 w-80 bg-space-900 border border-space-700 rounded-lg p-3.5 shadow-2xl z-50 space-y-3 font-mono">
           <div class="flex items-center justify-between pb-1.5 border-b border-space-700">
             <span class="text-xs font-bold text-white flex items-center gap-1.5">
               <i data-lucide="navigation" class="w-3.5 h-3.5 text-cyan-400"></i>
@@ -255,23 +329,32 @@
             <div>
               <div class="flex items-center justify-between mb-0.5">
                 <label class="block text-[10px] text-gray-400 font-sans">Right Ascension α (Sky Longitude):</label>
-                <span class="text-[9px] text-cyan-400 cursor-help" title="Right Ascension (Sky Longitude): East-west celestial coordinate (0° to 360° or 0h to 24h). Similar to longitude on Earth.">0° - 360° [?]</span>
+                <span class="text-[9px] text-cyan-400 cursor-help"
+                  title="Right Ascension (Sky Longitude): East-west celestial coordinate (0° to 360° or 0h to 24h). Similar to longitude on Earth.">0°
+                  - 360° [?]</span>
               </div>
-              <input id="inputRA" type="text" value="133.79513" placeholder="e.g. 133.79513 or 08h 55m 10.8s" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
+              <input id="inputRA" type="text" value="133.79513" placeholder="e.g. 133.79513 or 08h 55m 10.8s"
+                class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
             </div>
             <div>
               <div class="flex items-center justify-between mb-0.5">
                 <label class="block text-[10px] text-gray-400 font-sans">Declination δ (Sky Latitude):</label>
-                <span class="text-[9px] text-cyan-400 cursor-help" title="Declination (Sky Latitude): North-south celestial coordinate (-90° South Pole to +90° North Pole). Similar to latitude on Earth.">-90° - +90° [?]</span>
+                <span class="text-[9px] text-cyan-400 cursor-help"
+                  title="Declination (Sky Latitude): North-south celestial coordinate (-90° South Pole to +90° North Pole). Similar to latitude on Earth.">-90°
+                  - +90° [?]</span>
               </div>
-              <input id="inputDec" type="text" value="-7.24515" placeholder="e.g. -7.24515 or -07d 14m 42s" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
+              <input id="inputDec" type="text" value="-7.24515" placeholder="e.g. -7.24515 or -07d 14m 42s"
+                class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono transition">
             </div>
             <div>
               <div class="flex items-center justify-between mb-0.5">
                 <label class="block text-[10px] text-gray-400 font-sans">Field of View (Sky Zoom):</label>
-                <span class="text-[9px] text-amber-400 cursor-help" title="Field of View (Sky Zoom): Angular diameter in arcminutes (1' = 1/60th deg). Full Moon is ~30' wide, so 3.0' is 1/10th the width of the Full Moon.">Moon Scale [?]</span>
+                <span class="text-[9px] text-amber-400 cursor-help"
+                  title="Field of View (Sky Zoom): Angular diameter in arcminutes (1' = 1/60th deg). Full Moon is ~30' wide, so 3.0' is 1/10th the width of the Full Moon.">Moon
+                  Scale [?]</span>
               </div>
-              <select id="selectFOV" class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
+              <select id="selectFOV"
+                class="w-full bg-space-950 border border-space-700 rounded px-2 py-1 text-white text-xs focus:outline-none focus:border-blender-orange font-mono">
                 <option value="1.0">1.0' (Deep Core / Micro-Arcsec Dipoles)</option>
                 <option value="1.5">1.5' (High-Res Core / 1/20th Moon Width)</option>
                 <option value="3.0" selected>3.0' (Standard Science / 1/10th Full Moon)</option>
@@ -284,16 +367,26 @@
 
           <!-- Quick Sky Landmarks Presets -->
           <div class="border-t border-space-800 pt-2 space-y-1">
-            <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">1-Click Sky Landmarks:</span>
+            <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">1-Click Sky
+              Landmarks:</span>
             <div class="grid grid-cols-2 gap-1 text-[10px]">
-              <button class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate" data-ra="133.79513" data-dec="-7.24515" data-fov="3.0" data-name="WISE 0855">🪐 WISE 0855</button>
-              <button class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate" data-ra="269.45208" data-dec="4.69339" data-fov="3.0" data-name="Barnard">⚡ Barnard's Star</button>
-              <button class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate" data-ra="83.82208" data-dec="-5.39111" data-fov="5.0" data-name="Orion Core">🌌 Orion Core</button>
-              <button class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate" data-ra="266.41683" data-dec="-29.00781" data-fov="5.0" data-name="Sgr A*">🔭 Galactic Center</button>
+              <button
+                class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate"
+                data-ra="133.79513" data-dec="-7.24515" data-fov="3.0" data-name="WISE 0855">🪐 WISE 0855</button>
+              <button
+                class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate"
+                data-ra="269.45208" data-dec="4.69339" data-fov="3.0" data-name="Barnard">⚡ Barnard's Star</button>
+              <button
+                class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate"
+                data-ra="83.82208" data-dec="-5.39111" data-fov="5.0" data-name="Orion Core">🌌 Orion Core</button>
+              <button
+                class="preset-landmark-btn px-2 py-1 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left text-gray-300 hover:text-white truncate"
+                data-ra="266.41683" data-dec="-29.00781" data-fov="5.0" data-name="Sgr A*">🔭 Galactic Center</button>
             </div>
           </div>
 
-          <button id="btnGoCoords" class="w-full py-1.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow">
+          <button id="btnGoCoords"
+            class="w-full py-1.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow">
             <i data-lucide="compass" class="w-3.5 h-3.5"></i>
             <span>Slew Telescope (Fetch Real FITS)</span>
           </button>
@@ -301,48 +394,62 @@
       </div>
 
       <!-- Primary Action: Direct Fetch Button -->
-      <button id="btnTopFetch" class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition" title="Query NASA IRSA: Fetch real calibrated FITS cutouts from NASA archives (Enter)">
+      <button id="btnTopFetch"
+        class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition"
+        title="Query NASA IRSA: Fetch real calibrated FITS cutouts from NASA archives (Enter)">
         <i data-lucide="download" class="w-3.5 h-3.5"></i>
         <span>Fetch FITS</span>
       </button>
 
       <!-- Command Palette Pill (Ctrl+K) -->
-      <button id="cmdPaletteBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0" title="Open Command Palette (Ctrl+K)">
+      <button id="cmdPaletteBtn"
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0"
+        title="Open Command Palette (Ctrl+K)">
         <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
         <span class="hidden sm:inline">Ctrl+K</span>
       </button>
 
       <!-- Share Sky Region Button (Issue #12) -->
-      <button id="btnShareModal" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0" title="Share Sky Region & Deep-Link URL">
+      <button id="btnShareModal"
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0"
+        title="Share Sky Region & Deep-Link URL">
         <i data-lucide="share-2" class="w-3 h-3 text-cyan-400"></i>
         <span class="hidden sm:inline">Share</span>
       </button>
 
       <!-- Citizen Science Mission Guide Button -->
-      <button id="btnOpenOnboarding" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-[11px] font-medium text-amber-300 hover:text-white transition shadow-sm" title="Open Citizen Science Mission Guide & Guided 5-Step Tour">
+      <button id="btnOpenOnboarding"
+        class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-[11px] font-medium text-amber-300 hover:text-white transition shadow-sm"
+        title="Open Citizen Science Mission Guide & Guided 5-Step Tour">
         <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-400"></i>
         <span class="hidden sm:inline">Mission Guide</span>
       </button>
 
       <!-- Beginner / Scientist Mode Toggle Pill -->
-      <button id="btnToggleUserMode" class="flex items-center gap-1 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-[11px] font-medium text-gray-300 hover:text-white transition" title="Switch between Beginner (simple plain language) and Scientist (raw telemetry) mode">
+      <button id="btnToggleUserMode"
+        class="flex items-center gap-1 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-[11px] font-medium text-gray-300 hover:text-white transition"
+        title="Switch between Beginner (simple plain language) and Scientist (raw telemetry) mode">
         <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-emerald-400"></i>
         <span id="userModeLabel">Beginner</span>
       </button>
 
       <!-- Mission Codex & Phase 2 Validation Button -->
-      <button id="btnOpenValidation" class="p-1.5 rounded blender-btn text-cyan-300 hover:text-white flex items-center gap-1 text-xs" title="Open Official NASA/CSA Codex & Phase 2 Scientific Validation Benchmark">
+      <button id="btnOpenValidation"
+        class="p-1.5 rounded blender-btn text-cyan-300 hover:text-white flex items-center gap-1 text-xs"
+        title="Open Official NASA/CSA Codex & Phase 2 Scientific Validation Benchmark">
         <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
         <span class="hidden md:inline">Validation</span>
       </button>
 
       <!-- Keyboard Shortcuts Trigger -->
-      <button id="btnOpenShortcuts" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Keyboard Shortcuts Cheat Sheet (?)">
+      <button id="btnOpenShortcuts" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white"
+        title="Keyboard Shortcuts Cheat Sheet (?)">
         <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
       </button>
 
       <!-- Toggle Right Inspector Panel -->
-      <button id="toggleSidebarBtn" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Toggle Inspector Sidebar">
+      <button id="toggleSidebarBtn" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white"
+        title="Toggle Inspector Sidebar">
         <i data-lucide="sidebar" class="w-3.5 h-3.5"></i>
       </button>
       </button>
@@ -355,28 +462,37 @@
   <div class="flex-1 flex overflow-hidden relative">
 
     <!-- LEFT TOOL RAIL (56px / w-14) -->
-    <aside class="w-14 bg-space-900 border-r border-space-700 flex flex-col items-center py-2 gap-2 z-20 shrink-0 select-none text-[10px]">
+    <aside
+      class="w-14 bg-space-900 border-r border-space-700 flex flex-col items-center py-2 gap-2 z-20 shrink-0 select-none text-[10px]">
 
       <!-- Select / Inspect Tool -->
-      <button id="toolSelect" class="w-10 h-10 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Inspect / Reticle Target (V)">
+      <button id="toolSelect"
+        class="w-10 h-10 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="Inspect / Reticle Target (V)">
         <i data-lucide="mouse-pointer" class="w-4 h-4 text-cyan-400"></i>
         <span class="text-[8px] font-mono">Select</span>
       </button>
 
       <!-- Pan Tool -->
-      <button id="toolPan" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Pan / Drag Telescope (H)">
+      <button id="toolPan"
+        class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="Pan / Drag Telescope (H)">
         <i data-lucide="hand" class="w-4 h-4 text-gray-300"></i>
         <span class="text-[8px] font-mono">Pan</span>
       </button>
 
       <!-- Measure / Ruler Tool -->
-      <button id="toolMeasure" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Measure Distance in Arcseconds (M)">
+      <button id="toolMeasure"
+        class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="Measure Distance in Arcseconds (M)">
         <i data-lucide="ruler" class="w-4 h-4 text-emerald-400"></i>
         <span class="text-[8px] font-mono">Dist</span>
       </button>
 
       <!-- Blink A/B Flip Tool -->
-      <button id="toolBlinkFlip" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Flip Blink Frame A / B (Space / B)">
+      <button id="toolBlinkFlip"
+        class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="Flip Blink Frame A / B (Space / B)">
         <i data-lucide="flip-horizontal" class="w-4 h-4 text-amber-400"></i>
         <span class="text-[8px] font-mono">Flip</span>
       </button>
@@ -384,25 +500,33 @@
       <div class="w-7 h-[1px] bg-space-700/80 my-1"></div>
 
       <!-- Gaia DR3 Astrometry Overlay -->
-      <button id="toggleGaia" class="w-10 h-10 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition" title="Toggle ESA/NASA Gaia DR3 Proper Motion Vectors (G)">
+      <button id="toggleGaia"
+        class="w-10 h-10 rounded blender-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition"
+        title="Toggle ESA/NASA Gaia DR3 Proper Motion Vectors (G)">
         <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
         <span class="text-[8px] font-mono">Gaia</span>
       </button>
 
       <!-- Recenter Viewport -->
-      <button id="toolRecenter" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Recenter on Target Coordinates (R)">
+      <button id="toolRecenter"
+        class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="Recenter on Target Coordinates (R)">
         <i data-lucide="crosshair" class="w-4 h-4 text-blender-orange"></i>
         <span class="text-[8px] font-mono">Center</span>
       </button>
 
       <!-- Reset Zoom 1:1 -->
-      <button id="toolResetZoom" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Reset Zoom to 1.0x (1)">
+      <button id="toolResetZoom"
+        class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="Reset Zoom to 1.0x (1)">
         <i data-lucide="zoom-in" class="w-4 h-4 text-gray-300"></i>
         <span class="text-[8px] font-mono">1:1</span>
       </button>
 
       <!-- WASD Walk Navigation -->
-      <button id="toolWalk" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="WASD Spaceflight Walk Flight Navigation (W / Shift+`)">
+      <button id="toolWalk"
+        class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="WASD Spaceflight Walk Flight Navigation (W / Shift+`)">
         <i data-lucide="gamepad-2" class="w-4 h-4 text-purple-400"></i>
         <span class="text-[8px] font-mono">Walk</span>
       </button>
@@ -410,20 +534,25 @@
       <div class="flex-1"></div>
 
       <!-- Fullscreen Viewport -->
-      <button id="toolFullscreen" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Toggle Fullscreen Viewport (F)">
+      <button id="toolFullscreen"
+        class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="Toggle Fullscreen Viewport (F)">
         <i data-lucide="maximize" class="w-4 h-4 text-gray-300"></i>
         <span class="text-[8px] font-mono">Full</span>
       </button>
 
       <!-- Audio Mute -->
-      <button id="toolMute" class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Toggle Synthesizer Audio">
+      <button id="toolMute"
+        class="w-10 h-10 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition"
+        title="Toggle Synthesizer Audio">
         <i id="muteIcon" data-lucide="volume-2" class="w-4 h-4 text-gray-300"></i>
         <span class="text-[8px] font-mono">Sound</span>
       </button>
     </aside>
 
     <!-- CENTER OBSERVATORY VIEWPORT (Edge-to-Edge Pure Astronomy Canvas) -->
-    <main class="flex-1 relative bg-[#070a11] overflow-hidden flex items-center justify-center cursor-crosshair" id="viewportContainer">
+    <main class="flex-1 relative bg-[#070a11] overflow-hidden flex items-center justify-center cursor-crosshair"
+      id="viewportContainer">
 
       <!-- Primary Astronomical Canvas -->
       <canvas id="astroCanvas" class="w-full h-full block filter-grayscale"></canvas>
@@ -432,9 +561,11 @@
       <div id="aladinContainer" class="absolute inset-0 hidden z-10 w-full h-full"></div>
 
       <!-- LOADING OVERLAY -->
-      <div id="loadingOverlay" class="absolute inset-0 bg-black/70 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 pointer-events-none opacity-0">
+      <div id="loadingOverlay"
+        class="absolute inset-0 bg-black/70 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 pointer-events-none opacity-0">
         <div class="relative w-12 h-12 flex items-center justify-center">
-          <div class="w-12 h-12 rounded-full border-2 border-blender-orange/20 border-t-blender-orange animate-spin"></div>
+          <div class="w-12 h-12 rounded-full border-2 border-blender-orange/20 border-t-blender-orange animate-spin">
+          </div>
           <div class="w-2.5 h-2.5 rounded-full bg-blender-orange animate-ping absolute"></div>
           <div class="w-2 h-2 rounded-full bg-white absolute"></div>
         </div>
@@ -450,8 +581,10 @@
       </div>
 
       <!-- FIRST 10 SECONDS GUIDED DEMO TOUR BANNER -->
-      <div id="guidedTourBanner" class="absolute top-3 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-blender-orange/70 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 text-xs z-20 max-w-xl transition-all">
-        <div class="w-7 h-7 rounded-lg bg-blender-orange/20 border border-blender-orange flex items-center justify-center text-blender-orange shrink-0">
+      <div id="guidedTourBanner"
+        class="absolute top-3 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-blender-orange/70 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 text-xs z-20 max-w-xl transition-all">
+        <div
+          class="w-7 h-7 rounded-lg bg-blender-orange/20 border border-blender-orange flex items-center justify-center text-blender-orange shrink-0">
           <i data-lucide="sparkles" class="w-4 h-4"></i>
         </div>
         <div class="flex-1">
@@ -460,55 +593,66 @@
             <span class="text-blender-orange font-mono">WISE 0855-0714</span>
           </div>
           <p class="text-[11px] text-gray-300 leading-snug">
-            The coldest known brown dwarf (~250 K), ~7.2 light-years away. Discovered by its rapid proper motion (8.15 "/yr) across infrared surveys.
+            The coldest known brown dwarf (~250 K), ~7.2 light-years away. Discovered by its rapid proper motion (8.15
+            "/yr) across infrared surveys.
           </p>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btnStartTourBlink" class="px-2.5 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-[11px] shadow">
+          <button id="btnStartTourBlink"
+            class="px-2.5 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-[11px] shadow">
             ▶ Blink
           </button>
-          <button id="btnDismissTour" class="p-1 text-gray-400 hover:text-white rounded hover:bg-space-800" title="Dismiss guide">
+          <button id="btnDismissTour" class="p-1 text-gray-400 hover:text-white rounded hover:bg-space-800"
+            title="Dismiss guide">
             ✕
           </button>
         </div>
       </div>
 
       <!-- INLINE CANDIDATE SELECTION ALERT STRIP (Dismissible, only shows on candidate selection) -->
-      <div id="candidateAlertStrip" class="hidden absolute top-3 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-cyan-500/70 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 text-xs z-20 max-w-xl">
+      <div id="candidateAlertStrip"
+        class="hidden absolute top-3 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-cyan-500/70 px-4 py-2 rounded-xl shadow-2xl flex items-center gap-3 text-xs z-20 max-w-xl">
         <i data-lucide="flag" class="w-4 h-4 text-cyan-400 shrink-0"></i>
         <div id="candidateAlertText" class="text-gray-200 text-xs font-mono flex-1 truncate">
           Selected Candidate at RA 133.79513°, Dec -7.24515°
         </div>
-        <button id="btnRecordFromAlert" class="px-2 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-[10px]">
+        <button id="btnRecordFromAlert"
+          class="px-2 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-mono text-[10px]">
           Record
         </button>
         <button id="btnDismissCandidateAlert" class="text-gray-400 hover:text-white text-xs">✕</button>
       </div>
 
       <!-- TEMPORAL NO OBSERVATIONS BANNER (Issue #11) -->
-      <div id="noObsBanner" class="hidden absolute top-14 left-1/2 -translate-x-1/2 bg-amber-950/90 border border-amber-500/80 text-amber-200 px-4 py-2 rounded-lg text-xs font-mono shadow-2xl flex items-center gap-2 z-30">
+      <div id="noObsBanner"
+        class="hidden absolute top-14 left-1/2 -translate-x-1/2 bg-amber-950/90 border border-amber-500/80 text-amber-200 px-4 py-2 rounded-lg text-xs font-mono shadow-2xl flex items-center gap-2 z-30">
         <i data-lucide="calendar-x" class="w-4 h-4 text-amber-400"></i>
         <span>No observations found in selected range. <span id="noObsDetailText"></span></span>
         <button id="btnCloseNoObsBanner" class="text-amber-400 hover:text-white ml-2 text-xs">✕</button>
       </div>
 
       <!-- TOP-LEFT VIEWPORT TARGET TELEMETRY CHIP (Minimal & Unobtrusive) -->
-      <div class="absolute top-3 left-3 pointer-events-none text-xs font-mono space-y-0.5 bg-space-900/85 backdrop-blur-md px-3 py-2 rounded-lg border border-space-700 text-gray-300 shadow-lg">
+      <div
+        class="absolute top-3 left-3 pointer-events-none text-xs font-mono space-y-0.5 bg-space-900/85 backdrop-blur-md px-3 py-2 rounded-lg border border-space-700 text-gray-300 shadow-lg">
         <div class="flex items-center gap-2">
           <span id="vpTargetName" class="text-white font-bold text-xs tracking-wide">WISE 0855-0714</span>
           <span class="text-space-500">|</span>
-          <span id="vpFrameLabel" class="text-blender-orange font-semibold text-[11px]">(Frame 1) 2MASS Baseline 1999</span>
+          <span id="vpFrameLabel" class="text-blender-orange font-semibold text-[11px]">(Frame 1) 2MASS Baseline
+            1999</span>
         </div>
-        <div id="gaiaCrossMatchBadge" class="hidden text-[10px] font-mono mt-1 px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all">
+        <div id="gaiaCrossMatchBadge"
+          class="hidden text-[10px] font-mono mt-1 px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all">
           <span id="gaiaCrossMatchIcon"></span>
           <span id="gaiaCrossMatchText"></span>
         </div>
       </div>
 
       <!-- TOP-RIGHT COLORMAP & SHADING POPOVER CONTROLS -->
-      <div class="absolute top-3 right-3 flex items-center gap-1 bg-space-900/85 backdrop-blur-md px-2 py-1 rounded-lg border border-space-700 shadow-lg z-10 font-mono text-[10px]">
+      <div
+        class="absolute top-3 right-3 flex items-center gap-1 bg-space-900/85 backdrop-blur-md px-2 py-1 rounded-lg border border-space-700 shadow-lg z-10 font-mono text-[10px]">
         <span class="text-gray-400 mr-1 select-none">Stretch:</span>
-        <button id="shadeGrayscale" class="blender-btn blender-btn-active px-2 py-0.5 rounded" title="Authentic Linear Grayscale">
+        <button id="shadeGrayscale" class="blender-btn blender-btn-active px-2 py-0.5 rounded"
+          title="Authentic Linear Grayscale">
           Gray
         </button>
         <button id="shadeInverted" class="blender-btn px-2 py-0.5 rounded" title="Inverted Grayscale (DS9 Print Style)">
@@ -520,17 +664,20 @@
       </div>
 
       <!-- BOTTOM-LEFT LIVE CURSOR TELEMETRY HUD -->
-      <div class="absolute bottom-3 left-3 pointer-events-none text-[10px] font-mono flex items-center gap-3 bg-space-900/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg">
+      <div
+        class="absolute bottom-3 left-3 pointer-events-none text-[10px] font-mono flex items-center gap-3 bg-space-900/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg">
         <span>RA: <b id="vpRA" class="text-gray-200">133.79513°</b></span>
         <span>Dec: <b id="vpDec" class="text-gray-200">-7.24515°</b></span>
         <span>FOV: <b id="vpFOV" class="text-gray-200">3.00'</b></span>
         <span>Zoom: <b id="vpZoom" class="text-gray-200">1.0x</b></span>
         <span class="pl-2 border-l border-space-700">LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
-        <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold">Mosaic: 3×3</span>
+        <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold">Mosaic:
+          3×3</span>
       </div>
 
       <!-- BOTTOM-RIGHT SCALE BAR & COMPASS HUD -->
-      <div class="absolute bottom-3 right-3 pointer-events-none flex flex-col items-end gap-1 text-[10px] font-mono bg-space-900/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-300 shadow-lg">
+      <div
+        class="absolute bottom-3 right-3 pointer-events-none flex flex-col items-end gap-1 text-[10px] font-mono bg-space-900/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-300 shadow-lg">
         <div class="flex items-center gap-2">
           <!-- Compass vectors -->
           <div class="relative w-5 h-5 flex items-center justify-center text-[9px] font-bold text-cyan-400">
@@ -546,7 +693,8 @@
       </div>
 
       <!-- FLOATING GAMER WALK MODE HUD BANNER (Only active during Walk Nav) -->
-      <div id="walkHudBanner" class="absolute bottom-12 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-blender-orange/70 px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-3 font-mono text-[11px] text-white hidden z-20 pointer-events-auto">
+      <div id="walkHudBanner"
+        class="absolute bottom-12 left-1/2 -translate-x-1/2 bg-space-900/95 backdrop-blur-md border border-blender-orange/70 px-4 py-1.5 rounded-full shadow-2xl flex items-center gap-3 font-mono text-[11px] text-white hidden z-20 pointer-events-auto">
         <div class="flex items-center gap-1 text-blender-orange font-bold">
           <span class="w-2 h-2 rounded-full bg-blender-orange animate-ping"></span>
           <span>WALK NAV ACTIVE</span>
@@ -556,7 +704,8 @@
           <span><b class="text-white">W/S:</b> Zoom</span>
           <span><b class="text-white">A/D:</b> Slew RA</span>
           <span><b class="text-white">Space/C:</b> Slew Dec</span>
-          <button id="btnExitWalkHud" class="bg-space-800 hover:bg-space-700 px-2 py-0.5 rounded border border-space-700 text-gray-300 hover:text-white text-[10px]">
+          <button id="btnExitWalkHud"
+            class="bg-space-800 hover:bg-space-700 px-2 py-0.5 rounded border border-space-700 text-gray-300 hover:text-white text-[10px]">
             Esc Exit
           </button>
         </div>
@@ -564,7 +713,9 @@
     </main>
 
     <!-- RIGHT INSPECTOR (380px, Data-Driven Tabbed Interface) -->
-    <aside id="propertiesSidebar" class="w-96 bg-space-900 border-l border-space-700 flex flex-col shrink-0 min-h-0 z-20 text-xs select-none shadow-xl" role="region" aria-label="Scene Collection and Layer Manager">
+    <aside id="propertiesSidebar"
+      class="w-96 bg-space-900 border-l border-space-700 flex flex-col shrink-0 min-h-0 z-20 text-xs select-none shadow-xl"
+      role="region" aria-label="Scene Collection and Layer Manager">
 
       <!-- STICKY TAB HEADER -->
       <div class="px-2 pt-2 bg-space-850 border-b border-space-700 shrink-0 sticky top-0 z-30 shadow-sm">
@@ -574,8 +725,12 @@
             <span>Scene Collection</span>
           </span>
           <div class="flex items-center gap-1">
-            <span id="sceneStatusBadge" class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60">LIVE STATE</span>
-            <button id="btnRefreshScene" class="p-1 hover:bg-space-750 rounded text-gray-400 hover:text-white transition" title="Refresh Scene State">
+            <span id="sceneStatusBadge"
+              class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60">LIVE
+              STATE</span>
+            <button id="btnRefreshScene"
+              class="p-1 hover:bg-space-750 rounded text-gray-400 hover:text-white transition"
+              title="Refresh Scene State">
               <i data-lucide="rotate-cw" class="w-3 h-3"></i>
             </button>
           </div>
@@ -583,19 +738,27 @@
 
         <!-- 4 Inspector Tabs -->
         <div class="flex items-center gap-1 border-t border-space-700/80 pt-1 text-[11px]">
-          <button id="tabLayersBtn" class="flex-1 py-1.5 px-2 rounded-t font-semibold blender-btn blender-btn-active text-center flex items-center justify-center gap-1 transition" title="Observation Epochs and Visual Layers">
+          <button id="tabLayersBtn"
+            class="flex-1 py-1.5 px-2 rounded-t font-semibold blender-btn blender-btn-active text-center flex items-center justify-center gap-1 transition"
+            title="Observation Epochs and Visual Layers">
             <i data-lucide="layers" class="w-3 h-3 text-blender-orange"></i>
             <span>Layers</span>
           </button>
-          <button id="tabTargetBtn" class="flex-1 py-1.5 px-2 rounded-t font-semibold blender-btn text-center flex items-center justify-center gap-1 transition" title="Astronomical Target Metadata and Gaia Cross-match">
+          <button id="tabTargetBtn"
+            class="flex-1 py-1.5 px-2 rounded-t font-semibold blender-btn text-center flex items-center justify-center gap-1 transition"
+            title="Astronomical Target Metadata and Gaia Cross-match">
             <i data-lucide="target" class="w-3 h-3 text-cyan-400"></i>
             <span>Target</span>
           </button>
-          <button id="tabCandidatesBtn" class="flex-1 py-1.5 px-2 rounded-t font-semibold blender-btn text-center flex items-center justify-center gap-1 transition" title="Discovered Candidates and Evidence Tiers">
+          <button id="tabCandidatesBtn"
+            class="flex-1 py-1.5 px-2 rounded-t font-semibold blender-btn text-center flex items-center justify-center gap-1 transition"
+            title="Discovered Candidates and Evidence Tiers">
             <i data-lucide="flag" class="w-3 h-3 text-amber-400"></i>
             <span>Candidates</span>
           </button>
-          <button id="tabPhotometryBtn" class="flex-1 py-1.5 px-2 rounded-t font-semibold blender-btn text-center flex items-center justify-center gap-1 transition" title="SPHEREx 6-Detector Array Photometry">
+          <button id="tabPhotometryBtn"
+            class="flex-1 py-1.5 px-2 rounded-t font-semibold blender-btn text-center flex items-center justify-center gap-1 transition"
+            title="SPHEREx 6-Detector Array Photometry">
             <i data-lucide="activity" class="w-3 h-3 text-emerald-400"></i>
             <span>Photometry</span>
           </button>
@@ -609,7 +772,8 @@
         <div class="p-2">
           <div class="relative">
             <i data-lucide="search" class="w-3 h-3 text-gray-400 absolute left-2 top-2"></i>
-            <input id="layerSearchInput" type="text" placeholder="Filter epochs & layers..." class="w-full bg-space-950 border border-space-700 rounded pl-7 pr-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blender-orange font-mono">
+            <input id="layerSearchInput" type="text" placeholder="Filter epochs & layers..."
+              class="w-full bg-space-950 border border-space-700 rounded pl-7 pr-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blender-orange font-mono">
           </div>
         </div>
 
@@ -626,7 +790,8 @@
             <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
             <span id="sceneErrorMessage">Failed to load scene state.</span>
           </div>
-          <button id="btnRetryScene" class="mt-2 w-full py-1 bg-rose-900/60 hover:bg-rose-800 text-white rounded text-[11px] font-medium border border-rose-700 flex items-center justify-center gap-1 transition">
+          <button id="btnRetryScene"
+            class="mt-2 w-full py-1 bg-rose-900/60 hover:bg-rose-800 text-white rounded text-[11px] font-medium border border-rose-700 flex items-center justify-center gap-1 transition">
             <i data-lucide="refresh-cw" class="w-3 h-3"></i>
             <span>Retry Connection</span>
           </button>
@@ -643,34 +808,47 @@
         <div class="bg-space-950/70 p-3 rounded-lg border border-space-700 space-y-2">
           <div class="flex items-center justify-between">
             <span class="font-bold text-white text-sm" id="targetDetailName">WISE 0855-0714</span>
-            <span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600">VERIFIED</span>
+            <span
+              class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-600">VERIFIED</span>
           </div>
-          <div class="text-gray-300 text-[11px] font-sans" id="targetDetailType">Cold Y-Dwarf (Sub-stellar Brown Dwarf)</div>
+          <div class="text-gray-300 text-[11px] font-sans" id="targetDetailType">Cold Y-Dwarf (Sub-stellar Brown Dwarf)
+          </div>
         </div>
 
         <!-- Coordinates & Astrometry Card -->
         <div class="bg-space-950/70 p-3 rounded-lg border border-space-700 space-y-1.5 text-[11px]">
-          <div class="text-gray-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1 text-cyan-400">
+          <div
+            class="text-gray-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1 text-cyan-400">
             <i data-lucide="compass" class="w-3 h-3"></i>
             <span>ICRS Astrometry</span>
           </div>
-          <div class="flex justify-between"><span class="text-gray-400">RA (α):</span><span id="propRA" class="text-white font-bold">133.79513°</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">Dec (δ):</span><span id="propDec" class="text-white font-bold">-7.24515°</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">Total PM (μ):</span><span id="propTotalPM" class="text-blender-orange font-bold">8.149 "/yr (8149 mas/yr)</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">Distance:</span><span id="propDist" class="text-gray-200">2.28 pc (7.43 ly)</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">Teff:</span><span id="propTeff" class="text-cyan-300 font-bold">~250 K</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">RA (α):</span><span id="propRA"
+              class="text-white font-bold">133.79513°</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Dec (δ):</span><span id="propDec"
+              class="text-white font-bold">-7.24515°</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Total PM (μ):</span><span id="propTotalPM"
+              class="text-blender-orange font-bold">8.149 "/yr (8149 mas/yr)</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Distance:</span><span id="propDist"
+              class="text-gray-200">2.28 pc (7.43 ly)</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Teff:</span><span id="propTeff"
+              class="text-cyan-300 font-bold">~250 K</span></div>
         </div>
 
         <!-- Gaia DR3 Cross-Match Card -->
         <div class="bg-space-950/70 p-3 rounded-lg border border-space-700 space-y-1.5 text-[11px]">
-          <div class="text-gray-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1 text-cyan-400">
+          <div
+            class="text-gray-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1 text-cyan-400">
             <i data-lucide="sparkles" class="w-3 h-3"></i>
             <span>Gaia DR3 Cross-Match</span>
           </div>
-          <div class="flex justify-between"><span class="text-gray-400">Stars in 3' Cone:</span><span id="gaiaStarCount" class="text-white font-bold">--</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">Nearest Star:</span><span id="gaiaNearestID" class="text-cyan-300 font-bold">--</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">Highest PM:</span><span id="gaiaTopPM" class="text-amber-400 font-bold">--</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">Optical Counterpart:</span><span id="gaiaMatchStatus" class="text-rose-400 font-bold">No Match (IR-Only)</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Stars in 3' Cone:</span><span id="gaiaStarCount"
+              class="text-white font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Nearest Star:</span><span id="gaiaNearestID"
+              class="text-cyan-300 font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Highest PM:</span><span id="gaiaTopPM"
+              class="text-amber-400 font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">Optical Counterpart:</span><span
+              id="gaiaMatchStatus" class="text-rose-400 font-bold">No Match (IR-Only)</span></div>
         </div>
 
         <!-- WISE, 2MASS & SPHEREx Multi-Survey IR Synthesis Card -->
@@ -679,27 +857,35 @@
             <i data-lucide="radar" class="w-3 h-3"></i>
             <span>WISE &amp; SPHEREx IR Synthesis</span>
           </div>
-          <div class="flex justify-between"><span class="text-gray-400">WISE W1 / W2:</span><span id="wiseW1W2Mag" class="text-amber-300 font-bold">--</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">W1 &minus; W2 Color:</span><span id="wiseColorIndex" class="text-white font-bold">--</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">2MASS J / Ks:</span><span id="twomassJKMag" class="text-emerald-300 font-bold">--</span></div>
-          <div class="flex justify-between"><span class="text-gray-400">SPHEREx DR1:</span><span id="spherexObsBadge" class="text-cyan-300 font-bold text-right">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">WISE W1 / W2:</span><span id="wiseW1W2Mag"
+              class="text-amber-300 font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">W1 &minus; W2 Color:</span><span
+              id="wiseColorIndex" class="text-white font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">2MASS J / Ks:</span><span id="twomassJKMag"
+              class="text-emerald-300 font-bold">--</span></div>
+          <div class="flex justify-between"><span class="text-gray-400">SPHEREx DR1:</span><span id="spherexObsBadge"
+              class="text-cyan-300 font-bold text-right">--</span></div>
         </div>
 
         <!-- External Archival Bridges -->
         <div class="space-y-2 pt-1 font-sans">
-          <a id="btnWiseView" href="http://byw.tools/wiseview#ra=133.79513&dec=-7.24515&size=150&band=3&linear=True&diff=True" target="_blank" rel="noopener noreferrer"
-             class="w-full py-2 px-3 rounded-lg bg-space-850 hover:bg-space-800 border border-space-700 hover:border-amber-400 text-amber-300 hover:text-amber-200 text-xs font-mono font-medium flex items-center justify-center gap-2 transition shadow-sm">
+          <a id="btnWiseView"
+            href="http://byw.tools/wiseview#ra=133.79513&dec=-7.24515&size=150&band=3&linear=True&diff=True"
+            target="_blank" rel="noopener noreferrer"
+            class="w-full py-2 px-3 rounded-lg bg-space-850 hover:bg-space-800 border border-space-700 hover:border-amber-400 text-amber-300 hover:text-amber-200 text-xs font-mono font-medium flex items-center justify-center gap-2 transition shadow-sm">
             <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-400"></i>
             <span>Verify in NASA WiseView Flipbook ↗</span>
           </a>
 
-          <a id="btnCadcSearch" href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.jp/en/search/?collection=NEOSSAT" target="_blank" rel="noopener noreferrer"
-             class="w-full py-2 px-3 rounded-lg bg-space-850 hover:bg-space-800 border border-space-700 hover:border-blue-400 text-blue-300 hover:text-white text-xs font-mono font-medium flex items-center justify-center gap-2 transition shadow-sm">
+          <a id="btnCadcSearch" href="https://www.cadc-ccda.hia-iha.nrc-cnrc.gc.jp/en/search/?collection=NEOSSAT"
+            target="_blank" rel="noopener noreferrer"
+            class="w-full py-2 px-3 rounded-lg bg-space-850 hover:bg-space-800 border border-space-700 hover:border-blue-400 text-blue-300 hover:text-white text-xs font-mono font-medium flex items-center justify-center gap-2 transition shadow-sm">
             <i data-lucide="satellite" class="w-3.5 h-3.5 text-blue-400"></i>
             <span>CADC NEOSSat Asteroid Archive ↗</span>
           </a>
 
-          <button id="flagCandidateBtn" class="w-full py-2 rounded-lg bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow">
+          <button id="flagCandidateBtn"
+            class="w-full py-2 rounded-lg bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow">
             <i data-lucide="flag" class="w-3.5 h-3.5"></i>
             <span>Flag Discovery to NASA &amp; CSA</span>
           </button>
@@ -715,7 +901,9 @@
             <span>Flagged Candidates</span>
           </span>
           <div class="flex items-center gap-1">
-            <button id="btnExportCSV" class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-750 border border-space-700 text-cyan-300 text-[10px] flex items-center gap-1" title="Download all discoveries as CSV">
+            <button id="btnExportCSV"
+              class="px-2 py-0.5 rounded bg-space-800 hover:bg-space-750 border border-space-700 text-cyan-300 text-[10px] flex items-center gap-1"
+              title="Download all discoveries as CSV">
               <i data-lucide="download" class="w-3 h-3"></i>
               <span>Export CSV</span>
             </button>
@@ -725,9 +913,12 @@
         <!-- Filter Pills for Evidence Tiers -->
         <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[10px]">
           <button class="cand-filter-btn px-2 py-0.5 rounded bg-blender-blue text-white" data-filter="all">All</button>
-          <button class="cand-filter-btn px-2 py-0.5 rounded bg-space-800 text-gray-400 hover:text-white" data-filter="brown_dwarf">Brown Dwarf</button>
-          <button class="cand-filter-btn px-2 py-0.5 rounded bg-space-800 text-gray-400 hover:text-white" data-filter="asteroid">Asteroid</button>
-          <button class="cand-filter-btn px-2 py-0.5 rounded bg-space-800 text-gray-400 hover:text-white" data-filter="transient">Transient</button>
+          <button class="cand-filter-btn px-2 py-0.5 rounded bg-space-800 text-gray-400 hover:text-white"
+            data-filter="brown_dwarf">Brown Dwarf</button>
+          <button class="cand-filter-btn px-2 py-0.5 rounded bg-space-800 text-gray-400 hover:text-white"
+            data-filter="asteroid">Asteroid</button>
+          <button class="cand-filter-btn px-2 py-0.5 rounded bg-space-800 text-gray-400 hover:text-white"
+            data-filter="transient">Transient</button>
         </div>
 
         <!-- Dynamic Candidates Container -->
@@ -738,7 +929,8 @@
           </div>
         </div>
 
-        <button id="btnFlagNewCandidate" class="w-full py-2 rounded-lg bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow">
+        <button id="btnFlagNewCandidate"
+          class="w-full py-2 rounded-lg bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow">
           <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
           <span>Log New Candidate Discovery</span>
         </button>
@@ -789,7 +981,8 @@
           </div>
         </div>
         <div class="text-[10px] text-gray-400 font-sans">
-          Detector array co-added fluxes are displayed only when authentic calibrated SPHEREx Level 2/3 data is acquired.
+          Detector array co-added fluxes are displayed only when authentic calibrated SPHEREx Level 2/3 data is
+          acquired.
         </div>
 
         <!-- Optional Service: CSA NEOSSat Card (Shows data or clean 1-line note) -->
@@ -812,27 +1005,34 @@
   <!-- ========================================================================= -->
   <!-- 3. BOTTOM OBSERVATORY DOCK (Resizable & Collapsible)                      -->
   <!-- ========================================================================= -->
-  <footer id="bottomDock" class="bg-space-900 border-t border-space-700 flex flex-col shrink-0 z-30 shadow-2xl transition-all duration-200">
+  <footer id="bottomDock"
+    class="bg-space-900 border-t border-space-700 flex flex-col shrink-0 z-30 shadow-2xl transition-all duration-200">
 
     <!-- Dock Header & Tab Bar -->
-    <div class="h-9 px-3 bg-space-850 border-b border-space-700 flex items-center justify-between text-xs shrink-0 select-none">
+    <div
+      class="h-9 px-3 bg-space-850 border-b border-space-700 flex items-center justify-between text-xs shrink-0 select-none">
 
       <!-- Dock Tabs -->
       <div class="flex items-center gap-1">
-        <button id="dockTabTimeline" class="blender-btn blender-btn-active px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition">
+        <button id="dockTabTimeline"
+          class="blender-btn blender-btn-active px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition">
           <i data-lucide="film" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span>Timeline (Flipbook)</span>
         </button>
-        <button id="dockTabSpectrum" class="blender-btn px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition">
+        <button id="dockTabSpectrum"
+          class="blender-btn px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition">
           <i data-lucide="line-chart" class="w-3.5 h-3.5 text-emerald-400"></i>
           <span>102-Band Spectrum</span>
         </button>
-        <button id="dockTabLightCurve" class="blender-btn px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition">
+        <button id="dockTabLightCurve"
+          class="blender-btn px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition">
           <i data-lucide="trending-up" class="w-3.5 h-3.5 text-amber-400"></i>
           <span>Light Curve</span>
         </button>
         <!-- Temporal Observation Date Search (Issue #11) -->
-        <button id="btnOpenTemporalFilter" class="blender-btn px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition text-amber-300 hover:text-white" title="Filter Observation Epochs by Date / Time Range">
+        <button id="btnOpenTemporalFilter"
+          class="blender-btn px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 transition text-amber-300 hover:text-white"
+          title="Filter Observation Epochs by Date / Time Range">
           <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-400"></i>
           <span id="temporalFilterBtnLabel">Dates</span>
         </button>
@@ -843,7 +1043,8 @@
         <span id="temporalBaselineText" class="text-emerald-400 font-bold font-mono text-[11px] hidden sm:inline-block">
           Δt: Multi-Epoch Baseline
         </span>
-        <button id="btnToggleDock" class="p-1 rounded blender-btn text-gray-400 hover:text-white" title="Collapse / Expand Bottom Dock">
+        <button id="btnToggleDock" class="p-1 rounded blender-btn text-gray-400 hover:text-white"
+          title="Collapse / Expand Bottom Dock">
           <i id="dockCollapseIcon" data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
         </button>
       </div>
@@ -857,20 +1058,26 @@
 
         <!-- Left: Playback VCR Transport Controls -->
         <div class="flex items-center gap-1 shrink-0">
-          <button id="btnJumpStart" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Jump to First Frame (Shift + Left)">
+          <button id="btnJumpStart" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white"
+            title="Jump to First Frame (Shift + Left)">
             <i data-lucide="skip-back" class="w-4 h-4"></i>
           </button>
-          <button id="btnStepBack" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Step Back 1 Frame (Left Arrow)">
+          <button id="btnStepBack" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white"
+            title="Step Back 1 Frame (Left Arrow)">
             <i data-lucide="step-back" class="w-4 h-4"></i>
           </button>
-          <button id="btnPlayPause" class="px-3 py-1.5 rounded blender-btn blender-btn-orange-active flex items-center gap-1 text-white font-bold" title="Toggle Flipbook Play/Pause (Spacebar)">
+          <button id="btnPlayPause"
+            class="px-3 py-1.5 rounded blender-btn blender-btn-orange-active flex items-center gap-1 text-white font-bold"
+            title="Toggle Flipbook Play/Pause (Spacebar)">
             <i id="playPauseIcon" data-lucide="pause" class="w-4 h-4"></i>
             <span class="text-xs">Blink</span>
           </button>
-          <button id="btnStepFwd" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Step Forward 1 Frame (Right Arrow)">
+          <button id="btnStepFwd" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white"
+            title="Step Forward 1 Frame (Right Arrow)">
             <i data-lucide="step-forward" class="w-4 h-4"></i>
           </button>
-          <button id="btnJumpEnd" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Jump to Last Frame (Shift + Right)">
+          <button id="btnJumpEnd" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white"
+            title="Jump to Last Frame (Shift + Right)">
             <i data-lucide="skip-forward" class="w-4 h-4"></i>
           </button>
 
@@ -891,8 +1098,12 @@
             <span class="text-blender-orange font-bold">2025 (SPHEREx)</span>
           </div>
           <div class="relative w-full h-2 bg-space-800 rounded-full flex items-center">
-            <div id="timelineProgress" class="absolute left-0 h-full bg-blender-orange rounded-full transition-all duration-150" style="width: 25%;"></div>
-            <div class="absolute left-0 w-3 h-3 rounded-full bg-white border-2 border-blender-orange cursor-pointer -ml-1.5"></div>
+            <div id="timelineProgress"
+              class="absolute left-0 h-full bg-blender-orange rounded-full transition-all duration-150"
+              style="width: 25%;"></div>
+            <div
+              class="absolute left-0 w-3 h-3 rounded-full bg-white border-2 border-blender-orange cursor-pointer -ml-1.5">
+            </div>
             <div class="absolute left-1/3 w-2.5 h-2.5 rounded-full bg-space-600 cursor-pointer -ml-1"></div>
             <div class="absolute left-2/3 w-2.5 h-2.5 rounded-full bg-space-600 cursor-pointer -ml-1"></div>
             <div class="absolute right-0 w-3 h-3 rounded-full bg-blender-orange cursor-pointer -mr-1.5"></div>
@@ -902,7 +1113,8 @@
         <!-- Right: Blink Speed Slider -->
         <div class="flex items-center gap-2 shrink-0">
           <span class="text-gray-400 text-xs">Speed:</span>
-          <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0" class="w-24 h-1.5 bg-space-700 rounded cursor-pointer">
+          <input id="speedSlider" type="range" min="0.5" max="6.0" step="0.5" value="2.0"
+            class="w-24 h-1.5 bg-space-700 rounded cursor-pointer">
           <span id="speedLabel" class="text-gray-200 text-xs w-14 font-mono">2.0 FPS</span>
         </div>
       </div>
@@ -910,29 +1122,42 @@
       <!-- PANEL 2: SPECTRUM (102-Band SPHEREx Spectrophotometry with 6-Array Selector & 17-Wavelength Stepper) -->
       <div id="dockPanelSpectrum" class="h-full hidden px-3 py-1.5 flex flex-col justify-between gap-1">
         <!-- Top Toolbar: Array Tabs, Channel Stepper & Science Guide -->
-        <div class="flex items-center justify-between gap-2 shrink-0 border-b border-space-800 pb-1 text-[11px] font-mono flex-wrap">
+        <div
+          class="flex items-center justify-between gap-2 shrink-0 border-b border-space-800 pb-1 text-[11px] font-mono flex-wrap">
           <!-- 6-Array Tabs -->
           <div class="flex items-center gap-1" id="arrayTabsContainer">
             <span class="text-[10px] text-gray-400 uppercase font-sans font-semibold mr-1">Array:</span>
-            <button class="array-tab blender-btn blender-btn-active px-2 py-0.5 rounded text-[10px] transition" data-array="A1" title="A1: 0.75-1.11 µm (Optical boundary, stellar continuum)">A1</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition" data-array="A2" title="A2: 1.11-1.64 µm (2MASS J/H overlap, photospheres)">A2</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition" data-array="A3" title="A3: 1.64-2.42 µm (2MASS Ks overlap, circumstellar dust)">A3</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-amber-300" data-array="A4" title="A4: 2.42-3.82 µm (H₂O Ice 3.05 µm, CH₄ 3.30 µm)">A4 🔬</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-orange-300" data-array="A5" title="A5: 3.82-4.42 µm (CO₂ Ice 4.27 µm, Planet X thermal peak)">A5 🔬</button>
-            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-rose-300" data-array="A6" title="A6: 4.42-5.00 µm (CO 4.67 µm, Organics)">A6 🔬</button>
+            <button class="array-tab blender-btn blender-btn-active px-2 py-0.5 rounded text-[10px] transition"
+              data-array="A1" title="A1: 0.75-1.11 µm (Optical boundary, stellar continuum)">A1</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition" data-array="A2"
+              title="A2: 1.11-1.64 µm (2MASS J/H overlap, photospheres)">A2</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition" data-array="A3"
+              title="A3: 1.64-2.42 µm (2MASS Ks overlap, circumstellar dust)">A3</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-amber-300"
+              data-array="A4" title="A4: 2.42-3.82 µm (H₂O Ice 3.05 µm, CH₄ 3.30 µm)">A4 🔬</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-orange-300"
+              data-array="A5" title="A5: 3.82-4.42 µm (CO₂ Ice 4.27 µm, Planet X thermal peak)">A5 🔬</button>
+            <button class="array-tab blender-btn px-2 py-0.5 rounded text-[10px] transition text-rose-300"
+              data-array="A6" title="A6: 4.42-5.00 µm (CO 4.67 µm, Organics)">A6 🔬</button>
           </div>
 
           <!-- 17-Wavelength Stepper within Array -->
           <div class="flex items-center gap-1.5 bg-space-950 px-2 py-0.5 rounded border border-space-800 shadow-inner">
-            <button id="chanPrev" class="blender-btn px-1.5 py-0.2 rounded hover:text-white" title="Previous Spectral Channel (Left Arrow)">◀</button>
-            <span id="chanDisplay" class="text-white font-semibold text-[10px] min-w-[150px] text-center">Ch 1 / 17 — λ = 0.750 µm</span>
-            <button id="chanNext" class="blender-btn px-1.5 py-0.2 rounded hover:text-white" title="Next Spectral Channel (Right Arrow)">▶</button>
-            <input type="range" id="chanSlider" min="1" max="17" value="1" class="w-20 h-1.5 bg-space-700 rounded cursor-pointer accent-amber-500">
+            <button id="chanPrev" class="blender-btn px-1.5 py-0.2 rounded hover:text-white"
+              title="Previous Spectral Channel (Left Arrow)">◀</button>
+            <span id="chanDisplay" class="text-white font-semibold text-[10px] min-w-[150px] text-center">Ch 1 / 17 — λ
+              = 0.750 µm</span>
+            <button id="chanNext" class="blender-btn px-1.5 py-0.2 rounded hover:text-white"
+              title="Next Spectral Channel (Right Arrow)">▶</button>
+            <input type="range" id="chanSlider" min="1" max="17" value="1"
+              class="w-20 h-1.5 bg-space-700 rounded cursor-pointer accent-amber-500">
             <span id="chanFluxBadge" class="text-amber-400 font-mono text-[9px]">1.00 rel</span>
           </div>
 
           <!-- 102-Band Science Explainer Trigger -->
-          <button id="btnOpenBandScience" class="flex items-center gap-1 px-2 py-0.5 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-cyan-300 hover:text-white transition text-[10px]" title="Open SPHEREx 102-Band Science Explainer Modal">
+          <button id="btnOpenBandScience"
+            class="flex items-center gap-1 px-2 py-0.5 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-cyan-300 hover:text-white transition text-[10px]"
+            title="Open SPHEREx 102-Band Science Explainer Modal">
             <i data-lucide="info" class="w-3 h-3 text-cyan-400"></i>
             <span>102-Band Science</span>
           </button>
@@ -944,16 +1169,28 @@
             <canvas id="spectrumChart"></canvas>
           </div>
           <!-- Molecular Reference Sidebar -->
-          <div class="w-52 bg-space-950 p-2 rounded border border-space-800 font-mono text-[9px] space-y-1 shrink-0 shadow-inner">
-            <div class="text-gray-400 font-bold uppercase text-[9px] text-cyan-400 border-b border-space-800 pb-0.5 flex justify-between">
+          <div
+            class="w-52 bg-space-950 p-2 rounded border border-space-800 font-mono text-[9px] space-y-1 shrink-0 shadow-inner">
+            <div
+              class="text-gray-400 font-bold uppercase text-[9px] text-cyan-400 border-b border-space-800 pb-0.5 flex justify-between">
               <span>Molecular Signatures</span>
               <span class="text-gray-500 font-normal">λ (µm)</span>
             </div>
-            <div class="flex justify-between items-center"><span class="text-sky-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block"></span>H₂O / Vapor:</span><span class="text-gray-300 font-bold">1.40 µm</span></div>
-            <div class="flex justify-between items-center"><span class="text-sky-300 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-sky-300 inline-block"></span>H₂O Ice:</span><span class="text-gray-300 font-bold">3.05 µm</span></div>
-            <div class="flex justify-between items-center"><span class="text-emerald-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>CH₄ Methane:</span><span class="text-gray-300 font-bold">3.30 µm</span></div>
-            <div class="flex justify-between items-center"><span class="text-orange-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-orange-400 inline-block"></span>CO₂ Ice:</span><span class="text-gray-300 font-bold">4.27 µm</span></div>
-            <div class="flex justify-between items-center"><span class="text-rose-400 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block"></span>CO Monoxide:</span><span class="text-gray-300 font-bold">4.67 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-sky-400 flex items-center gap-1"><span
+                  class="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block"></span>H₂O / Vapor:</span><span
+                class="text-gray-300 font-bold">1.40 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-sky-300 flex items-center gap-1"><span
+                  class="w-1.5 h-1.5 rounded-full bg-sky-300 inline-block"></span>H₂O Ice:</span><span
+                class="text-gray-300 font-bold">3.05 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-emerald-400 flex items-center gap-1"><span
+                  class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>CH₄ Methane:</span><span
+                class="text-gray-300 font-bold">3.30 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-orange-400 flex items-center gap-1"><span
+                  class="w-1.5 h-1.5 rounded-full bg-orange-400 inline-block"></span>CO₂ Ice:</span><span
+                class="text-gray-300 font-bold">4.27 µm</span></div>
+            <div class="flex justify-between items-center"><span class="text-rose-400 flex items-center gap-1"><span
+                  class="w-1.5 h-1.5 rounded-full bg-rose-400 inline-block"></span>CO Monoxide:</span><span
+                class="text-gray-300 font-bold">4.67 µm</span></div>
           </div>
         </div>
       </div>
@@ -978,24 +1215,32 @@
   <!-- ========================================================================= -->
   <!-- 4. COMMAND PALETTE OVERLAY (Ctrl+K / Cmd+K)                              -->
   <!-- ========================================================================= -->
-  <div id="cmdPaletteOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-[60] flex items-start justify-center pt-[12vh]" role="dialog" aria-modal="true" aria-label="Command Palette">
-    <div class="bg-blender-900 border border-blender-600 rounded-xl w-full max-w-xl shadow-2xl overflow-hidden font-mono text-xs" style="box-shadow: 0 0 0 1px rgba(43,118,201,0.3), 0 25px 50px rgba(0,0,0,0.8);">
+  <div id="cmdPaletteOverlay"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-[60] flex items-start justify-center pt-[12vh]"
+    role="dialog" aria-modal="true" aria-label="Command Palette">
+    <div
+      class="bg-blender-900 border border-blender-600 rounded-xl w-full max-w-xl shadow-2xl overflow-hidden font-mono text-xs"
+      style="box-shadow: 0 0 0 1px rgba(43,118,201,0.3), 0 25px 50px rgba(0,0,0,0.8);">
       <!-- Search Input -->
       <div class="flex items-center gap-2.5 px-4 py-3 border-b border-blender-700">
         <i data-lucide="search" class="w-4 h-4 text-cyan-400 shrink-0"></i>
         <input id="cmdInput" type="text"
           class="flex-1 bg-transparent text-white placeholder-gray-500 text-sm focus:outline-none"
-          placeholder="Search targets, views, actions… (try 'brown dwarf' or 'blink')"
-          autocomplete="off" spellcheck="false" aria-autocomplete="list" aria-controls="cmdResultsList">
-        <span class="text-[10px] text-gray-500 bg-space-800 px-1.5 py-0.5 rounded border border-space-700 shrink-0 font-sans">Esc</span>
+          placeholder="Search targets, views, actions… (try 'brown dwarf' or 'blink')" autocomplete="off"
+          spellcheck="false" aria-autocomplete="list" aria-controls="cmdResultsList">
+        <span
+          class="text-[10px] text-gray-500 bg-space-800 px-1.5 py-0.5 rounded border border-space-700 shrink-0 font-sans">Esc</span>
       </div>
       <!-- Results list -->
       <ul id="cmdResultsList" class="max-h-80 overflow-y-auto py-1" role="listbox"></ul>
       <!-- Footer -->
       <div class="flex items-center gap-4 px-4 py-2 border-t border-blender-700 text-[10px] text-gray-500">
-        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">↑↓</kbd> navigate</span>
-        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">↵</kbd> execute</span>
-        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">Esc</kbd> close</span>
+        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">↑↓</kbd>
+          navigate</span>
+        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">↵</kbd>
+          execute</span>
+        <span class="flex items-center gap-1"><kbd class="bg-space-800 px-1 rounded border border-space-700">Esc</kbd>
+          close</span>
         <span class="ml-auto text-cyan-400">SPHEREx Hunter</span>
       </div>
     </div>
@@ -1007,8 +1252,10 @@
   <!-- ========================================================================= -->
 
   <!-- CITIZEN SCIENCE DISCOVERY MODAL -->
-  <div id="flagModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-700 rounded-xl max-w-md w-full p-5 shadow-2xl space-y-3 font-mono text-xs">
+  <div id="flagModal"
+    class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div
+      class="bg-space-900 border border-space-700 rounded-xl max-w-md w-full p-5 shadow-2xl space-y-3 font-mono text-xs">
       <div class="flex items-center justify-between border-b border-space-700 pb-2">
         <div class="flex items-center gap-2 text-white font-bold text-sm">
           <i data-lucide="flag" class="w-4 h-4 text-blender-orange"></i>
@@ -1020,21 +1267,26 @@
       <div class="space-y-2 text-gray-300">
         <div>
           <label class="block text-[10px] text-gray-400 mb-1">Target / Candidate Name:</label>
-          <input id="candNameInput" type="text" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-blender-orange" value="WISE 0855 Moving Candidate">
+          <input id="candNameInput" type="text"
+            class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-blender-orange"
+            value="WISE 0855 Moving Candidate">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block text-[10px] text-gray-400 mb-1">RA (deg):</label>
-            <input id="candRAInput" type="text" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white" readonly>
+            <input id="candRAInput" type="text"
+              class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white" readonly>
           </div>
           <div>
             <label class="block text-[10px] text-gray-400 mb-1">Dec (deg):</label>
-            <input id="candDecInput" type="text" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white" readonly>
+            <input id="candDecInput" type="text"
+              class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white" readonly>
           </div>
         </div>
         <div>
           <label class="block text-[10px] text-gray-400 mb-1">Discovered Motion Signature:</label>
-          <select id="candMotionType" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-blender-orange">
+          <select id="candMotionType"
+            class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-blender-orange">
             <option value="high_pm">High Proper Motion (Planet X / Brown Dwarf)</option>
             <option value="optical_dipole">Optical Dipole in Difference Map</option>
             <option value="variable_star">Variable Flux Pulsation (RW Aur / Mira)</option>
@@ -1042,7 +1294,8 @@
           </select>
         </div>
         <div class="pt-1">
-          <a id="modalWiseViewLink" href="#" target="_blank" rel="noopener noreferrer" class="text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 text-[10px] bg-space-950 p-2 rounded border border-space-700/80">
+          <a id="modalWiseViewLink" href="#" target="_blank" rel="noopener noreferrer"
+            class="text-amber-300 hover:text-amber-200 hover:underline flex items-center gap-1.5 text-[10px] bg-space-950 p-2 rounded border border-space-700/80">
             <i data-lucide="external-link" class="w-3.5 h-3.5 text-blender-orange"></i>
             <span>Cross-verify candidate coordinates on NASA WiseView flipbook ↗</span>
           </a>
@@ -1051,7 +1304,8 @@
 
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-space-700">
         <button id="cancelModalBtn" class="px-3 py-1.5 rounded blender-btn text-gray-300">Cancel</button>
-        <button id="submitCandidateBtn" class="px-3 py-1.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold shadow transition-all">
+        <button id="submitCandidateBtn"
+          class="px-3 py-1.5 rounded bg-blender-orange hover:bg-orange-600 text-white font-bold shadow transition-all">
           Record Discovery
         </button>
       </div>
@@ -1059,8 +1313,10 @@
   </div>
 
   <!-- UNIVERSAL SKY REGION SHARE MODAL (Issue #12) -->
-  <div id="shareModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-700 rounded-xl max-w-lg w-full p-4 shadow-2xl space-y-3 font-mono text-xs">
+  <div id="shareModal"
+    class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div
+      class="bg-space-900 border border-space-700 rounded-xl max-w-lg w-full p-4 shadow-2xl space-y-3 font-mono text-xs">
       <div class="flex items-center justify-between border-b border-space-700 pb-2">
         <div class="flex items-center gap-2 text-white font-bold text-sm">
           <i data-lucide="share-2" class="w-4 h-4 text-cyan-400"></i>
@@ -1087,8 +1343,10 @@
       <div class="space-y-1">
         <label class="text-[10px] text-gray-400">Shareable Universal URL:</label>
         <div class="flex items-center gap-1.5">
-          <input id="shareUrlInput" type="text" readonly class="flex-1 bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-cyan-300 font-mono text-[10px] select-all">
-          <button id="btnCopyShareUrl" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold text-[10px] flex items-center gap-1 transition">
+          <input id="shareUrlInput" type="text" readonly
+            class="flex-1 bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-cyan-300 font-mono text-[10px] select-all">
+          <button id="btnCopyShareUrl"
+            class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold text-[10px] flex items-center gap-1 transition">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
             <span id="copyUrlBtnText">Copy Link</span>
           </button>
@@ -1097,7 +1355,8 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center justify-between pt-2 border-t border-space-700">
-        <button id="btnCopyTelemetrySnippet" class="px-2.5 py-1 blender-btn text-[10px] flex items-center gap-1 text-gray-300 hover:text-white">
+        <button id="btnCopyTelemetrySnippet"
+          class="px-2.5 py-1 blender-btn text-[10px] flex items-center gap-1 text-gray-300 hover:text-white">
           <i data-lucide="file-text" class="w-3 h-3 text-cyan-400"></i>
           <span id="copyTelemetryBtnText">Copy Telemetry Text</span>
         </button>
@@ -1109,8 +1368,10 @@
   </div>
 
   <!-- TEMPORAL OBSERVATION RANGE FILTER MODAL (Issue #11) -->
-  <div id="temporalFilterModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-700 rounded-xl max-w-md w-full p-4 shadow-2xl space-y-3 font-mono text-xs">
+  <div id="temporalFilterModal"
+    class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div
+      class="bg-space-900 border border-space-700 rounded-xl max-w-md w-full p-4 shadow-2xl space-y-3 font-mono text-xs">
       <div class="flex items-center justify-between border-b border-space-700 pb-2">
         <div class="flex items-center gap-2 text-white font-bold text-sm">
           <i data-lucide="calendar" class="w-4 h-4 text-amber-400"></i>
@@ -1122,29 +1383,39 @@
       <div class="space-y-2.5 text-gray-300">
         <div>
           <label class="block text-[10px] text-gray-400 mb-1">Start Date / Time (UTC):</label>
-          <input id="inputStartDate" type="date" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-amber-400">
+          <input id="inputStartDate" type="date"
+            class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-amber-400">
         </div>
         <div>
           <label class="block text-[10px] text-gray-400 mb-1">End Date / Time (UTC):</label>
-          <input id="inputEndDate" type="date" class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-amber-400">
+          <input id="inputEndDate" type="date"
+            class="w-full bg-space-950 border border-space-700 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-amber-400">
         </div>
 
         <div class="pt-1">
           <label class="block text-[10px] text-gray-400 mb-1">Quick Era Presets:</label>
           <div class="grid grid-cols-2 gap-1.5 text-[10px]">
-            <button class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left" data-start="" data-end="">
+            <button
+              class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left"
+              data-start="" data-end="">
               <div class="font-bold text-white">All-Time Archive</div>
               <div class="text-[9px] text-gray-400">1990 — 2026</div>
             </button>
-            <button class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left" data-start="1950-01-01" data-end="1996-12-31">
+            <button
+              class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left"
+              data-start="1950-01-01" data-end="1996-12-31">
               <div class="font-bold text-white">Photographic Plates</div>
               <div class="text-[9px] text-gray-400">1950 — 1996 (DSS/POSS)</div>
             </button>
-            <button class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left" data-start="1997-01-01" data-end="2024-12-31">
+            <button
+              class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left"
+              data-start="1997-01-01" data-end="2024-12-31">
               <div class="font-bold text-white">Infrared Baselines</div>
               <div class="text-[9px] text-gray-400">1997 — 2024 (2MASS/WISE)</div>
             </button>
-            <button class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left" data-start="2025-01-01" data-end="2027-12-31">
+            <button
+              class="temporal-preset-btn p-1.5 bg-space-950 hover:bg-space-800 rounded border border-space-700 text-left"
+              data-start="2025-01-01" data-end="2027-12-31">
               <div class="font-bold text-white">SPHEREx Mission Era</div>
               <div class="text-[9px] text-gray-400">2025+ (DR1 / DR2)</div>
             </button>
@@ -1156,7 +1427,8 @@
         <button id="btnResetTemporalFilter" class="px-2.5 py-1 blender-btn text-[10px] text-gray-400 hover:text-white">
           Reset Filter
         </button>
-        <button id="btnApplyTemporalFilter" class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded font-bold text-[10px]">
+        <button id="btnApplyTemporalFilter"
+          class="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded font-bold text-[10px]">
           Apply Filter
         </button>
       </div>
@@ -1164,13 +1436,16 @@
   </div>
 
   <!-- NASA & CSA RESOURCES CODEX & PHASE 2 VALIDATION MODAL -->
-  <div id="missionCodexModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-700 rounded-xl max-w-2xl w-full p-5 shadow-2xl space-y-4 font-mono text-xs flex flex-col max-h-[85vh]">
+  <div id="missionCodexModal"
+    class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div
+      class="bg-space-900 border border-space-700 rounded-xl max-w-2xl w-full p-5 shadow-2xl space-y-4 font-mono text-xs flex flex-col max-h-[85vh]">
 
       <!-- Codex Header -->
       <div class="flex items-center justify-between border-b border-space-700 pb-3">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-blender-orange flex items-center justify-center text-white shadow-md">
+          <div
+            class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-blender-orange flex items-center justify-center text-white shadow-md">
             <i data-lucide="book-open" class="w-4 h-4"></i>
           </div>
           <div>
@@ -1178,24 +1453,29 @@
             <p class="text-[10px] text-gray-400">NASA Space Apps Challenge 2026 · Challenge: Planet X and SPHEREx</p>
           </div>
         </div>
-        <button id="closeCodexBtn" class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-space-800 transition-colors">✕</button>
+        <button id="closeCodexBtn"
+          class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-space-800 transition-colors">✕</button>
       </div>
 
       <!-- Codex Tab Navigation -->
       <div class="flex items-center gap-1 bg-space-950 p-1 rounded-lg border border-space-700 text-xs shrink-0">
-        <button id="codexTabNASA" class="blender-btn blender-btn-active px-3 py-1.5 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all">
+        <button id="codexTabNASA"
+          class="blender-btn blender-btn-active px-3 py-1.5 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all">
           <i data-lucide="rocket" class="w-3.5 h-3.5 text-cyan-300"></i>
           <span>NASA Missions</span>
         </button>
-        <button id="codexTabCSA" class="blender-btn px-3 py-1.5 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all">
+        <button id="codexTabCSA"
+          class="blender-btn px-3 py-1.5 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all">
           <i data-lucide="radar" class="w-3.5 h-3.5 text-red-400"></i>
           <span>CSA &amp; Partners</span>
         </button>
-        <button id="codexTabMath" class="blender-btn px-3 py-1.5 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all">
+        <button id="codexTabMath"
+          class="blender-btn px-3 py-1.5 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all">
           <i data-lucide="binary" class="w-3.5 h-3.5 text-emerald-400"></i>
           <span>Science Math &amp; Formulas</span>
         </button>
-        <button id="codexTabValidation" class="blender-btn px-3 py-1.5 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all">
+        <button id="codexTabValidation"
+          class="blender-btn px-3 py-1.5 rounded text-[11px] font-bold flex items-center gap-1.5 transition-all">
           <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span>Phase 2 Validation</span>
         </button>
@@ -1215,7 +1495,9 @@
               <span class="text-cyan-300 text-[10px]">0.75 – 5.0 μm</span>
             </div>
             <p class="text-[11px] text-gray-300 leading-relaxed">
-              SPHEREx performs an all-sky near-infrared spectral survey across 102 individual spectrophotometric bands. Equipped with 6 detector arrays, SPHEREx detects frozen water ice ($H_2O$), carbon dioxide ice ($CO_2$), and methane ($CH_4$) in interstellar clouds and maps Planet X / Brown Dwarf candidates.
+              SPHEREx performs an all-sky near-infrared spectral survey across 102 individual spectrophotometric bands.
+              Equipped with 6 detector arrays, SPHEREx detects frozen water ice ($H_2O$), carbon dioxide ice ($CO_2$),
+              and methane ($CH_4$) in interstellar clouds and maps Planet X / Brown Dwarf candidates.
             </p>
           </div>
 
@@ -1228,7 +1510,10 @@
               <span class="text-emerald-400 text-[10px]">TAP / FinderChart</span>
             </div>
             <p class="text-[11px] text-gray-300 leading-relaxed">
-              Hosted at Caltech/JPL, NASA IRSA serves the historical Two Micron All-Sky Survey (2MASS, 1997–2001) in $J\ (1.25\,\mu	ext{m})$, $H\ (1.65\,\mu	ext{m})$, and $K_s\ (2.17\,\mu	ext{m})$ bands. By subtracting 2MASS from SPHEREx across a ~26.2-year temporal baseline, sub-pixel dipoles reveal slow-moving brown dwarfs and trans-Neptunian objects.
+              Hosted at Caltech/JPL, NASA IRSA serves the historical Two Micron All-Sky Survey (2MASS, 1997–2001) in $J\
+              (1.25\,\mu ext{m})$, $H\ (1.65\,\mu ext{m})$, and $K_s\ (2.17\,\mu ext{m})$ bands. By subtracting 2MASS
+              from SPHEREx across a ~26.2-year temporal baseline, sub-pixel dipoles reveal slow-moving brown dwarfs and
+              trans-Neptunian objects.
             </p>
           </div>
         </div>
@@ -1244,7 +1529,9 @@
               <span class="text-amber-300 text-[10px]">Asteroid Tracking</span>
             </div>
             <p class="text-[11px] text-gray-300 leading-relaxed">
-              The Near-Earth Object Surveillance Satellite (NEOSSat) is the world's first space telescope dedicated to detecting and tracking asteroids and satellites. The Canadian Astronomy Data Centre (CADC) provides open access to NEOSSat public archives.
+              The Near-Earth Object Surveillance Satellite (NEOSSat) is the world's first space telescope dedicated to
+              detecting and tracking asteroids and satellites. The Canadian Astronomy Data Centre (CADC) provides open
+              access to NEOSSat public archives.
             </p>
           </div>
         </div>
@@ -1256,10 +1543,12 @@
               Zackay, Ofek, &amp; Gal-Yam (ZOGY 2016) Subtraction
             </div>
             <p class="text-[11px] text-gray-300 leading-relaxed font-mono">
-              $$\widehat{D} = rac{F_r \widehat{P}_r \widehat{N} - F_n \widehat{P}_n \widehat{R}}{\sqrt{\sigma_n^2 F_r^2 |\widehat{P}_r|^2 + \sigma_r^2 F_n^2 |\widehat{P}_n|^2}}$$
+              $$\widehat{D} = rac{F_r \widehat{P}_r \widehat{N} - F_n \widehat{P}_n \widehat{R}}{\sqrt{\sigma_n^2 F_r^2
+              |\widehat{P}_r|^2 + \sigma_r^2 F_n^2 |\widehat{P}_n|^2}}$$
             </p>
             <p class="text-[11px] text-gray-400">
-              Mathematically optimal difference imaging for telescope exposures with mismatched point spread functions (PSF) and noise properties.
+              Mathematically optimal difference imaging for telescope exposures with mismatched point spread functions
+              (PSF) and noise properties.
             </p>
           </div>
         </div>
@@ -1275,10 +1564,12 @@
               Validated on authentic NASA SPHEREx flight exposures (MJD 60789.752254, Detector 6):
             </p>
             <ul class="list-disc list-inside text-[11px] text-gray-300 space-y-1 font-mono">
-              <li><b>Detection Completeness Benchmark:</b> 50% recovery at $m_{	ext{AB}} pprox 17.3$ ($5.0\sigma$ ZOGY cutoff).</li>
+              <li><b>Detection Completeness Benchmark:</b> 50% recovery at $m_{ ext{AB}} pprox 17.3$ ($5.0\sigma$ ZOGY
+                cutoff).</li>
               <li><b>False-Positive Rate:</b> 29.02 per deg² with brightness-scaled Gaia DR3 star masking.</li>
-              <li><b>Known Astronomical Bodies:</b> Official IMCCE SkyBoT cross-match retrieved 54 known Solar System bodies.</li>
-              <li><b>EPSF Astrometric Accuracy:</b> $0.666''$ ($0.108	ext{ pixels}$) RMS against Gaia DR3 stars.</li>
+              <li><b>Known Astronomical Bodies:</b> Official IMCCE SkyBoT cross-match retrieved 54 known Solar System
+                bodies.</li>
+              <li><b>EPSF Astrometric Accuracy:</b> $0.666''$ ($0.108 ext{ pixels}$) RMS against Gaia DR3 stars.</li>
             </ul>
           </div>
         </div>
@@ -1288,11 +1579,15 @@
   </div>
 
   <!-- COMMAND PALETTE MODAL (Ctrl+K) -->
-  <div id="commandPaletteModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-start justify-center pt-20 p-4">
-    <div class="bg-space-900 border border-space-700 rounded-xl max-w-lg w-full shadow-2xl overflow-hidden font-mono text-xs">
+  <div id="commandPaletteModal"
+    class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-start justify-center pt-20 p-4">
+    <div
+      class="bg-space-900 border border-space-700 rounded-xl max-w-lg w-full shadow-2xl overflow-hidden font-mono text-xs">
       <div class="p-3 border-b border-space-700 flex items-center gap-2 bg-space-950">
         <i data-lucide="search" class="w-4 h-4 text-cyan-400"></i>
-        <input id="commandPaletteInput" type="text" placeholder="Search targets, presets, coordinates, or modes... (Esc to exit)" class="w-full bg-transparent text-white text-xs focus:outline-none placeholder-gray-500">
+        <input id="commandPaletteInput" type="text"
+          placeholder="Search targets, presets, coordinates, or modes... (Esc to exit)"
+          class="w-full bg-transparent text-white text-xs focus:outline-none placeholder-gray-500">
         <button id="closeCommandPaletteBtn" class="text-gray-400 hover:text-white text-xs">✕</button>
       </div>
       <div id="commandPaletteList" class="max-h-80 overflow-y-auto divide-y divide-space-800 p-1">
@@ -1302,8 +1597,10 @@
   </div>
 
   <!-- KEYBOARD SHORTCUTS CHEAT SHEET MODAL (?) -->
-  <div id="shortcutsModal" class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-700 rounded-xl max-w-md w-full p-5 shadow-2xl space-y-3 font-mono text-xs">
+  <div id="shortcutsModal"
+    class="fixed inset-0 bg-black/75 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div
+      class="bg-space-900 border border-space-700 rounded-xl max-w-md w-full p-5 shadow-2xl space-y-3 font-mono text-xs">
       <div class="flex items-center justify-between border-b border-space-700 pb-2">
         <span class="font-bold text-white text-sm flex items-center gap-2">
           <i data-lucide="keyboard" class="w-4 h-4 text-blender-orange"></i>
@@ -1312,23 +1609,35 @@
         <button id="closeShortcutsBtn" class="text-gray-400 hover:text-white">✕</button>
       </div>
       <div class="space-y-1.5 text-gray-300 text-[11px]">
-        <div class="flex justify-between py-1 border-b border-space-800"><span>Blink Mode</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">B</kbd></div>
-        <div class="flex justify-between py-1 border-b border-space-800"><span>Difference Mode (ZOGY)</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">D</kbd></div>
-        <div class="flex justify-between py-1 border-b border-space-800"><span>Play / Pause Flipbook</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Space</kbd></div>
-        <div class="flex justify-between py-1 border-b border-space-800"><span>Previous / Next Epoch</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">[ / ]</kbd></div>
-        <div class="flex justify-between py-1 border-b border-space-800"><span>Toggle Gaia DR3 Overlay</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">G</kbd></div>
-        <div class="flex justify-between py-1 border-b border-space-800"><span>Recenter Coordinates</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">R</kbd></div>
-        <div class="flex justify-between py-1 border-b border-space-800"><span>Toggle Fullscreen</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">F</kbd></div>
-        <div class="flex justify-between py-1 border-b border-space-800"><span>Command Palette</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Ctrl + K</kbd></div>
-        <div class="flex justify-between py-1 border-b border-space-800"><span>WASD Walk Nav Flight</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Shift + `</kbd></div>
-        <div class="flex justify-between py-1"><span>Dismiss Modals</span><kbd class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Esc</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>Blink Mode</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">B</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>Difference Mode (ZOGY)</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">D</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>Play / Pause Flipbook</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Space</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>Previous / Next Epoch</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">[ / ]</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>Toggle Gaia DR3 Overlay</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">G</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>Recenter Coordinates</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">R</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>Toggle Fullscreen</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">F</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>Command Palette</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Ctrl + K</kbd></div>
+        <div class="flex justify-between py-1 border-b border-space-800"><span>WASD Walk Nav Flight</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Shift + `</kbd></div>
+        <div class="flex justify-between py-1"><span>Dismiss Modals</span><kbd
+            class="px-1.5 py-0.5 bg-space-800 rounded border border-space-700 text-white">Esc</kbd></div>
       </div>
     </div>
   </div>
 
   <!-- CITIZEN SCIENCE MISSION GUIDE & ONBOARDING TOUR MODAL -->
-  <div id="onboardingModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 font-sans text-xs relative overflow-hidden">
+  <div id="onboardingModal"
+    class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div
+      class="bg-space-900 border border-space-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 font-sans text-xs relative overflow-hidden">
       <!-- Top Glow -->
       <div class="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1339,12 +1648,16 @@
           <div>
             <h2 class="font-bold text-white text-sm flex items-center gap-1.5 font-sans">
               <span>SPHEREx Hunter</span>
-              <span class="text-blender-orange font-mono text-[11px] font-semibold px-1.5 py-0.2 bg-amber-500/10 rounded border border-amber-500/30">Mission Guide</span>
+              <span
+                class="text-blender-orange font-mono text-[11px] font-semibold px-1.5 py-0.2 bg-amber-500/10 rounded border border-amber-500/30">Mission
+                Guide</span>
             </h2>
-            <p class="text-[10px] text-gray-400 font-mono">Citizen Science Walkthrough • Step <span id="tourStepIndicator">1</span> of 5</p>
+            <p class="text-[10px] text-gray-400 font-mono">Citizen Science Walkthrough • Step <span
+                id="tourStepIndicator">1</span> of 5</p>
           </div>
         </div>
-        <button id="btnCloseOnboardingModal" class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition">✕</button>
+        <button id="btnCloseOnboardingModal"
+          class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition">✕</button>
       </div>
 
       <!-- Tour Content Slides (Switched via JS) -->
@@ -1354,8 +1667,9 @@
 
       <!-- Footer Navigation & Step Progress Dots -->
       <div class="flex items-center justify-between border-t border-space-700 pt-3">
-        <button id="btnTourSkip" class="text-gray-400 hover:text-gray-200 text-[11px] font-mono hover:underline">Skip Tour</button>
-        
+        <button id="btnTourSkip" class="text-gray-400 hover:text-gray-200 text-[11px] font-mono hover:underline">Skip
+          Tour</button>
+
         <!-- Step Indicator Dots -->
         <div class="flex items-center gap-1.5" id="tourDotsContainer">
           <span class="w-2.5 h-2.5 rounded-full bg-blender-orange transition-all duration-200"></span>
@@ -1366,8 +1680,11 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <button id="btnTourPrev" class="blender-btn px-3 py-1 rounded text-xs text-gray-400 hover:text-white disabled:opacity-40" disabled>◀ Back</button>
-          <button id="btnTourNext" class="px-4 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs transition shadow flex items-center gap-1">
+          <button id="btnTourPrev"
+            class="blender-btn px-3 py-1 rounded text-xs text-gray-400 hover:text-white disabled:opacity-40" disabled>◀
+            Back</button>
+          <button id="btnTourNext"
+            class="px-4 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs transition shadow flex items-center gap-1">
             <span>Next</span>
             <i data-lucide="arrow-right" class="w-3 h-3"></i>
           </button>
@@ -1377,17 +1694,21 @@
   </div>
 
   <!-- 102-BAND SPHEREX SCIENCE EXPLAINER MODAL -->
-  <div id="bandScienceModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-space-900 border border-space-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 font-sans text-xs relative max-h-[90vh] overflow-y-auto">
+  <div id="bandScienceModal"
+    class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div
+      class="bg-space-900 border border-space-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 font-sans text-xs relative max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-space-700 pb-3">
         <div class="flex items-center gap-2">
           <i data-lucide="activity" class="w-5 h-5 text-emerald-400"></i>
           <div>
             <h2 class="font-bold text-white text-sm">SPHEREx 102-Band Infrared Science Guide</h2>
-            <p class="text-[10px] text-gray-400 font-mono">6 Linear Variable Filter (LVF) Detector Arrays × 17 Narrow Spectral Channels</p>
+            <p class="text-[10px] text-gray-400 font-mono">6 Linear Variable Filter (LVF) Detector Arrays × 17 Narrow
+              Spectral Channels</p>
           </div>
         </div>
-        <button id="btnCloseBandScienceModal" class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition">✕</button>
+        <button id="btnCloseBandScienceModal"
+          class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition">✕</button>
       </div>
 
       <div class="space-y-3.5 text-gray-300 text-xs">
@@ -1398,55 +1719,100 @@
             <span>Why 102 Narrow Spectral Bands Matter for Planet X & Cold Brown Dwarfs</span>
           </h3>
           <p class="text-[11px] leading-relaxed text-gray-300">
-            Cold sub-stellar bodies like <span class="text-white font-semibold">WISE 0855</span> (at ~250 K / -23°C) and the hypothetical <span class="text-white font-semibold">Planet Nine</span> emit almost entirely in the thermal infrared and are <span class="text-rose-400 font-semibold">completely invisible</span> in optical surveys (Gaia, DSS2). SPHEREx divides the 0.75 µm – 5.00 µm spectrum into 102 contiguous narrow bands, pinpointing the peak thermal emission while distinguishing true cold worlds from background stars.
+            Cold sub-stellar bodies like <span class="text-white font-semibold">WISE 0855</span> (at ~250 K / -23°C) and
+            the hypothetical <span class="text-white font-semibold">Planet Nine</span> emit almost entirely in the
+            thermal infrared and are <span class="text-rose-400 font-semibold">completely invisible</span> in optical
+            surveys (Gaia, DSS2). SPHEREx divides the 0.75 µm – 5.00 µm spectrum into 102 contiguous narrow bands,
+            pinpointing the peak thermal emission while distinguishing true cold worlds from background stars.
           </p>
         </div>
 
         <!-- Section 2: 6 Arrays Architecture -->
         <div class="space-y-1.5">
-          <h4 class="text-white font-bold text-xs uppercase tracking-wider font-mono text-[11px]">The 6 Detector Arrays (A1 – A6)</h4>
+          <h4 class="text-white font-bold text-xs uppercase tracking-wider font-mono text-[11px]">The 6 Detector Arrays
+            (A1 – A6)</h4>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] font-mono">
-            <div class="bg-space-950 p-2.5 rounded border-l-2 border-indigo-500 border-t border-r border-b border-space-800">
+            <div
+              class="bg-space-950 p-2.5 rounded border-l-2 border-indigo-500 border-t border-r border-b border-space-800">
               <span class="text-indigo-400 font-bold">Array 1 (Bands 1–17):</span> 0.750 – 1.110 µm<br>
               <span class="text-gray-400">Optical/NIR boundary, stellar continuum, proper motion validation.</span>
             </div>
-            <div class="bg-space-950 p-2.5 rounded border-l-2 border-cyan-500 border-t border-r border-b border-space-800">
+            <div
+              class="bg-space-950 p-2.5 rounded border-l-2 border-cyan-500 border-t border-r border-b border-space-800">
               <span class="text-cyan-400 font-bold">Array 2 (Bands 18–34):</span> 1.110 – 1.640 µm<br>
               <span class="text-gray-400">2MASS J/H-band overlap, warm stellar photospheres, H₂O vapor dip.</span>
             </div>
-            <div class="bg-space-950 p-2.5 rounded border-l-2 border-emerald-500 border-t border-r border-b border-space-800">
+            <div
+              class="bg-space-950 p-2.5 rounded border-l-2 border-emerald-500 border-t border-r border-b border-space-800">
               <span class="text-emerald-400 font-bold">Array 3 (Bands 35–51):</span> 1.640 – 2.420 µm<br>
               <span class="text-gray-400">2MASS Ks overlap, circumstellar dust, stellar CO bandheads.</span>
             </div>
-            <div class="bg-space-950 p-2.5 rounded border-l-2 border-amber-500 border-t border-r border-b border-space-800">
+            <div
+              class="bg-space-950 p-2.5 rounded border-l-2 border-amber-500 border-t border-r border-b border-space-800">
               <span class="text-amber-400 font-bold">Array 4 (Bands 52–68):</span> 2.420 – 3.820 µm 🔬<br>
-              <span class="text-gray-400"><strong class="text-white">H₂O Ice (3.05 µm)</strong> and <strong class="text-white">CH₄ Methane (3.30 µm)</strong> absorption dips.</span>
+              <span class="text-gray-400"><strong class="text-white">H₂O Ice (3.05 µm)</strong> and <strong
+                  class="text-white">CH₄ Methane (3.30 µm)</strong> absorption dips.</span>
             </div>
-            <div class="bg-space-950 p-2.5 rounded border-l-2 border-orange-500 border-t border-r border-b border-space-800">
+            <div
+              class="bg-space-950 p-2.5 rounded border-l-2 border-orange-500 border-t border-r border-b border-space-800">
               <span class="text-orange-400 font-bold">Array 5 (Bands 69–85):</span> 3.820 – 4.420 µm 🔬<br>
-              <span class="text-gray-400"><strong class="text-white">CO₂ Ice (4.27 µm)</strong> and cold Y-dwarf thermal peak.</span>
+              <span class="text-gray-400"><strong class="text-white">CO₂ Ice (4.27 µm)</strong> and cold Y-dwarf thermal
+                peak.</span>
             </div>
-            <div class="bg-space-950 p-2.5 rounded border-l-2 border-rose-500 border-t border-r border-b border-space-800">
+            <div
+              class="bg-space-950 p-2.5 rounded border-l-2 border-rose-500 border-t border-r border-b border-space-800">
               <span class="text-rose-400 font-bold">Array 6 (Bands 86–102):</span> 4.420 – 5.000 µm 🔬<br>
-              <span class="text-gray-400"><strong class="text-white">CO Monoxide (4.67 µm)</strong>, complex organics, and Planet X emission.</span>
+              <span class="text-gray-400"><strong class="text-white">CO Monoxide (4.67 µm)</strong>, complex organics,
+                and Planet X emission.</span>
             </div>
           </div>
         </div>
 
         <!-- Section 3: Molecular Absorption Identification Table -->
         <div class="space-y-1.5">
-          <h4 class="text-white font-bold text-xs uppercase tracking-wider font-mono text-[11px]">Key Molecular Absorption Signatures</h4>
+          <h4 class="text-white font-bold text-xs uppercase tracking-wider font-mono text-[11px]">Key Molecular
+            Absorption Signatures</h4>
           <div class="overflow-x-auto rounded border border-space-800">
             <table class="w-full text-[10px] font-mono text-left">
               <thead class="bg-space-950 text-gray-400 border-b border-space-800">
-                <tr><th class="p-1.5">Feature</th><th class="p-1.5">Wavelength λ</th><th class="p-1.5">SPHEREx Array</th><th class="p-1.5">Astrophysical Significance</th></tr>
+                <tr>
+                  <th class="p-1.5">Feature</th>
+                  <th class="p-1.5">Wavelength λ</th>
+                  <th class="p-1.5">SPHEREx Array</th>
+                  <th class="p-1.5">Astrophysical Significance</th>
+                </tr>
               </thead>
               <tbody class="divide-y divide-space-800 text-gray-300">
-                <tr><td class="p-1.5 font-bold text-sky-400">H₂O Vapor</td><td class="p-1.5">1.40 µm</td><td class="p-1.5 text-cyan-400">A2</td><td class="p-1.5">Atmospheric water vapor in low-mass brown dwarfs</td></tr>
-                <tr><td class="p-1.5 font-bold text-sky-300">H₂O Ice</td><td class="p-1.5">3.05 µm</td><td class="p-1.5 text-amber-400">A4</td><td class="p-1.5">Water ice grains in circumstellar disks & icy comets</td></tr>
-                <tr><td class="p-1.5 font-bold text-emerald-400">CH₄ Methane</td><td class="p-1.5">3.30 µm</td><td class="p-1.5 text-amber-400">A4</td><td class="p-1.5">Primary atmospheric signature of T & Y-class brown dwarfs</td></tr>
-                <tr><td class="p-1.5 font-bold text-orange-400">CO₂ Ice</td><td class="p-1.5">4.27 µm</td><td class="p-1.5 text-orange-400">A5</td><td class="p-1.5">Interstellar ice mantles & frozen volatile planetary crusts</td></tr>
-                <tr><td class="p-1.5 font-bold text-rose-400">CO Monoxide</td><td class="p-1.5">4.67 µm</td><td class="p-1.5 text-rose-400">A6</td><td class="p-1.5">Carbon monoxide in proto-planetary disks and deep atmospheres</td></tr>
+                <tr>
+                  <td class="p-1.5 font-bold text-sky-400">H₂O Vapor</td>
+                  <td class="p-1.5">1.40 µm</td>
+                  <td class="p-1.5 text-cyan-400">A2</td>
+                  <td class="p-1.5">Atmospheric water vapor in low-mass brown dwarfs</td>
+                </tr>
+                <tr>
+                  <td class="p-1.5 font-bold text-sky-300">H₂O Ice</td>
+                  <td class="p-1.5">3.05 µm</td>
+                  <td class="p-1.5 text-amber-400">A4</td>
+                  <td class="p-1.5">Water ice grains in circumstellar disks & icy comets</td>
+                </tr>
+                <tr>
+                  <td class="p-1.5 font-bold text-emerald-400">CH₄ Methane</td>
+                  <td class="p-1.5">3.30 µm</td>
+                  <td class="p-1.5 text-amber-400">A4</td>
+                  <td class="p-1.5">Primary atmospheric signature of T & Y-class brown dwarfs</td>
+                </tr>
+                <tr>
+                  <td class="p-1.5 font-bold text-orange-400">CO₂ Ice</td>
+                  <td class="p-1.5">4.27 µm</td>
+                  <td class="p-1.5 text-orange-400">A5</td>
+                  <td class="p-1.5">Interstellar ice mantles & frozen volatile planetary crusts</td>
+                </tr>
+                <tr>
+                  <td class="p-1.5 font-bold text-rose-400">CO Monoxide</td>
+                  <td class="p-1.5">4.67 µm</td>
+                  <td class="p-1.5 text-rose-400">A6</td>
+                  <td class="p-1.5">Carbon monoxide in proto-planetary disks and deep atmospheres</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -1467,7 +1833,7 @@
     lucide.createIcons();
 
     const BACKEND_URL = (window.location.protocol.startsWith('http'))
-      ? `${window.location.origin}/api` 
+      ? `${window.location.origin}/api`
       : 'http://127.0.0.1:8000/api';
 
     const TARGETS = {
@@ -1536,6 +1902,9 @@
     let realDiffImg = null;
     let realCoverageMaskImg = null;
     let activeCutoutData = null;
+    const spatialTileCache = new Map();
+    window.spatialTileCache = spatialTileCache;
+    const inFlightTileRequests = new Set();
 
     // SINGLE SOURCE OF TRUTH: SCENE STATE OBJECT
     window.scene = null;
@@ -1614,7 +1983,7 @@
         gain.connect(actx.destination);
         osc.start();
         osc.stop(actx.currentTime + 0.25);
-      } catch(e) {}
+      } catch (e) { }
     }
 
     let thrusterNode = null;
@@ -1631,7 +2000,7 @@
         gain.connect(actx.destination);
         osc.start();
         thrusterNode = { osc, gain };
-      } catch(e) {}
+      } catch (e) { }
     }
 
     function stopThrusterSound() {
@@ -1640,7 +2009,7 @@
           const actx = getAudioContext();
           thrusterNode.gain.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.08);
           thrusterNode.osc.stop(actx.currentTime + 0.08);
-        } catch(e) {}
+        } catch (e) { }
         thrusterNode = null;
       }
     }
@@ -2108,8 +2477,6 @@
     // =========================================================================
     // AMBIENT CELESTIAL BACKGROUND & FEATHERED EDGE BLENDING (Issue #10 Completion)
     // =========================================================================
-    let ambientStars = null;
-
     function initAmbientStars() {
       if (ambientStars) return;
       ambientStars = [];
@@ -2138,45 +2505,12 @@
     }
 
     function drawFeatheredImage(ctx, img, x, y, w, h, alpha = 1.0) {
+      if (!img || !img.complete) return;
       ctx.save();
       ctx.globalAlpha = Math.max(0.0, Math.min(1.0, alpha));
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, x, y, w, h);
-
-      // Smooth edge vignette: softly blends rectangular cutout borders into continuous space
-      if (!diffMode) {
-        const feather = Math.max(6, Math.min(24, w * 0.05));
-        const bg = '#06080e';
-
-        // Top edge
-        const gTop = ctx.createLinearGradient(0, y, 0, y + feather);
-        gTop.addColorStop(0, bg);
-        gTop.addColorStop(1, 'rgba(6, 8, 14, 0)');
-        ctx.fillStyle = gTop;
-        ctx.fillRect(x - 1, y - 1, w + 2, feather);
-
-        // Bottom edge
-        const gBot = ctx.createLinearGradient(0, y + h, 0, y + h - feather);
-        gBot.addColorStop(0, bg);
-        gBot.addColorStop(1, 'rgba(6, 8, 14, 0)');
-        ctx.fillStyle = gBot;
-        ctx.fillRect(x - 1, y + h - feather, w + 2, feather + 1);
-
-        // Left edge
-        const gLeft = ctx.createLinearGradient(x, 0, x + feather, 0);
-        gLeft.addColorStop(0, bg);
-        gLeft.addColorStop(1, 'rgba(6, 8, 14, 0)');
-        ctx.fillStyle = gLeft;
-        ctx.fillRect(x - 1, y - 1, feather, h + 2);
-
-        // Right edge
-        const gRight = ctx.createLinearGradient(x + w, 0, x + w - feather, 0);
-        gRight.addColorStop(0, bg);
-        gRight.addColorStop(1, 'rgba(6, 8, 14, 0)');
-        ctx.fillStyle = gRight;
-        ctx.fillRect(x + w - feather, y - 1, feather + 1, h + 2);
-      }
       ctx.restore();
     }
 
@@ -2231,24 +2565,39 @@
         }
       }
 
-      // 2. Draw current active master astronomical image centered at exact world coordinates
-      if (diffMode) {
-        const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
-        const diffVis = diffLayer ? diffLayer.visible : true;
-        if (diffVis && realDiffImg && realDiffImg.complete) {
-          const afov = realDiffImg.fov || currentTileFov;
-          const rw = afov * pixelsPerArcmin;
-          const rh = afov * pixelsPerArcmin;
-          ctx.globalAlpha = diffAlpha;
-          ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw, rh);
-          ctx.globalAlpha = 1.0;
+      // 2. Draw all cached tiles in the continuous spatial map (Google Maps style multi-tile mosaic)
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+      if (spatialTileCache.size > 0) {
+        for (const tile of spatialTileCache.values()) {
+          const draArcmin = (tile.ra - camera.ra) * 60.0 * cosDec;
+          const ddecArcmin = (tile.dec - camera.dec) * 60.0;
+          const tx = - draArcmin * pixelsPerArcmin;
+          const ty = - ddecArcmin * pixelsPerArcmin;
+          const tfov = tile.fov || 3.0;
+          const tw = tfov * pixelsPerArcmin;
+          const th = tfov * pixelsPerArcmin;
+
+          const tileImg = diffMode ? tile.diffImg : (currentFrame === 1 ? tile.epoch1Img : tile.epoch2Img);
+          if (tileImg && tileImg.complete) {
+            if (diffMode) {
+              const diffAlpha = diffLayer ? diffLayer.opacity : 1.0;
+              ctx.save();
+              ctx.globalAlpha = diffAlpha;
+              ctx.drawImage(tileImg, tx - tw / 2, ty - th / 2, tw, th);
+              ctx.restore();
+            } else {
+              drawFeatheredImage(ctx, tileImg, tx - tw / 2, ty - th / 2, tw, th, layerAlpha);
+            }
+          }
         }
-      } else {
-        if (isVisible && activeImg && activeImg.complete) {
-          const afov = activeImg.fov || currentTileFov;
-          const rw = afov * pixelsPerArcmin;
-          const rh = afov * pixelsPerArcmin;
-          const effAlpha = (prevEpoch1Img && crossFadeAlpha < 1.0) ? (crossFadeAlpha * layerAlpha) : layerAlpha;
+      } else if (isVisible && activeImg && activeImg.complete) {
+        const afov = activeImg.fov || currentTileFov;
+        const rw = afov * pixelsPerArcmin;
+        const rh = afov * pixelsPerArcmin;
+        const effAlpha = (prevEpoch1Img && crossFadeAlpha < 1.0) ? (crossFadeAlpha * layerAlpha) : layerAlpha;
+        if (diffMode) {
+          ctx.drawImage(realDiffImg, -rw / 2, -rh / 2, rw, rh);
+        } else {
           drawFeatheredImage(ctx, activeImg, -rw / 2, -rh / 2, rw, rh, effAlpha);
         }
       }
@@ -2269,50 +2618,6 @@
       if (gaiaVis) {
         drawGaiaOverlay(ctx, pixelsPerArcmin, gaiaAlpha, currentTileFov);
       }
-
-      // 5. Issue #10: Continuous Raytracing Sky Tiling & adjacent boundary preview
-      if (camera.zoom < 0.98 || Math.abs(camera.panX) > 60 || Math.abs(camera.panY) > 60) {
-        drawAdjacentSkyTiling(ctx, pixelsPerArcmin, currentTileFov);
-      }
-
-      ctx.restore();
-    }
-
-    // =========================================================================
-    // CONTINUOUS SKY TILING RAYCASTER (Issue #10)
-    // =========================================================================
-    function drawAdjacentSkyTiling(ctx, pixelsPerArcmin) {
-      const tileFovArcmin = 3.0;
-      const tileSize = tileFovArcmin * pixelsPerArcmin;
-      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
-
-      const offsets = [
-        [-1, 0], [1, 0], [0, -1], [0, 1],
-        [-1, -1], [1, -1], [-1, 1], [1, 1]
-      ];
-
-      ctx.save();
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
-      ctx.lineWidth = 1.0;
-      ctx.setLineDash([4, 6]);
-
-      offsets.forEach(([ox, oy]) => {
-        const cx = ox * tileSize;
-        const cy = oy * tileSize;
-        const x0 = cx - tileSize / 2;
-        const y0 = cy - tileSize / 2;
-
-        ctx.strokeRect(x0, y0, tileSize, tileSize);
-
-        const dra = - (ox * tileFovArcmin / 60.0) / cosDec;
-        const ddec = - (oy * tileFovArcmin / 60.0);
-        const tileRA = (camera.ra + dra).toFixed(3);
-        const tileDec = (camera.dec + ddec).toFixed(3);
-
-        ctx.fillStyle = 'rgba(148, 163, 184, 0.40)';
-        ctx.font = '9px monospace';
-        ctx.fillText(`${tileRA}°, ${tileDec}°`, x0 + 8, y0 + 16);
-      });
 
       ctx.restore();
     }
@@ -2489,7 +2794,7 @@
 
       for (let i = 0; i < gaiaSources.length; i++) {
         const src = gaiaSources[i];
-        
+
         // Propagate coordinate with Gaia DR3 proper motion to target epoch
         const cosDec = Math.cos(src.dec * Math.PI / 180.0) || 1.0;
         const propRa = src.ra + (src.pm_ra_mas_yr ? (src.pm_ra_mas_yr / 1000.0 / 3600.0 * dt) / cosDec : 0);
@@ -2663,7 +2968,6 @@
       }
 
       checkAndTriggerLODUpdate();
-      checkAndTriggerSlewToNewField();
     }
 
     // =========================================================================
@@ -2753,24 +3057,16 @@
       crossFadeAnimId = requestAnimationFrame(stepFade);
     }
 
-    async function streamLODTile(targetLODTier) {
-      if (isLODStreaming) return;
-      isLODStreaming = true;
-      const reqLOD = targetLODTier;
-      const reqFov = (reqLOD === 2) ? 8.0 : ((reqLOD === 0) ? 1.5 : 3.0);
+    async function streamTileAt(ra, dec, fov, lod) {
+      const tileKey = `${ra.toFixed(4)}_${dec.toFixed(4)}_${lod}`;
+      if (spatialTileCache.has(tileKey) || inFlightTileRequests.has(tileKey)) return;
+      inFlightTileRequests.add(tileKey);
 
       try {
-        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(camera.ra)}&dec=${encodeURIComponent(camera.dec)}&fov=${reqFov}&lod=${reqLOD}`;
-        if (currentTargetKey) url += `&target=${currentTargetKey}`;
-
+        let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${fov}&lod=${lod}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        activeCutoutData = data;
-
-        const fovArcmin = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : reqFov;
-
-        // Preload before swapping (Zero screen tear / flicker)
         const [newImg1, newImg2, newImgDiff] = await Promise.all([
           preloadImage(data.epochs[0].image_data),
           preloadImage(data.epochs[1].image_data),
@@ -2778,23 +3074,48 @@
         ]);
 
         if (newImg1 && newImg2) {
-          newImg1.fov = fovArcmin;
-          newImg2.fov = fovArcmin;
-          if (newImgDiff) newImgDiff.fov = fovArcmin;
+          const actualFov = (data.coordinates && data.coordinates.fov_arcmin) ? data.coordinates.fov_arcmin : fov;
+          newImg1.fov = actualFov;
+          newImg2.fov = actualFov;
+          if (newImgDiff) newImgDiff.fov = actualFov;
 
-          // Double buffer previous images for smooth cross-fade
-          prevEpoch1Img = realEpoch1Img;
-          prevEpoch2Img = realEpoch2Img;
-          prevDiffImg = realDiffImg;
+          spatialTileCache.set(tileKey, {
+            key: tileKey,
+            ra: (data.coordinates && data.coordinates.ra_deg) ? data.coordinates.ra_deg : ra,
+            dec: (data.coordinates && data.coordinates.dec_deg) ? data.coordinates.dec_deg : dec,
+            fov: actualFov,
+            lod: lod,
+            epoch1Img: newImg1,
+            epoch2Img: newImg2,
+            diffImg: newImgDiff
+          });
 
+          // Also set as active master image if this is the center view
           realEpoch1Img = newImg1;
           realEpoch2Img = newImg2;
           realDiffImg = newImgDiff;
-          currentLOD = reqLOD;
 
-          updateLODBadge(currentLOD);
-          startLODCrossFade();
+          drawFrame();
         }
+      } catch (err) {
+        console.warn("Tile streaming notice:", err);
+      } finally {
+        inFlightTileRequests.delete(tileKey);
+      }
+    }
+
+    async function streamLODTile(targetLODTier) {
+      if (isLODStreaming) return;
+      isLODStreaming = true;
+      const reqLOD = targetLODTier;
+      const reqFov = (reqLOD === 2) ? 8.0 : ((reqLOD === 0) ? 1.5 : 3.0);
+      const center = getCurrentCoordinates();
+
+      try {
+        await streamTileAt(center.ra, center.dec, reqFov, reqLOD);
+        currentLOD = reqLOD;
+        updateLODBadge(currentLOD);
+        startLODCrossFade();
       } catch (err) {
         console.warn("LOD streaming background notice:", err);
       } finally {
@@ -2802,14 +3123,60 @@
       }
     }
 
+    function checkAndStreamVisibleTiles() {
+      const center = getCurrentCoordinates();
+      const targetLOD = getTargetLODFromZoom();
+      const cosDec = Math.cos(camera.dec * Math.PI / 180.0) || 1.0;
+
+      // 1. Check if the active center is already cached at target LOD
+      let hasCenterLOD = false;
+      for (const tile of spatialTileCache.values()) {
+        const dra = (tile.ra - center.ra) * 60.0 * cosDec;
+        const ddec = (tile.dec - center.dec) * 60.0;
+        const distArcmin = Math.hypot(dra, ddec);
+        if (distArcmin < 1.2 && tile.lod === targetLOD) {
+          hasCenterLOD = true;
+          break;
+        }
+      }
+
+      if (!hasCenterLOD) {
+        const reqFov = (targetLOD === 2) ? 8.0 : ((targetLOD === 0) ? 1.5 : 3.0);
+        streamTileAt(center.ra, center.dec, reqFov, targetLOD);
+      }
+
+      // 2. When zoomed out, pre-fetch adjacent tiles so wide area is continuous without empty patches
+      if (camera.zoom < 0.95) {
+        const step = 2.8 / 60.0;
+        const neighbors = [
+          [center.ra + step / cosDec, center.dec],
+          [center.ra - step / cosDec, center.dec],
+          [center.ra, center.dec + step],
+          [center.ra, center.dec - step]
+        ];
+        for (const [nRa, nDec] of neighbors) {
+          let cached = false;
+          for (const t of spatialTileCache.values()) {
+            const dra = (t.ra - nRa) * 60.0 * cosDec;
+            const ddec = (t.dec - nDec) * 60.0;
+            if (Math.hypot(dra, ddec) < 1.2) { cached = true; break; }
+          }
+          if (!cached) {
+            streamTileAt(nRa, nDec, 3.0, 1);
+          }
+        }
+      }
+    }
+
     function checkAndTriggerLODUpdate() {
       const newLOD = getTargetLODFromZoom();
       updateLODBadge(newLOD);
       if (newLOD !== currentLOD) {
+        currentLOD = newLOD;
         if (lodDebounceTimer) clearTimeout(lodDebounceTimer);
         lodDebounceTimer = setTimeout(() => {
-          streamLODTile(newLOD);
-        }, 220); // 220ms debounce for rapid zoom wheel / WASD flight
+          checkAndStreamVisibleTiles();
+        }, 180);
       }
     }
 
@@ -2830,10 +3197,10 @@
       try {
         let url = `${BACKEND_URL}/cutout?ra=${encodeURIComponent(ra)}&dec=${encodeURIComponent(dec)}&fov=${reqFov}&lod=${currentLOD}`;
         if (targetKey) url += `&target=${targetKey}`;
-        
+
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        
+
         const data = await res.json();
         activeCutoutData = data;
 
@@ -2865,10 +3232,24 @@
         if (imgDiff) { imgDiff.fov = initFov; realDiffImg = imgDiff; }
         if (imgMask) { imgMask.fov = initFov; realCoverageMaskImg = imgMask; }
 
+        // Store into spatial tile cache
+        const tileKey = `${camera.ra.toFixed(4)}_${camera.dec.toFixed(4)}_${currentLOD}`;
+        spatialTileCache.set(tileKey, {
+          key: tileKey,
+          ra: camera.ra,
+          dec: camera.dec,
+          fov: initFov,
+          lod: currentLOD,
+          epoch1Img: img1,
+          epoch2Img: img2,
+          diffImg: imgDiff,
+          maskImg: imgMask
+        });
+
         const mosaicEl = document.getElementById('vpMosaicBadge');
         if (mosaicEl) {
           mosaicEl.classList.remove('hidden');
-          mosaicEl.innerText = "Optical Lens: Contiguous NASA FITS Master Field";
+          mosaicEl.innerText = "Continuous Multi-Res Map (Active Spatial Cache)";
         }
 
         const title = targetName || data.target || `Sky Field (RA ${camera.ra.toFixed(4)}°, Dec ${camera.dec.toFixed(4)}°)`;
@@ -3094,6 +3475,7 @@
 
     function selectTarget(key) {
       currentTargetKey = key;
+      spatialTileCache.clear();
       const t = TARGETS[key];
       camera.ra = t.raDeg;
       camera.dec = t.decDeg;
@@ -3249,7 +3631,7 @@
       if (!chartCanvas) return;
       const ctxChart = chartCanvas.getContext('2d');
       const wlLabels = [];
-      for(let i = 0; i < 102; i++) wlLabels.push((0.75 + (i / 101) * 4.25).toFixed(2));
+      for (let i = 0; i < 102; i++) wlLabels.push((0.75 + (i / 101) * 4.25).toFixed(2));
 
       // Custom Plugin: SPHEREx Array Background Bands & Molecular Lines
       const spherexArrayPlugin = {
@@ -3598,7 +3980,7 @@
         try {
           aladinInstance.gotoRaDec(camera.ra, camera.dec);
           aladinInstance.setFov(Math.max(0.05, camera.fov / 60.0));
-        } catch(e) {}
+        } catch (e) { }
       }
     }
 
@@ -3620,7 +4002,7 @@
           if (document.pointerLockElement !== canvas) {
             canvas.requestPointerLock();
           }
-        } catch(err) {}
+        } catch (err) { }
       } else {
         toolWalk.classList.remove('blender-btn-orange-active');
         walkHudBanner.classList.add('hidden');
@@ -3630,7 +4012,7 @@
           if (document.pointerLockElement === canvas) {
             document.exitPointerLock();
           }
-        } catch(e) {}
+        } catch (e) { }
       }
     }
 
@@ -3667,6 +4049,7 @@
     window.addEventListener('mouseup', () => {
       if (isDragging) {
         isDragging = false;
+        checkAndStreamVisibleTiles();
       }
     });
 
@@ -3897,54 +4280,54 @@
     // Research verdict: YES with strict design constraints
     // =========================================================================
     (function initCommandPalette() {
-      const overlay    = document.getElementById('cmdPaletteOverlay');
-      const input      = document.getElementById('cmdInput');
-      const list       = document.getElementById('cmdResultsList');
-      const openBtn    = document.getElementById('cmdPaletteBtn');
+      const overlay = document.getElementById('cmdPaletteOverlay');
+      const input = document.getElementById('cmdInput');
+      const list = document.getElementById('cmdResultsList');
+      const openBtn = document.getElementById('cmdPaletteBtn');
 
       // ---- Command Index (21 commands + natural language aliases) ----
       const CMD_INDEX = [
         // 🌟 Astronomical Targets
-        { group: '🌟 Targets', icon: 'crosshair', label: 'WISE 0855-0714 (Cold Y-Dwarf)', sub: 'RA 133.795°  Dec -7.245°  · 8.12"/yr', aliases: ['cold brown dwarf','planet x candidate','infrared only','y dwarf','wise 0855'], action: () => selectTarget('wise0855') },
-        { group: '🌟 Targets', icon: 'crosshair', label: "Barnard's Star (Proper Motion)", sub: 'RA 269.452°  Dec +4.693°  · 10.36"/yr', aliases: ['barnard','fast mover','red dwarf','proper motion','highest pm'], action: () => selectTarget('barnard') },
-        { group: '🌟 Targets', icon: 'crosshair', label: 'Epsilon Indi B (Binary Brown Dwarf)', sub: 'RA 331.044°  Dec -56.783°  · 4.70"/yr', aliases: ['eps indi','epsilon indi','binary','t dwarf','brown dwarf companion'], action: () => selectTarget('epsindi') },
-        { group: '🌟 Targets', icon: 'crosshair', label: 'RW Aurigae (Variable T-Tauri Star)', sub: 'RA 76.956°  Dec +30.401°  · Variable Flux', aliases: ['rw aur','variable star','t tauri','dimming','young star'], action: () => selectTarget('rwaur') },
-        { group: '🌟 Targets', icon: 'crosshair', label: 'R Draconis (Mira Pulsating Giant)', sub: 'RA 248.168°  Dec +66.755°  · 245-day cycle', aliases: ['r draconis','mira','pulsating','giant','periodic','red giant'], action: () => selectTarget('rdraconis') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'WISE 0855-0714 (Cold Y-Dwarf)', sub: 'RA 133.795°  Dec -7.245°  · 8.12"/yr', aliases: ['cold brown dwarf', 'planet x candidate', 'infrared only', 'y dwarf', 'wise 0855'], action: () => selectTarget('wise0855') },
+        { group: '🌟 Targets', icon: 'crosshair', label: "Barnard's Star (Proper Motion)", sub: 'RA 269.452°  Dec +4.693°  · 10.36"/yr', aliases: ['barnard', 'fast mover', 'red dwarf', 'proper motion', 'highest pm'], action: () => selectTarget('barnard') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'Epsilon Indi B (Binary Brown Dwarf)', sub: 'RA 331.044°  Dec -56.783°  · 4.70"/yr', aliases: ['eps indi', 'epsilon indi', 'binary', 't dwarf', 'brown dwarf companion'], action: () => selectTarget('epsindi') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'RW Aurigae (Variable T-Tauri Star)', sub: 'RA 76.956°  Dec +30.401°  · Variable Flux', aliases: ['rw aur', 'variable star', 't tauri', 'dimming', 'young star'], action: () => selectTarget('rwaur') },
+        { group: '🌟 Targets', icon: 'crosshair', label: 'R Draconis (Mira Pulsating Giant)', sub: 'RA 248.168°  Dec +66.755°  · 245-day cycle', aliases: ['r draconis', 'mira', 'pulsating', 'giant', 'periodic', 'red giant'], action: () => selectTarget('rdraconis') },
 
         // 🗂️ Workspace Views
-        { group: '🗂️ Views', icon: 'split', label: 'View: Blink Comparator', sub: 'Multi-epoch flipbook animation (default)', aliases: ['blink','flipbook','animation','epochs','compare'], action: () => document.getElementById('wsBlink').click() },
-        { group: '🗂️ Views', icon: 'layers', label: 'View: Difference Imaging', sub: 'I₂ − I₁  Alard-Lupton subtraction', aliases: ['difference','diff','subtract','alard lupton','residual','dipole'], action: () => document.getElementById('wsDiff').click() },
-        { group: '🗂️ Views', icon: 'activity', label: 'View: 102-Band Spectra', sub: 'SPHEREx infrared SED 0.75–5.0 μm', aliases: ['spectra','spectrum','sed','infrared','band','102','wavelength'], action: () => document.getElementById('wsSpec').click() },
-        { group: '🗂️ Views', icon: 'globe', label: 'View: Aladin Sky Atlas', sub: 'CDS Strasbourg interactive sky map', aliases: ['aladin','atlas','sky map','cds','interactive','hips'], action: () => document.getElementById('wsAladin').click() },
+        { group: '🗂️ Views', icon: 'split', label: 'View: Blink Comparator', sub: 'Multi-epoch flipbook animation (default)', aliases: ['blink', 'flipbook', 'animation', 'epochs', 'compare'], action: () => document.getElementById('wsBlink').click() },
+        { group: '🗂️ Views', icon: 'layers', label: 'View: Difference Imaging', sub: 'I₂ − I₁  Alard-Lupton subtraction', aliases: ['difference', 'diff', 'subtract', 'alard lupton', 'residual', 'dipole'], action: () => document.getElementById('wsDiff').click() },
+        { group: '🗂️ Views', icon: 'activity', label: 'View: 102-Band Spectra', sub: 'SPHEREx infrared SED 0.75–5.0 μm', aliases: ['spectra', 'spectrum', 'sed', 'infrared', 'band', '102', 'wavelength'], action: () => document.getElementById('wsSpec').click() },
+        { group: '🗂️ Views', icon: 'globe', label: 'View: Aladin Sky Atlas', sub: 'CDS Strasbourg interactive sky map', aliases: ['aladin', 'atlas', 'sky map', 'cds', 'interactive', 'hips'], action: () => document.getElementById('wsAladin').click() },
 
         // ⚡ Shading / Colormaps
-        { group: '⚡ Shading', icon: 'circle', label: 'Shading: Grayscale (Telescope Default)', sub: 'Authentic astronomical photometric gray', aliases: ['gray','grayscale','default','monochrome','standard'], action: () => document.getElementById('shadeGrayscale').click() },
-        { group: '⚡ Shading', icon: 'moon', label: 'Shading: Inverted (DS9 Print Style)', sub: 'Dark stars on light background', aliases: ['invert','inverted','ds9','print','white background','negative'], action: () => document.getElementById('shadeInverted').click() },
-        { group: '⚡ Shading', icon: 'thermometer', label: 'Shading: Thermal Infrared Color', sub: 'False-color heat-map rendering', aliases: ['thermal','heat','infrared','false color','colormap','fire'], action: () => document.getElementById('shadeThermal').click() },
+        { group: '⚡ Shading', icon: 'circle', label: 'Shading: Grayscale (Telescope Default)', sub: 'Authentic astronomical photometric gray', aliases: ['gray', 'grayscale', 'default', 'monochrome', 'standard'], action: () => document.getElementById('shadeGrayscale').click() },
+        { group: '⚡ Shading', icon: 'moon', label: 'Shading: Inverted (DS9 Print Style)', sub: 'Dark stars on light background', aliases: ['invert', 'inverted', 'ds9', 'print', 'white background', 'negative'], action: () => document.getElementById('shadeInverted').click() },
+        { group: '⚡ Shading', icon: 'thermometer', label: 'Shading: Thermal Infrared Color', sub: 'False-color heat-map rendering', aliases: ['thermal', 'heat', 'infrared', 'false color', 'colormap', 'fire'], action: () => document.getElementById('shadeThermal').click() },
 
         // ⚡ Overlay Controls
-        { group: '⚡ Actions', icon: 'sparkles', label: 'Toggle Gaia DR3 Astrometry Overlay', sub: 'ESA proper motion vectors & optical cross-match', aliases: ['gaia','dr3','astrometry','proper motion','overlay','toggle gaia','esa','cross match'], action: () => document.getElementById('toggleGaia').click() },
+        { group: '⚡ Actions', icon: 'sparkles', label: 'Toggle Gaia DR3 Astrometry Overlay', sub: 'ESA proper motion vectors & optical cross-match', aliases: ['gaia', 'dr3', 'astrometry', 'proper motion', 'overlay', 'toggle gaia', 'esa', 'cross match'], action: () => document.getElementById('toggleGaia').click() },
 
         // ⚡ Navigation
-        { group: '⚡ Navigation', icon: 'focus', label: 'Recenter on Target Object', sub: 'Reset pan — snap to field center', aliases: ['recenter','center','home','reset pan','snap','origin'], action: () => document.getElementById('toolRecenter').click() },
-        { group: '⚡ Navigation', icon: 'scan', label: 'Reset Zoom to 1:1', sub: 'Return to standard 1.0× zoom level', aliases: ['reset zoom','zoom','1x','1:1','zoom out','scale'], action: () => document.getElementById('toolResetZoom').click() },
-        { group: '⚡ Navigation', icon: 'gamepad-2', label: 'Enter Walk Navigation Mode', sub: 'WASD flight through the sky (Shift+`)', aliases: ['walk','wasd','fly','navigation','gamepad','3d fly'], action: () => document.getElementById('toolWalk').click() },
+        { group: '⚡ Navigation', icon: 'focus', label: 'Recenter on Target Object', sub: 'Reset pan — snap to field center', aliases: ['recenter', 'center', 'home', 'reset pan', 'snap', 'origin'], action: () => document.getElementById('toolRecenter').click() },
+        { group: '⚡ Navigation', icon: 'scan', label: 'Reset Zoom to 1:1', sub: 'Return to standard 1.0× zoom level', aliases: ['reset zoom', 'zoom', '1x', '1:1', 'zoom out', 'scale'], action: () => document.getElementById('toolResetZoom').click() },
+        { group: '⚡ Navigation', icon: 'gamepad-2', label: 'Enter Walk Navigation Mode', sub: 'WASD flight through the sky (Shift+`)', aliases: ['walk', 'wasd', 'fly', 'navigation', 'gamepad', '3d fly'], action: () => document.getElementById('toolWalk').click() },
 
         // ⚡ FOV Presets
-        { group: '⚡ FOV Presets', icon: 'zoom-in', label: "FOV 1.0' — Deep Core (Hero Mode)", sub: 'Unbinned sub-pixel 1024p — finest detail', aliases: ["fov 1","1 arcmin","deep","hero","1024p","sub pixel","micro arcsec"], action: () => { document.getElementById('selectFOV').value = '1.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
-        { group: '⚡ FOV Presets', icon: 'circle-dot', label: "FOV 3.0' — Standard Science (Default)", sub: 'HD 720p science-grade · default view', aliases: ["fov 3","3 arcmin","standard","default fov","720p","science"], action: () => { document.getElementById('selectFOV').value = '3.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
-        { group: '⚡ FOV Presets', icon: 'zoom-out', label: "FOV 5.0' — Medium Wide Field", sub: 'Wider context view for fast movers', aliases: ["fov 5","5 arcmin","wide","medium","context"], action: () => { document.getElementById('selectFOV').value = '5.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
-        { group: '⚡ FOV Presets', icon: 'maximize', label: "FOV 15.0' — Galactic Transit (Max Wide)", sub: '360p overview · fast solar system scan', aliases: ["fov 15","15 arcmin","max","galactic","transit","360p","wide field","solar system"], action: () => { document.getElementById('selectFOV').value = '15.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); }},
+        { group: '⚡ FOV Presets', icon: 'zoom-in', label: "FOV 1.0' — Deep Core (Hero Mode)", sub: 'Unbinned sub-pixel 1024p — finest detail', aliases: ["fov 1", "1 arcmin", "deep", "hero", "1024p", "sub pixel", "micro arcsec"], action: () => { document.getElementById('selectFOV').value = '1.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); } },
+        { group: '⚡ FOV Presets', icon: 'circle-dot', label: "FOV 3.0' — Standard Science (Default)", sub: 'HD 720p science-grade · default view', aliases: ["fov 3", "3 arcmin", "standard", "default fov", "720p", "science"], action: () => { document.getElementById('selectFOV').value = '3.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); } },
+        { group: '⚡ FOV Presets', icon: 'zoom-out', label: "FOV 5.0' — Medium Wide Field", sub: 'Wider context view for fast movers', aliases: ["fov 5", "5 arcmin", "wide", "medium", "context"], action: () => { document.getElementById('selectFOV').value = '5.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); } },
+        { group: '⚡ FOV Presets', icon: 'maximize', label: "FOV 15.0' — Galactic Transit (Max Wide)", sub: '360p overview · fast solar system scan', aliases: ["fov 15", "15 arcmin", "max", "galactic", "transit", "360p", "wide field", "solar system"], action: () => { document.getElementById('selectFOV').value = '15.0'; document.getElementById('selectFOV').dispatchEvent(new Event('change')); } },
       ];
 
       // ---- Fuzzy scoring ----
       function fuzzyScore(cmd, query) {
         const q = query.toLowerCase().trim();
         if (!q) return 100; // show all when empty
-        const label   = cmd.label.toLowerCase();
-        const sub     = (cmd.sub || '').toLowerCase();
+        const label = cmd.label.toLowerCase();
+        const sub = (cmd.sub || '').toLowerCase();
         const aliases = (cmd.aliases || []).join(' ');
-        const full    = `${label} ${sub} ${aliases}`;
+        const full = `${label} ${sub} ${aliases}`;
         // Exact substring
         if (label.includes(q)) return 90;
         if (sub.includes(q)) return 70;
@@ -4011,7 +4394,7 @@
       }
 
       function escHtml(str) {
-        return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        return str.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       }
 
       function setActive(idx) {
@@ -4029,7 +4412,7 @@
         if (!cmd) return;
         closePalette();
         // Small delay to allow UI update before action fires
-        setTimeout(() => { try { cmd.action(); } catch(e) { console.warn('Command palette action error:', e); } }, 60);
+        setTimeout(() => { try { cmd.action(); } catch (e) { console.warn('Command palette action error:', e); } }, 60);
       }
 
       function openPalette() {
@@ -4073,7 +4456,7 @@
 
       // Global Ctrl+K / Cmd+K shortcut
       document.addEventListener('keydown', (e) => {
-        const isTypingInInput = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
+        const isTypingInInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
         // Ctrl+K or Cmd+K
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
           // Don't block if palette is already open and input is focused — that's normal typing
@@ -4496,7 +4879,7 @@
 
       startFlipbook();
     });
-  
+
 
     // =========================================================================
     // NEW UI STATE & TAB MANAGERS (Observatory Redesign)
@@ -4947,7 +5330,7 @@
           const ra = cand.ra ? cand.ra.toFixed(5) : '--';
           const dec = cand.dec ? cand.dec.toFixed(5) : '--';
           const type = cand.object_type || 'Unknown Mover';
-          
+
           html += `
             <div class="p-2.5 bg-space-950/80 rounded-lg border border-space-700/80 hover:border-space-600 transition space-y-1.5 cursor-pointer cand-item" data-ra="${ra}" data-dec="${dec}">
               <div class="flex items-center justify-between">
@@ -5070,9 +5453,9 @@
       if (e.key.toLowerCase() === 'f') {
         e.preventDefault();
         if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(() => {});
+          document.documentElement.requestFullscreen().catch(() => { });
         } else {
-          document.exitFullscreen().catch(() => {});
+          document.exitFullscreen().catch(() => { });
         }
         return;
       }
@@ -5383,8 +5766,9 @@
         showToast(`Slewing telescope to ${nameVal}...`, "info");
       });
     });
-    
-  
+
+
   </script>
 </body>
+
 </html>

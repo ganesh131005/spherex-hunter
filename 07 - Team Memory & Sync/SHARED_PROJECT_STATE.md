@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[CONTINUOUS MULTI-TILE SPATIAL MOSAIC & PER-TILE RESOLUTION STREAMING DEPLOYED (@darkodu)]**
+  - **Solved "Center Tile Alone Has High Resolution":**
+    - Previously, zooming in or panning only requested data for the original benchmark target center $(133.795^\circ, -7.245^\circ)$, leaving any panned adjacent areas or outer stars without high-resolution data.
+    - Implemented frustum-aware coordinate tracking in `checkAndStreamVisibleTiles`: wherever the user centers their view (`getCurrentCoordinates()`), zooming in dynamically triggers `streamTileAt` to fetch the Deep Core LOD 0 ($1.5'$) high-resolution cutout for *that specific region*.
+    - Replaced the artificial dashed empty wireframe boxes (`drawAdjacentSkyTiling`) with a true multi-tile spatial mosaic (`spatialTileCache`): every panned field remains rendered side-by-side seamlessly with soft edge feathering.
+    - Zero modal popups or camera jumping during panning; zero duplicate overlapping stamps; all tiles dynamically sharpen when zoomed in.
 - **[BRANCH INTEGRATION COMPLETE: `origin/main` MERGED INTO `darkodu/astro-backend` (@darkodu)]**
   - **Cutout Engine & Differencing Reconciliation:** Reconciled `backend/services/cutout_engine.py` by integrating live ZOGY differencing ($S_{\text{corr}}$ statistics) and Float32 array streaming with multi-survey catalog synthesis (`crossmatch_photometry` across Gaia DR3, 2MASS, and AllWISE), 6-array spectral date tracking, and non-simultaneous spectrum disclaimers.
   - **API & Endpoint Harmonization:** Reconciled `backend/main.py` preserving both unversioned Float32 raw streaming (`/api/cutout/raw`, `/api/cutout/raw/header`) and temporal observation timeline search (`/api/observations` with date/time range filtering).
