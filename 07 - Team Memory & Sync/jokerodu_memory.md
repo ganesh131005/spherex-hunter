@@ -3,6 +3,15 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[102-Band Spectrum 2D Spot Popups & Interactive Inspector Engine]**:
+  - Resolved missing popups on spots in the 102-band spectrum chart (e.g. WISE W2, molecular feature diamonds) where Y-flux offsets (e.g., 566 µJy vs 2224 µJy SED) and 1D category snapping caused Chart.js tooltips to be pulled to the top of the canvas or fail to trigger when hovering directly on the spots.
+  - Implemented 2D Euclidean hit-testing (`findNearestSpectrumSpot`) with a generous 26–30px radius detecting both Catalog Photometry diamonds and Molecular Signatures regardless of zoom level or vertical distance from the SED curve.
+  - Added floating interactive HTML popup card (`#specSpotPopup`) anchored directly to the spot displaying:
+    - 💎 Photometry: Band, Survey (`CatWISE2020` / `Live Archive Match`), Wavelength, Measured Flux ($\mu\text{Jy}$), Apparent Magnitude ($m$), and Model SED comparison.
+    - 🧊 Molecular Signatures: Molecule name, Wavelength, Detector Array, Channel, SED Flux, Science Context, and 1-click `[Band X ➔]` navigation.
+  - Pinned on click: clicking any spot locks the popup open and synchronizes the channel selection (`select102BandChannel(ch)`).
+  - Added high-contrast background pill labels for all catalog photometry points on canvas and tightened molecular title tolerances to prevent title hijacking.
+  - Added contract test `test_spectrum_102_band_spot_popup_and_2d_hit_contract` in `tests/test_ui_contract.py`. Verified 57/57 primary tests passing (100% green).
 - [x] **[Redefined Astronomical Light Curve Tab & Point-Specific Reticle Engine]**:
   - Transformed `#dockPanelLightCurve` into a full-fledged astronomical time-domain analysis workstation matching NASA/ZTF/AAVSO standards.
   - Implemented dynamic point selection: clicking any point with Select tool, Gaia star, or candidate dipole draws an authentic cyan reticle diamond on the viewport and dynamically fetches multi-epoch IR photometry (`/api/catalog/crossmatch`) for that coordinate.
