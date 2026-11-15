@@ -315,16 +315,16 @@
       <!-- Single Collective View Modes Tool with Popup Option (Blink, Difference, Spectra, Aladin Sky) -->
       <div class="relative shrink-0" id="viewModesMenuContainer">
         <!-- The Single View Modes Tool Button -->
-        <button id="btnViewModesTrigger" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to toggle Blink / open collective popup toolbar)">
-          <span id="viewModeActiveIconWrapper" class="flex items-center justify-center">
+        <button id="btnViewModesTrigger" onclick="window.toggleViewModesPopup && window.toggleViewModesPopup(); event.stopPropagation();" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-cyan-500/50 shadow-md hover:border-cyan-400 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective popup toolbar)">
+          <span id="viewModeActiveIconWrapper" class="flex items-center justify-center pointer-events-none">
             <i id="viewModeActiveIcon" data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
           </span>
-          <span id="viewModeActiveLabel" class="font-bold text-white tracking-wide">Blink</span>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" id="viewModeChevron"></i>
+          <span id="viewModeActiveLabel" class="font-bold text-white tracking-wide pointer-events-none">Blink</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200 pointer-events-none" id="viewModeChevron"></i>
         </button>
 
         <!-- Collective Popup Display Menu (Flyout anchored below the tool icon) -->
-        <div id="viewModesPopup" class="absolute top-full left-0 mt-2 w-72 bg-space-900/98 backdrop-blur-xl border border-cyan-500/60 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] p-2.5 z-50 flex flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
+        <div id="viewModesPopup" class="hidden absolute top-full left-0 mt-2 w-72 bg-space-900/98 backdrop-blur-xl border border-cyan-500/60 rounded-xl shadow-[0_12px_40px_rgba(0,0,0,0.85)] p-2.5 z-50 flex flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
           <div class="flex items-center justify-between px-2 py-1 text-[10px] text-gray-300 uppercase tracking-wider font-sans font-bold border-b border-space-800 pb-1.5 mb-1">
             <span class="flex items-center gap-1.5 text-cyan-300"><i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i> View Modes Toolbar</span>
             <div class="flex items-center gap-2">
@@ -5802,26 +5802,7 @@
     if (btnViewModesTrigger) {
       btnViewModesTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        // 1. Toggle popup toolbar visibility
         toggleViewModesPopup();
-
-        // 2. Make the Blink icon in top horizontal toolbar fully functional:
-        if (wsBlink) {
-          if (diffMode || !wsBlink.classList.contains('blender-btn-active')) {
-            // Activate Blink mode cleanly
-            wsBlink.click();
-          } else {
-            // Already in Blink mode: toggle flipbook play/pause & keep HUD active
-            if (typeof flipbookInterval !== 'undefined' && flipbookInterval) {
-              stopFlipbook();
-            } else {
-              startFlipbook();
-            }
-            if (typeof toggleBlinkHUD === 'function') toggleBlinkHUD(true);
-            drawFrame();
-            updateFrameLabel();
-          }
-        }
       });
     }
 

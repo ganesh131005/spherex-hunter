@@ -1132,10 +1132,10 @@ def test_viewport_draw_frame_canvas_transform_hygiene_and_cosdec_contract():
 
     # 1. Transform reset and full clear
     assert "ctx.setTransform(1, 0, 0, 1, 0, 0);" in html, "drawFrame must reset canvas transform before clearing"
-    
+
     # 2. cosDec declared in drawFrame
     assert "const cosDec = Math.cos((camera.dec * Math.PI) / 180.0)" in html, "drawFrame must define cosDec"
-    
+
     # 3. try/finally block around ctx.restore()
     assert "ctx.save();\n      try {" in html or "ctx.save();\r\n      try {" in html, "drawFrame must wrap canvas transform in try block"
     assert "} finally {\n        ctx.restore();\n      }" in html or "} finally {\r\n        ctx.restore();\r\n      }" in html, "drawFrame must restore canvas transform in finally block"
