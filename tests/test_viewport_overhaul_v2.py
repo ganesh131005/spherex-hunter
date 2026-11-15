@@ -234,14 +234,33 @@ def test_gaia_space_motion_and_residuals():
 # 6. Scoped Caching Engine & Quantized Keys (Step 5 / Amendment A5)
 # -----------------------------------------------------------------------------
 def test_scoped_caching_and_quantized_keys():
-    """Validates Step 5: Quantized integer micro-degree keys, idle prefetch and telemetry counters."""
+    """Validates Step 5: Quantized integer micro-degree keys, idle prefetch, HTTP 304 conditional ETag and telemetry counters."""
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+
     html = _read_index_html()
 
+    # 1. Scoped Storage and Telemetry Primitives
     assert "spherex_tile_store" in html, "Missing IndexedDB cache store name"
     assert "cacheTelemetry" in html, "Missing window.cacheTelemetry counters"
     assert "scheduleIdle" in html, "Missing scheduleIdle cross-browser fallback"
     assert "isDataSaverActive" in html, "Missing isDataSaverActive function"
-    assert "Math.round(parseFloat(ra) * 1e5)" in html or "Math.round(" in html, "Missing micro-degree quantization logic"
+    assert "Math.round(parseFloat(ra) * 1e5)" in html, "Missing micro-degree quantization logic"
+    assert "byteBudgetUsed" in html, "Missing byteBudgetUsed in telemetry"
+    assert "evictions" in html, "Missing evictions counter in telemetry"
+
+    # 2. Backend HTTP ETag & Conditional 304 Revalidation Test
+    client = TestClient(app)
+    resp = client.get("/cutout?ra=133.79513&dec=-7.24515&target=wise0855&lod=1")
+    assert resp.status_code == 200
+    etag = resp.headers.get("ETag")
+    assert etag is not None, "Missing ETag in /cutout response"
+
+    # Send conditional If-None-Match
+    resp_304 = client.get("/cutout?ra=133.79513&dec=-7.24515&target=wise0855&lod=1", headers={"If-None-Match": etag})
+    assert resp_304.status_code == 304, f"Expected HTTP 304 Not Modified, got {resp_304.status_code}"
+    assert resp_304.headers.get("ETag") == etag
 
 
 # -----------------------------------------------------------------------------
