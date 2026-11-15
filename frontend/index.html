@@ -735,8 +735,8 @@
           <span class="text-[8px] font-mono leading-none">Center</span>
         </button>
 
-        <!-- Reset Zoom 1:1 -->
-        <button id="toolResetZoom" class="w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-gray-300 hover:text-white transition" title="Reset Zoom to 1.0x (1)">
+        <!-- Reset Zoom 1:1 (Removed from rail; unified into zoom bar reset icon per user request) -->
+        <button id="toolResetZoom" class="hidden" title="Reset Zoom to 1.0x (1)" aria-hidden="true" tabindex="-1">
           <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-gray-300"></i>
           <span class="text-[8px] font-mono leading-none">1:1</span>
         </button>
@@ -7644,10 +7644,8 @@
       drawFrame();
     });
 
-    document.getElementById('toolResetZoom').addEventListener('click', () => {
-      camera.zoom = 1.0;
-      updateCoordinateReadouts();
-      drawFrame();
+    document.getElementById('toolResetZoom')?.addEventListener('click', () => {
+      document.getElementById('btnVpZoomReset')?.click();
     });
 
     // Mouse drag / pan handling
