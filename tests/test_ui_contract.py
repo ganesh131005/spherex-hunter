@@ -79,14 +79,21 @@ def test_issue_20_friendly_error_banner_and_retry_contract():
 
 
 def test_issue_21_investigations_drawer_contract():
-    """Validates Issue #21: Previous Analyses / My Investigations persistence, drawer modal, and stale notice."""
+    """Validates Issue #21: Previous Analyses / My Investigations persistence, drawer modal, and relocation to Cands toolbar above flagged candidates."""
     html, soup = _get_html_and_soup()
 
-    # 1. Topbar Investigations Button & Count Badge
+    # 1. Investigations Button & Count Badge in Cands Toolbar
     btn_open = soup.find(id="btnOpenInvestigations")
-    assert btn_open is not None, "Missing #btnOpenInvestigations button in header"
+    assert btn_open is not None, "Missing #btnOpenInvestigations button"
     badge = soup.find(id="investigationsCountBadge")
     assert badge is not None, "Missing #investigationsCountBadge"
+
+    # Verify relocation to Cands panel (#inspectorPanelCandidates) above flagged candidates
+    cands_panel = soup.find(id="inspectorPanelCandidates")
+    assert cands_panel is not None, "Missing #inspectorPanelCandidates"
+    inv_bar = cands_panel.find(id="candsMyInvestigationsBar")
+    assert inv_bar is not None, "Missing #candsMyInvestigationsBar in Cands toolbar"
+    assert inv_bar.find(id="btnOpenInvestigations") is not None, "#btnOpenInvestigations must be inside #candsMyInvestigationsBar"
 
     # 2. Investigations Modal & List Container
     modal = soup.find(id="investigationsModal")

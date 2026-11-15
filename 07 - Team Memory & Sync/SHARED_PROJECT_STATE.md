@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[📂 RELOCATED 'MY INVESTIGATIONS' TO CANDS TAB IN RIGHT VERTICAL TOOLBAR (@coolodu)]**
+  - **Feature:** Moved 'My Investigations' (`#candsMyInvestigationsBar`, `#btnOpenInvestigations`, `#investigationsCountBadge`) from the upper horizontal toolbar into the Scene Collection right vertical toolbar (`#propertiesSidebar`).
+  - **Exact Placement:** Located inside the 'Cands' tab (`#inspectorPanelCandidates`) directly above the 'Flagged Candidates' section, featuring a stylish purple/amethyst card with live session count badge, folder-clock icon, and quick 'Open' action button.
+  - **Full Functional Preservation:** Clicking `#btnOpenInvestigations` opens the Save Analysis & My Investigations session modal (`#investigationsModal`) with session restore, renaming, notes editing, and deletion.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (28/28) and physically verified in live browser subagent ([final_step_97.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_97.png)).
 - **[🪐 CONSOLIDATED TARGET PRESETS INTO SINGLE TOOL ICON & COLLECTIVE POPUP (@coolodu)]**
   - **Feature:** Replaced the wide row of curated target preset buttons in the upper horizontal toolbar with a single compact tool button (`#btnTargetPresetsTrigger`) and collective popup toolbar (`#targetPresetsPopup`), matching the architecture and styling of the Blink View Modes toolbar.
   - **Single Tool Trigger:** Displays the active target's icon (`#targetPresetsActiveIcon`), active target name (`#targetPresetsActiveLabel`), and dynamic rotating chevron (`#targetPresetsChevron`). Clicking re-centers the observatory canvas and toggles the popup menu.

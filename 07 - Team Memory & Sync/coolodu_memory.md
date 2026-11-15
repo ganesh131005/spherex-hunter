@@ -3,11 +3,18 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and physically verified consolidation of curated target preset buttons (WISE 0855, Barnard's Star, Epsilon Indi B, RW Aurigae, R Draconis, Orion) in the top upper horizontal toolbar into a single compact tool icon (`#btnTargetPresetsTrigger`) with an interactive collective popup toolbar (`#targetPresetsPopup`) formatted identically to the Blink View Modes toolbar on `coolodu/web-frontend`. Tested live in browser subagent, verified target switching and telescope slew, and confirmed all 28 UI contract tests pass 100% green.
+- **Current Task:** Completed and physically verified relocation of 'My Investigations' from the upper horizontal toolbar to the top of the Cands tab in the Scene Collection right vertical toolbar (`#propertiesSidebar`), positioned directly above Flagged Candidates on `coolodu/web-frontend`. Tested live in browser subagent, confirmed modal opening/closing and badge synchronization, and verified all 28 UI contract tests pass 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Relocate 'My Investigations' to Cands Tab in Right Vertical Toolbar]**:
+  - Removed `#btnOpenInvestigations` from the upper horizontal toolbar, streamlining top header real estate.
+  - Placed dedicated My Investigations toolbar card (`#candsMyInvestigationsBar`) at the top of the Cands tab (`#inspectorPanelCandidates`) in the Scene Collection right vertical toolbar, directly above the 'Flagged Candidates' section.
+  - Retained `#btnOpenInvestigations` ("Open" action) and `#investigationsCountBadge` with persistent session counter.
+  - Preserved full interactive functionality: clicking `#btnOpenInvestigations` opens `#investigationsModal` dialog with full CRUD, renaming, snapshot deletion, and session restore capabilities.
+  - Updated contract test `test_issue_21_investigations_drawer_contract()` in `tests/test_ui_contract.py`. All 28 tests passing.
+  - Verified live in browser subagent ([`final_step_97.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_97.png)).
 - [x] **[Consolidate Curated Targets into Single Tool Icon with Collective Popup Toolbar]**:
   - Replaced the horizontal row of individual preset buttons in the upper header with a single compact tool button (`#btnTargetPresetsTrigger`).
   - Displays active target icon (`#targetPresetsActiveIcon`), active target label (`#targetPresetsActiveLabel`, defaults to 'WISE 0855'), and dynamic rotating chevron (`#targetPresetsChevron`).
