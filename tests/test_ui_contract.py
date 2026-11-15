@@ -1047,6 +1047,34 @@ def test_spectrum_102_band_spot_popup_and_2d_hit_contract():
     assert "pinSpecSpotPopup" in html, "Missing pinSpecSpotPopup function"
 
 
+def test_scene_collection_right_toolbar_gradient_contract():
+    """Validates that the Scene Collection right vertical toolbar has a distinct color tone gradient while preserving all tools."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Properties Sidebar exists with custom CSS rules
+    sidebar = soup.find(id="propertiesSidebar")
+    assert sidebar is not None, "Missing #propertiesSidebar (Scene Collection right toolbar)"
+    assert "#propertiesSidebar {" in html, "Missing custom CSS gradient rule for #propertiesSidebar"
+    assert "linear-gradient" in html and "#130a24" in html, "Missing custom color tone gradient on #propertiesSidebar"
+
+    # 2. Sticky Tab Header exists with custom CSS rules
+    header = sidebar.find(id="propertiesSidebarHeader")
+    assert header is not None, "Missing #propertiesSidebarHeader"
+    assert "#propertiesSidebarHeader {" in html, "Missing custom CSS gradient rule for #propertiesSidebarHeader"
+
+    # 3. All tools and controls in the toolbar remain intact
+    assert sidebar.find(id="tabLayersBtn") is not None, "Missing #tabLayersBtn"
+    assert sidebar.find(id="tabTargetBtn") is not None, "Missing #tabTargetBtn"
+    assert sidebar.find(id="tabCandidatesBtn") is not None, "Missing #tabCandidatesBtn"
+    assert sidebar.find(id="tabPhotometryBtn") is not None, "Missing #tabPhotometryBtn"
+    assert sidebar.find(id="sceneStatusBadge") is not None, "Missing #sceneStatusBadge"
+    assert sidebar.find(id="btnRefreshScene") is not None, "Missing #btnRefreshScene"
+    assert sidebar.find(id="layerSearchInput") is not None, "Missing #layerSearchInput"
+    assert sidebar.find(id="sceneContent") is not None, "Missing #sceneContent"
+    assert sidebar.find(id="inspectorPanelLayers") is not None, "Missing #inspectorPanelLayers"
+
+
+
 
 
 

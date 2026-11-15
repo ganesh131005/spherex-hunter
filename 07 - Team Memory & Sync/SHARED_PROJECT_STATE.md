@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🎨 SCENE COLLECTION RIGHT VERTICAL TOOLBAR COLOR GRADIENT (@coolodu)]**
+  - **Feature:** Styled the Scene Collection vertical toolbar located at the right (`#propertiesSidebar`) with an Astral Amethyst / Cosmic Obsidian gradient (`linear-gradient(180deg, #130a24 0%, #170d2d 25%, #1c1036 55%, #160c2b 85%, #0f071e 100%)`), giving it a distinct identity from the rest of the dark/black UI toolbars.
+  - **Tool Preservation:** All internal tools, buttons, and panels remain 100% intact:
+    1. Sticky header (`#propertiesSidebarHeader`) with Scene Collection title, LIVE STATE badge, and Refresh button.
+    2. 4 Inspector tab buttons: Layers, Target, Cands, and Photo.
+    3. Filter search input (`#layerSearchInput`) with responsive focus outline.
+    4. Observation Epochs, Difference Baseline, and Visual Layers tree with eye visibility toggles and opacity sliders.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (27/27) including `test_scene_collection_right_toolbar_gradient_contract()`, and physically verified in live browser subagent ([final_step_69.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_69.png)).
 - **[👁️ UPPER HORIZONTAL TOOLBAR BLINK FUNCTIONALITY & VISIBLE VIEW MODES POPUP (@coolodu)]**
   - **Feature:** Resolved header clipping issue (`overflow-visible` on `<header>`), made the Blink tool icon (`#btnViewModesTrigger`) fully functional, and ensured the collective View Modes popup toolbar (`#viewModesPopup`) is prominently visible beneath the upper horizontal toolbar.
   - **Root Cause & Fix:** `<header>` had `overflow-hidden`, which clipped all dropdowns and popups anchored in the top bar. Changed to `overflow-visible` with high stacking context (`z-40`).

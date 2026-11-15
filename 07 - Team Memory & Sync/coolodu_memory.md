@@ -3,11 +3,21 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified making the Blink icon in the upper horizontal toolbar fully functional and making the collective View Modes popup toolbar (`#viewModesPopup`) prominently visible beneath the top toolbar on `coolodu/web-frontend`. Resolved `<header>` clipping (`overflow-visible`), enabled visibility and interactive toggle on `#btnViewModesTrigger`, wired Blink flipbook play/pause & HUD triggers, added quick close button `✕`, and verified live in browser with all 26 contract tests passing 100% green.
+- **Current Task:** Completed and physically verified custom color tone gradient on the Scene Collection vertical toolbar located at the right (`#propertiesSidebar`) on `coolodu/web-frontend`. Applied an Astral Amethyst / Cosmic Obsidian gradient (`linear-gradient(180deg, #130a24 0%, #170d2d 25%, #1c1036 55%, #160c2b 85%, #0f071e 100%)`) with amethyst border accents and glassmorphic header gradient (`#propertiesSidebarHeader`), distinctly differentiating it from the dark/black gradients of the rest of the UI while preserving all tools, tabs, search filters, and layer trees. All 27/27 UI contract tests passing 100% green.
 - **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Scene Collection Right Vertical Toolbar Distinct Color Tone Gradient]**:
+  - Applied an Astral Amethyst / Cosmic Obsidian gradient (`linear-gradient(180deg, #130a24 0%, #170d2d 25%, #1c1036 55%, #160c2b 85%, #0f071e 100%)`) with `border-left: 1px solid rgba(192, 132, 252, 0.28)` and deep cosmic drop-shadow on `#propertiesSidebar`.
+  - Added matching glassmorphic gradient to `#propertiesSidebarHeader` (`rgba(38, 17, 66, 0.95)` to `rgba(26, 11, 46, 0.98)`).
+  - Maintained all tools in the toolbar 100% intact:
+    1. Sticky Tab Header with Scene Collection title, LIVE STATE badge, and Refresh button.
+    2. 4 Inspector Tabs: Layers, Target, Cands, and Photo.
+    3. Filter search input (`#layerSearchInput`) with custom amethyst focus border.
+    4. Observation Epochs, Baseline Difference cards, and Visual Layers tree with visibility eye toggles and opacity sliders.
+  - Added contract test `test_scene_collection_right_toolbar_gradient_contract()` in `tests/test_ui_contract.py`. All 27 tests passing.
+  - Verified live in browser subagent ([`final_step_69.png`](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_69.png)).
 - [x] **[Make Upper Horizontal Toolbar Blink Icon Functional & Make Popup Toolbar Visible]**:
   - Resolved CSS overflow clipping on top `<header>` by changing `overflow-hidden` to `overflow-visible` with high stacking context (`z-40`).
   - Rendered `#viewModesPopup` directly beneath the top toolbar with high-contrast styling (`border-cyan-500/60`, backdrop blur, deep shadow `0 12px 40px rgba(0,0,0,0.85)`).
