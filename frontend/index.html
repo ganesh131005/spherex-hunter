@@ -5382,6 +5382,29 @@
     let aladinInitPromise = null;
     let selectedHiPSChannel = 1;
 
+    function select102BandChannel(chNumber) {
+      if (!chNumber || isNaN(chNumber)) return;
+      chNumber = Math.max(1, Math.min(102, parseInt(chNumber, 10)));
+      selectedHiPSChannel = chNumber;
+      const item = SPHEREx_102_CHANNELS[chNumber - 1];
+      if (!item) return;
+
+      // 1. Identify which array (A1..A6) this channel belongs to
+      const targetArray = item.array_id || ('A' + item.band);
+      activeArray = targetArray;
+      const arrDef = SPHEREX_ARRAY_DEFS[activeArray];
+      if (arrDef) {
+        activeChannelInArray = chNumber - arrDef.start_band + 1;
+      }
+
+      // 2. Update spectrum chart and toolbar
+      updateChannelUI();
+
+      // 3. Update HiPS Aladin slice
+      switchHiPSChannel(chNumber);
+    }
+    window.select102BandChannel = select102BandChannel;
+
     function switchHiPSChannel(chNumber) {
       selectedHiPSChannel = chNumber;
       const item = SPHEREx_102_CHANNELS[chNumber - 1];
@@ -5390,6 +5413,19 @@
       const disp = document.getElementById('hipsWavelengthDisplay');
       if (disp) {
         disp.textContent = `${item.wl.toFixed(3)} μm (Band ${item.band}, R=${item.resolving_power || item.r})`;
+      }
+      const hipsSel = document.getElementById('hipsChannelSelect');
+      if (hipsSel && hipsSel.value !== String(chNumber)) {
+        hipsSel.value = String(chNumber);
+      }
+
+      const specSel = document.getElementById('spec102ChannelSelect');
+      if (specSel && specSel.value !== String(chNumber)) {
+        specSel.value = String(chNumber);
+      }
+      const specDisp = document.getElementById('spec102WavelengthDisplay');
+      if (specDisp) {
+        specDisp.textContent = `${item.wl.toFixed(3)} µm (Band ${item.ch} · Array A${item.band})`;
       }
 
       if (aladinInstance) {
@@ -5413,17 +5449,68 @@
 
     function populateHiPSChannelSelector() {
       const selectEl = document.getElementById('hipsChannelSelect');
-      if (!selectEl || selectEl.children.length > 0) return;
-      SPHEREx_102_CHANNELS.forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item.ch;
-        opt.textContent = `Ch ${item.ch}: ${item.wl.toFixed(3)} μm (B${item.band}, R=${item.resolving_power || item.r})`;
-        selectEl.appendChild(opt);
-      });
+      const specSelectEl = document.getElementById('spec102ChannelSelect');
 
-      selectEl.addEventListener('change', (e) => {
-        const ch = parseInt(e.target.value, 10);
-        switchHiPSChannel(ch);
+      const populateSelect = (el) => {
+        if (!el || el.children.length > 0) return;
+        SPHEREx_102_CHANNELS.forEach(item => {
+          const opt = document.createElement('option');
+          opt.value = item.ch;
+          let tag = '';
+          if (item.ch === 25) tag = ' 💧 H₂O';
+          else if (item.ch === 56) tag = ' ❄️ Ice';
+          else if (item.ch === 60) tag = ' 🪐 CH₄';
+          else if (item.ch === 79) tag = ' 🧊 CO₂';
+          else if (item.ch === 89) tag = ' 🔬 CO';
+          opt.textContent = `Ch ${item.ch}: ${item.wl.toFixed(3)} μm (B${item.band}, R=${item.resolving_power || item.r})${tag}`;
+          el.appendChild(opt);
+        });
+      };
+
+      populateSelect(selectEl);
+      populateSelect(specSelectEl);
+
+      if (selectEl && !selectEl._hasListener) {
+        selectEl._hasListener = true;
+        selectEl.addEventListener('change', (e) => {
+          const ch = parseInt(e.target.value, 10);
+          select102BandChannel(ch);
+        });
+      }
+
+      if (specSelectEl && !specSelectEl._hasListener) {
+        specSelectEl._hasListener = true;
+        specSelectEl.addEventListener('change', (e) => {
+          const ch = parseInt(e.target.value, 10);
+          select102BandChannel(ch);
+        });
+      }
+
+      const specPrev = document.getElementById('spec102PrevCh');
+      const specNext = document.getElementById('spec102NextCh');
+      if (specPrev && !specPrev._hasListener) {
+        specPrev._hasListener = true;
+        specPrev.onclick = () => {
+          const cur = parseInt(specSelectEl?.value || selectedHiPSChannel, 10) || 1;
+          select102BandChannel(cur > 1 ? cur - 1 : 102);
+        };
+      }
+      if (specNext && !specNext._hasListener) {
+        specNext._hasListener = true;
+        specNext.onclick = () => {
+          const cur = parseInt(specSelectEl?.value || selectedHiPSChannel, 10) || 1;
+          select102BandChannel(cur < 102 ? cur + 1 : 1);
+        };
+      }
+
+      document.querySelectorAll('.spec-mol-pill').forEach(pill => {
+        if (!pill._hasListener) {
+          pill._hasListener = true;
+          pill.onclick = () => {
+            const ch = parseInt(pill.getAttribute('data-channel'), 10);
+            if (ch) select102BandChannel(ch);
+          };
+        }
       });
 
       // Synchronize with authentic spherex_102_channels.json if reachable
