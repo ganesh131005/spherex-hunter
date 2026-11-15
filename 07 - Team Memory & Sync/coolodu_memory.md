@@ -3,9 +3,25 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Resolved and verified Issues #39 (`Fix Backend 500 NoneType Crash on Archive Miss`) and #40 (`Fix Viewport HUD Overlap Between Time Step Controller and Top Telemetry / Stretch Controls`). Both verified with 3-point physical audit and passing automated tests (47/47 CI unit & contract tests passed). Pushed to `origin/coolodu/web-frontend`.
-- **Next Task:** Maintain clean status, monitor GitHub Issues for incoming tasks.
+- **Current Task:** Assigned TASK-007 (`Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies`) via `tools/task_forwarder.py`.
+- **Next Task:** Refactor spectral HUD and molecular reference sidebar typography in `frontend/index.html` to $\ge 11\text{px}$–$13\text{px}$, verify DOM contract tests, and close task.
 - **Blockers:** None.
+
+## Assigned Tasks:
+- [ ] **[TASK-007] Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies**
+  - **Ticket File:** `07 - Team Memory & Sync/TASK_DISPATCH/inbox/TASK-007_coolodu.md`
+  - **GitHub URL:** https://github.com/joker0210G/spherex-hunter/issues/new?title=Improve+UI%2FUX+Readability+%26+Typography+Scale%3A+Enlarge+Microscopic+9px%2F10px+Text+for+Researchers+%26+Newbies&labels=track%3Aweb-frontend%2Crole%3Acoolodu%2Cresource%3Astandard%2Cstatus%3Aneeds-refinement
+  - **Scope:** Refactor `text-[9px]` & `text-[10px]` in SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`) and molecular absorption reference table to readable accessible scales ($\ge 11\text{px}$–$13\text{px}$) with comfortable click padding and WCAG AA contrast.
+
+## Completed Tasks:
+- [x] **[Resolved Issues #39 & #40 — Backend NoneType Guard, FOV Clamping, Diagnostics & Viewport HUD Deconfliction]**:
+  - Re-positioned `#viewportTimeStepHUD` and `#aladinContextBar` to `top-14` with 56px clearance.
+  - Positioned dismissible alert banners (`#guidedTourBanner`, `#candidateAlertStrip`, `#noObsBanner`) to `top-28`.
+  - Verified 47/47 CI unit and contract tests pass 100% green. Pushed to `origin/coolodu/web-frontend`.
+- [ ] **[TASK-007] Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies**
+  - **Ticket File:** `07 - Team Memory & Sync/TASK_DISPATCH/inbox/TASK-007_coolodu.md`
+  - **GitHub URL:** https://github.com/joker0210G/spherex-hunter/issues/new?title=Improve+UI%2FUX+Readability+%26+Typography+Scale%3A+Enlarge+Microscopic+9px%2F10px+Text+for+Researchers+%26+Newbies&labels=track%3Aweb-frontend%2Crole%3Acoolodu%2Cresource%3Astandard%2Cstatus%3Aneeds-refinement
+  - **Scope:** Refactor `text-[9px]` & `text-[10px]` in SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`) and molecular absorption reference table to readable accessible scales ($\ge 11\text{px}$–$13\text{px}$) with comfortable click padding and WCAG AA contrast.
 
 ## Completed Tasks:
 - [x] **[Resolved Issues #39 & #40 — Backend NoneType Guard, FOV Clamping, Diagnostic Details, & Viewport HUD Deconfliction]**:
