@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🔍 COMPACT ICON SIZING FOR SAVE ANALYSIS, SHARE & COMMAND PALETTE (@coolodu)]**
+  - **Feature:** Reduced the icon size of secondary utility tools in the upper horizontal toolbar (`#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenCommandPalette`, `#cmdPaletteBtn`) to compact `w-2.5 h-2.5` (10px x 10px), establishing clean visual hierarchy against primary navigation controls.
+  - **Functionality Preserved:** Retained full click targets, tooltips, keyboard shortcuts (`Ctrl+K`), modal triggers, and accessibility.
+  - **Verification:** 100% green pass rate across `tests/test_ui_contract.py` (28/28), 0 ruff errors, and verified in live browser subagent ([final_step_181.png](file:///C:/Users/Ganesh%20Kumar/.gemini/antigravity/brain/6e255853-9e8b-49c4-8915-1e52ec0d4840/browser_evidence/b7ac9151-5ebc-4cb9-800d-3ca20eb91f42/final_step_181.png)).
 - **[📂 RELOCATED 'MY INVESTIGATIONS' TO CANDS TAB IN RIGHT VERTICAL TOOLBAR (@coolodu)]**
   - **Feature:** Moved 'My Investigations' (`#candsMyInvestigationsBar`, `#btnOpenInvestigations`, `#investigationsCountBadge`) from the upper horizontal toolbar into the Scene Collection right vertical toolbar (`#propertiesSidebar`).
   - **Exact Placement:** Located inside the 'Cands' tab (`#inspectorPanelCandidates`) directly above the 'Flagged Candidates' section, featuring a stylish purple/amethyst card with live session count badge, folder-clock icon, and quick 'Open' action button.
