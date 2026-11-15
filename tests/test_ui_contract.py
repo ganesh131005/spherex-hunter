@@ -572,31 +572,41 @@ def test_snapblink_25_percent_increment_and_blend_timeline_alignment_contract():
     assert "epochBlend / 0.25" in html, "Slider and loop mapping must use 25% increments"
 
 
-def test_bottom_dock_102_scroll_wheel_zoom_contract():
-    """Validates mouse wheel scroll up/down zooms in/out (expands/shrinks) the bottom bar on the 102 tab."""
+def test_spectrum_102_horizontal_sideways_zoom_contract():
+    """Validates horizontal (sideways) expansion of the 102-band spectrum via mouse wheel scroll and drag pan."""
     html, soup = _get_html_and_soup()
 
-    # 1. Elements: 102 tab button, splitter, and zoom height indicator in 102 panel
-    dock_tab_spec = soup.find(id="dockTabSpectrum")
-    assert dock_tab_spec is not None, "Missing #dockTabSpectrum"
-    assert "zoom" in dock_tab_spec.get("title", "").lower() or "scroll" in dock_tab_spec.get("title", "").lower()
+    # 1. Elements: Horizontal zoom bar, zoom level badge, in/out/reset buttons
+    zoom_bar = soup.find(id="specHorizontalZoomBar")
+    assert zoom_bar is not None, "Missing #specHorizontalZoomBar in #dockPanelSpectrum toolbar"
+    assert "sideways" in zoom_bar.get("title", "").lower() or "zoom" in zoom_bar.get("title", "").lower()
 
-    zoom_indicator = soup.find(id="specDockZoomIndicator")
-    assert zoom_indicator is not None, "Missing #specDockZoomIndicator in #dockPanelSpectrum toolbar"
-    height_label = soup.find(id="specDockHeightLabel")
-    assert height_label is not None, "Missing #specDockHeightLabel"
+    zoom_label = soup.find(id="specZoomLevelLabel")
+    assert zoom_label is not None, "Missing #specZoomLevelLabel"
+    assert "102 Bands" in zoom_label.get_text()
 
-    splitter = soup.find(id="bottomDockSplitter")
-    assert splitter is not None, "Missing #bottomDockSplitter"
-    assert "scroll wheel" in splitter.get("title", "").lower()
+    btn_in = soup.find(id="btnSpecZoomIn")
+    btn_out = soup.find(id="btnSpecZoomOut")
+    btn_reset = soup.find(id="btnSpecZoomReset")
+    assert btn_in is not None, "Missing #btnSpecZoomIn"
+    assert btn_out is not None, "Missing #btnSpecZoomOut"
+    assert btn_reset is not None, "Missing #btnSpecZoomReset"
 
-    # 2. JavaScript logic
-    assert "initBottomDock102WheelZoom" in html, "Missing initBottomDock102WheelZoom function"
-    assert "updateDockHeightDisplay" in html, "Missing updateDockHeightDisplay function"
-    assert "bottomDock.addEventListener('wheel'" in html, "Missing wheel event listener on #bottomDock"
-    assert "isSpectrumActive" in html, "Wheel handler must verify 102 Spectrum tab active state"
-    assert "-e.deltaY" in html, "Wheel handler must calculate delta from -e.deltaY"
-    assert "specChart.resize()" in html, "Wheel handler must trigger specChart.resize()"
+    # 2. JavaScript Sideways Horizontal Zoom Engine
+    assert "applySpectrumHorizontalZoom" in html, "Missing applySpectrumHorizontalZoom function"
+    assert "zoomSpectrumHorizontalAt" in html, "Missing zoomSpectrumHorizontalAt function"
+    assert "window.applySpectrumHorizontalZoom" in html, "applySpectrumHorizontalZoom must be exported to window"
+    assert "specChart.options.scales.x.min" in html, "Must set scales.x.min for horizontal zoom"
+    assert "specChart.options.scales.x.max" in html, "Must set scales.x.max for horizontal zoom"
+
+    # 3. Wheel & Pan Event Listeners
+    assert "chartCanvas.addEventListener('wheel'" in html, "Missing wheel event on chartCanvas"
+    assert "chartCanvas.addEventListener('mousedown'" in html, "Missing mousedown pan listener on chartCanvas"
+    assert "chartCanvas.addEventListener('dblclick'" in html, "Missing dblclick reset listener on chartCanvas"
+
+    # 4. Array Background and Molecular Markers use dynamic wavelength projection
+    assert "getPixelForWl" in html, "spherexArrayPlugin must use getPixelForWl to track sideways zoom"
+
 
 
 

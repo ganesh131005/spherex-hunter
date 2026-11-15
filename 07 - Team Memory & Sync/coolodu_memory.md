@@ -8,6 +8,15 @@
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[102-Band Spectrum Sideways Horizontal Zoom & Pan (Wavelength Expansion)]**:
+  - Implemented cursor-centered sideways horizontal zoom across the 102-band spectrum ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$) via mouse wheel scroll over the spectrum canvas (`specChart`).
+  - Scrolling up expands the wavelength axis sideways (zooms in up to 10.0x / 10 bands visible) allowing users to inspect minute absorption features and continuum variations across channels.
+  - Scrolling down contracts the wavelength axis sideways (zooms out to 1.0x / 102 bands full view).
+  - Added click-and-drag horizontal panning across zoomed wavelength regions.
+  - Added `#specHorizontalZoomBar` toolbar with `#specZoomLevelLabel`, `#btnSpecZoomIn`, `#btnSpecZoomOut`, and `#btnSpecZoomReset`.
+  - Refactored `spherexArrayPlugin` to dynamically map array backgrounds (A1-A6), array labels, survey passbands, and molecular markers ($H_2O$, $CH_4$, $CO_2$, $CO$) to the active zoomed X-coordinates.
+  - Removed vertical bottom dock height resizing on wheel scroll over the spectrum canvas, keeping dock height stable while expanding spectrum sideways.
+  - Added comprehensive contract test in `tests/test_ui_contract.py` (`test_spectrum_102_horizontal_sideways_zoom_contract`). All 18 tests passing.
 - [x] **[Bottom Dock 102-Band Spectrum Scroll Wheel Zoom (Expand / Shrink)]**:
   - Implemented bidirectional mouse wheel zoom on the bottom observatory dock when the cursor is positioned over the 102 tab (`#dockPanelSpectrum`, `#bottomDock`, or `#dockTabSpectrum`).
   - Scrolling up expands the bottom dock height up to `650px` for deep spectral inspection; scrolling down shrinks it to `80px` for maximizing optical viewport space.

@@ -26,6 +26,15 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🔬 102-BAND SPECTRUM SIDEWAYS HORIZONTAL ZOOM & PAN (@coolodu)]**
+  - **Feature:** Implemented cursor-centered sideways horizontal zoom and drag-pan across the 102-band spectrum chart ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$), replacing vertical height resizing with sideways wavelength expansion.
+  - **Interaction Mechanics:**
+    1. **Scroll Up (`deltaY < 0`):** Expands the spectrum sideways (zooming in up to 10.0x / 10 bands visible) centered on the cursor position, allowing users to examine minute absorption features, continuum variations, and line depths.
+    2. **Scroll Down (`deltaY > 0`):** Shrinks the spectrum sideways (zooming out down to 1.0x / full 102 bands).
+    3. **Click-and-Drag Pan:** Left-click and drag horizontally across the canvas to pan across zoomed wavelength regions with `cursor: grab` / `grabbing`.
+    4. **Dedicated Toolbar & Telemetry:** Added `#specHorizontalZoomBar` with `#specZoomLevelLabel` (`Zoom: 1.0x (102 Bands)`), `#btnSpecZoomIn`, `#btnSpecZoomOut`, and `#btnSpecZoomReset`. Double-clicking canvas or clicking Reset snaps back to full 102-band view.
+    5. **Dynamic Array & Molecular Projection:** Refactored `spherexArrayPlugin` to project Array A1–A6 backgrounds, array labels, molecular lines ($H_2O$, $CH_4$, $CO_2$, $CO$), and active channel indicators to exact dynamic pixel positions under active horizontal zoom.
+  - **Verification:** 100% green pass rate across `test_ui_contract.py` (18/18), `test_bands_spectrum.py` (3/3), `test_viewport_overhaul_v2.py` (10/10), and all backend test suites (33/33) with 0 ruff errors.
 - **[🔍 BOTTOM DOCK 102-BAND SPECTRUM SCROLL WHEEL ZOOM (EXPAND & SHRINK)]**
   - **Feature:** Added bidirectional mouse wheel scroll zoom (expanding and shrinking) to the bottom observatory dock when the cursor is positioned over the 102-Band Spectrum tab (`#dockPanelSpectrum`, `#bottomDock`, or `#dockTabSpectrum`).
   - **Interaction Mechanics:**
