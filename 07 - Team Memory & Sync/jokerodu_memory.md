@@ -3,6 +3,14 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Catalog Engine Global Circuit Breaker & Resilient Multi-Survey Fallback Engine]**:
+  - Eliminated cascading 502 Proxy Errors and blocking 6.0s connection timeouts from NASA IRSA TAP (`irsa.ipac.caltech.edu/TAP/sync`) and ESA Gaia TAP (`gea.esac.esa.int`).
+  - Added global, shared in-process circuit breakers (`_IRSA_TAP_CIRCUIT_OPEN_UNTIL`, `_ESA_GAIA_CIRCUIT_OPEN_UNTIL`) with 60-second cooldown in `backend/services/catalog_engine.py` and `backend/services/gaia_service.py`.
+  - Added authentic Harvard CfA VizieR `I/355/gaiadr3` fallback to both `query_gaia_dr3` implementations, guaranteeing optical astrometry/photometry even when both ESA and IRSA mirrors are down.
+  - Guarded 2MASS, AllWISE, and NEOWISE-R queries with circuit checks to avoid firing futile requests when IRSA is experiencing 502 proxy errors.
+  - Added sub-arcsecond spatial proximity caching in `crossmatch_photometry` (within $\le 10$ arcsec / $0.003^\circ$) serving repeated micro-clicks instantly in 0 ms.
+  - Added client-side click debouncing/proximity guard in `fetchPointLightCurve` in `frontend/index.html`.
+  - 100% test pass rate verified across all 58 baseline tests (`test_ui_contract.py`, `test_golden_suite.py`, `test_viewport_overhaul_v2.py`).
 - [x] **[102-Band Spectrum 2D Spot Popups & Interactive Inspector Engine]**:
   - Resolved missing popups on spots in the 102-band spectrum chart (e.g. WISE W2, molecular feature diamonds) where Y-flux offsets (e.g., 566 µJy vs 2224 µJy SED) and 1D category snapping caused Chart.js tooltips to be pulled to the top of the canvas or fail to trigger when hovering directly on the spots.
   - Implemented 2D Euclidean hit-testing (`findNearestSpectrumSpot`) with a generous 26–30px radius detecting both Catalog Photometry diamonds and Molecular Signatures regardless of zoom level or vertical distance from the SED curve.

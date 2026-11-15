@@ -14,7 +14,15 @@ import time
 import numpy as np
 import pyvo as vo
 
-from backend.services.catalog_engine import _make_timeout_session, _safe_float
+from backend.services.catalog_engine import (
+    _make_timeout_session,
+    _query_vizier_tsv,
+    _safe_float,
+    is_esa_gaia_available,
+    is_irsa_tap_available,
+    trip_esa_gaia_circuit,
+    trip_irsa_tap_circuit,
+)
 from backend.utils.validation import validate_coordinates
 
 ESA_GAIA_TAP_URL = "https://gea.esac.esa.int/tap-server/tap"
@@ -130,13 +138,17 @@ def query_gaia_dr3(
     archive_host = "European Space Agency (ESA Gaia TAP)"
     cache_tier = "LIVE_ESA_TAP"
 
-    # 3. Primary: ESA Gaia TAP -> Fallback: NASA IRSA TAP -> Fallback: Local catalog_gaia cache
-    try:
-        esa_svc = vo.dal.TAPService(ESA_GAIA_TAP_URL, session=_make_timeout_session(timeout))
-        res = esa_svc.run_sync(f"{select_cols}\nFROM gaiadr3.gaia_source\n{where_clause}")
-        sources = _parse_gaia_rows(res)
-    except Exception as esa_err:
-        print(f"ESA Gaia TAP query failed for RA {ra}, Dec {dec}: {esa_err}")
+    # 3. Primary: ESA Gaia TAP -> Fallback: NASA IRSA TAP -> Fallback: Local catalog_gaia cache -> Fallback: Harvard CfA VizieR
+    if is_esa_gaia_available():
+        try:
+            esa_svc = vo.dal.TAPService(ESA_GAIA_TAP_URL, session=_make_timeout_session(timeout))
+            res = esa_svc.run_sync(f"{select_cols}\nFROM gaiadr3.gaia_source\n{where_clause}")
+            sources = _parse_gaia_rows(res)
+        except Exception as esa_err:
+            trip_esa_gaia_circuit(60.0)
+            print(f"ESA Gaia TAP query failed for RA {ra}, Dec {dec}, circuit open for 60s: {esa_err}")
+
+    if not sources and is_irsa_tap_available():
         try:
             archive_host = "NASA/IPAC Infrared Science Archive (IRSA TAP)"
             cache_tier = "LIVE_IRSA_TAP"
@@ -144,29 +156,69 @@ def query_gaia_dr3(
             res = irsa_svc.run_sync(f"{select_cols}\nFROM gaia_dr3_source\n{where_clause}")
             sources = _parse_gaia_rows(res)
         except Exception as irsa_err:
-            alt_cache_path = os.path.join(_CATALOG_GAIA_CACHE_DIR, f"gaia_{disk_key}.json")
-            if os.path.exists(alt_cache_path):
-                try:
-                    with open(alt_cache_path, "r", encoding="utf-8") as f:
-                        alt_data = json.load(f)
-                    for src in alt_data.get("sources", [])[:row_limit]:
-                        sources.append({
-                            "source_id": str(src.get("source_id", "")),
-                            "ra": float(round(float(src["ra"]), 5)),
-                            "dec": float(round(float(src["dec"]), 5)),
-                            "pm_ra_mas_yr": src.get("pmra_mas_yr"),
-                            "pm_dec_mas_yr": src.get("pmdec_mas_yr"),
-                            "total_pm_mas_yr": src.get("total_pm_mas_yr"),
-                            "parallax_mas": src.get("parallax_mas"),
-                            "phot_g_mag": src.get("g_mag"),
-                        })
+            trip_irsa_tap_circuit(60.0)
+            print(f"NASA IRSA Gaia TAP query failed for RA {ra}, Dec {dec}, circuit open for 60s: {irsa_err}")
+
+    if not sources:
+        alt_cache_path = os.path.join(_CATALOG_GAIA_CACHE_DIR, f"gaia_{disk_key}.json")
+        if os.path.exists(alt_cache_path):
+            try:
+                with open(alt_cache_path, "r", encoding="utf-8") as f:
+                    alt_data = json.load(f)
+                for src in alt_data.get("sources", [])[:row_limit]:
+                    sources.append({
+                        "source_id": str(src.get("source_id", "")),
+                        "ra": float(round(float(src["ra"]), 5)),
+                        "dec": float(round(float(src["dec"]), 5)),
+                        "pm_ra_mas_yr": src.get("pmra_mas_yr"),
+                        "pm_dec_mas_yr": src.get("pmdec_mas_yr"),
+                        "total_pm_mas_yr": src.get("total_pm_mas_yr"),
+                        "parallax_mas": src.get("parallax_mas"),
+                        "phot_g_mag": src.get("g_mag"),
+                    })
+                if sources:
                     archive_host = "Local Catalog Cache (catalog_gaia)"
                     cache_tier = "L2_CATALOG_CACHE"
-                except Exception:
-                    sources = []
-            if not sources:
-                print(f"Gaia DR3 TAP query failed on all mirrors for RA {ra}, Dec {dec}: {irsa_err}")
-                query_error = f"ESA: {esa_err}; IRSA: {irsa_err}"
+            except Exception:
+                sources = []
+
+    if not sources:
+        try:
+            vrows = _query_vizier_tsv(
+                source="I/355/gaiadr3",
+                ra=ra,
+                dec=dec,
+                radius_arcmin=radius_arcmin,
+                limit=row_limit,
+                out_cols="Source,RAJ2000,DEJ2000,pmRA,pmDE,Plx,Gmag",
+                timeout_s=5.0,
+            )
+            for r in vrows:
+                s_ra = _safe_float(r.get("RAJ2000"))
+                s_dec = _safe_float(r.get("DEJ2000"))
+                if s_ra is None or s_dec is None:
+                    continue
+                pmra_val = _safe_float(r.get("pmRA"))
+                pmdec_val = _safe_float(r.get("pmDE"))
+                plx_val = _safe_float(r.get("Plx"))
+                gmag_val = _safe_float(r.get("Gmag"))
+                total_pm = float(round(np.hypot(pmra_val, pmdec_val), 2)) if pmra_val is not None and pmdec_val is not None else None
+                sources.append({
+                    "source_id": str(r.get("Source", "")),
+                    "ra": float(round(s_ra, 5)),
+                    "dec": float(round(s_dec, 5)),
+                    "pm_ra_mas_yr": round(pmra_val, 2) if pmra_val is not None else None,
+                    "pm_dec_mas_yr": round(pmdec_val, 2) if pmdec_val is not None else None,
+                    "total_pm_mas_yr": total_pm,
+                    "parallax_mas": round(plx_val, 2) if plx_val is not None else None,
+                    "phot_g_mag": round(gmag_val, 2) if gmag_val is not None else None,
+                })
+            if sources:
+                archive_host = "Harvard CfA VizieR (I/355/gaiadr3)"
+                cache_tier = "LIVE_VIZIER_MIRROR"
+        except Exception as viz_err:
+            query_error = f"All Gaia DR3 mirrors unreachable: {viz_err}"
+            print(f"Gaia DR3 TAP query failed on all mirrors for RA {ra}, Dec {dec}: {viz_err}")
 
     elapsed_ms = round((time.time() - t0) * 1000, 2)
 
