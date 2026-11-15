@@ -293,28 +293,80 @@
         </div>
       </div>
 
-      <!-- Segmented View Mode Control -->
-      <div class="flex items-center bg-space-950 p-0.5 rounded-lg border border-space-700 gap-0.5 shadow-inner">
-        <button id="wsBlink" class="blender-btn blender-btn-active px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Multi-Epoch Flipbook Blink Comparator (Hotkey: B)">
-          <i data-lucide="split" class="w-3.5 h-3.5 text-cyan-400"></i>
-          <span>Blink</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">B</kbd>
+      <!-- Single Collective View Modes Tool with Popup Option (Blink, Difference, Spectra, Aladin Sky) -->
+      <div class="relative shrink-0" id="viewModesMenuContainer">
+        <!-- The Single View Modes Tool Button -->
+        <button id="btnViewModesTrigger" class="blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-2 border border-space-700 shadow-md hover:border-cyan-500/60 transition-all select-none" title="Observatory View Modes: Blink, Difference, Spectra, Aladin Sky (Click to open collective modes menu)">
+          <span id="viewModeActiveIconWrapper" class="flex items-center justify-center">
+            <i id="viewModeActiveIcon" data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
+          </span>
+          <span id="viewModeActiveLabel" class="font-bold text-white tracking-wide">Blink</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" id="viewModeChevron"></i>
         </button>
-        <button id="wsDiff" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Numerical ZOGY Image Subtraction (Hotkey: D)">
-          <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span>Difference</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">D</kbd>
-        </button>
-        <button id="wsSpec" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="102-Band SPHEREx Infrared Spectroscopy (Hotkey: S)">
-          <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i>
-          <span>Spectra</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">S</kbd>
-        </button>
-        <button id="wsAladin" class="blender-btn px-3 py-1 rounded text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all" title="Interactive CDS Strasbourg Aladin Lite (Hotkey: A)">
-          <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-400"></i>
-          <span>Aladin Sky</span>
-          <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/40 rounded text-[9px] font-mono text-gray-400 border border-white/10">A</kbd>
-        </button>
+
+        <!-- Collective Popup Display Menu (Flyout anchored below the tool icon) -->
+        <div id="viewModesPopup" class="absolute top-full left-0 mt-1.5 w-64 bg-space-900/98 backdrop-blur-xl border border-space-700 rounded-xl shadow-2xl p-2 z-50 hidden flex-col gap-1 font-mono text-xs select-none animate-in fade-in slide-in-from-top-1 duration-150">
+          <div class="flex items-center justify-between px-2 py-1 text-[10px] text-gray-400 uppercase tracking-wider font-sans font-bold border-b border-space-800 pb-1.5 mb-1">
+            <span class="flex items-center gap-1.5"><i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i> View Modes</span>
+            <kbd class="text-[9px] font-mono text-gray-400">Esc to close</kbd>
+          </div>
+
+          <!-- Tool 1: Blink Comparator -->
+          <button id="wsBlink" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-cyan-500/40 transition flex items-start gap-2.5 group blender-btn-active" title="Multi-Epoch Flipbook Blink Comparator (Hotkey: B)">
+            <div class="w-7 h-7 rounded-md bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-cyan-900 transition">
+              <i data-lucide="split" class="w-4 h-4 text-cyan-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Blink Comparator</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-cyan-300 border border-cyan-500/30">B</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Multi-epoch flipbook & smooth continuous morph</p>
+            </div>
+          </button>
+
+          <!-- Tool 2: Numerical Difference -->
+          <button id="wsDiff" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-amber-500/40 transition flex items-start gap-2.5 group" title="Numerical ZOGY Image Subtraction (Hotkey: D)">
+            <div class="w-7 h-7 rounded-md bg-amber-950/80 border border-amber-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-amber-900 transition">
+              <i data-lucide="layers" class="w-4 h-4 text-amber-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Difference Imaging</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-amber-300 border border-amber-500/30">D</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">ZOGY sub-pixel PSF reference subtraction (I₂ - I₁)</p>
+            </div>
+          </button>
+
+          <!-- Tool 3: 102-Band Spectra -->
+          <button id="wsSpec" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-emerald-500/40 transition flex items-start gap-2.5 group" title="102-Band SPHEREx Infrared Spectroscopy (Hotkey: S)">
+            <div class="w-7 h-7 rounded-md bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-emerald-900 transition">
+              <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">102-Band Spectra</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-emerald-300 border border-emerald-500/30">S</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">0.75 - 5.0 µm spectrophotometry & ice bands</p>
+            </div>
+          </button>
+
+          <!-- Tool 4: Aladin Sky Map -->
+          <button id="wsAladin" class="w-full text-left p-2 rounded-lg hover:bg-space-800/90 border border-transparent hover:border-blue-500/40 transition flex items-start gap-2.5 group" title="Interactive CDS Strasbourg Aladin Lite (Hotkey: A)">
+            <div class="w-7 h-7 rounded-md bg-blue-950/80 border border-blue-500/40 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-blue-900 transition">
+              <i data-lucide="globe" class="w-4 h-4 text-blue-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white text-xs">Aladin Sky Map</span>
+                <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-blue-300 border border-blue-500/30">A</kbd>
+              </div>
+              <p class="text-[10px] text-gray-400 truncate mt-0.5 font-sans">Interactive all-sky HiPS cube navigator</p>
+            </div>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -555,6 +607,12 @@
           <span class="text-[8px] font-mono leading-none">Flip</span>
         </button>
 
+        <!-- Time Step Controller Tool with Popup Option (User Request) -->
+        <button id="toolTimeStep" class="w-11 h-9 rounded-lg rail-tool-btn blender-btn-active flex flex-col items-center justify-center gap-0.5 text-cyan-300 hover:text-white transition relative" title="Time Step & Multi-Epoch Controller Popup (T)">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span class="text-[8px] font-mono leading-none">Step</span>
+        </button>
+
         <!-- Auto-Identification of Motion Dipoles & Transients -->
         <button id="toolAutoDetect" class="w-11 h-9 rounded-lg rail-tool-btn blender-btn-orange-active flex flex-col items-center justify-center gap-0.5 text-orange-300 hover:text-white transition" title="Auto-Identify Proper Motion Dipoles & Transients (A)">
           <i data-lucide="scan" class="w-3.5 h-3.5 text-orange-400"></i>
@@ -609,42 +667,66 @@
       <!-- Primary Astronomical Canvas -->
       <canvas id="astroCanvas" class="w-full h-full block filter-grayscale"></canvas>
 
-      <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Continuous Mapping & Change Detection: Issue #40 Deconflicted) -->
-      <!-- Viewport Time Step Controller HUD (Positioned at top-14 for permanent deconfliction with top telemetry) -->
+      <!-- VIEWPORT TIME STEP & DIFFERENCE CONTROLLER HUD (Relocated to Left Vertical Tool Rail with Interactive Popup Option) -->
       <div id="viewportTimeStepHUD"
-        class="absolute top-14 left-1/2 -translate-x-1/2 z-20 flex flex-wrap items-center gap-2 bg-space-900/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none max-w-[90vw]">
-        <!-- Time Step Indicator -->
-        <div class="flex items-center gap-1.5 text-cyan-300 font-bold border-r border-space-700 pr-2">
-          <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
-          <span class="text-xs uppercase text-gray-300 font-medium">Time Step:</span>
+        class="absolute top-14 left-16 z-30 flex flex-col gap-2.5 bg-space-900/95 backdrop-blur-md p-3.5 rounded-xl border border-space-700 shadow-2xl font-mono text-xs select-none min-w-[340px] max-w-[95vw] transition-all duration-200">
+        
+        <!-- Header: Title, Pinning Toggle & Close Button -->
+        <div class="flex items-center justify-between border-b border-space-700/80 pb-2">
+          <div class="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-wide">
+            <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+            <span>Time Step Controller</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <!-- Popup Option: Pinned vs Flyout -->
+            <button id="btnPinTimeStepHUD" class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 border border-cyan-500/50 text-cyan-300 font-bold transition flex items-center gap-1 shadow-sm" title="Toggle Pinned View (Keep open vs auto-close)">
+              <span id="pinTimeStepIcon">📌</span>
+              <span id="pinTimeStepLabel">Pinned</span>
+            </button>
+            <button id="btnCloseTimeStepHUD" class="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-white hover:bg-space-800 transition text-xs" title="Close Time Step Popup (T or Esc)">✕</button>
+          </div>
+        </div>
+
+        <!-- Row 1: Time Baseline & Epoch Range -->
+        <div class="flex items-center justify-between gap-2 bg-space-950/80 px-2.5 py-1.5 rounded-lg border border-space-800">
+          <div class="flex items-center gap-1.5 text-gray-300">
+            <i data-lucide="history" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span class="text-xs uppercase text-gray-400 font-sans font-semibold">Baseline:</span>
+          </div>
           <span id="hudTimeStepDelta" class="text-white bg-cyan-950/80 border border-cyan-700/60 px-2 py-0.5 rounded text-xs font-semibold">Δt = 26.8 yr</span>
         </div>
 
-        <!-- Stepper Buttons: Frame 1, Blend/Morph, Frame 2, Difference -->
-        <div class="flex items-center gap-1.5 bg-space-950/80 p-0.5 rounded-lg border border-space-800">
-          <button id="btnHudStepPrev" class="px-2.5 py-1 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium" title="View Epoch 1: 1999 (2MASS Baseline)">
-            ◀ t₁ (1999)
+        <!-- Row 2: Epoch Steppers, Morph / Play, and Difference Mode -->
+        <div class="grid grid-cols-4 gap-1.5 bg-space-950/80 p-1.5 rounded-lg border border-space-800">
+          <button id="btnHudStepPrev" class="px-2.5 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium flex flex-col items-center justify-center gap-0.5" title="View Epoch 1: 1999 (2MASS Baseline)">
+            <span class="text-[9px] text-gray-400">◀ Epoch 1</span>
+            <span class="font-bold text-sky-300">1999 (t₁)</span>
           </button>
-          <button id="btnHudBlinkMorph" class="px-2.5 py-1 rounded-md text-xs bg-blender-blue text-white font-semibold shadow transition font-mono flex items-center gap-1.5" title="Continuous Smooth Morph across Δt">
-            <i data-lucide="play" class="w-3 h-3" id="hudPlayIcon"></i>
-            <span id="hudBlinkText">t₁ ↔ t₂</span>
+          <button id="btnHudBlinkMorph" class="px-2.5 py-2 rounded-md text-xs bg-blender-blue text-white font-semibold shadow transition font-mono flex flex-col items-center justify-center gap-0.5" title="Continuous Smooth Morph across Δt">
+            <div class="flex items-center gap-1">
+              <i data-lucide="play" class="w-3 h-3" id="hudPlayIcon"></i>
+              <span class="text-[9px]">Morph</span>
+            </div>
+            <span id="hudBlinkText" class="font-bold">t₁ ↔ t₂</span>
           </button>
-          <button id="btnHudStepNext" class="px-2.5 py-1 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium" title="View Epoch 2: 2025 (SPHEREx Survey)">
-            t₂ (2025) ▶
+          <button id="btnHudStepNext" class="px-2.5 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium flex flex-col items-center justify-center gap-0.5" title="View Epoch 2: 2025 (SPHEREx Survey)">
+            <span class="text-[9px] text-gray-400">Epoch 2 ▶</span>
+            <span class="font-bold text-orange-400">2025 (t₂)</span>
           </button>
-          <div class="h-3.5 w-px bg-space-700 mx-0.5"></div>
-          <button id="btnHudDiffMode" class="px-2.5 py-1 rounded-md text-xs text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold" title="Numerical Difference Map (Δ = I₂ - I₁)">
-            ⚡ Diff (Δ)
+          <button id="btnHudDiffMode" class="px-2.5 py-2 rounded-md text-xs text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold flex flex-col items-center justify-center gap-0.5" title="Numerical Difference Map (Δ = I₂ - I₁)">
+            <span class="text-[9px] text-orange-300">ZOGY</span>
+            <span class="font-bold">⚡ Diff (Δ)</span>
           </button>
         </div>
 
-        <div class="h-4 w-px bg-space-700"></div>
-
-        <!-- Auto-Detect Status Pill & Target Lock -->
-        <div class="flex items-center gap-1.5">
-          <button id="btnAutoDetectPill" class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-200 hover:text-white transition font-mono" title="Toggle Auto-Identification of Motion Dipoles & Transients">
-            <span id="hudAutoDetectDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <span id="hudAutoDetectLabel">Auto-ID: Active</span>
+        <!-- Row 3: Automated Candidate Detection & Dipole Scan -->
+        <div class="flex items-center justify-between gap-2 pt-1 border-t border-space-800">
+          <button id="btnAutoDetectPill" class="flex-1 flex items-center justify-between px-3 py-1.5 rounded-lg text-xs bg-space-950 hover:bg-space-800 border border-space-700 text-gray-200 hover:text-white transition font-mono" title="Toggle Auto-Identification of Motion Dipoles & Transients">
+            <span class="flex items-center gap-2">
+              <span id="hudAutoDetectDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+              <span class="font-medium text-gray-300">Dipole & Transient Scan:</span>
+            </span>
+            <span id="hudAutoDetectLabel" class="text-amber-400 font-bold">Auto-ID: Active</span>
           </button>
         </div>
       </div>
@@ -4964,14 +5046,80 @@
 
     // =========================================================================
     // WORKSPACE MODE SWITCHER (Blink, Diff, Spectrum, Aladin)
+    // Single Tool Trigger & Collective Popup Flyout
     // =========================================================================
     const wsBlink = document.getElementById('wsBlink');
     const wsDiff = document.getElementById('wsDiff');
     const wsSpec = document.getElementById('wsSpec');
     const wsAladin = document.getElementById('wsAladin');
 
+    const btnViewModesTrigger = document.getElementById('btnViewModesTrigger');
+    const viewModesPopup = document.getElementById('viewModesPopup');
+    const viewModesMenuContainer = document.getElementById('viewModesMenuContainer');
+    const viewModeActiveLabel = document.getElementById('viewModeActiveLabel');
+    const viewModeActiveIconWrapper = document.getElementById('viewModeActiveIconWrapper');
+    const viewModeChevron = document.getElementById('viewModeChevron');
+
+    function toggleViewModesPopup(forceOpen) {
+      if (!viewModesPopup) return;
+      const isOpen = !viewModesPopup.classList.contains('hidden');
+      const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !isOpen;
+      if (shouldOpen) {
+        viewModesPopup.classList.remove('hidden');
+        viewModesPopup.classList.add('flex');
+        if (viewModeChevron) viewModeChevron.classList.add('rotate-180');
+      } else {
+        viewModesPopup.classList.add('hidden');
+        viewModesPopup.classList.remove('flex');
+        if (viewModeChevron) viewModeChevron.classList.remove('rotate-180');
+      }
+    }
+
+    function closeViewModesPopup() {
+      toggleViewModesPopup(false);
+    }
+
+    if (btnViewModesTrigger) {
+      btnViewModesTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleViewModesPopup();
+      });
+    }
+
+    // Dismiss view modes popup on outside click
+    document.addEventListener('click', (e) => {
+      if (viewModesMenuContainer && !viewModesMenuContainer.contains(e.target)) {
+        closeViewModesPopup();
+      }
+    });
+
+    // Dismiss view modes popup on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeViewModesPopup();
+      }
+    });
+
+    function updateActiveViewModeIndicator(mode, iconName, labelText, colorClass) {
+      if (viewModeActiveLabel) {
+        viewModeActiveLabel.textContent = labelText;
+      }
+      if (viewModeActiveIconWrapper) {
+        viewModeActiveIconWrapper.innerHTML = `<i id="viewModeActiveIcon" data-lucide="${iconName}" class="w-4 h-4 ${colorClass || 'text-cyan-400'}"></i>`;
+        if (window.lucide) lucide.createIcons();
+      }
+      closeViewModesPopup();
+    }
+
+    // Export helpers to window for tests & global access
+    window.toggleViewModesPopup = toggleViewModesPopup;
+    window.closeViewModesPopup = closeViewModesPopup;
+    window.updateActiveViewModeIndicator = updateActiveViewModeIndicator;
+
     function resetWorkspaceButtons() {
-      [wsBlink, wsDiff, wsSpec, wsAladin].forEach(b => b.classList.remove('blender-btn-active'));
+      [wsBlink, wsDiff, wsSpec, wsAladin].forEach(b => {
+        if (b) b.classList.remove('blender-btn-active');
+      });
       document.getElementById('aladinContainer').classList.add('hidden');
       const contextBar = document.getElementById('aladinContextBar');
       if (contextBar) {
@@ -4984,6 +5132,7 @@
     wsBlink.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsBlink.classList.add('blender-btn-active');
+      updateActiveViewModeIndicator('blink', 'split', 'Blink', 'text-cyan-400');
       diffMode = false;
       updateFrameLabel();
       drawFrame();
@@ -4993,6 +5142,7 @@
     wsDiff.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsDiff.classList.add('blender-btn-active');
+      updateActiveViewModeIndicator('diff', 'layers', 'Difference', 'text-amber-400');
       diffMode = true;
       stopFlipbook();
       updateFrameLabel();
@@ -5002,6 +5152,7 @@
     wsSpec.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsSpec.classList.add('blender-btn-active');
+      updateActiveViewModeIndicator('spec', 'activity', 'Spectra', 'text-emerald-400');
       diffMode = false;
       document.getElementById('propertiesSidebar').classList.remove('hidden');
       loadSpectrumData(camera.ra, camera.dec, currentTargetKey);
@@ -5011,6 +5162,7 @@
     wsAladin.addEventListener('click', () => {
       resetWorkspaceButtons();
       wsAladin.classList.add('blender-btn-active');
+      updateActiveViewModeIndicator('aladin', 'globe', 'Aladin Sky', 'text-blue-400');
       document.getElementById('aladinContainer').classList.remove('hidden');
       const contextBar = document.getElementById('aladinContextBar');
       if (contextBar) {
@@ -9979,38 +10131,57 @@
       }
       hudTimeStepDelta.innerText = baselineText;
 
+      const totalFrames = (typeof getTotalEpochCount === 'function') ? getTotalEpochCount() : 4;
+
       if (btnHudDiffMode) {
         if (diffMode) {
-          btnHudDiffMode.className = "px-2.5 py-1 rounded-md text-xs bg-orange-600 text-white font-mono font-bold shadow";
+          btnHudDiffMode.className = "px-2.5 py-2 rounded-md text-xs bg-orange-600 text-white font-mono font-bold shadow flex flex-col items-center justify-center gap-0.5";
         } else {
-          btnHudDiffMode.className = "px-2.5 py-1 rounded-md text-xs text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold";
+          btnHudDiffMode.className = "px-2.5 py-2 rounded-md text-xs text-orange-400 hover:text-white hover:bg-orange-600/30 border border-orange-500/40 transition font-mono font-semibold flex flex-col items-center justify-center gap-0.5";
         }
       }
 
       if (btnHudStepPrev) {
-        btnHudStepPrev.className = (!diffMode && currentFrame === 1 && epochBlend < 0.2)
-          ? "px-2.5 py-1 rounded-md text-xs bg-blender-blue text-white font-bold font-mono shadow"
-          : "px-2.5 py-1 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium";
+        btnHudStepPrev.className = (!diffMode && currentFrame === 1 && epochBlend <= 0.3)
+          ? "px-2.5 py-2 rounded-md text-xs bg-blender-blue text-white font-bold font-mono shadow flex flex-col items-center justify-center gap-0.5"
+          : "px-2.5 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium flex flex-col items-center justify-center gap-0.5";
       }
 
       if (btnHudStepNext) {
-        btnHudStepNext.className = (!diffMode && currentFrame === 2 && epochBlend > 0.8)
-          ? "px-2.5 py-1 rounded-md text-xs bg-cyan-600 text-white font-bold font-mono shadow"
-          : "px-2.5 py-1 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium";
+        btnHudStepNext.className = (!diffMode && currentFrame === totalFrames && epochBlend > 0.8)
+          ? "px-2.5 py-2 rounded-md text-xs bg-cyan-600 text-white font-bold font-mono shadow flex flex-col items-center justify-center gap-0.5"
+          : "px-2.5 py-2 rounded-md text-xs text-gray-200 hover:text-white hover:bg-space-800 transition font-mono font-medium flex flex-col items-center justify-center gap-0.5";
       }
 
       if (btnHudBlinkMorph && hudPlayIcon) {
         if (isPlaying && !diffMode) {
-          btnHudBlinkMorph.className = "px-2.5 py-1 rounded-md text-xs bg-blender-orange text-white font-semibold shadow transition font-mono flex items-center gap-1.5";
+          btnHudBlinkMorph.className = "px-2.5 py-2 rounded-md text-xs bg-blender-orange text-white font-semibold shadow transition font-mono flex flex-col items-center justify-center gap-0.5";
           hudPlayIcon.setAttribute('data-lucide', 'pause');
         } else {
-          btnHudBlinkMorph.className = "px-2.5 py-1 rounded-md text-xs bg-space-800 text-gray-200 hover:text-white hover:bg-space-700 transition font-mono flex items-center gap-1.5";
+          btnHudBlinkMorph.className = "px-2.5 py-2 rounded-md text-xs bg-space-800 text-gray-200 hover:text-white hover:bg-space-700 transition font-mono flex flex-col items-center justify-center gap-0.5";
           hudPlayIcon.setAttribute('data-lucide', 'play');
         }
         if (window.lucide) lucide.createIcons();
       }
     }
     window.updateTimeStepHUD = updateTimeStepHUD;
+
+    let isTimeStepHudPinned = true;
+    function toggleTimeStepHUD(forceState) {
+      const hud = document.getElementById('viewportTimeStepHUD');
+      const tool = document.getElementById('toolTimeStep');
+      if (!hud) return;
+      const willShow = (typeof forceState === 'boolean') ? forceState : hud.classList.contains('hidden');
+      if (willShow) {
+        hud.classList.remove('hidden');
+        if (tool) tool.classList.add('blender-btn-active');
+        updateTimeStepHUD();
+      } else {
+        hud.classList.add('hidden');
+        if (tool) tool.classList.remove('blender-btn-active');
+      }
+    }
+    window.toggleTimeStepHUD = toggleTimeStepHUD;
 
     function updateAutoDetectHUD() {
       const hudAutoDetectLabel = document.getElementById('hudAutoDetectLabel');
@@ -10022,14 +10193,14 @@
       }
       if (hudAutoDetectDot) {
         hudAutoDetectDot.className = autoDetectEnabled
-          ? 'w-2 h-2 rounded-full bg-amber-400 animate-pulse'
-          : 'w-2 h-2 rounded-full bg-gray-500';
+          ? 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse'
+          : 'w-2.5 h-2.5 rounded-full bg-gray-500';
       }
       if (toolAutoDetect) {
         if (autoDetectEnabled) {
-          toolAutoDetect.className = 'w-10 h-8 rounded blender-btn blender-btn-orange-active flex flex-col items-center justify-center gap-0.5 text-orange-300 hover:text-white transition';
+          toolAutoDetect.className = 'w-11 h-9 rounded-lg rail-tool-btn blender-btn-orange-active flex flex-col items-center justify-center gap-0.5 text-orange-300 hover:text-white transition';
         } else {
-          toolAutoDetect.className = 'w-10 h-8 rounded blender-btn flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-white transition';
+          toolAutoDetect.className = 'w-11 h-9 rounded-lg rail-tool-btn flex flex-col items-center justify-center gap-0.5 text-gray-400 hover:text-white transition';
         }
       }
     }
@@ -10042,15 +10213,70 @@
       const btnHudDiffMode = document.getElementById('btnHudDiffMode');
       const btnAutoDetectPill = document.getElementById('btnAutoDetectPill');
       const toolAutoDetect = document.getElementById('toolAutoDetect');
+      const toolTimeStep = document.getElementById('toolTimeStep');
+      const btnCloseTimeStepHUD = document.getElementById('btnCloseTimeStepHUD');
+      const btnPinTimeStepHUD = document.getElementById('btnPinTimeStepHUD');
+
+      // Left Rail Tool Time Step toggle & Popup Controls
+      if (toolTimeStep) {
+        toolTimeStep.addEventListener('click', () => toggleTimeStepHUD());
+      }
+
+      if (btnCloseTimeStepHUD) {
+        btnCloseTimeStepHUD.addEventListener('click', () => toggleTimeStepHUD(false));
+      }
+
+      if (btnPinTimeStepHUD) {
+        btnPinTimeStepHUD.addEventListener('click', () => {
+          isTimeStepHudPinned = !isTimeStepHudPinned;
+          const pinIcon = document.getElementById('pinTimeStepIcon');
+          const pinLabel = document.getElementById('pinTimeStepLabel');
+          if (isTimeStepHudPinned) {
+            if (pinIcon) pinIcon.innerText = '📌';
+            if (pinLabel) pinLabel.innerText = 'Pinned';
+            btnPinTimeStepHUD.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 border border-cyan-500/50 text-cyan-300 font-bold transition flex items-center gap-1 shadow-sm";
+          } else {
+            if (pinIcon) pinIcon.innerText = '🪟';
+            if (pinLabel) pinLabel.innerText = 'Flyout';
+            btnPinTimeStepHUD.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-space-800 hover:bg-space-700 border border-space-600 text-gray-300 hover:text-white transition flex items-center gap-1";
+          }
+        });
+      }
+
+      // Auto-dismiss popup on click outside when unpinned
+      document.addEventListener('click', (e) => {
+        const hud = document.getElementById('viewportTimeStepHUD');
+        const tool = document.getElementById('toolTimeStep');
+        if (!hud || hud.classList.contains('hidden') || isTimeStepHudPinned) return;
+        if (!hud.contains(e.target) && !tool?.contains(e.target)) {
+          toggleTimeStepHUD(false);
+        }
+      });
+
+      // Keyboard shortcut 'T' to toggle Time Step HUD
+      document.addEventListener('keydown', (e) => {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
+        if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          toggleTimeStepHUD();
+        } else if (e.key === 'Escape') {
+          const hud = document.getElementById('viewportTimeStepHUD');
+          if (hud && !hud.classList.contains('hidden') && !isTimeStepHudPinned) {
+            toggleTimeStepHUD(false);
+          }
+        }
+      });
 
       if (btnHudStepPrev) {
         btnHudStepPrev.addEventListener('click', () => {
           diffMode = false;
           currentFrame = 1;
-          targetEpochBlend = 0.0;
-          epochBlend = 0.0;
+          targetEpochBlend = 0.25;
+          epochBlend = 0.25;
           const slider = document.getElementById('epochBlendSlider');
-          if (slider) slider.value = '0';
+          if (slider) slider.value = '25';
+          const lbl = document.getElementById('epochBlendLabel');
+          if (lbl) lbl.innerText = '25%';
           updateFrameLabel();
           updateTimeStepHUD();
           drawFrame();
@@ -10060,11 +10286,14 @@
       if (btnHudStepNext) {
         btnHudStepNext.addEventListener('click', () => {
           diffMode = false;
-          currentFrame = 2;
+          const totalFrames = (typeof getTotalEpochCount === 'function') ? getTotalEpochCount() : 4;
+          currentFrame = totalFrames;
           targetEpochBlend = 1.0;
           epochBlend = 1.0;
           const slider = document.getElementById('epochBlendSlider');
           if (slider) slider.value = '100';
+          const lbl = document.getElementById('epochBlendLabel');
+          if (lbl) lbl.innerText = '100%';
           updateFrameLabel();
           updateTimeStepHUD();
           drawFrame();
@@ -10075,6 +10304,11 @@
         btnHudBlinkMorph.addEventListener('click', () => {
           diffMode = false;
           isPlaying = !isPlaying;
+          const btnPlayPause = document.getElementById('btnPlayPause');
+          if (btnPlayPause) {
+            const pi = btnPlayPause.querySelector('i');
+            if (pi) pi.setAttribute('data-lucide', isPlaying ? 'pause' : 'play');
+          }
           updateTimeStepHUD();
           drawFrame();
         });
@@ -10083,7 +10317,17 @@
       if (btnHudDiffMode) {
         btnHudDiffMode.addEventListener('click', () => {
           diffMode = !diffMode;
+          if (diffMode && isPlaying) isPlaying = false;
           updateLayerVisibility('diff_image', diffMode);
+          const modeDiff = document.getElementById('modeDiff');
+          const modeBlink = document.getElementById('modeBlink');
+          if (diffMode) {
+            if (modeDiff) modeDiff.classList.add('blender-btn-active');
+            if (modeBlink) modeBlink.classList.remove('blender-btn-active');
+          } else {
+            if (modeDiff) modeDiff.classList.remove('blender-btn-active');
+            if (modeBlink) modeBlink.classList.add('blender-btn-active');
+          }
           updateTimeStepHUD();
           drawFrame();
         });
