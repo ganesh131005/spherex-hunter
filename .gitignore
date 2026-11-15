@@ -69,3 +69,6 @@ data_samples/*.json
 *_screenshot.png
 *_sidebar.png
 audit_results.json
+
+# Image Engine Outputs
+image_engine/outputs/
