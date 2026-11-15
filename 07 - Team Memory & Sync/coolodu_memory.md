@@ -3,7 +3,7 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed comprehensive error rectification across backend endpoints, browser probes, pytest warning filters, telemetry UI badges, and Time Step Controller default closure. Audited all 70 items of NASA SPHEREx App Challenge Final Judge Evaluation Checklist (100% green pass). Integrated four-survey spatial topology mapping (`backend/services/topology_mapper.py`, `backend/api_v1.py`) with discrete time steps [2MASS (1999) -> Gaia (2015) -> WISE (2010/2015) -> SPHEREx (2025)], RAF coalesced render scheduler, and unified header actions with More dropdown toolbar.
+- **Current Task:** Streamlined the bottom dock header to enforce a minimalist layout per user feedback. Completed comprehensive error rectification across backend endpoints, browser probes, pytest warning filters, telemetry UI badges, and Time Step Controller default closure. Audited all 70 items of NASA SPHEREx App Challenge Final Judge Evaluation Checklist (100% green pass). Integrated four-survey spatial topology mapping (`backend/services/topology_mapper.py`, `backend/api_v1.py`) with discrete time steps [2MASS (1999) -> Gaia (2015) -> WISE (2010/2015) -> SPHEREx (2025)], RAF coalesced render scheduler, and unified header actions with More dropdown toolbar.
 - **Next Task:** Maintain clean branch state and prepare final challenge submission demo materials.
 - **Blockers:** None.
 
@@ -19,6 +19,18 @@
   - All 70 criteria verified and passed: authentic FITS data, WCS coordinate registration, 102-band infrared spectroscopy ($0.75\text{--}5.0\,\mu\text{m}$), ZOGY image subtraction, multi-epoch blink comparator (1999 to 2025), and 5 required targets (Barnard's Star, Epsilon Indi B, WISE 0855, RW Aurigae, R Draconis).
   - Committed commit `ba91cbd` with four-survey overlay stack, discrete time steps, and RAF render throttling.
   - Generated comprehensive judge evaluation report artifact.
+- [x] **[Minimalist Layout: Remove Redundant Time Gap Explainer Pill]**:
+  - Removed `#btnTimeGapExplainer` and `#timeGapPopover` from `frontend/index.html`.
+  - Streamlined the bottom dock header to include only the dock panel collapse toggle.
+  - Verified 100% test pass rate across all suites with 0 regressions.
+- [x] **[Ensure Reliable Triggering of View Modes ("Blink ⌵") Dropdown]**:
+  - Diagnosed issue where clicking `#btnViewModesTrigger` ("Blink ⌵") immediately triggered `wsBlink.click()`, which invoked `updateActiveViewModeIndicator()` and instantly closed the menu in the same event tick.
+  - Removed conflicting internal click trigger, added `hidden` class by default to `#viewModesPopup`, added direct inline `onclick="window.toggleViewModesPopup && window.toggleViewModesPopup(); event.stopPropagation();"` and `pointer-events-none` on children.
+  - Verified with 29/29 contract tests passing.
+- [x] **[Eliminate Linear Starfield Replicas & Canvas Transform Compounding in Viewport]**:
+  - Diagnosed visual anomaly where identical scaled copies (0.500x ratio) of the target starfield (`WISE 0855`) appeared duplicated diagonally with L-shaped clipping boundaries.
+  - Fix: Added `ctx.setTransform(1, 0, 0, 1, 0, 0)` before clearing, defined `const cosDec = Math.cos((camera.dec * Math.PI) / 180.0) || 1.0;` at the top of `drawFrame()`, enclosed all transformed operations in `ctx.save(); try { ... } finally { ctx.restore(); }`, and added a defensive `safeCosDec` fallback inside `drawAutoIdentificationOverlay()`.
+  - Verification: Added contract test `test_viewport_draw_frame_canvas_transform_hygiene_and_cosdec_contract` to `tests/test_ui_contract.py`. Subagent confirmed single clean celestial frame, zero console errors, zero replicas across multi-axis panning/zooming, and 62/62 passing tests.
 - [x] **[Ensure Reliable Triggering of Coordinates Popover & Multi-Entry Time Step Access]**:
   - Bound direct inline `onclick="window.toggleCoordsPopover()"` and `onclick="window.toggleTimeStepHUD()"` handlers, adding `pointer-events-none` to nested text and icons so child elements never swallow clicks.
   - Added dedicated `Tool 5: Time Step Controller` entry inside the top View Modes dropdown (`#viewModesPopup`), enabling users to open the Time Step Controller from either the left vertical toolbar (`Step` button / Hotkey `T`) or the top View Modes menu.

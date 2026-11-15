@@ -33,6 +33,15 @@
     - Added reactive badge counter (`#moreCountBadge`) linked to saved session changes in `persistSessions()` / `renderInvestigationsList()`.
     - Removed duplicate block-scoped variable declaration diagnostic in `frontend/index.html`.
   - **Verification:** Verified 100% green across all 36 contract and viewport tests (`test_ui_contract.py` [26/26 passed] & `test_viewport_overhaul_v2.py` [10/10 passed]).
+- **[🔭 VIEWPORT REPLICA & CANVAS TRANSFORM BUG RESOLVED (@coolodu)]**
+  - **Issue:** Citizen science users observed diagonal "linear replicas" of starfields (at exactly 0.500x compounding scale) with missing quadrant boundaries when panning/zooming after loading targets (e.g. `WISE 0855-0714`).
+  - **Root Cause:** Line 4560 in `frontend/index.html` attempted to call `drawAutoIdentificationOverlay(ctx, pixelsPerArcmin, cosDec)`. `cosDec` was not declared in `drawFrame()`'s scope, causing an unhandled `ReferenceError` during auto-detection loops. This aborted `drawFrame()` before `ctx.restore()` could be reached, compounding `ctx.translate` and `ctx.scale` matrices across animation frames and causing partial canvas clears.
+  - **Remediation:** 
+    1. Explicitly reset the canvas 2D matrix (`ctx.setTransform(1, 0, 0, 1, 0, 0)`) prior to clearing the physical canvas buffer.
+    2. Enclosed all transformed operations in `ctx.save(); try { ... } finally { ctx.restore(); }` so errors can never leak transform state.
+    3. Declared `const cosDec = Math.cos((camera.dec * Math.PI) / 180.0) || 1.0;` at the top of `drawFrame()`.
+    4. Added defensive `safeCosDec` fallback inside `drawAutoIdentificationOverlay()`.
+  - **Verification:** Verified via automated browser subagent with multi-directional panning, zooming (0.8x - 1.1x), and zero console errors. Added regression test `test_viewport_draw_frame_canvas_transform_hygiene_and_cosdec_contract` to `tests/test_ui_contract.py`. All 62 tests passing 100% green.
 - **[🌐 MASTER REPOSITORY SYNCHRONIZATION: ALL TRACKS MERGED INTO MAIN (@jokerodu)]**
   - **Action:** Executed master synchronization collecting all completed innovations, UI controls, code quality fixes, and backend hardening across all 5 branches (`main`, `coolodu/web-frontend`, `darkodu/astro-backend`, `iceodu/image-math-ai`, `astrodu/ui-story-pitch`) and cleanly integrating them into `main`.
   - **Key Features Unified on Main:**
