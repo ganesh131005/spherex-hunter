@@ -3,11 +3,18 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Resolved and verified Issues #32, #35, #36, and #37 on `coolodu/web-frontend`. 103 passed, 9 skipped, 0 failures across repository test suite. Clean ruff checks. Pushing to `origin/coolodu/web-frontend`.
+- **Current Task:** Integrated and verified Viewport Overhaul v2 (Master Engineering Specification Steps 0–6) on `coolodu/web-frontend`. Interactive Zoom Bar with dual scale badges (HiPS Native 12.9″/px vs Exposure Native 6.15″/px), raw detector pixel toggle (`🔬 1:1 Pixels`), scoped L0/L1 cache engine, 102 IRSA channels JSON, WISE 0855 authentic narrowband co-add stack ($4.6\,\mu\text{m}$, $\text{S/N} = 5.82\sigma$, $N_{\text{exp}} = 26$), and Gaia DR3 space motion + EPSF centroid residuals. 61 tests passing. Pushed to `origin/coolodu/web-frontend`.
 - **Next Task:** Maintain clean status, coordinate with lead jokerodu for main branch master merge.
 - **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Pushed Viewport Overhaul v2 to `coolodu/web-frontend` (Steps 0–6 Complete)]**:
+  - **Interactive Zoom Bar & Dual LOD Badges (`frontend/index.html`):** Logarithmic slider, `+`/`−`/`⟲` reset, ARIA `role="slider"`, cursor-centered canvas wheel zooming, live arcsec/device_px HUD, and dual threshold badges separating HiPS Order 5 ($12.88''/\text{px}$) from native detector pitch ($6.15''/\text{px}$).
+  - **Raw Detector Pixel Inspection Mode (`frontend/index.html`):** `🔬 1:1 Pixels` nearest-neighbor toggle (`gl.NEAREST` / `image-rendering: pixelated`) with detector pixel span readout (`N × M px (6.15″)`).
+  - **102-Band SPHEREx Spectral Channels (`frontend/src/data/spherex_102_channels.json`):** Generated from authentic IRSA metadata via `scripts/generate_spherex_channels.py`, wired into HUD with `NASA/JPL/IPAC` attribution.
+  - **Scoped L0/L1 Cache Engine (`frontend/index.html`):** RAM LRU + IndexedDB (`spherex_tile_store`) using quantized integer micro-degree coordinate keys, idle prefetching, and live telemetry tracking.
+  - **Calibrated Exposure Overlays & Gaia Astrometry (`backend/models_v1.py`, `backend/services/gaia_service.py`):** Multi-epoch narrowband stack model for WISE 0855, `SkyCoord.apply_space_motion` epoch propagation, and EPSF sub-pixel centroid residuals.
+  - **Test Suite Verification:** 61 passed, 0 failed in `test_golden_suite.py`, `test_viewport_overhaul_v2.py`, and `test_ui_contract.py`. Fast-forwarded and pushed to `origin/coolodu/web-frontend`.
 - [x] **[Resolved Issues #32, #35, #36, #37 — Complete Observatory Polish & Real AI Integration]**:
   - **Issue #32 (Responsive Top Header & Overflow Elimination):**
     - Redesigned top `<header>` to ensure landmark benchmark target presets (`.target-btn` for WISE 0855, Barnard's Star, Eps Indi B, RW Aur, R Dra, Orion) and core controls remain 100% accessible across 1366x768 and 1080p desktop displays without shrinking to 0px.
