@@ -3,11 +3,15 @@
 > **Challenge:** Planet X and SPHEREx (Astrophysics / Planetary Defense / Citizen Science)
 
 [![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Observatory-orange.svg)](https://joker0210G.github.io/spherex-hunter/)
 [![Python Tests](https://img.shields.io/badge/pytest-62%2F62%20passing-brightgreen.svg)](tests/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com)
 [![NASA SPHEREx](https://img.shields.io/badge/NASA-SPHEREx%20DR1-critical.svg)](https://spherex.caltech.edu)
 
 SPHEREx Hunter is an interactive astronomical observatory and multi-epoch blink comparator built for the **NASA Space Apps Challenge 2026**. It allows citizen scientists and professional astrophysicists to discover Solar System objects, extreme high-proper-motion brown dwarfs, and Planet X candidates by blinking temporal infrared surveys (**2MASS 1999**, **AllWISE 2010**, **unWISE 2014-2020**, and **SPHEREx 2025**).
+
+🌐 **Live Web Observatory (GitHub Pages):**  
+👉 **[https://joker0210G.github.io/spherex-hunter/](https://joker0210G.github.io/spherex-hunter/)**
 
 ---
 

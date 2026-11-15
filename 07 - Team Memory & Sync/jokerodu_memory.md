@@ -3,6 +3,11 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Automated GitHub Pages Deployment & Client-Side Subpath Resiliency]**:
+  - Implemented `.github/workflows/deploy-pages.yml` with official `actions/deploy-pages@v4` and `actions/upload-pages-artifact@v3` for automated deployment to GitHub Pages (`https://joker0210G.github.io/spherex-hunter/`).
+  - Adapted frontend static asset paths (`logo.svg`, `aladin.js`, `spherex_102_channels.json`) to relative paths with fallback detection so the client runs out-of-the-box on both local `/app/` routes and GitHub Pages subpaths.
+  - Added live observatory demo badge and hyperlink in `README.md`.
+  - Verified 100% test pass rate (52/52 passing) with zero contract regressions.
 - [x] **[Master Git Sync & Integration: Compact Command Palette Merged Across All Branches]**:
   - Ingested commits `26f6632` and `99f997b` from `coolodu/web-frontend` and `darkodu/astro-backend` into `main`.
   - Feature: Replaced text-heavy command palette button with a compact icon-only search button (`#btnOpenCommandPalette`, `Ctrl+K`) with `sr-only` accessibility badge, saving header space.

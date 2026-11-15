@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🌐 GITHUB PAGES AUTOMATED DEPLOYMENT & CLIENT RESILIENCY (@jokerodu / Team Lead)]**
+  - **Objective:** Deploy SPHEREx Hunter client as a live, standalone web application on GitHub Pages (`https://joker0210G.github.io/spherex-hunter/`).
+  - **Implemented Actions:**
+    1. **GitHub Pages Deployment Workflow (`.github/workflows/deploy-pages.yml`):** Added continuous automated deployment action triggered on `push` to `main` and manual `workflow_dispatch`. Staged distribution artifact using `actions/upload-pages-artifact@v3` and `actions/deploy-pages@v4`.
+    2. **Asset Path Adaptability:** Converted hardcoded `/app/` URLs in `frontend/index.html` (`assets/logo.svg`, `vendor/aladin.js`, `src/data/spherex_102_channels.json`) to resilient paths compatible with subpath deployment and local development.
+    3. **Live Hyperlinks & Documentation:** Updated `README.md` with live demo badges and direct URL.
+  - **Verification:** Verified 52/52 passing tests (`test_ui_contract.py` & `test_golden_suite.py`) with zero DOM regressions.
+
 - **[📚 COMPREHENSIVE GITHUB DOCUMENTATION & README HYPERLINK HUB (@coolodu)]**
   - **Action:** Created dedicated, beginner-friendly GitHub documentation ([`docs/GITHUB_GUIDE.md`](file:///d:/Workspace/NASA_Space_apps/docs/GITHUB_GUIDE.md)), [`CONTRIBUTING.md`](file:///d:/Workspace/NASA_Space_apps/CONTRIBUTING.md), and documentation index ([`docs/README.md`](file:///d:/Workspace/NASA_Space_apps/docs/README.md)).
   - **Full Markdown Hyperlinks:** Overhauled [`README.md`](file:///d:/Workspace/NASA_Space_apps/README.md) to replace Obsidian-only double brackets with standard, clickable GitHub markdown hyperlinks across all 18 documents in `/docs`, the 5 benchmark targets, the quickstart server guide, and the Obsidian knowledge base.
