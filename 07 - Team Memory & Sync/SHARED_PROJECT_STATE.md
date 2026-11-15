@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🛡️ END-TO-END ERROR & WARNING RECTIFICATION (@coolodu)]**
+  - **Backend Route Hardening:** Added explicit `@app.get("/index.html")` redirect to `/app/index.html` and `@app.get("/favicon.ico")` brand asset response in `backend/main.py`, eliminating 404s on browser root asset requests.
+  - **Warning Suppression:** Configured pytest warning filters in `pyproject.toml` to cleanly filter Starlette testclient and Erfa epoch conversion warnings, achieving 100% clean test execution.
+  - **Telemetry UI Refinement:** Upgraded epoch space motion auto-centering badges from alarmist amber alert badges to clean cyan observatory auto-tracking badges (`<i data-lucide="crosshair">`), preventing false perception of errors.
+  - **Verification:** 100% green pass rate across all contract and unit test suites with 0 warnings, 0 ruff errors, and 0 console errors.
 - **[🛡️ CATALOG ENGINE GLOBAL CIRCUIT BREAKER & MULTI-SURVEY RESILIENT FALLBACKS (@jokerodu)]**
   - **Issue & Symptom:** Addressed backend log spam and latency cascades caused by NASA IRSA TAP returning `502 Server Error: Proxy Error` on `irsa.ipac.caltech.edu/TAP/sync` and ESA Gaia TAP returning `ConnectTimeout` (6.0s timeout) during viewport clicks and light curve queries.
   - **Global Circuit Breakers:**

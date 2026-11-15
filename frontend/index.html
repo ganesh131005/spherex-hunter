@@ -3544,9 +3544,9 @@
               <div class="col-span-2"><span class="text-gray-400">Cutout Center:</span> RA ${ep.cutout_center?.ra_deg?.toFixed?.(5) ?? 0}°, Dec ${ep.cutout_center?.dec_deg?.toFixed?.(5) ?? 0}°</div>
             </div>
             ${ep.exceeds_fov ? `
-            <div class="text-[10px] font-mono text-amber-300 flex items-center gap-1.5 bg-amber-950/60 p-2 rounded border border-amber-600/60">
-              <i data-lucide="alert-circle" class="w-4 h-4 text-amber-400 shrink-0"></i>
-              <span>Displacement exceeds ${ep.fov_arcmin}' FOV! Space motion auto-centered this epoch.</span>
+            <div class="text-[10px] font-mono text-cyan-300 flex items-center gap-1.5 bg-cyan-950/40 p-2 rounded border border-cyan-800/60">
+              <i data-lucide="crosshair" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+              <span>High Proper Motion (> ${ep.fov_arcmin}' FOV): Space motion auto-centered this epoch.</span>
             </div>` : ''}
             ${ep.product_url ? `
             <div class="pt-0.5 flex justify-end">
@@ -3790,9 +3790,9 @@
               </button>
             </div>
             ${hasFovExceeded ? `
-            <div class="text-[9px] text-amber-300 bg-amber-950/50 p-1 rounded border border-amber-800/60 flex items-center gap-1">
-              <i data-lucide="alert-circle" class="w-3 h-3 text-amber-400 shrink-0"></i>
-              <span>Displacement exceeds 3' FOV! Centered via space motion.</span>
+            <div class="text-[9px] text-cyan-300 bg-cyan-950/40 p-1 rounded border border-cyan-800/60 flex items-center gap-1">
+              <i data-lucide="crosshair" class="w-3 h-3 text-cyan-400 shrink-0"></i>
+              <span>High Proper Motion (> 3' FOV): Auto-centered via space motion.</span>
             </div>` : ''}
             <div class="text-[8.5px] text-gray-400 italic pt-0.5 text-right">
               Tip: Switch A / B pairs directly on Bottom Timeline buttons.
@@ -3844,9 +3844,9 @@
             </div>
 
             ${ep.exceeds_fov ? `
-            <div class="mt-1 pl-3.5 text-[8.5px] font-mono text-amber-300 flex items-center gap-1 bg-amber-950/40 p-1 rounded border border-amber-800/60" title="${escapeHtml(ep.warning || '')}">
-              <i data-lucide="alert-circle" class="w-3 h-3 text-amber-400 shrink-0"></i>
-              <span>Displacement exceeds ${ep.fov_arcmin}' FOV! Centered via space motion.</span>
+            <div class="mt-1 pl-3.5 text-[8.5px] font-mono text-cyan-300 flex items-center gap-1 bg-cyan-950/40 p-1 rounded border border-cyan-800/60" title="${escapeHtml(ep.warning || '')}">
+              <i data-lucide="crosshair" class="w-3 h-3 text-cyan-400 shrink-0"></i>
+              <span>High Proper Motion (> ${ep.fov_arcmin}' FOV): Centered via space motion.</span>
             </div>` : ''}
 
             <div id="epochInfo_${ep.id}" class="hidden mt-1.5 p-1.5 bg-blender-950/90 rounded border border-blender-700/80 font-mono text-[8.5px] text-gray-300 space-y-0.5">
