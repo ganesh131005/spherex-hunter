@@ -8,6 +8,10 @@
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Ensure Reliable Triggering of Coordinates Popover & Multi-Entry Time Step Access]**:
+  - Bound direct inline `onclick="window.toggleCoordsPopover()"` and `onclick="window.toggleTimeStepHUD()"` handlers, adding `pointer-events-none` to nested text and icons so child elements never swallow clicks.
+  - Added dedicated `Tool 5: Time Step Controller` entry inside the top View Modes dropdown (`#viewModesPopup`), enabling users to open the Time Step Controller from either the left vertical toolbar (`Step` button / Hotkey `T`) or the top View Modes menu.
+  - Verified live in browser subagent on `http://127.0.0.1:8000` with both popups rendering cleanly and 100% test pass rate.
 - [x] **[Close Time Step Controller by Default to Free Viewport & Open from Sidebar on Demand]**:
   - Closed `#viewportTimeStepHUD` by default by setting `class="hidden ..."` in `frontend/index.html`, eliminating viewport occlusion on initial startup.
   - Set `#toolTimeStep` on the left sidebar tool rail to idle state by default (removed `blender-btn-active`).
