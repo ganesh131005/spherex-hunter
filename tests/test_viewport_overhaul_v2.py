@@ -113,8 +113,48 @@ def test_deterministic_102_channels_and_attribution():
     assert b6_ch[0]["resolving_power"] == 128
 
     # Attribution & Provenance in HTML
-    assert "NASA/JPL/IPAC" in html, "Missing NASA/JPL/IPAC attribution in HTML"
-    assert "DR1 Co-Added Context (Blurs Movers)" in html, "Missing provenance warning regarding blurred movers in HiPS"
+    assert "NASA/JPL/IPAC" in html or "NASA/JPL-Caltech/IPAC" in html, "Missing NASA/JPL/IPAC attribution in HTML"
+    assert "DR1 Co-Added Context (Blurs Movers)" in html or "co-add blurs movers" in html, "Missing provenance warning regarding blurred movers in HiPS"
+    assert "DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection" in html, "Missing full official provenance string in HTML"
+
+
+def test_step3_hips_layer_and_channel_selector_integration():
+    """Validates Step 3: HiPS base layer URLs, local fallback route, 102-channel selector R values, and Aladin controls."""
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+
+    html = _read_index_html()
+
+    # 1. Authentic IRSA HiPS Base Layer & Fallbacks
+    assert "https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/" in html
+    assert "/app/fixtures/hips_spherex_dr1_sample" in html
+    assert "/app/P/DSS2/color" in html
+
+    # 2. Resolving Power in JavaScript Table
+    assert "resolving_power: 41" in html
+    assert "resolving_power: 35" in html
+    assert "resolving_power: 112" in html
+    assert "resolving_power: 128" in html
+
+    # 3. Dynamic Channel Event Dispatch & Controls
+    assert "spherex-channel-changed" in html
+    assert "btnZoomAllSky" in html
+    assert "aladinContextNotice" in html
+    assert "hipsChannelSelect" in html
+
+    # 4. Backend Endpoints for Fixture and Channels JSON
+    client = TestClient(app)
+    resp_prop = client.get("/app/fixtures/hips_spherex_dr1_sample/properties")
+    assert resp_prop.status_code == 200
+    assert "SPHEREx DR1 all-sky data cube" in resp_prop.text
+    assert "hips_cube_depth" in resp_prop.text
+
+    resp_ch = client.get("/app/src/data/spherex_102_channels.json")
+    assert resp_ch.status_code == 200
+    ch_data = resp_ch.json()
+    assert ch_data["total_channels"] == 102
+    assert len(ch_data["channels"]) == 102
 
 
 # -----------------------------------------------------------------------------

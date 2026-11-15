@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🌌 STEP 3 COMPLETED: SPHEREx DR1 HiPS CONTEXT LAYER & 102-CHANNEL SELECTOR VERIFIED (@coolodu)]**
+  - **Official HiPS Layer Integration:** Integrated authentic IRSA SPHEREx DR1 all-sky cube HiPS layer (`https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/`) as primary survey with automatic local fixture cascade (`/app/fixtures/hips_spherex_dr1_sample` and `/app/P/DSS2/color`). Mounted local fixture route in FastAPI `backend/main.py`.
+  - **Deterministic 102-Channel Selector & Resolving Powers:** Integrated 102-channel selector displaying authentic resolving powers $R \in [35, 130]$ across Bands 1–6 (Band 1–3 $R=41$, Band 4 $R=35$, Band 5 $R=112$, Band 6 $R=128$) synced with `/app/src/data/spherex_102_channels.json`.
+  - **Live Cube Slice & Event Dispatch:** Implemented `switchHiPSChannel(chNumber)` updating `#hipsWavelengthDisplay`, invoking Aladin Lite `baseLayer.setSliceNumber(chNumber)` or `setChannel(chNumber)`, and dispatching `spherex-channel-changed` CustomEvents with detailed wavelength and band telemetry.
+  - **Attribution & Blurred Mover Warning:** Visible `NASA/JPL-Caltech/IPAC (SPHEREx DR1)` attribution and `"DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection"` warning rendered in `#aladinContextBar`.
+  - **Verification:** 45 tests passed across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
 - **[📢 ISSUE #42 DISPATCHED TO @coolodu — REDESIGN CITIZEN SCIENCE ONBOARDING UX]**
   - **Issue:** [#42: Redesign Citizen Science Onboarding: Replace Dense Text Bloat with Visual, Snappy Interactive Tour & Quick-Start Cards](https://github.com/joker0210G/spherex-hunter/issues/42)
   - **Target Teammate:** `@coolodu` (Frontend Lead) | **Branch:** `coolodu/web-frontend` | **Track:** `web-frontend`

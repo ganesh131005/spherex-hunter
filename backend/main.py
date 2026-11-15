@@ -117,6 +117,11 @@ def get_dss2_hips_fallback_tile(tile_path: str):
     return Response(content=_get_fallback_hips_jpeg_bytes(), media_type="image/jpeg")
 
 
+# Mount local HiPS deterministic fixture for offline testing
+LOCAL_HIPS_FIXTURE = os.path.join(os.path.dirname(__file__), "..", "tests", "fixtures", "hips_spherex_dr1_sample")
+if os.path.exists(LOCAL_HIPS_FIXTURE):
+    app.mount("/app/fixtures/hips_spherex_dr1_sample", StaticFiles(directory=LOCAL_HIPS_FIXTURE), name="hips_dr1_fixture")
+
 # Mount frontend directory for same-origin browsing
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 if os.path.exists(FRONTEND_DIR):

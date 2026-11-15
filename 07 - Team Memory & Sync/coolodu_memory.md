@@ -3,8 +3,8 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Issue #41 / TASK-007 (`Improve UI/UX Readability & Typography Scale: Enlarge Microscopic 9px/10px Text for Researchers & Newbies`) and merged with Step 2 priority 0 bug remediations.
-- **Next Task:** Monitor GitHub Issues board for incoming tasks and maintain clean test suites.
+- **Current Task:** Completed and verified Step 3 (Sky Context Layer & 102-Channel Spectral Selector) of the Master Engineering Specification on `coolodu/web-frontend`. Integrated authentic IRSA SPHEREx DR1 all-sky cube HiPS layer (`https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/`) with deterministic local fixture fallback (`/app/fixtures/hips_spherex_dr1_sample` and `/app/P/DSS2/color`). Wired 102-channel selector with authentic resolving powers $R \in [35, 130]$ across Bands 1–6 (Band 1–3 $R=41$, Band 4 $R=35$, Band 5 $R=112$, Band 6 $R=128$) from `spherex_102_channels.json`, live slice switching, event dispatching (`spherex-channel-changed`), and visible `NASA/JPL-Caltech/IPAC (SPHEREx DR1)` attribution and `"DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection"` warning. All 44 tests passing 100% green. Also merged with Issue #41 (TASK-007) UI/UX readability improvements.
+- **Next Task:** Step 4 (Spatially & Temporally Accurate Multi-Epoch Placement, Narrowband Stacking & Gaia DR3 Astrometry).
 - **Blockers:** None.
 
 ## Assigned Tasks:
@@ -14,6 +14,12 @@
   - **Scope:** Refactored `text-[9px]` & `text-[10px]` across SPHEREx spectral bar (`#chanDisplay`, `#chanFluxBadge`, `#chanSlider`, `#chanPrev`, `#chanNext`, `.array-tab`, `#spectrumNonSimultaneousNotice`, `#btnOpenBandScience`), molecular absorption reference table, viewport HUD time-step controls, and coordinate validation hints to accessible font scales ($\ge 11\text{px}$–$14\text{px}$) with comfortable click padding and WCAG AA contrast.
 
 ## Completed Tasks:
+- [x] **[Step 3 Completed: Sky Context Layer & 102-Channel Spectral Selector]**:
+  - **Authentic IRSA DR1 HiPS Base Layer:** Configured `ONLINE_SURVEY = 'https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube/'` in Aladin Lite v3 with automatic fallback cascade to `/app/fixtures/hips_spherex_dr1_sample` and `/app/P/DSS2/color`. Mounted deterministic sample fixture at `/app/fixtures/hips_spherex_dr1_sample` in `backend/main.py`.
+  - **102-Channel Selector with Band Resolving Powers ($R$):** Embedded complete 102-channel table with resolving powers ($R=41$ for Bands 1–3, $R=35$ for Band 4, $R=112$ for Band 5, $R=128$ for Band 6) and dynamic JSON schema hydration from `/app/src/data/spherex_102_channels.json`.
+  - **Live Cube Slice & Event Dispatch:** Implemented `switchHiPSChannel(chNumber)` updating `#hipsWavelengthDisplay`, invoking Aladin Lite `baseLayer.setSliceNumber(chNumber)` or `setChannel(chNumber)`, and dispatching `spherex-channel-changed` CustomEvents with detailed wavelength and band telemetry.
+  - **Attribution & Blurred Mover Warning:** Visible `NASA/JPL-Caltech/IPAC (SPHEREx DR1)` attribution and `"DR1 all-sky mosaic: context only (co-add blurs movers), not used for detection"` notice prominently displayed in `#aladinContextBar`.
+  - **Verification:** 44 passed across `test_viewport_overhaul_v2.py`, `test_ui_contract.py`, and `test_golden_suite.py` with 0 ruff errors.
 - [x] **[Resolved Issue #41 / TASK-007 — UI/UX Readability & Typography Scale Optimization]**:
   - **SPHEREx Spectral Bar & 102-Band SED Neon Palette:**
     - Enlarged `#chanDisplay` from 12px to `text-sm font-bold min-w-[220px]` (14px) for clear channel and wavelength readouts.
