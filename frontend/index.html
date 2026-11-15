@@ -373,26 +373,63 @@
       </div>
     </div>
 
-    <!-- Center: Curated Target Selector & Quick Search -->
-    <div class="flex items-center gap-1 bg-space-950 p-1 px-2 rounded-lg border border-space-700 shadow-inner shrink-0">
+    <!-- Center: Curated Target Selector Dropdown Toolbar & Quick Search -->
+    <div id="targetPresetToolbar" class="flex items-center gap-1.5 bg-space-950 p-1 px-2 rounded-lg border border-space-700 shadow-inner shrink-0">
 
-      <!-- Command Palette / Target Switcher Button -->
-      <button id="btnOpenCommandPalette" class="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-space-850 hover:bg-space-800 px-2 py-0.5 rounded border border-space-700 transition" title="Search targets and coordinates (Ctrl+K)">
-        <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
-        <span id="activeTargetBadgeName" class="font-semibold text-white truncate max-w-[100px] sm:max-w-[120px]">WISE 0855</span>
-        <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-gray-400 border border-white/10">Ctrl+K</kbd>
+      <!-- Command Palette Search Icon Button -->
+      <button id="btnOpenCommandPalette" class="flex items-center justify-center p-1.5 rounded-lg bg-space-850 hover:bg-space-800 text-cyan-400 hover:text-cyan-300 border border-space-700 transition shrink-0" title="Search targets, coordinates, and tools (Ctrl+K)" aria-label="Search targets and coordinates (Ctrl+K)">
+        <i data-lucide="search" class="w-3.5 h-3.5"></i>
       </button>
 
       <div class="w-[1px] h-4 bg-space-700/80 mx-0.5"></div>
 
-      <!-- Quick Preset Buttons (Preserves .target-btn for E2E tests) -->
-      <div class="flex items-center gap-1">
-        <button class="target-btn blender-btn blender-btn-active px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="wise0855" title="WISE 0855-0714 (Cold Y-Dwarf, ~250 K)">WISE 0855</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="barnard" title="Barnard's Star (10.36 &quot;/yr Proper Motion)">Barnard's Star</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">Eps Indi B</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden sm:inline-block" data-target="rwaur" title="RW Aurigae (T-Tauri Variable)">RW Aur</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden md:inline-block" data-target="rdraconis" title="R Draconis (Mira Variable)">R Dra</button>
-        <button class="target-btn blender-btn px-2 py-0.5 text-[10px] font-mono whitespace-nowrap rounded hidden lg:inline-block" data-target="orion" title="Orion Nebula Core (H II Star-Forming Region)">Orion</button>
+      <!-- Curated Target Selector Dropdown Toolbar -->
+      <div class="relative shrink-0" id="targetDropdownContainer">
+        <!-- Target Dropdown Trigger Button -->
+        <button id="btnTargetDropdownTrigger" type="button"
+          class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-200 hover:text-white transition select-none shadow-sm hover:border-cyan-500/50"
+          title="Select benchmark target (Click to open dropdown menu)">
+          <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange"></i>
+          <span id="activeTargetBadgeName" class="font-bold text-white truncate max-w-[120px]">WISE 0855</span>
+          <i data-lucide="chevron-down" id="targetDropdownChevron" class="w-3 h-3 text-gray-400 transition-transform"></i>
+        </button>
+
+        <!-- Target Presets Dropdown Menu (Preserves .target-btn for E2E tests) -->
+        <div id="targetDropdownMenu"
+          class="hidden absolute left-0 top-full mt-1.5 w-64 bg-space-900 border border-space-700 rounded-lg p-1.5 shadow-2xl z-50 space-y-1 font-mono text-xs">
+          <div class="px-2 py-1 text-[10px] text-gray-400 font-sans font-bold uppercase tracking-wider border-b border-space-800 flex items-center justify-between">
+            <span class="flex items-center gap-1 text-cyan-400"><i data-lucide="compass" class="w-3 h-3"></i> Benchmark Targets</span>
+            <kbd class="text-[9px] text-gray-500 font-mono">Esc</kbd>
+          </div>
+          <button class="target-btn blender-btn blender-btn-active w-full text-left px-2 py-1 text-[11px] font-mono rounded flex items-center justify-between gap-2 transition" data-target="wise0855" title="WISE 0855-0714 (Cold Y-Dwarf, ~250 K)">
+            <span class="truncate font-semibold text-white">🪐 WISE 0855</span>
+            <span class="text-[9px] text-amber-300 shrink-0 font-sans">Y-Dwarf</span>
+          </button>
+          <button class="target-btn blender-btn w-full text-left px-2 py-1 text-[11px] font-mono rounded flex items-center justify-between gap-2 transition" data-target="barnard" title="Barnard's Star (10.36 &quot;/yr Proper Motion)">
+            <span class="truncate font-semibold text-white">⚡ Barnard's Star</span>
+            <span class="text-[9px] text-cyan-300 shrink-0 font-sans">10.36″/yr PM</span>
+          </button>
+          <button class="target-btn blender-btn w-full text-left px-2 py-1 text-[11px] font-mono rounded flex items-center justify-between gap-2 transition" data-target="epsindi" title="Epsilon Indi B (Binary Brown Dwarf)">
+            <span class="truncate font-semibold text-white">🪐 Eps Indi B</span>
+            <span class="text-[9px] text-purple-300 shrink-0 font-sans">T1+T6</span>
+          </button>
+          <button class="target-btn blender-btn w-full text-left px-2 py-1 text-[11px] font-mono rounded flex items-center justify-between gap-2 transition" data-target="rwaur" title="RW Aurigae (T-Tauri Variable)">
+            <span class="truncate font-semibold text-white">✨ RW Aur</span>
+            <span class="text-[9px] text-emerald-300 shrink-0 font-sans">T-Tauri</span>
+          </button>
+          <button class="target-btn blender-btn w-full text-left px-2 py-1 text-[11px] font-mono rounded flex items-center justify-between gap-2 transition" data-target="rdraconis" title="R Draconis (Mira Variable)">
+            <span class="truncate font-semibold text-white">🔴 R Dra</span>
+            <span class="text-[9px] text-rose-300 shrink-0 font-sans">Mira</span>
+          </button>
+          <button class="target-btn blender-btn w-full text-left px-2 py-1 text-[11px] font-mono rounded flex items-center justify-between gap-2 transition" data-target="orion" title="Orion Nebula Core (H II Star-Forming Region)">
+            <span class="truncate font-semibold text-white">🌌 Orion Nebula</span>
+            <span class="text-[9px] text-blue-300 shrink-0 font-sans">H II Core</span>
+          </button>
+          <button class="target-btn blender-btn w-full text-left px-2 py-1 text-[11px] font-mono rounded flex items-center justify-between gap-2 transition" data-target="sgra" title="Galactic Center Sgr A* (Supermassive Black Hole Sky Field)">
+            <span class="truncate font-semibold text-white">🕳️ Sgr A*</span>
+            <span class="text-[9px] text-gray-400 shrink-0 font-sans">Black Hole</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -505,75 +542,46 @@
         <span id="userModeLabel" class="hidden md:inline">Beginner</span>
       </button>
 
-      <!-- My Investigations / Previous Analyses Button (Issue #21) -->
-      <button id="btnOpenInvestigations" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-purple-300 hover:text-white border border-purple-500/40 text-[10px] font-mono transition-all shrink-0 hidden md:flex" title="Open My Investigations & Saved Sessions">
-        <i data-lucide="folder-clock" class="w-3 h-3 text-purple-400"></i>
-        <span class="hidden xl:inline">My Investigations</span>
-        <span id="investigationsCountBadge" class="px-1.5 py-0.2 rounded-full bg-purple-900/80 text-purple-200 text-[9px] font-bold">0</span>
-      </button>
-
-      <!-- Save Analysis Snapshot Button (Issue #22) -->
-      <button id="btnSaveAnalysis" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-emerald-300 hover:text-white border border-emerald-500/40 text-[10px] font-mono transition-all shrink-0 hidden lg:flex" title="Save Current Analysis Session Snapshot">
-        <i data-lucide="bookmark-plus" class="w-3 h-3 text-emerald-400"></i>
-        <span class="hidden xl:inline">Save Analysis</span>
-      </button>
-
-      <!-- Share Sky Region Button (Issue #12) -->
-      <button id="btnShareModal" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden xl:flex" title="Share Sky Region & Deep-Link URL">
-        <i data-lucide="share-2" class="w-3 h-3 text-cyan-400"></i>
-        <span>Share</span>
-      </button>
-
-      <!-- Command Palette Pill (Ctrl+K) -->
-      <button id="cmdPaletteBtn" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden 2xl:flex" title="Open Command Palette (Ctrl+K)">
-        <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
-        <span>Ctrl+K</span>
-      </button>
-
-      <!-- Mission Codex & Phase 2 Validation Button -->
-      <button id="btnOpenValidation" class="p-1.5 rounded blender-btn text-cyan-300 hover:text-white items-center gap-1 text-xs hidden 2xl:flex" title="Open Official NASA/CSA Codex & Phase 2 Scientific Validation Benchmark">
-        <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
-        <span class="hidden md:inline">Validation</span>
-      </button>
-
-      <!-- Keyboard Shortcuts Trigger -->
-      <button id="btnOpenShortcuts" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white hidden 2xl:flex" title="Keyboard Shortcuts Cheat Sheet (?)">
-        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
-      </button>
-
-      <!-- Responsive Overflow Menu Button (Issue #32) -->
-      <div class="relative inline-block 2xl:hidden">
-        <button id="btnHeaderMoreActions" class="p-1.5 rounded blender-btn text-gray-400 hover:text-white shrink-0" title="More Observatory Tools">
-          <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+      <!-- Dropdown Toolbar named 'More' (Issue #32: Investigations, Save, Share, Validation, Shortcuts) -->
+      <div class="relative inline-block shrink-0" id="moreActionsContainer">
+        <button id="btnHeaderMoreActions" type="button" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg blender-btn text-gray-200 hover:text-white border border-space-700 hover:border-cyan-500/50 transition-all select-none shadow-sm shrink-0" title="More Observatory Tools (Investigations, Save, Share, Validation)">
+          <i data-lucide="more-horizontal" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span class="font-medium text-xs">More</span>
+          <span id="moreCountBadge" class="hidden px-1 min-w-[14px] h-[14px] rounded-full bg-purple-600 text-white text-[8px] font-bold items-center justify-center leading-none">0</span>
+          <i data-lucide="chevron-down" id="moreChevron" class="w-3 h-3 text-gray-400 transition-transform"></i>
         </button>
-        <div id="headerMoreActionsDropdown" class="hidden absolute right-0 top-10 mt-1 w-52 bg-space-900 border border-space-700 rounded-lg p-2 shadow-2xl z-50 space-y-1 text-xs font-mono">
-          <button id="dropdownOpenInvestigations" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-purple-300 transition">
-            <i data-lucide="folder-clock" class="w-3.5 h-3.5 text-purple-400"></i>
-            <span>My Investigations</span>
+
+        <!-- Dropdown Menu -->
+        <div id="headerMoreActionsDropdown" class="hidden absolute right-0 top-full mt-1.5 w-56 bg-space-900/98 backdrop-blur-xl border border-space-700 rounded-xl p-1.5 shadow-2xl z-50 space-y-1 text-xs font-mono select-none animate-in fade-in slide-in-from-top-1 duration-150">
+          <div class="px-2 py-1 text-[10px] text-gray-400 font-sans font-bold uppercase tracking-wider border-b border-space-800 flex items-center justify-between">
+            <span class="flex items-center gap-1 text-cyan-400"><i data-lucide="sliders" class="w-3 h-3"></i> More Tools</span>
+            <kbd class="text-[9px] text-gray-500 font-mono">Esc</kbd>
+          </div>
+          <button id="btnOpenInvestigations" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-purple-300 transition">
+            <div class="flex items-center gap-2">
+              <i data-lucide="folder-clock" class="w-3.5 h-3.5 text-purple-400"></i>
+              <span class="font-sans font-medium text-white">My Investigations</span>
+            </div>
+            <span id="investigationsCountBadge" class="px-1.5 py-0.2 rounded-full bg-purple-900/80 text-purple-200 text-[9px] font-bold">0</span>
           </button>
-          <button id="dropdownSaveAnalysis" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-emerald-300 transition">
+          <button id="btnSaveAnalysis" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-emerald-300 transition">
             <i data-lucide="bookmark-plus" class="w-3.5 h-3.5 text-emerald-400"></i>
-            <span>Save Analysis</span>
+            <span class="font-sans font-medium text-white">Save Analysis</span>
           </button>
-          <button id="dropdownShare" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-cyan-300 transition">
+          <button id="btnShareModal" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-cyan-300 transition">
             <i data-lucide="share-2" class="w-3.5 h-3.5 text-cyan-400"></i>
-            <span>Share Sky Region</span>
+            <span class="font-sans font-medium text-white">Share Sky Region</span>
           </button>
-          <button id="dropdownOpenValidation" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-cyan-300 transition">
+          <button id="btnOpenValidation" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-cyan-300 transition">
             <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
-            <span>Validation &amp; Codex</span>
+            <span class="font-sans font-medium text-white">Validation &amp; Codex</span>
           </button>
-          <button id="dropdownOpenShortcuts" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-gray-300 transition">
+          <button id="btnOpenShortcuts" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-space-800 text-left text-gray-300 transition">
             <i data-lucide="help-circle" class="w-3.5 h-3.5 text-gray-400"></i>
-            <span>Keyboard Shortcuts</span>
+            <span class="font-sans font-medium text-white">Keyboard Shortcuts</span>
           </button>
         </div>
       </div>
-
-      <!-- Toggle Right Inspector Panel -->
-      <button id="toggleSidebarBtn" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white shrink-0" title="Toggle Inspector Sidebar">
-        <i data-lucide="sidebar" class="w-3.5 h-3.5"></i>
-      </button>
     </div>
   </header>
 
@@ -1242,8 +1250,17 @@
       </div>
     </main>
 
-    <!-- SIDE PANEL RESIZE SPLITTER (Issue #16) -->
-    <div id="sidePanelSplitter" class="w-1.5 bg-space-800 hover:bg-cyan-500/60 active:bg-cyan-400 cursor-col-resize shrink-0 z-30 transition-colors" title="Drag to resize Inspector Panel (Double-click to reset)"></div>
+    <!-- SIDE PANEL RESIZE SPLITTER & CAD-STYLE HIDE/SHOW AREA BUTTON (Issue #16 & User Request) -->
+    <div id="sidePanelSplitter" class="relative w-1.5 bg-space-800 hover:bg-cyan-500/60 active:bg-cyan-400 cursor-col-resize shrink-0 z-30 transition-colors" title="Drag to resize Inspector Panel (Double-click to reset)">
+      <!-- SolidWorks/CAD-Style Hide/Show Area Button -->
+      <button id="toggleSidebarBtn" type="button"
+        class="absolute -left-3.5 top-1/2 -translate-y-1/2 w-4 h-14 bg-space-850 hover:bg-space-800 active:bg-space-700 border-y border-l border-space-600 hover:border-cyan-500/60 rounded-l-md flex flex-col items-center justify-center gap-1 text-gray-400 hover:text-cyan-300 shadow-xl cursor-pointer z-40 transition-all select-none group"
+        title="Hide Inspector Sidebar (Scene Collection)"
+        aria-label="Toggle Inspector Sidebar Area">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 group-hover:bg-cyan-300 shadow-[0_0_6px_rgba(6,182,212,0.8)] transition-all"></span>
+        <i data-lucide="chevron-right" id="toggleSidebarChevron" class="w-3 h-3 text-gray-400 group-hover:text-cyan-300 transition-transform"></i>
+      </button>
+    </div>
 
     <!-- RIGHT INSPECTOR (380px, Data-Driven Tabbed Interface) -->
     <aside id="propertiesSidebar" class="w-96 bg-space-900 border-l border-space-700 flex flex-col shrink-0 min-h-0 z-20 text-xs select-none shadow-xl" role="region" aria-label="Scene Collection and Layer Manager">
@@ -5838,8 +5855,44 @@
     }
 
     // =========================================================================
-    // TARGET PRESETS & COORDINATE SEARCH
+    // TARGET PRESETS DROPDOWN TOOLBAR & COORDINATE SEARCH
     // =========================================================================
+    const btnTargetDropdownTrigger = document.getElementById('btnTargetDropdownTrigger');
+    const targetDropdownMenu = document.getElementById('targetDropdownMenu');
+    const targetDropdownChevron = document.getElementById('targetDropdownChevron');
+    const targetDropdownContainer = document.getElementById('targetDropdownContainer');
+
+    function toggleTargetDropdown(forceState) {
+      if (!targetDropdownMenu) return;
+      const willOpen = (typeof forceState === 'boolean') ? forceState : targetDropdownMenu.classList.contains('hidden');
+      if (willOpen) {
+        targetDropdownMenu.classList.remove('hidden');
+        if (targetDropdownChevron) targetDropdownChevron.classList.add('rotate-180');
+      } else {
+        targetDropdownMenu.classList.add('hidden');
+        if (targetDropdownChevron) targetDropdownChevron.classList.remove('rotate-180');
+      }
+    }
+
+    if (btnTargetDropdownTrigger) {
+      btnTargetDropdownTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleTargetDropdown();
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (targetDropdownContainer && !targetDropdownContainer.contains(e.target)) {
+        toggleTargetDropdown(false);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && targetDropdownMenu && !targetDropdownMenu.classList.contains('hidden')) {
+        toggleTargetDropdown(false);
+      }
+    });
+
     document.querySelectorAll('.target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-target');
@@ -5905,6 +5958,7 @@
       document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-btn-active'));
       const activeBtn = document.querySelector(`[data-target="${key}"]`);
       if (activeBtn) activeBtn.classList.add('blender-btn-active');
+      toggleTargetDropdown(false);
 
       playTargetLockChime();
       loadSceneState(key, t.raDeg, t.decDeg, targetFov);
@@ -7833,9 +7887,55 @@
     // =========================================================================
     const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
     const propertiesSidebar = document.getElementById('propertiesSidebar');
-    toggleSidebarBtn.addEventListener('click', () => {
-      propertiesSidebar.classList.toggle('hidden');
-    });
+    const toggleSidebarChevron = document.getElementById('toggleSidebarChevron');
+    const sidePanelSplitterEl = document.getElementById('sidePanelSplitter');
+
+    function updateSidebarToggleState() {
+      if (!propertiesSidebar) return;
+      const isHidden = propertiesSidebar.classList.contains('hidden');
+      if (toggleSidebarChevron) {
+        toggleSidebarChevron.classList.toggle('rotate-180', isHidden);
+      }
+      if (toggleSidebarBtn) {
+        if (isHidden) {
+          toggleSidebarBtn.title = 'Show Inspector Sidebar (Scene Collection)';
+          toggleSidebarBtn.setAttribute('aria-label', 'Show Inspector Sidebar Area');
+        } else {
+          toggleSidebarBtn.title = 'Hide Inspector Sidebar (Scene Collection)';
+          toggleSidebarBtn.setAttribute('aria-label', 'Hide Inspector Sidebar Area');
+        }
+      }
+      if (sidePanelSplitterEl) {
+        if (isHidden) {
+          sidePanelSplitterEl.classList.remove('cursor-col-resize');
+          sidePanelSplitterEl.classList.add('cursor-default');
+        } else {
+          sidePanelSplitterEl.classList.add('cursor-col-resize');
+          sidePanelSplitterEl.classList.remove('cursor-default');
+        }
+      }
+      if (typeof resizeCanvas === 'function') {
+        resizeCanvas();
+      }
+    }
+
+    if (toggleSidebarBtn && propertiesSidebar) {
+      toggleSidebarBtn.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+      });
+      toggleSidebarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        propertiesSidebar.classList.toggle('hidden');
+        updateSidebarToggleState();
+      });
+    }
+
+    if (window.MutationObserver && propertiesSidebar) {
+      const sidebarObserver = new MutationObserver(() => {
+        updateSidebarToggleState();
+      });
+      sidebarObserver.observe(propertiesSidebar, { attributes: true, attributeFilter: ['class'] });
+    }
 
     const flagCandidateBtn = document.getElementById('flagCandidateBtn');
     const flagModal = document.getElementById('flagModal');
@@ -8778,6 +8878,8 @@
         let draggingSide = false;
 
         sideSplitter.addEventListener('mousedown', (e) => {
+          if (sidebarEl.classList.contains('hidden')) return;
+          if (e.target.closest('#toggleSidebarBtn')) return;
           e.preventDefault();
           draggingSide = true;
           document.body.style.cursor = 'col-resize';
@@ -10935,37 +11037,34 @@
       // Header More Actions Dropdown (Issue #32)
       const btnHeaderMore = document.getElementById('btnHeaderMoreActions');
       const headerMoreDropdown = document.getElementById('headerMoreActionsDropdown');
+      const moreChevron = document.getElementById('moreChevron');
       if (btnHeaderMore && headerMoreDropdown) {
         btnHeaderMore.addEventListener('click', (e) => {
           e.stopPropagation();
+          const willOpen = headerMoreDropdown.classList.contains('hidden');
           headerMoreDropdown.classList.toggle('hidden');
+          if (moreChevron) moreChevron.classList.toggle('rotate-180', willOpen);
         });
         document.addEventListener('click', (e) => {
           if (!e.target.closest('#headerMoreActionsDropdown') && !e.target.closest('#btnHeaderMoreActions')) {
             headerMoreDropdown.classList.add('hidden');
+            if (moreChevron) moreChevron.classList.remove('rotate-180');
+          }
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && !headerMoreDropdown.classList.contains('hidden')) {
+            headerMoreDropdown.classList.add('hidden');
+            if (moreChevron) moreChevron.classList.remove('rotate-180');
           }
         });
       }
 
-      document.getElementById('dropdownOpenInvestigations')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnOpenInvestigations')?.click();
-      });
-      document.getElementById('dropdownSaveAnalysis')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnSaveAnalysis')?.click();
-      });
-      document.getElementById('dropdownShare')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnShareModal')?.click();
-      });
-      document.getElementById('dropdownOpenValidation')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnOpenValidation')?.click();
-      });
-      document.getElementById('dropdownOpenShortcuts')?.addEventListener('click', () => {
-        headerMoreDropdown?.classList.add('hidden');
-        document.getElementById('btnOpenShortcuts')?.click();
+      ['btnOpenInvestigations', 'btnSaveAnalysis', 'btnShareModal', 'btnOpenValidation', 'btnOpenShortcuts',
+       'dropdownOpenInvestigations', 'dropdownSaveAnalysis', 'dropdownShare', 'dropdownOpenValidation', 'dropdownOpenShortcuts'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', () => {
+          headerMoreDropdown?.classList.add('hidden');
+          if (moreChevron) moreChevron.classList.remove('rotate-180');
+        });
       });
 
       if (btnHeader) btnHeader.addEventListener('click', () => openAiCopilotModal(true));
@@ -11237,6 +11336,17 @@
       function persistSessions(sessions) {
         localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions.slice(0, 40)));
         if (investigationsBadge) investigationsBadge.innerText = String(sessions.length);
+        const moreCountBadge = document.getElementById('moreCountBadge');
+        if (moreCountBadge) {
+          moreCountBadge.innerText = String(sessions.length);
+          if (sessions.length > 0) {
+            moreCountBadge.classList.remove('hidden');
+            moreCountBadge.classList.add('inline-flex');
+          } else {
+            moreCountBadge.classList.add('hidden');
+            moreCountBadge.classList.remove('inline-flex');
+          }
+        }
       }
 
       function getCurrentStretchMode() {
@@ -11275,6 +11385,17 @@
       function renderInvestigationsList() {
         const sessions = loadSessions();
         if (investigationsBadge) investigationsBadge.innerText = String(sessions.length);
+        const moreCountBadge = document.getElementById('moreCountBadge');
+        if (moreCountBadge) {
+          moreCountBadge.innerText = String(sessions.length);
+          if (sessions.length > 0) {
+            moreCountBadge.classList.remove('hidden');
+            moreCountBadge.classList.add('inline-flex');
+          } else {
+            moreCountBadge.classList.add('hidden');
+            moreCountBadge.classList.remove('inline-flex');
+          }
+        }
         if (btnUpdateSelectedSession) {
           const hasActive = Boolean(activeSessionId && sessions.some(s => s.id === activeSessionId));
           btnUpdateSelectedSession.classList.toggle('hidden', !hasActive);

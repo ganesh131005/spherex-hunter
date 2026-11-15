@@ -26,6 +26,13 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[✨ HEADER TOOLBAR MODERNIZATION: TARGET DROPDOWN & 'MORE' TOOLS DROPDOWN (@coolodu)]**
+  - **User Requests & UX Consolidation:**
+    - Converted target preset horizontal button list into a sleek, compact dropdown toolbar (`#btnTargetDropdownTrigger` & `#targetDropdownMenu`), preserving the single icon-only search button (`#btnOpenCommandPalette`, `Ctrl+K`) and benchmark target selectors.
+    - Consolidated top-right observatory utility tools (`My Investigations`, `Save Analysis`, `Share`, `Validation`, and `Keyboard Shortcuts`) into a single unified dropdown toolbar button named **"More"** (`#btnHeaderMoreActions` + `#headerMoreActionsDropdown`).
+    - Added reactive badge counter (`#moreCountBadge`) linked to saved session changes in `persistSessions()` / `renderInvestigationsList()`.
+    - Removed duplicate block-scoped variable declaration diagnostic in `frontend/index.html`.
+  - **Verification:** Verified 100% green across all 36 contract and viewport tests (`test_ui_contract.py` [26/26 passed] & `test_viewport_overhaul_v2.py` [10/10 passed]).
 - **[🛡️ PERSISTENT ZERO-NOISE CIRCUIT BREAKER & SINGLE-FLIGHT TAP ENGINE (@jokerodu)]**
   - **Issue & Symptom:** Addressed startup thundering-herd error cascades and multiline `urllib3` connection pool dumps when Uvicorn restarts with NASA IRSA TAP returning 502 and ESA Gaia TAP timing out.
   - **Disk-Backed Persistent Circuit State:** Implemented `backend/cache/circuit_state.json` persisting `irsa_tap_cooldown` and `esa_gaia_cooldown` across server restarts and Uvicorn reloads. If an archive was offline before restart, the circuit remains OPEN immediately on startup, eliminating the cold start timeout.
@@ -999,3 +1006,4 @@
   - **Automated Verification:** Added `test_continuous_viewport_frustum_tiling_on_pan` in `tests/test_continuous_viewport_e2e.py`. Verified 2/2 tests green (100% pass rate) on Microsoft Edge in headless browser mode, confirming dynamic tile streaming on +300px pan with 0 errors.
 - **[Task Dispatched: Issue #33]** Created GitHub Issue [#33: feat(viewport): dynamic frustum sky tiling and unified 1:1 scale alignment on pan/zoom](https://github.com/joker0210G/spherex-hunter/issues/33) assigned to `@coolodu` (Track: `web-frontend`, Resource: `token-heavy`). Focus: Continuous frustum streaming & seamless edge fusion.
 - **[Task Dispatched: Issue #38]** Created GitHub Issue [#38: fix(ui-ux): inspector 4-tab horizontal clipping, sticky header content bleed, and top bar button overflow](https://github.com/joker0210G/spherex-hunter/issues/38) assigned to `@coolodu` (Track: `web-frontend`, Resource: `standard`). Focus: Inspector 4-tab responsive grid/truncation, sticky tab header baseline isolation, and top navigation bar button collapse.
+- **[Feature Completed: 'More' Dropdown Toolbar]** Consolidated My Investigations, Save Analysis, Share Sky Region, Validation & Codex, and Shortcuts into a single, clean **More** dropdown toolbar (`#btnHeaderMoreActions`, `#headerMoreActionsDropdown`). Trigger button displays `••• More v` with live count badge and auto-closes on action click or Esc. Full test suite passing (26/26 in `tests/test_ui_contract.py`).

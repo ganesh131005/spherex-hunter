@@ -8,6 +8,12 @@
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Modernize Header Action Tools to Dropdown Toolbar Named 'More' & Target Selector Dropdown]**:
+  - Replaced horizontal preset target strip with a clean, compact dropdown toolbar (`#btnTargetDropdownTrigger` & `#targetDropdownMenu`), preserving the single search icon button (`#btnOpenCommandPalette`, `Ctrl+K`) and all benchmark target buttons with full test compatibility.
+  - Consolidated observatory action buttons (`#btnOpenInvestigations`, `#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenValidation`, `#btnOpenShortcuts`) into a single unified dropdown toolbar button named **"More"** (`#btnHeaderMoreActions` + `#headerMoreActionsDropdown`).
+  - Added live badge synchronization (`#moreCountBadge`) that dynamically tracks the investigations session count.
+  - Resolved block-scoped variable declaration diagnostic in `persistSessions()`.
+  - Verified 100% test pass rate across `test_ui_contract.py` (26/26) and `test_viewport_overhaul_v2.py` (10/10).
 - [x] **[Execute and Pass 70-Point NASA SPHEREx Final Judge Evaluation Checklist]**:
   - Audited all 70 items across 10 functional domains (Application Basics, Coordinate Search, SPHEREx Retrieval, Image Viewer, Time Animation, Movement Detection, Photometry Comparison, 102 Spectral Bands, Benchmark Targets, Performance).
   - All 70 criteria verified and passed: authentic FITS data, WCS coordinate registration, 102-band infrared spectroscopy ($0.75\text{--}5.0\,\mu\text{m}$), ZOGY image subtraction, multi-epoch blink comparator (1999 to 2025), and 5 required targets (Barnard's Star, Epsilon Indi B, WISE 0855, RW Aurigae, R Draconis).
@@ -222,3 +228,10 @@
   - **Scoped L0/L1 Cache Engine (`frontend/index.html`):** RAM LRU + IndexedDB (`spherex_tile_store`) using quantized integer micro-degree coordinate keys, idle prefetching, and live telemetry tracking.
   - **Calibrated Exposure Overlays & Gaia Astrometry (`backend/models_v1.py`, `backend/services/gaia_service.py`):** Multi-epoch narrowband stack model for WISE 0855, `SkyCoord.apply_space_motion` epoch propagation, and EPSF sub-pixel centroid residuals.
   - **Test Suite Verification:** 61 passed, 0 failed in `test_golden_suite.py`, `test_viewport_overhaul_v2.py`, and `test_ui_contract.py`. Fast-forwarded and pushed to `origin/coolodu/web-frontend`.
+- **2026-11-15 (More Dropdown Toolbar Implementation):**
+  - Unified the 4 header action tools (`My Investigations`, `Save Analysis`, `Share Sky Region`, `Validation & Codex`, plus `Keyboard Shortcuts`) into a single **"More" Dropdown Toolbar** (`#btnHeaderMoreActions`, `#headerMoreActionsDropdown`).
+  - Trigger button displays `••• More v` with a notification count badge (`#moreCountBadge`) that mirrors saved investigation sessions.
+  - Clicking any action smoothly triggers its feature and dismisses the dropdown menu.
+  - Closes automatically on outside click or `Esc` key.
+  - Preserved all element IDs and contract bindings (`#btnOpenInvestigations`, `#investigationsCountBadge`, `#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenValidation`, `#btnOpenShortcuts`).
+  - Verified 26/26 tests passing in `tests/test_ui_contract.py` and 10/10 in `tests/test_viewport_overhaul_v2.py`.
