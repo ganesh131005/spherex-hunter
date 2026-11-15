@@ -1865,65 +1865,68 @@
       <!-- PANEL 2: SPECTRUM (102-Band SPHEREx Spectrophotometry with 6-Array Selector & 17-Wavelength Stepper) -->
       <div id="dockPanelSpectrum" class="h-full hidden px-3.5 py-2 flex flex-col justify-between gap-1.5">
         <!-- Top Toolbar: Unified 102-Band Information Bar, 6-Array Tabs, Channel Stepper & Science Guide -->
-        <div class="flex items-center justify-between gap-2.5 shrink-0 border-b border-space-700/80 pb-1.5 text-xs font-mono overflow-x-auto overflow-y-hidden whitespace-nowrap min-w-0">
+        <div class="flex items-center justify-between gap-2 shrink-0 border-b border-space-700/80 pb-1.5 text-xs font-mono overflow-x-auto overflow-y-hidden min-w-0 w-full select-none" style="scrollbar-width: thin; scrollbar-color: rgba(56, 189, 248, 0.3) transparent;">
           <!-- Left: 102-Band Information & Selector Bar, Array Tabs & Channel Stepper Toolbar -->
-          <div class="flex items-center gap-2.5 shrink-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink min-w-0">
             <!-- Merged 102-Band Information & Direct Channel Selector Bar -->
-            <div class="flex items-center gap-2 bg-space-950 px-3 py-1.5 rounded-xl border border-cyan-500/40 shadow-md text-xs font-mono shrink-0" id="spec102BandInfoBar" title="SPHEREx 102 Contiguous Infrared Narrow Bands (0.75 - 5.00 µm)">
+            <div class="flex items-center gap-1.5 sm:gap-2 bg-space-950 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-cyan-500/40 shadow-md text-xs font-mono shrink-0" id="spec102BandInfoBar" title="SPHEREx 102 Contiguous Infrared Narrow Bands (0.75 - 5.00 µm)">
               <span class="text-xs text-cyan-300 font-bold uppercase font-mono flex items-center gap-1.5">
-                <i data-lucide="activity" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <i data-lucide="activity" class="w-3.5 h-3.5 text-cyan-400 shrink-0"></i>
                 <span class="whitespace-nowrap">102 Bands:</span>
               </span>
-              <button id="spec102PrevCh" class="blender-btn w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold hover:text-white transition text-cyan-300 hover:bg-space-800" title="Previous Band (across all 102 SPHEREx channels)">◀</button>
-              <select id="spec102ChannelSelect" class="bg-space-900 text-cyan-300 border border-space-700 rounded-lg px-2.5 py-1 text-xs font-mono focus:outline-none focus:border-cyan-500 cursor-pointer max-w-[170px] font-semibold" title="Select any of the 102 SPHEREx spectral channels (Bands 1–102, 0.753–4.988 µm)"></select>
-              <button id="spec102NextCh" class="blender-btn w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold hover:text-white transition text-cyan-300 hover:bg-space-800" title="Next Band (across all 102 SPHEREx channels)">▶</button>
-              <span id="spec102WavelengthDisplay" class="font-mono text-cyan-200 font-bold text-xs bg-cyan-950/70 border border-cyan-700/60 px-2 py-1 rounded-md shadow-sm whitespace-nowrap hidden sm:inline-block">0.753 µm (Band 1 · A1)</span>
+              <button id="spec102PrevCh" class="blender-btn w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center text-xs font-bold hover:text-white transition text-cyan-300 hover:bg-space-800 shrink-0" title="Previous Band (across all 102 SPHEREx channels)">◀</button>
+              <select id="spec102ChannelSelect" class="bg-space-900 text-cyan-300 border border-space-700 rounded-lg px-2 sm:px-2.5 py-0.5 sm:py-1 text-xs font-mono focus:outline-none focus:border-cyan-500 cursor-pointer max-w-[125px] sm:max-w-[150px] lg:max-w-[170px] font-semibold" title="Select any of the 102 SPHEREx spectral channels (Bands 1–102, 0.753–4.988 µm)"></select>
+              <button id="spec102NextCh" class="blender-btn w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center text-xs font-bold hover:text-white transition text-cyan-300 hover:bg-space-800 shrink-0" title="Next Band (across all 102 SPHEREx channels)">▶</button>
+              <span id="spec102WavelengthDisplay" class="font-mono text-cyan-200 font-bold text-xs bg-cyan-950/70 border border-cyan-700/60 px-2 py-1 rounded-md shadow-sm whitespace-nowrap hidden 2xl:inline-block">0.753 µm (Band 1 · A1)</span>
             </div>
 
             <!-- 6-Array Tabs: Enriched visual contrast & enlarged target sizing -->
-            <div class="flex items-center gap-1.5 p-1.5 rounded-xl bg-space-950 border border-space-700/80 shadow-md" id="arrayTabsContainer">
-              <span class="text-xs text-gray-200 uppercase font-sans font-bold px-1.5">Array:</span>
-              <button class="array-tab blender-btn blender-btn-active px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm" data-array="A1" title="A1: 0.75-1.11 µm (Optical boundary, stellar continuum)">A1</button>
-              <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-cyan-300" data-array="A2" title="A2: 1.11-1.64 µm (2MASS J/H overlap, photospheres)">A2</button>
-              <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-emerald-300" data-array="A3" title="A3: 1.64-2.42 µm (2MASS Ks overlap, circumstellar dust)">A3</button>
-              <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-amber-300" data-array="A4" title="A4: 2.42-3.82 µm (H₂O Ice 3.05 µm, CH₄ 3.30 µm)">A4 🔬</button>
-              <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-orange-300" data-array="A5" title="A5: 3.82-4.42 µm (CO₂ Ice 4.27 µm, Planet X thermal peak)">A5 🔬</button>
-              <button class="array-tab blender-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-rose-300" data-array="A6" title="A6: 4.42-5.00 µm (CO 4.67 µm, Organics)">A6 🔬</button>
+            <div class="flex items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-xl bg-space-950 border border-space-700/80 shadow-md shrink-0" id="arrayTabsContainer">
+              <span class="text-xs text-gray-200 uppercase font-sans font-bold px-1 hidden md:inline">Array:</span>
+              <button class="array-tab blender-btn blender-btn-active px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm" data-array="A1" title="A1: 0.75-1.11 µm (Optical boundary, stellar continuum)">A1</button>
+              <button class="array-tab blender-btn px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-cyan-300" data-array="A2" title="A2: 1.11-1.64 µm (2MASS J/H overlap, photospheres)">A2</button>
+              <button class="array-tab blender-btn px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-emerald-300" data-array="A3" title="A3: 1.64-2.42 µm (2MASS Ks overlap, circumstellar dust)">A3</button>
+              <button class="array-tab blender-btn px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-amber-300" data-array="A4" title="A4: 2.42-3.82 µm (H₂O Ice 3.05 µm, CH₄ 3.30 µm)">A4<span class="hidden lg:inline"> 🔬</span></button>
+              <button class="array-tab blender-btn px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-orange-300" data-array="A5" title="A5: 3.82-4.42 µm (CO₂ Ice 4.27 µm, Planet X thermal peak)">A5<span class="hidden lg:inline"> 🔬</span></button>
+              <button class="array-tab blender-btn px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm text-rose-300" data-array="A6" title="A6: 4.42-5.00 µm (CO 4.67 µm, Organics)">A6<span class="hidden lg:inline"> 🔬</span></button>
             </div>
 
             <!-- 17-Wavelength Channel Stepper & Variation Toolbar: Sized up for easy legibility and control -->
-            <div class="flex items-center gap-2.5 bg-space-950 px-3.5 py-1.5 rounded-xl border border-space-700/80 shadow-md">
-              <button id="chanPrev" class="blender-btn w-8 h-8 rounded-lg flex items-center justify-center text-base font-bold hover:text-white transition" title="Previous Spectral Channel (Left Arrow)">◀</button>
-              <span id="chanDisplay" class="text-white font-bold text-sm min-w-[220px] text-center tracking-wide">Ch 1 / 17 — λ = 0.750 µm</span>
-              <button id="chanNext" class="blender-btn w-8 h-8 rounded-lg flex items-center justify-center text-base font-bold hover:text-white transition" title="Next Spectral Channel (Right Arrow)">▶</button>
-              <input type="range" id="chanSlider" min="1" max="17" value="1" class="w-36 h-3 bg-space-700 rounded-lg cursor-pointer accent-amber-400">
-              <span id="chanFluxBadge" class="text-amber-300 font-mono text-xs font-bold px-2.5 py-1 rounded-md bg-amber-950/80 border border-amber-500/50 shadow-sm">1.00 rel</span>
+            <div class="flex items-center gap-1.5 sm:gap-2.5 bg-space-950 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border border-space-700/80 shadow-md shrink min-w-0">
+              <button id="chanPrev" class="blender-btn w-8 h-8 rounded-lg flex items-center justify-center text-base font-bold hover:text-white transition shrink-0" title="Previous Spectral Channel (Left Arrow)">◀</button>
+              <span id="chanDisplay" class="text-white font-bold text-sm min-w-[220px] text-center tracking-wide truncate">Ch 1 / 17 — λ = 0.750 µm</span>
+              <button id="chanNext" class="blender-btn w-8 h-8 rounded-lg flex items-center justify-center text-base font-bold hover:text-white transition shrink-0" title="Next Spectral Channel (Right Arrow)">▶</button>
+              <input type="range" id="chanSlider" min="1" max="17" value="1" class="w-20 sm:w-28 md:w-36 h-3 bg-space-700 rounded-lg cursor-pointer accent-amber-400">
+              <span id="chanFluxBadge" class="text-amber-300 font-mono text-xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md bg-amber-950/80 border border-amber-500/50 shadow-sm whitespace-nowrap">1.00 rel</span>
             </div>
           </div>
 
           <!-- Right: Non-simultaneous observations honesty notice, Dock Zoom Indicator & Science Guide -->
-          <div class="flex items-center gap-2.5 shrink-0">
+          <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0 pl-1">
             <!-- Non-simultaneous observations honesty notice for variable stars -->
             <div id="spectrumNonSimultaneousNotice"
-              class="text-xs font-medium text-amber-200 bg-amber-950/80 px-3 py-1.5 rounded-lg border border-amber-500/60 flex items-center gap-2 shrink-0 select-none hidden lg:flex shadow-sm">
+              class="text-xs font-medium text-amber-200 bg-amber-950/80 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-amber-500/60 flex items-center gap-1.5 sm:gap-2 shrink-0 select-none shadow-sm"
+              title="Notice: Observation dates vary across arrays (e.g. RW Aur, R Dra).">
               <i data-lucide="info" class="w-4 h-4 shrink-0 text-amber-400"></i>
-              <span>Notice: Observation dates vary across arrays (e.g. RW Aur, R Dra).</span>
+              <span class="hidden 2xl:inline">Notice: Observation dates vary across arrays (e.g. RW Aur, R Dra).</span>
+              <span class="hidden xl:inline 2xl:hidden">Dates vary across arrays</span>
+              <span class="xl:hidden">Multi-Epoch</span>
             </div>
 
             <!-- Sideways Horizontal Spectrum Zoom Bar & Telemetry -->
-            <div id="specHorizontalZoomBar" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-space-950 border border-cyan-500/40 text-xs font-mono text-cyan-300 shadow-sm select-none" title="Sideways Spectrum Expansion: Scroll wheel up/down over spectrum to zoom in/out sideways. Drag horizontally to pan. Double-click to reset.">
-              <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-cyan-400"></i>
-              <span class="font-bold uppercase text-[11px] text-gray-300 hidden sm:inline">Zoom:</span>
-              <span id="specZoomLevelLabel" class="font-bold text-xs text-gray-300">1.0x (102 Bands)</span>
-              <button id="btnSpecZoomIn" class="blender-btn w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-cyan-300 hover:text-white transition" title="Zoom In Sideways (Expand Wavelength Axis)">+</button>
-              <button id="btnSpecZoomOut" class="blender-btn w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-cyan-300 hover:text-white transition" title="Zoom Out Sideways (Shrink Wavelength Axis)">−</button>
-              <button id="btnSpecZoomReset" class="blender-btn px-2 py-0.5 rounded text-xs font-bold text-gray-300 hover:text-white transition hover:bg-space-800" title="Reset Sideways Zoom (Show All 102 Bands)">Reset</button>
+            <div id="specHorizontalZoomBar" class="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-lg bg-space-950 border border-cyan-500/40 text-xs font-mono text-cyan-300 shadow-sm select-none shrink-0" title="Sideways Spectrum Expansion: Scroll wheel up/down over spectrum to zoom in/out sideways. Drag horizontally to pan. Double-click to reset.">
+              <i data-lucide="zoom-in" class="w-3.5 h-3.5 text-cyan-400 shrink-0"></i>
+              <span class="font-bold uppercase text-[11px] text-gray-300 hidden md:inline">Zoom:</span>
+              <span id="specZoomLevelLabel" class="font-bold text-xs text-gray-300 whitespace-nowrap">1.0x (102 Bands)</span>
+              <button id="btnSpecZoomIn" class="blender-btn w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-cyan-300 hover:text-white transition shrink-0" title="Zoom In Sideways (Expand Wavelength Axis)">+</button>
+              <button id="btnSpecZoomOut" class="blender-btn w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-cyan-300 hover:text-white transition shrink-0" title="Zoom Out Sideways (Shrink Wavelength Axis)">−</button>
+              <button id="btnSpecZoomReset" class="blender-btn px-1.5 sm:px-2 py-0.5 rounded text-xs font-bold text-gray-300 hover:text-white transition hover:bg-space-800 shrink-0" title="Reset Sideways Zoom (Show All 102 Bands)">Reset</button>
             </div>
 
             <!-- 102-Band Science Explainer Trigger -->
-            <button id="btnOpenBandScience" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-space-850 hover:bg-space-800 border border-cyan-400/50 text-cyan-200 hover:text-white transition text-xs font-bold shadow" title="Open SPHEREx 102-Band Science Explainer Modal">
-              <i data-lucide="info" class="w-4 h-4 text-cyan-400"></i>
-              <span>102-Band Science</span>
+            <button id="btnOpenBandScience" class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg bg-space-850 hover:bg-space-800 border border-cyan-400/50 text-cyan-200 hover:text-white transition text-xs font-bold shadow shrink-0" title="Open SPHEREx 102-Band Science Explainer Modal">
+              <i data-lucide="info" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+              <span class="hidden sm:inline">102-Band </span><span>Science</span>
             </button>
           </div>
         </div>
@@ -3227,9 +3230,17 @@
 
     function resizeCanvas() {
       const container = document.getElementById('viewportContainer');
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
-      drawFrame();
+      if (container) {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        drawFrame();
+      }
+      if (typeof specChart !== 'undefined' && specChart) {
+        try { specChart.resize(); } catch (_) {}
+      }
+      if (typeof lightCurveChartInstance !== 'undefined' && lightCurveChartInstance) {
+        try { lightCurveChartInstance.resize(); } catch (_) {}
+      }
     }
     window.addEventListener('resize', resizeCanvas);
 
