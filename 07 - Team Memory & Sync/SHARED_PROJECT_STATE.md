@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[GitHub Native Issue #39 Created — Fix Backend 500 NoneType Crash on Archive Miss and Provide Actionable Diagnostic Details in Error Dialog]**
+  - **Issue #39 Link:** https://github.com/joker0210G/spherex-hunter/issues/39
+  - **Track:** `feature-backend` | **Role:** `@darkodu` | **Resource:** `resource:standard`
+  - **Checklist Scope:** Items #7, #12, #24 (Helpful Error Explanations, Coordinate/FOV Boundaries, Safe Failure Handling).
+  - **Forensic Diagnosis:** `backend/main.py` crashes with `AttributeError: 'NoneType' object has no attribute 'get'` when `fetch_real_cutout()` returns `None`, returning HTTP 500 instead of a structured 404/503. The frontend displays a vague boilerplate "Something interrupted loading this view" rather than diagnosing the out-of-bounds FOV (559.76') or upstream archive miss.
 - **[🎉 MASTER INTEGRATION COMPLETE ON `main`: ALL 37 REPOSITORY ISSUES RESOLVED, LIVE-VERIFIED & CLOSED]**
   - **Track Integrations:** Synchronized `darkodu/astro-backend` (Issue #34: 2MASS separation threshold, filter segregation, ZOGY arcsinh stretch) and `coolodu/web-frontend` (Issue #32: responsive header, Issue #33: dynamic frustum streaming, Issue #35: BYOK Gemini AI, Issue #36: celestial reticle & curve-pinned diamonds, Issue #37: 2MASS all-sky Aladin mode).
   - **Zero Ghost Closures 3-Point Audit Complete:** 100% of symbols, DOM elements, and endpoints verified in active code, commits recorded, and automated tests passing (**103 passed, 9 skipped, 0 failures**; all 33 CI unit tests pass in 1.8s; clean ruff checks).
