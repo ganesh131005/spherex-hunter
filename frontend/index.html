@@ -1204,10 +1204,10 @@
       </div>
 
       <!-- TOP-LEFT VIEWPORT TARGET TELEMETRY CHIP (Issue #40 Deconflicted & Non-Overlapping) -->
-      <div class="absolute top-3 left-3 pointer-events-none text-xs font-mono space-y-0.5 bg-space-900/85 backdrop-blur-md px-3 py-2 rounded-lg border border-space-700 text-gray-300 shadow-lg max-w-[calc(100vw-380px)] sm:max-w-md z-10">
-        <div class="flex items-center gap-2 truncate">
+      <div id="vpTopTargetCard" class="absolute top-3 left-3 pointer-events-none text-xs font-mono space-y-0.5 bg-space-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-space-700 text-gray-300 shadow-lg max-w-[calc(100vw-380px)] sm:max-w-md z-10 transition-all">
+        <div class="flex items-center gap-1.5 truncate">
           <span id="vpTargetName" class="text-white font-bold text-xs tracking-wide truncate">WISE 0855-0714</span>
-          <span class="text-space-500">|</span>
+          <span id="vpTargetDivider" class="text-space-500">|</span>
           <span id="vpFrameLabel" class="text-blender-orange font-semibold text-[11px] truncate">(Frame 1) 2MASS Baseline 1999</span>
         </div>
         <div id="gaiaCrossMatchBadge" class="hidden text-[10px] font-mono mt-1 px-2 py-0.5 rounded border flex items-center gap-1.5 transition-all">
@@ -1291,16 +1291,24 @@
 
       <!-- BOTTOM VIEWPORT HUD (Collision-Proof Flex Bar: Issue #27) -->
       <div class="absolute bottom-2.5 left-3 right-3 pointer-events-none flex items-end justify-between gap-3 z-10">
-        <!-- Bottom-Left Live Cursor Telemetry HUD with Dual Resolution Thresholds -->
-        <div class="text-[10px] font-mono flex items-center flex-wrap gap-x-2 gap-y-1 bg-space-900/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg shrink max-w-[calc(100%-190px)] min-w-0">
+        <!-- Bottom-Left Live Cursor Telemetry HUD with Unified Frame & Consolidated Resolution Readouts -->
+        <div class="text-[10px] font-mono flex items-center flex-wrap gap-x-2 gap-y-1 bg-space-900/90 backdrop-blur-md px-2.5 py-1.5 rounded-lg border border-space-700 text-gray-400 shadow-lg shrink max-w-[calc(100%-190px)] min-w-0">
+          <!-- Merged Active Epoch / Frame Badge (Reduces Viewport Clutter) -->
+          <span id="vpBottomEpochTag" class="flex items-center gap-1.5 font-bold text-blender-orange pr-2 border-r border-space-700 shrink-0" title="Active Observatory Blink Frame & Survey">
+            <span id="vpBottomEpochDot" class="w-1.5 h-1.5 rounded-full bg-blender-orange"></span>
+            <span id="vpBottomEpochLabel">Frame 1/4 • 2MASS</span>
+          </span>
           <span>RA: <b id="vpRA" class="text-gray-200">133.79513°</b></span>
           <span>Dec: <b id="vpDec" class="text-gray-200">-7.24515°</b></span>
           <span>FOV: <b id="vpFOV" class="text-gray-200">3.00'</b></span>
           <span>Zoom: <b id="vpZoom" class="text-gray-200">1.0x</b></span>
-          <span class="pl-2 border-l border-space-700 shrink-0">LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
-          <span class="pl-2 border-l border-space-700 hidden sm:inline shrink-0">Scale: <b id="vpDeviceScale" class="text-gray-300">--</b></span>
-          <span class="pl-2 border-l border-space-700 hidden md:inline shrink-0">Span: <b id="vpNativeSpan" class="text-cyan-300">--</b></span>
-          <span id="vpScaleStatusBadge" class="pl-2 border-l border-space-700 text-purple-300 font-bold shrink-0">🟣 HiPS: 12.9″/px</span>
+          <!-- Consolidated Resolution & Scale Group (Prevents Viewport Bloat) -->
+          <span class="pl-2 border-l border-space-700 flex items-center gap-1.5 shrink-0" title="Observatory Resolution & Optical Scale">
+            <span>LOD: <b id="vpLOD" class="text-cyan-300">LOD 1 (Std)</b></span>
+            <span class="hidden sm:inline border-l border-space-700/60 pl-1.5">Scale: <b id="vpDeviceScale" class="text-gray-300">--</b></span>
+            <span class="hidden md:inline border-l border-space-700/60 pl-1.5">Span: <b id="vpNativeSpan" class="text-cyan-300">--</b></span>
+            <span id="vpScaleStatusBadge" class="border-l border-space-700/60 pl-1.5 text-purple-300 font-bold shrink-0">🟣 HiPS: 12.9″/px</span>
+          </span>
           <span id="vpMosaicBadge" class="hidden pl-2 border-l border-space-700 text-amber-300 font-bold shrink-0 max-w-[25vw]" title="Optical Lens: Contiguous NASA FITS Master Field">🔭 FITS Master</span>
           <span class="pl-2 border-l border-space-700 text-gray-500 text-[9px] hidden lg:inline shrink-0" title="Credit: NASA / JPL-Caltech / IPAC (SPHEREx DR1)">NASA/JPL/IPAC</span>
         </div>
@@ -1942,9 +1950,9 @@
           </div>
         </div>
 
-        <!-- Middle: Canvas & Molecular Absorption Legend -->
-        <div class="flex-1 flex items-center gap-3 min-h-0 relative">
-          <div class="flex-1 h-full relative" id="specChartContainer">
+        <!-- Middle: Canvas & Molecular Absorption Legend (Seamlessly Integrated) -->
+        <div class="flex-1 flex items-stretch min-h-0 relative bg-space-950/60 rounded-xl border border-space-800/80 overflow-hidden shadow-inner">
+          <div class="flex-1 h-full min-w-0 relative p-2" id="specChartContainer">
             <canvas id="spectrumChart"></canvas>
             <!-- Floating Rich Interactive Popup for 102-Band Spectrum Spots (Photometry & Molecular Signatures) -->
             <div id="specSpotPopup" class="absolute z-50 hidden flex-col gap-1.5 p-3 rounded-xl bg-space-950/98 backdrop-blur-xl border border-cyan-500/70 shadow-2xl font-mono text-xs max-w-xs transition-opacity duration-150 select-none">
@@ -1956,17 +1964,19 @@
               <div id="specSpotAction" class="pt-1.5 border-t border-space-700/80 flex items-center justify-between text-xs"></div>
             </div>
           </div>
-          <!-- Molecular Reference Sidebar -->
-          <div class="w-64 bg-space-950/95 p-3 rounded-xl border border-space-700/80 font-mono text-xs space-y-2 shrink-0 shadow-md">
+          <!-- Molecular Reference Integrated Sidebar -->
+          <div class="w-64 bg-space-900/90 border-l border-space-800 p-2.5 sm:p-3 font-mono text-xs space-y-2 shrink-0 flex flex-col justify-between overflow-y-auto">
             <div class="font-bold uppercase text-xs text-cyan-300 border-b border-space-700/80 pb-1.5 flex justify-between tracking-wider">
               <span>Molecular Signatures</span>
               <span class="text-gray-400 font-normal">λ (µm)</span>
             </div>
-            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-sky-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block shadow-sm"></span>H₂O / Vapor:</span><span class="text-gray-100 font-bold">1.40 µm</span></div>
-            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-cyan-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-cyan-300 inline-block shadow-sm"></span>H₂O Ice:</span><span class="text-gray-100 font-bold">3.05 µm</span></div>
-            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-emerald-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-sm"></span>CH₄ Methane:</span><span class="text-gray-100 font-bold">3.30 µm</span></div>
-            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-amber-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow-sm"></span>CO₂ Ice:</span><span class="text-gray-100 font-bold">4.27 µm</span></div>
-            <div class="flex justify-between items-center text-xs py-0.5"><span class="text-rose-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block shadow-sm"></span>CO Monoxide:</span><span class="text-gray-100 font-bold">4.67 µm</span></div>
+            <div class="space-y-1">
+              <div class="flex justify-between items-center text-xs py-0.5"><span class="text-sky-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-sky-400 inline-block shadow-sm"></span>H₂O / Vapor:</span><span class="text-gray-100 font-bold">1.40 µm</span></div>
+              <div class="flex justify-between items-center text-xs py-0.5"><span class="text-cyan-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-cyan-300 inline-block shadow-sm"></span>H₂O Ice:</span><span class="text-gray-100 font-bold">3.05 µm</span></div>
+              <div class="flex justify-between items-center text-xs py-0.5"><span class="text-emerald-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block shadow-sm"></span>CH₄ Methane:</span><span class="text-gray-100 font-bold">3.30 µm</span></div>
+              <div class="flex justify-between items-center text-xs py-0.5"><span class="text-amber-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block shadow-sm"></span>CO₂ Ice:</span><span class="text-gray-100 font-bold">4.27 µm</span></div>
+              <div class="flex justify-between items-center text-xs py-0.5"><span class="text-rose-300 flex items-center gap-2 font-medium"><span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block shadow-sm"></span>CO Monoxide:</span><span class="text-gray-100 font-bold">4.67 µm</span></div>
+            </div>
 
             <!-- Molecular Absorption Feature Jump Chips (Ices located below Molecular Signatures) -->
             <div id="spec102MolecularBar" class="pt-2 border-t border-space-700/80 space-y-1.5">
@@ -5166,6 +5176,7 @@
       if (devScaleEl) {
         const formattedScale = arcsecPerDevicePx < 1.0 ? arcsecPerDevicePx.toFixed(2) : arcsecPerDevicePx.toFixed(1);
         devScaleEl.innerText = `${formattedScale}″/dev_px`;
+        devScaleEl.title = `Physical device pixel scale: ${formattedScale}″ per physical device pixel (dev_px)`;
       }
 
       const nativeSpanEl = document.getElementById('vpNativeSpan');
@@ -5173,6 +5184,7 @@
         const spanX = Math.round((effFov * 60.0) / 6.15);
         const spanY = Math.round((spanX * hCss) / wCss);
         nativeSpanEl.innerText = `${spanX}×${spanY} px (6.15″)`;
+        nativeSpanEl.title = `Detector array span: ${spanX}×${spanY} native SPHEREx pixels (6.15″/px)`;
       }
 
       // Dual-threshold status indicator: HiPS Native (12.88"/px) vs Exposure Native (6.15"/px)
@@ -5291,13 +5303,13 @@
       const el = document.getElementById('vpLOD');
       if (!el) return;
       if (lod === 0) {
-        el.innerText = "LOD 0 (Hero 1024p Full-Res)";
+        el.innerText = "LOD 0 (Hero 1024p)";
         el.className = "text-purple-300 font-bold";
       } else if (lod === 2) {
-        el.innerText = "LOD 2 (Wide 360p Overview)";
+        el.innerText = "LOD 2 (Wide 360p)";
         el.className = "text-amber-300 font-bold";
       } else {
-        el.innerText = "LOD 1 (Std 720p HD)";
+        el.innerText = "LOD 1 (Std 720p)";
         el.className = "text-cyan-300 font-bold";
       }
     }
@@ -5573,6 +5585,14 @@
       const badgeEl = document.getElementById('frameBadge');
       const totalFrames = getTotalEpochCount();
       if (diffMode) {
+        const btmLabel = document.getElementById('vpBottomEpochLabel');
+        const btmDot = document.getElementById('vpBottomEpochDot');
+        const btmTag = document.getElementById('vpBottomEpochTag');
+        if (btmLabel) {
+          btmLabel.innerText = "Δ Diff Mode (I₂ - I₁)";
+          if (btmTag) btmTag.className = "flex items-center gap-1.5 font-bold text-orange-400 pr-2 border-r border-space-700 shrink-0";
+          if (btmDot) btmDot.className = "w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse";
+        }
         if (lblEl) {
           lblEl.innerText = "(Diff Mode) Numerical Subtraction I₂ - I₁";
           lblEl.className = "text-orange-400 font-semibold";
@@ -5608,6 +5628,32 @@
         { text: "text-cyan-400 font-semibold", badge: "px-2 py-0.5 rounded bg-cyan-600 text-white font-bold text-[10px]" }
       ];
       const style = colorClasses[(currentFrame - 1) % colorClasses.length];
+      const targetEl = document.getElementById('vpTargetName');
+      const dividerEl = document.getElementById('vpTargetDivider');
+      if (dividerEl && targetEl) {
+        const hasTarget = targetEl.innerText && targetEl.innerText.trim().length > 0;
+        dividerEl.style.display = hasTarget ? 'inline' : 'none';
+      }
+
+      const btmLabel = document.getElementById('vpBottomEpochLabel');
+      const btmDot = document.getElementById('vpBottomEpochDot');
+      const btmTag = document.getElementById('vpBottomEpochTag');
+      if (btmLabel) {
+        if (diffMode) {
+          btmLabel.innerText = "Δ Diff Mode";
+          if (btmTag) btmTag.className = "flex items-center gap-1.5 font-bold text-orange-400 pr-2 border-r border-space-700 shrink-0";
+          if (btmDot) btmDot.className = "w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse";
+        } else {
+          const shortSurvey = ep ? `${ep.survey || 'Epoch'}` : (isWise0855 ? ['AllWISE W2', 'unWISE Ep1', 'unWISE Ep2', 'SPHEREx Stack'][currentFrame - 1] : ['2MASS', 'WISE W1', 'unWISE', 'SPHEREx'][currentFrame - 1]);
+          btmLabel.innerText = `Frame ${currentFrame}/${totalFrames} • ${shortSurvey}`;
+          if (btmTag) btmTag.className = `flex items-center gap-1.5 font-bold ${style.text} pr-2 border-r border-space-700 shrink-0`;
+          if (btmDot) {
+            const dotColors = ["bg-blender-orange", "bg-amber-400", "bg-emerald-400", "bg-cyan-400"];
+            btmDot.className = `w-1.5 h-1.5 rounded-full ${dotColors[(currentFrame - 1) % dotColors.length]}`;
+          }
+        }
+      }
+
       if (lblEl) {
         lblEl.innerText = frameText;
         lblEl.className = style.text;
