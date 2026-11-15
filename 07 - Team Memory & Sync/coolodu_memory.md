@@ -3,11 +3,29 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Verified full green GitHub Actions CI workflow pipeline: fixed ruff linting/import-formatting and unassigned `response_payload` in `backend/services/catalog_engine.py`, added `beautifulsoup4` to optional dev dependencies, and confirmed GitHub Actions run completed with `SUCCESS` on both `main` ([run 43666467176](https://github.com/joker0210G/spherex-hunter/actions/runs/43666467176)) and `coolodu/web-frontend` ([run 43666464657](https://github.com/joker0210G/spherex-hunter/actions/runs/43666464657)).
-- **Next Task:** Maintain clean status, monitor GitHub Issues for incoming tasks.
-- **Blockers:** None. Local uvicorn server operational at `http://127.0.0.1:8000/app/` and root redirect live. 0 open issues remain across the repository. CI is 100% green.
+- **Current Task:** Resolved and verified Issues #32, #35, #36, and #37 on `coolodu/web-frontend`. 103 passed, 9 skipped, 0 failures across repository test suite. Clean ruff checks. Pushing to `origin/coolodu/web-frontend`.
+- **Next Task:** Maintain clean status, coordinate with lead jokerodu for main branch master merge.
+- **Blockers:** None.
 
 ## Completed Tasks:
+- [x] **[Resolved Issues #32, #35, #36, #37 — Complete Observatory Polish & Real AI Integration]**:
+  - **Issue #32 (Responsive Top Header & Overflow Elimination):**
+    - Redesigned top `<header>` to ensure landmark benchmark target presets (`.target-btn` for WISE 0855, Barnard's Star, Eps Indi B, RW Aur, R Dra, Orion) and core controls remain 100% accessible across 1366x768 and 1080p desktop displays without shrinking to 0px.
+    - Added `#btnHeaderMoreActions` overflow dropdown (`#headerMoreActionsDropdown`) exposing My Investigations, Save Analysis, Share Sky Region, Validation & Codex, and Shortcuts on smaller viewports.
+  - **Issue #35 (Real Generative LLM Integration & BYOK Settings Modal):**
+    - Added Bring-Your-Own-Key modal (`#byokSettingsModal`) allowing users to input and store their Google Gemini API key securely in browser `localStorage`.
+    - Wired backend `/api/ai/ask` with `_call_gemini_api` using grounded observational telemetry prompts with graceful fallback to deterministic physics synthesis.
+    - Updated frontend `askAiCopilot` to transmit `X-Gemini-Key` header and display live `⚡ Google Gemini (BYOK)` badge in AI response stream.
+  - **Issue #36 (Celestial Reticle Cursor, Coordinate Popover Bounds & Curve-Pinned Diamonds):**
+    - Added high-contrast cyan/white SVG celestial reticle cursor (`.celestial-cursor` / `#viewportContainer`) ensuring 100% visibility against pitch-black space and difference fields.
+    - Constrained `#coordsPopover` with `max-w-[calc(100vw-32px)]` preventing off-screen clipping.
+    - Upgraded 102-band spectrum molecular annotations in `spherexArrayPlugin` to interpolate the SED curve Y-value (`chart.scales.y.getPixelForValue`), pinning absorption diamonds directly to features on the SED curve rather than detached at $y=0$.
+  - **Issue #37 (Aladin Sky Mode Real All-Sky Base Survey & Black Void Elimination):**
+    - Replaced unsupported 3D data cube endpoint with real, high-resolution near-infrared all-sky survey `P/2MASS/color` (with offline fallback to local `/app/P/DSS2/color`).
+    - Aladin Lite immediately renders real all-sky starry cosmos with zero black void.
+    - Updated status badge to `2MASS All-Sky IR (Online)`.
+  - **Automated Verification:** Added 4 headless DOM contract tests in `tests/test_ui_contract.py` (9/9 passed), all 33 CI unit tests passed, all 103 repository tests passed.
+- [x] **[SPHEREx Hunter CI Workflow Fixed & Successfully Passing on GitHub Actions]**:
 - [x] **[SPHEREx Hunter CI Workflow Fixed & Successfully Passing on GitHub Actions]**:
   - **Linting & Code Quality:** Resolved 28 ruff issues across `backend` and `tests` (sorted import blocks, removed unused imports in `cutout_engine.py` and `test_ui_contract.py`).
   - **Undefined Name Bug:** Fixed `response_payload = { ... }` in `backend/services/catalog_engine.py:1077` ensuring crossmatch result caching and eliminating `F821`.

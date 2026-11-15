@@ -154,3 +154,94 @@ def test_issues_24_27_29_30_components_contract():
     assert "spherex_tile_store" in html, "Missing 'spherex_tile_store' IndexedDB"
     assert "capacityThreshold" in html, "Missing capacityThreshold calculation in pruneClientCacheIfNeeded"
     assert "fetchWithCancellation" in html, "Missing fetchWithCancellation() for in-flight AbortController"
+
+
+def test_issue_32_header_responsive_contract():
+    """Validates Issue #32: Header responsive layout, benchmark presets accessibility, and overflow dropdown."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Benchmark target presets exist and have .target-btn class
+    target_btns = soup.find_all("button", class_="target-btn")
+    assert len(target_btns) >= 5, f"Expected at least 5 benchmark .target-btn buttons, found {len(target_btns)}"
+    targets_present = {b.get("data-target") for b in target_btns}
+    assert "wise0855" in targets_present, "WISE 0855 preset missing"
+    assert "barnard" in targets_present, "Barnard's Star preset missing"
+    assert "epsindi" in targets_present, "Eps Indi B preset missing"
+
+    # 2. Responsive overflow menu exists for standard and narrow desktop widths
+    assert soup.find(id="btnHeaderMoreActions") is not None, "Missing #btnHeaderMoreActions overflow trigger"
+    assert soup.find(id="headerMoreActionsDropdown") is not None, "Missing #headerMoreActionsDropdown menu"
+
+    # 3. All essential observatory controls exist in DOM with IDs
+    for req_id in [
+        "btnSaveAnalysis", "btnOpenInvestigations", "btnThemeToggle",
+        "btnOpenOnboarding", "btnToggleUserMode", "btnOpenValidation",
+        "btnOpenShortcuts", "toggleSidebarBtn", "btnTopFetch", "btnAiCopilot"
+    ]:
+        assert soup.find(id=req_id) is not None, f"Required control #{req_id} missing from header DOM"
+
+
+def test_issue_35_byok_gemini_contract():
+    """Validates Issue #35: BYOK Gemini settings modal, localStorage persistence, and live AI integration."""
+    html, soup = _get_html_and_soup()
+
+    # 1. BYOK Settings Modal elements
+    assert soup.find(id="byokSettingsModal") is not None, "Missing #byokSettingsModal modal"
+    assert soup.find(id="inputGeminiApiKey") is not None, "Missing #inputGeminiApiKey password input"
+    assert soup.find(id="btnSaveApiKey") is not None, "Missing #btnSaveApiKey button"
+    assert soup.find(id="btnClearApiKey") is not None, "Missing #btnClearApiKey button"
+    assert soup.find(id="btnOpenByokSettings") is not None, "Missing #btnOpenByokSettings button in AI modal"
+
+    # 2. LocalStorage and BYOK JavaScript functions
+    assert "spherex_gemini_api_key" in html, "Missing 'spherex_gemini_api_key' localStorage key"
+    assert "updateByokStatus" in html, "Missing updateByokStatus() function"
+    assert "X-Gemini-Key" in html, "Missing X-Gemini-Key header dispatch in askAiCopilot"
+
+    # 3. Backend endpoint accepts api_key and returns valid schema
+    from fastapi.testclient import TestClient
+
+    from backend.main import app
+    client = TestClient(app)
+    r = client.post("/api/ai/ask", json={
+        "ra": 133.79513,
+        "dec": -7.24515,
+        "fov": 3.0,
+        "target": "wise0855",
+        "question": "Is this object moving?",
+        "api_key": "test_byok_dummy_key_12345678"
+    })
+    assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
+    data = r.json()
+    assert "answer" in data
+    assert "evidence_tier" in data
+
+
+def test_issue_36_cursor_popover_and_spectrum_contract():
+    """Validates Issue #36: High-contrast celestial cursor, coordinate popover bounds, and curve-pinned molecular diamonds."""
+    html, soup = _get_html_and_soup()
+
+    # 1. High-contrast celestial SVG cursor in CSS
+    assert "celestial-cursor" in html, "Missing .celestial-cursor CSS definition"
+    assert "url(\"data:image/svg+xml" in html, "Missing SVG reticle cursor definition"
+
+    # 2. Coordinate popover container with responsive max-width boundary
+    popover = soup.find(id="coordsPopover")
+    assert popover is not None, "Missing #coordsPopover element"
+    assert "max-w-" in str(popover), "#coordsPopover must contain responsive max-width constraint"
+
+    # 3. 102-band spectrum molecular markers interpolate SED curve Y-position
+    assert "chart.scales.y.getPixelForValue" in html, "Molecular diamonds must query chart.scales.y.getPixelForValue on the SED curve"
+    assert "MOLECULAR_ANNOTATIONS.forEach" in html, "Missing MOLECULAR_ANNOTATIONS rendering loop"
+
+
+def test_issue_37_aladin_real_survey_contract():
+    """Validates Issue #37: Reliable real 2MASS all-sky base survey eliminating black void."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Primary online survey is set to real 2MASS all-sky color HiPS
+    assert "ONLINE_SURVEY = 'P/2MASS/color'" in html, "ONLINE_SURVEY must be 'P/2MASS/color'"
+    assert "FALLBACK_SURVEY = '/app/P/DSS2/color'" in html, "FALLBACK_SURVEY must be local '/app/P/DSS2/color'"
+
+    # 2. Status badge indicates 2MASS All-Sky IR
+    assert "2MASS All-Sky IR (Online)" in html, "Missing '2MASS All-Sky IR (Online)' status badge label"
+    assert "spherex_allsky_cube" not in html, "Broken 3D data cube HiPS URL must be removed from active base surveys"

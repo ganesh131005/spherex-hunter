@@ -520,6 +520,81 @@ class AIAskRequest(BaseModel):
     fov: float = 3.0
     target: Optional[str] = None
     question: str = "Why is this target scientifically interesting?"
+    api_key: Optional[str] = None
+
+
+def _call_gemini_api(api_key: str, synthesis: dict, question: str) -> Optional[dict]:
+    """Calls Google Gemini API (BYOK) with real observational telemetry system grounding."""
+    import json
+    import urllib.error
+    import urllib.request
+
+    try:
+        tname = synthesis.get("target_name", "Target Sky Field")
+        coords = synthesis.get("coordinates", {})
+        metrics = synthesis.get("telemetry_metrics", {})
+        verdict = synthesis.get("verdict", "INCONCLUSIVE")
+        evidence_tier = synthesis.get("evidence_tier", "INCONCLUSIVE")
+
+        system_instruction = (
+            "You are the AI Astronomical Science Co-Pilot for SPHEREx Hunter (NASA Space Apps 2026). "
+            "Your role is to assist astronomers and citizen scientists by interpreting multi-epoch astronomical cutouts, "
+            "102-band near-infrared spectrophotometry (0.75-5.00 um), Gaia DR3 optical astrometry, and SkyBoT asteroid vetoes. "
+            "STRICT RULES: Ground every assertion 100% in the real retrieved archive data provided. Never hallucinate fake coordinates or objects. "
+            "Speak clearly, authoritatively, and concisely."
+        )
+
+        user_prompt = (
+            f"Telescope Field: {tname} (RA {coords.get('ra_deg')}°, Dec {coords.get('dec_deg')}°)\n"
+            f"Verdict: {verdict} | Evidence Tier: {evidence_tier}\n"
+            f"Proper Motion: {metrics.get('proper_motion_arcsec_yr')}\"/yr | Distance: {metrics.get('distance_pc')} pc\n"
+            f"WISE Color W1-W2: {metrics.get('wise_w1_w2_color')} mag\n"
+            f"Plain English Summary: {synthesis.get('plain_english_summary')}\n"
+            f"Technical Summary: {synthesis.get('scientist_technical_summary')}\n\n"
+            f"Citizen Question: {question}"
+        )
+
+        req_body = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": f"{system_instruction}\n\n{user_prompt}"}]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.2,
+                "maxOutputTokens": 800
+            }
+        }
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key.strip()}"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(req_body).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=12.0) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            candidates = data.get("candidates", [])
+            if candidates:
+                parts = candidates[0].get("content", {}).get("parts", [])
+                if parts and "text" in parts[0]:
+                    ans_text = parts[0]["text"].strip()
+                    return {
+                        "status": "success",
+                        "question": question,
+                        "topic": "Gemini AI Astronomical Reasoning",
+                        "answer": ans_text,
+                        "evidence_tier": synthesis["evidence_tier"],
+                        "verdict": synthesis["verdict"],
+                        "candidate_status": synthesis["candidate_status"],
+                        "llm_provider": "Google Gemini (BYOK)",
+                        "synthesis": synthesis,
+                    }
+    except Exception as e:
+        print(f"BYOK Gemini API call notice (falling back to deterministic synthesis): {e}")
+    return None
 
 
 def _build_ai_science_synthesis(ra_deg: float, dec_deg: float, fov: float, target: Optional[str]) -> dict:
@@ -724,16 +799,23 @@ def ai_analyze_field(
 
 @app.get("/api/ai/ask")
 def ai_ask_get(
+    request: Request,
     ra: str = Query(..., description="Right Ascension"),
     dec: str = Query(..., description="Declination"),
     fov: float = Query(3.0, description="Field of View in arcminutes"),
     target: Optional[str] = Query(None, description="Benchmark target key"),
-    question: str = Query("Explain this object in plain English", description="Natural-language science question")
+    question: str = Query("Explain this object in plain English", description="Natural-language science question"),
+    api_key: Optional[str] = Query(None, description="Optional Google Gemini API Key (BYOK)")
 ):
     """Interactive AI Science Co-Pilot Q&A backed 100% by real NASA/ESA archive telemetry."""
     try:
         ra_deg, dec_deg = parse_celestial_coords(ra, dec)
         synthesis = _build_ai_science_synthesis(ra_deg=ra_deg, dec_deg=dec_deg, fov=fov, target=target)
+        key = api_key or request.headers.get("x-gemini-key") or os.environ.get("GEMINI_API_KEY")
+        if key and len(key.strip()) > 8:
+            llm_res = _call_gemini_api(key.strip(), synthesis, question)
+            if llm_res:
+                return llm_res
         return _answer_ai_question(synthesis, question)
     except HTTPException:
         raise
@@ -742,11 +824,16 @@ def ai_ask_get(
 
 
 @app.post("/api/ai/ask")
-def ai_ask_post(payload: AIAskRequest):
+def ai_ask_post(payload: AIAskRequest, request: Request):
     """Interactive AI Science Co-Pilot Q&A (POST) backed 100% by real NASA/ESA archive telemetry."""
     try:
         ra_deg, dec_deg = parse_celestial_coords(payload.ra, payload.dec)
         synthesis = _build_ai_science_synthesis(ra_deg=ra_deg, dec_deg=dec_deg, fov=payload.fov, target=payload.target)
+        key = payload.api_key or request.headers.get("x-gemini-key") or os.environ.get("GEMINI_API_KEY")
+        if key and len(key.strip()) > 8:
+            llm_res = _call_gemini_api(key.strip(), synthesis, payload.question)
+            if llm_res:
+                return llm_res
         return _answer_ai_question(synthesis, payload.question)
     except HTTPException:
         raise

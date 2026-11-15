@@ -80,6 +80,11 @@
     }
     .font-mono { font-family: 'JetBrains Mono', monospace; }
 
+    /* High-contrast celestial reticle cursor for astronomical canvas (Issue #36) */
+    #viewportContainer, .celestial-cursor {
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><circle cx='12' cy='12' r='5' fill='none' stroke='%2300ffff' stroke-width='1.5'/><line x1='12' y1='1' x2='12' y2='7' stroke='%23ffffff' stroke-width='1.5'/><line x1='12' y1='17' x2='12' y2='23' stroke='%23ffffff' stroke-width='1.5'/><line x1='1' y1='12' x2='7' y2='12' stroke='%23ffffff' stroke-width='1.5'/><line x1='17' y1='12' x2='23' y2='12' stroke='%23ffffff' stroke-width='1.5'/><circle cx='12' cy='12' r='1' fill='%23ffffff'/></svg>") 12 12, crosshair !important;
+    }
+
     /* Button primitives */
     .blender-btn {
       background-color: #172033;
@@ -262,16 +267,16 @@
     </div>
 
     <!-- Center: Curated Target Selector & Quick Search -->
-    <div class="flex items-center gap-1.5 bg-space-950 p-1 px-2.5 rounded-lg border border-space-700 shadow-inner overflow-x-auto shrink min-w-0">
+    <div class="flex items-center gap-1 bg-space-950 p-1 px-2 rounded-lg border border-space-700 shadow-inner shrink-0">
 
       <!-- Command Palette / Target Switcher Button -->
       <button id="btnOpenCommandPalette" class="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-space-850 hover:bg-space-800 px-2 py-0.5 rounded border border-space-700 transition" title="Search targets and coordinates (Ctrl+K)">
         <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
-        <span id="activeTargetBadgeName" class="font-semibold text-white truncate max-w-[120px]">WISE 0855</span>
-        <kbd class="px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-gray-400 border border-white/10">Ctrl+K</kbd>
+        <span id="activeTargetBadgeName" class="font-semibold text-white truncate max-w-[100px] sm:max-w-[120px]">WISE 0855</span>
+        <kbd class="hidden sm:inline-block px-1 py-0.2 bg-black/50 rounded text-[9px] font-mono text-gray-400 border border-white/10">Ctrl+K</kbd>
       </button>
 
-      <div class="w-[1px] h-4 bg-space-700/80 mx-1"></div>
+      <div class="w-[1px] h-4 bg-space-700/80 mx-0.5"></div>
 
       <!-- Quick Preset Buttons (Preserves .target-btn for E2E tests) -->
       <div class="flex items-center gap-1">
@@ -285,18 +290,18 @@
     </div>
 
     <!-- Right: Telemetry, Coordinates Popover, Primary Actions & Overflow -->
-    <div class="flex items-center gap-2 shrink-0">
+    <div class="flex items-center gap-1.5 shrink-0">
 
       <!-- Compact Coordinates Popover Trigger -->
       <div class="relative">
-        <button id="btnToggleCoordsPopover" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
+        <button id="btnToggleCoordsPopover" class="flex items-center gap-1.5 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-xs font-mono text-gray-300 hover:text-white transition" title="Edit celestial coordinates & field of view">
           <i data-lucide="crosshair" class="w-3.5 h-3.5 text-blender-orange"></i>
-          <span id="quickCoordsLabel" class="text-[11px]">133.795°, -7.245°</span>
+          <span id="quickCoordsLabel" class="text-[11px] hidden sm:inline">133.795°, -7.245°</span>
           <i data-lucide="chevron-down" class="w-3 h-3 text-gray-400"></i>
         </button>
 
         <!-- Floating Coordinates Popover Card -->
-        <div id="coordsPopover" class="hidden absolute right-0 top-10 mt-1 w-80 bg-space-900 border border-space-700 rounded-lg p-3.5 shadow-2xl z-50 space-y-3 font-mono">
+        <div id="coordsPopover" class="hidden absolute right-0 top-10 mt-1 w-80 max-w-[calc(100vw-32px)] bg-space-900 border border-space-700 rounded-lg p-3.5 shadow-2xl z-50 space-y-3 font-mono">
           <div class="flex items-center justify-between pb-1.5 border-b border-space-700">
             <span class="text-xs font-bold text-white flex items-center gap-1.5">
               <i data-lucide="navigation" class="w-3.5 h-3.5 text-cyan-400"></i>
@@ -365,9 +370,9 @@
       </div>
 
       <!-- Primary Action: Direct Fetch Button -->
-      <button id="btnTopFetch" class="px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition" title="Query NASA IRSA: Fetch real calibrated FITS cutouts from NASA archives (Enter)">
+      <button id="btnTopFetch" class="px-2.5 sm:px-3 py-1 rounded bg-blender-orange hover:bg-orange-600 text-white font-semibold text-xs flex items-center gap-1.5 shadow transition shrink-0" title="Query NASA IRSA: Fetch real calibrated FITS cutouts from NASA archives (Enter)">
         <i data-lucide="download" class="w-3.5 h-3.5"></i>
-        <span>Fetch FITS</span>
+        <span class="hidden sm:inline">Fetch FITS</span>
       </button>
 
       <!-- Integrated AI Science Co-Pilot Trigger -->
@@ -376,29 +381,10 @@
         <span class="hidden md:inline">AI Co-Pilot</span>
       </button>
 
-      <!-- Command Palette Pill (Ctrl+K) -->
-      <button id="cmdPaletteBtn" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden xl:flex" title="Open Command Palette (Ctrl+K)">
-        <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
-        <span class="hidden sm:inline">Ctrl+K</span>
-      </button>
-
-      <!-- Share Sky Region Button (Issue #12) -->
-      <button id="btnShareModal" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden lg:flex" title="Share Sky Region & Deep-Link URL">
-        <i data-lucide="share-2" class="w-3 h-3 text-cyan-400"></i>
-        <span class="hidden sm:inline">Share</span>
-      </button>
-
-      <!-- Save Analysis Snapshot Button (Issue #22) -->
-      <button id="btnSaveAnalysis" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-emerald-300 hover:text-white border border-emerald-500/40 text-[10px] font-mono transition-all shrink-0 hidden xl:flex" title="Save Current Analysis Session Snapshot">
-        <i data-lucide="bookmark-plus" class="w-3 h-3 text-emerald-400"></i>
-        <span class="hidden lg:inline">Save Analysis</span>
-      </button>
-
-      <!-- My Investigations / Previous Analyses Button (Issue #21) -->
-      <button id="btnOpenInvestigations" class="flex items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-purple-300 hover:text-white border border-purple-500/40 text-[10px] font-mono transition-all shrink-0" title="Open My Investigations & Saved Sessions">
-        <i data-lucide="folder-clock" class="w-3 h-3 text-purple-400"></i>
-        <span class="hidden 2xl:inline">My Investigations</span>
-        <span id="investigationsCountBadge" class="px-1.5 py-0.2 rounded-full bg-purple-900/80 text-purple-200 text-[9px] font-bold">0</span>
+      <!-- Citizen Science Mission Guide Button -->
+      <button id="btnOpenOnboarding" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-[11px] font-medium text-amber-300 hover:text-white transition shadow-sm shrink-0" title="Open Citizen Science Mission Guide & Guided 5-Step Tour">
+        <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span class="hidden md:inline">Mission Guide</span>
       </button>
 
       <!-- Dark / Light Theme Toggle Button (Issue #19) -->
@@ -406,16 +392,35 @@
         <i id="themeToggleIcon" data-lucide="sun" class="w-3.5 h-3.5"></i>
       </button>
 
-      <!-- Citizen Science Mission Guide Button -->
-      <button id="btnOpenOnboarding" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-[11px] font-medium text-amber-300 hover:text-white transition shadow-sm" title="Open Citizen Science Mission Guide & Guided 5-Step Tour">
-        <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-400"></i>
-        <span class="hidden sm:inline">Mission Guide</span>
+      <!-- Beginner / Scientist Mode Toggle Pill -->
+      <button id="btnToggleUserMode" class="flex items-center gap-1 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-[11px] font-medium text-gray-300 hover:text-white transition shrink-0 hidden sm:flex" title="Switch between Beginner (simple plain language) and Scientist (raw telemetry) mode">
+        <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span id="userModeLabel" class="hidden md:inline">Beginner</span>
       </button>
 
-      <!-- Beginner / Scientist Mode Toggle Pill -->
-      <button id="btnToggleUserMode" class="flex items-center gap-1 px-2 py-1 rounded bg-space-850 hover:bg-space-800 border border-space-700 text-[11px] font-medium text-gray-300 hover:text-white transition" title="Switch between Beginner (simple plain language) and Scientist (raw telemetry) mode">
-        <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-emerald-400"></i>
-        <span id="userModeLabel">Beginner</span>
+      <!-- My Investigations / Previous Analyses Button (Issue #21) -->
+      <button id="btnOpenInvestigations" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-purple-300 hover:text-white border border-purple-500/40 text-[10px] font-mono transition-all shrink-0 hidden md:flex" title="Open My Investigations & Saved Sessions">
+        <i data-lucide="folder-clock" class="w-3 h-3 text-purple-400"></i>
+        <span class="hidden xl:inline">My Investigations</span>
+        <span id="investigationsCountBadge" class="px-1.5 py-0.2 rounded-full bg-purple-900/80 text-purple-200 text-[9px] font-bold">0</span>
+      </button>
+
+      <!-- Save Analysis Snapshot Button (Issue #22) -->
+      <button id="btnSaveAnalysis" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-emerald-300 hover:text-white border border-emerald-500/40 text-[10px] font-mono transition-all shrink-0 hidden lg:flex" title="Save Current Analysis Session Snapshot">
+        <i data-lucide="bookmark-plus" class="w-3 h-3 text-emerald-400"></i>
+        <span class="hidden xl:inline">Save Analysis</span>
+      </button>
+
+      <!-- Share Sky Region Button (Issue #12) -->
+      <button id="btnShareModal" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-cyan-300 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden xl:flex" title="Share Sky Region & Deep-Link URL">
+        <i data-lucide="share-2" class="w-3 h-3 text-cyan-400"></i>
+        <span>Share</span>
+      </button>
+
+      <!-- Command Palette Pill (Ctrl+K) -->
+      <button id="cmdPaletteBtn" class="items-center gap-1.5 px-2.5 py-1 rounded blender-btn text-gray-400 hover:text-white border border-space-700 text-[10px] font-mono transition-all shrink-0 hidden 2xl:flex" title="Open Command Palette (Ctrl+K)">
+        <i data-lucide="search" class="w-3 h-3 text-cyan-400"></i>
+        <span>Ctrl+K</span>
       </button>
 
       <!-- Mission Codex & Phase 2 Validation Button -->
@@ -429,8 +434,37 @@
         <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
       </button>
 
+      <!-- Responsive Overflow Menu Button (Issue #32) -->
+      <div class="relative inline-block 2xl:hidden">
+        <button id="btnHeaderMoreActions" class="p-1.5 rounded blender-btn text-gray-400 hover:text-white shrink-0" title="More Observatory Tools">
+          <i data-lucide="more-horizontal" class="w-3.5 h-3.5"></i>
+        </button>
+        <div id="headerMoreActionsDropdown" class="hidden absolute right-0 top-10 mt-1 w-52 bg-space-900 border border-space-700 rounded-lg p-2 shadow-2xl z-50 space-y-1 text-xs font-mono">
+          <button id="dropdownOpenInvestigations" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-purple-300 transition">
+            <i data-lucide="folder-clock" class="w-3.5 h-3.5 text-purple-400"></i>
+            <span>My Investigations</span>
+          </button>
+          <button id="dropdownSaveAnalysis" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-emerald-300 transition">
+            <i data-lucide="bookmark-plus" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Save Analysis</span>
+          </button>
+          <button id="dropdownShare" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-cyan-300 transition">
+            <i data-lucide="share-2" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>Share Sky Region</span>
+          </button>
+          <button id="dropdownOpenValidation" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-cyan-300 transition">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span>Validation &amp; Codex</span>
+          </button>
+          <button id="dropdownOpenShortcuts" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded hover:bg-space-800 text-left text-gray-300 transition">
+            <i data-lucide="help-circle" class="w-3.5 h-3.5 text-gray-400"></i>
+            <span>Keyboard Shortcuts</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Toggle Right Inspector Panel -->
-      <button id="toggleSidebarBtn" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white" title="Toggle Inspector Sidebar">
+      <button id="toggleSidebarBtn" class="p-1.5 rounded blender-btn text-gray-300 hover:text-white shrink-0" title="Toggle Inspector Sidebar">
         <i data-lucide="sidebar" class="w-3.5 h-3.5"></i>
       </button>
     </div>
@@ -1808,6 +1842,10 @@
           </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
+          <button id="btnOpenByokSettings" class="px-2.5 py-1.5 rounded bg-purple-900/60 hover:bg-purple-800/80 border border-purple-500/40 text-purple-200 font-mono text-[10px] flex items-center gap-1.5 transition shadow" title="Configure Bring-Your-Own-Key (BYOK) for Google Gemini AI">
+            <i data-lucide="key" class="w-3.5 h-3.5 text-amber-300"></i>
+            <span id="byokBtnLabel">BYOK Key</span>
+          </button>
           <button id="btnRunAiModalScan" class="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1.5 transition cursor-pointer shadow">
             <i data-lucide="scan-search" class="w-3.5 h-3.5"></i>
             <span>Run Full Field Scan</span>
@@ -1821,6 +1859,18 @@
         <!-- Grounded Synthesis Summary -->
         <div id="aiModalSynthesisCard" class="p-3 rounded-lg bg-space-950/90 border border-emerald-500/30 text-gray-200 leading-relaxed text-[11px]">
           Click <strong class="text-emerald-300">Run Full Field Scan</strong> to synthesize real NASA/IPAC WiseView epochs, Gaia DR3 proper motion parallax, automated optical-vs-IR dipole detection, and SPHEREx 102-band spectral chemistry for this sky coordinate.
+        </div>
+
+        <!-- BYOK AI Configuration Status (Issue #35) -->
+        <div id="byokBanner" class="px-3 py-1.5 rounded-lg bg-purple-950/40 border border-purple-500/30 flex items-center justify-between text-[10px] font-mono">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" id="byokStatusDot"></span>
+            <span id="byokStatusText" class="text-purple-200">AI Engine: Free Deterministic Archive Synthesis</span>
+          </div>
+          <button id="btnConfigureByokPill" class="text-amber-300 hover:text-white underline text-[10px] flex items-center gap-1">
+            <i data-lucide="key" class="w-3 h-3"></i>
+            <span>Set Gemini API Key ↗</span>
+          </button>
         </div>
 
         <!-- Two-Column Real Evidence Breakdown -->
@@ -1887,6 +1937,51 @@
       <div class="flex items-center justify-between pt-2 border-t border-blender-700 text-[10px] text-gray-500 shrink-0">
         <span>Team RIP Principle 1 · Zero fabricated data · Real IPAC/IRSA &amp; Gaia DR3 feeds</span>
         <span class="font-mono text-emerald-400">Endpoint: /api/ai/analyze + /api/ai/ask</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- ISSUE #35: BYOK GEMINI API KEY MODAL                                      -->
+  <!-- ========================================================================= -->
+  <div id="byokSettingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Bring Your Own Key Configuration">
+    <div class="bg-space-900 border border-purple-500/40 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4 font-sans text-xs">
+      <div class="flex items-center justify-between border-b border-space-700 pb-2.5">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-purple-500 to-amber-500 flex items-center justify-center text-white shadow">
+            <i data-lucide="key" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white">Bring Your Own Key (BYOK)</h3>
+            <p class="text-[10px] text-gray-400 font-mono">Google Gemini AI Science Co-Pilot</p>
+          </div>
+        </div>
+        <button id="btnCloseByokModal" class="text-gray-400 hover:text-white p-1 rounded hover:bg-space-800 transition">✕</button>
+      </div>
+
+      <div class="text-gray-300 space-y-2 text-[11px] leading-relaxed">
+        <p>Connect your personal Google Gemini API key to activate live generative AI reasoning grounded in real SPHEREx 102-band spectrometry, Gaia DR3 astrometry, and difference dipoles.</p>
+        <p class="text-[10px] text-gray-400 font-mono bg-space-950 p-2 rounded border border-space-800">
+          🔒 Your key is stored locally in your browser (<code class="text-amber-300 font-bold">localStorage</code>) and transmitted securely to the server during live queries. It is never logged or leaked.
+        </p>
+      </div>
+
+      <div class="space-y-1.5">
+        <label for="inputGeminiApiKey" class="block text-[10px] font-mono text-gray-300 uppercase">Google Gemini API Key:</label>
+        <div class="relative">
+          <input id="inputGeminiApiKey" type="password" placeholder="AIzaSy..." class="w-full bg-space-950 border border-space-700 rounded px-3 py-1.5 text-white font-mono text-xs focus:outline-none focus:border-purple-400 pr-10">
+          <button id="btnToggleKeyVisibility" type="button" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs" title="Toggle visibility">👁</button>
+        </div>
+      </div>
+
+      <div id="byokTestResult" class="hidden p-2 rounded text-[10px] font-mono"></div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-space-800">
+        <button id="btnClearApiKey" class="px-3 py-1.5 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-500/30 text-rose-300 font-mono text-[10px] transition">Clear Key</button>
+        <div class="flex items-center gap-2">
+          <button id="btnCancelByok" class="px-3 py-1.5 rounded blender-btn text-[10px] text-gray-300">Cancel</button>
+          <button id="btnSaveApiKey" class="px-4 py-1.5 rounded bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500 text-white font-bold text-[11px] shadow transition">Save &amp; Activate Key</button>
+        </div>
       </div>
     </div>
   </div>
@@ -3290,7 +3385,6 @@
 
     let autoDetectEnabled = true;
     let autoDetectedChanges = [];
-    let morphPhase = 0.0;
 
 
     async function fetchAndDecodeAdjacentTile(tileKey, tileRA, tileDec, tileFovArcmin, lod) {
@@ -4560,11 +4654,22 @@
             ctx.restore();
           });
 
-          // 2. Draw Molecular Absorption Markers
+          // 2. Draw Molecular Absorption Markers & Curve-Pinned Diamonds (Issue #36)
           MOLECULAR_ANNOTATIONS.forEach(mol => {
             const molX = left + ((mol.wavelength - 0.75) / (5.00 - 0.75)) * width;
             if (molX >= left && molX <= right) {
+              // Interpolate Y position directly on the 102-band SED curve
+              const sedData = (chart.data.datasets && chart.data.datasets[0]) ? chart.data.datasets[0].data : [];
+              const wlIdx = Math.max(0, Math.min(101, Math.round(((mol.wavelength - 0.75) / 4.25) * 101)));
+              const sedFlux = (sedData && sedData.length > wlIdx) ? sedData[wlIdx] : null;
+
+              let molY = bottom - 14;
+              if (sedFlux !== null && sedFlux !== undefined && chart.scales && chart.scales.y) {
+                molY = chart.scales.y.getPixelForValue(sedFlux);
+              }
+
               ctx.save();
+              // Subtle vertical reference line
               ctx.setLineDash([3, 2]);
               ctx.strokeStyle = mol.color;
               ctx.lineWidth = 1;
@@ -4573,9 +4678,25 @@
               ctx.lineTo(molX, bottom);
               ctx.stroke();
 
+              // Draw distinctive molecular diamond pinned to the SED curve
+              ctx.setLineDash([]);
               ctx.fillStyle = mol.color;
-              ctx.font = '8px "JetBrains Mono", monospace';
-              ctx.fillText(mol.label, molX + 2, bottom - 4);
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(molX, molY - 4);
+              ctx.lineTo(molX + 4, molY);
+              ctx.lineTo(molX, molY + 4);
+              ctx.lineTo(molX - 4, molY);
+              ctx.closePath();
+              ctx.fill();
+              ctx.stroke();
+
+              // Label badge pinned neatly above the diamond
+              ctx.fillStyle = mol.color;
+              ctx.font = 'bold 8px "JetBrains Mono", monospace';
+              const textY = Math.max(top + 10, molY - 6);
+              ctx.fillText(mol.label, molX + 3, textY);
               ctx.restore();
             }
           });
@@ -4839,10 +4960,10 @@
     }
 
     // =========================================================================
-    // CDS ALADIN LITE OBSERVATORY CONTROLLER (SPHEREx DR1 HiPS Context Layer)
+    // CDS ALADIN LITE OBSERVATORY CONTROLLER (Real Near-IR 2MASS & Local Fallback)
     // =========================================================================
-    const DR1_HIPS_CUBE_URL = 'https://irsa.ipac.caltech.edu/data/hips/SPHEREx/spherex_allsky_cube';
-    const FALLBACK_SURVEY = 'P/DSS2/color';
+    const ONLINE_SURVEY = 'P/2MASS/color';
+    const FALLBACK_SURVEY = '/app/P/DSS2/color';
 
     const SPHEREx_102_CHANNELS = [
       { ch: 1, band: 1, wl: 0.753 }, { ch: 2, band: 1, wl: 0.771 }, { ch: 3, band: 1, wl: 0.790 },
@@ -5044,7 +5165,7 @@
       if (!aladinInitPromise) {
         aladinInitPromise = window.A.init.then(() => {
           const isOnline = navigator.onLine;
-          const initialSurvey = isOnline ? DR1_HIPS_CUBE_URL : FALLBACK_SURVEY;
+          const initialSurvey = isOnline ? ONLINE_SURVEY : FALLBACK_SURVEY;
 
           try {
             aladinInstance = window.A.aladin('#aladinContainer', {
@@ -5060,7 +5181,7 @@
             const alertBox = document.getElementById('aladinFallbackAlert');
             if (isOnline) {
               if (statusBadge) {
-                statusBadge.textContent = "DR1 Cube (HiPS Online)";
+                statusBadge.textContent = "2MASS All-Sky IR (Online)";
                 statusBadge.className = "px-1.5 py-0.5 rounded bg-cyan-950/80 border border-cyan-700/60 text-cyan-300 font-mono font-bold text-[9px]";
               }
               if (alertBox) alertBox.classList.add('hidden');
@@ -6626,13 +6747,55 @@
     function updateLightCurveChart(lcPoints) {
       latestMultiEpochLC = Array.isArray(lcPoints) ? lcPoints : [];
       if (!lightCurveChart) return;
-      const numericPts = latestMultiEpochLC.filter(p => p && p.mag !== null && p.mag !== undefined);
-      if (numericPts.length > 0) {
-        lightCurveChart.data.labels = numericPts.map(p => p.epoch_label);
-        lightCurveChart.data.datasets[0].data = numericPts.map(p => p.mag);
+
+      const validPts = latestMultiEpochLC.filter(p => p && ((p.mag !== null && p.mag !== undefined) || p.is_upper_limit));
+      if (validPts.length > 0) {
+        // Sort chronologically by MJD
+        validPts.sort((a, b) => (Number(a.mjd) || 0) - (Number(b.mjd) || 0));
+        const labels = validPts.map(p => p.epoch_label || p.band || 'Epoch');
+        const detData = validPts.map(p => (!p.is_upper_limit && p.mag !== null) ? p.mag : null);
+        const ulData = validPts.map(p => (p.is_upper_limit && p.upper_limit !== null) ? p.upper_limit : (p.is_upper_limit ? p.mag : null));
+
+        lightCurveChart.data.labels = labels;
+        lightCurveChart.data.datasets = [
+          {
+            label: 'IR Detections (mag)',
+            data: detData,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.15)',
+            fill: false,
+            tension: 0.15,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBackgroundColor: '#ea7600',
+            pointBorderColor: '#ffffff',
+            borderWidth: 1.5,
+            spanGaps: true
+          },
+          {
+            label: 'Non-Detection 3σ Upper Limits (mag)',
+            data: ulData,
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.2)',
+            fill: false,
+            showLine: false,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            pointStyle: 'triangle',
+            pointRotation: 180,
+            pointBackgroundColor: '#f43f5e',
+            pointBorderColor: '#ffffff',
+            borderWidth: 1.5,
+            spanGaps: true
+          }
+        ];
       } else {
         lightCurveChart.data.labels = ['Awaiting IR Epoch Photometry'];
-        lightCurveChart.data.datasets[0].data = [];
+        lightCurveChart.data.datasets = [{
+          label: 'Infrared Magnitude (mag)',
+          data: [],
+          borderColor: '#38bdf8'
+        }];
       }
       lightCurveChart.update();
     }
@@ -6650,7 +6813,7 @@
             data: [],
             borderColor: '#38bdf8',
             backgroundColor: 'rgba(56, 189, 248, 0.15)',
-            fill: true,
+            fill: false,
             tension: 0.2,
             pointRadius: 4,
             pointBackgroundColor: '#ea7600'
@@ -6668,7 +6831,24 @@
             }
           },
           plugins: {
-            legend: { display: false }
+            legend: {
+              display: true,
+              labels: {
+                color: '#94a3b8',
+                boxWidth: 10,
+                font: { family: 'JetBrains Mono', size: 9 }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const val = ctx.raw;
+                  if (val === null || val === undefined) return '';
+                  if (ctx.datasetIndex === 1) return `> ${val} mag (3σ Upper Limit non-detection)`;
+                  return `${ctx.dataset.label}: ${val} mag`;
+                }
+              }
+            }
           }
         }
       });
@@ -7406,26 +7586,34 @@
         }
         if (btnAsk) btnAsk.disabled = true;
 
+        const byokKey = localStorage.getItem('spherex_gemini_api_key') || '';
+        const headers = { 'Content-Type': 'application/json' };
+        if (byokKey) headers['X-Gemini-Key'] = byokKey;
+
         try {
           const res = await fetch(`${BACKEND_URL}/ai/ask`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({
               ra: Number(coords.ra).toFixed(6),
               dec: Number(coords.dec).toFixed(6),
               fov: fov,
               target: currentTargetKey || null,
-              question: qText
+              question: qText,
+              api_key: byokKey || null
             })
           });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
           if (data.synthesis) renderAiSynthesis(data.synthesis);
           if (respBox) {
+            const llmBadge = data.llm_provider
+              ? `<span class="px-1.5 py-0.5 rounded bg-gradient-to-r from-purple-900 to-amber-900 border border-amber-500/40 text-[9px] font-mono text-amber-300 font-bold">⚡ ${escapeHtml(data.llm_provider)}</span>`
+              : `<span class="text-[9px] font-mono text-gray-400">${escapeHtml(data.evidence_tier || '')}</span>`;
             respBox.innerHTML = `
-              <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center justify-between mb-1.5 flex-wrap gap-1">
                 <span class="text-[10px] font-mono font-bold text-emerald-300 uppercase">${escapeHtml(data.topic || 'Science Response')}</span>
-                <span class="text-[9px] font-mono text-gray-400">${escapeHtml(data.evidence_tier || '')}</span>
+                ${llmBadge}
               </div>
               <div class="text-gray-100 leading-relaxed">${escapeHtml(data.answer || '')}</div>
             `;
@@ -7456,6 +7644,118 @@
         if (modal) modal.classList.add('hidden');
       }
       window.closeAiCopilotModal = closeAiCopilotModal;
+
+      // BYOK Gemini Settings Logic (Issue #35)
+      const byokModal = document.getElementById('byokSettingsModal');
+      const btnOpenByok = document.getElementById('btnOpenByokSettings');
+      const btnPillByok = document.getElementById('btnConfigureByokPill');
+      const btnCloseByok = document.getElementById('btnCloseByokModal');
+      const btnCancelByok = document.getElementById('btnCancelByok');
+      const btnSaveKey = document.getElementById('btnSaveApiKey');
+      const btnClearKey = document.getElementById('btnClearApiKey');
+      const inputKey = document.getElementById('inputGeminiApiKey');
+      const btnToggleVis = document.getElementById('btnToggleKeyVisibility');
+      const byokStatusText = document.getElementById('byokStatusText');
+      const byokStatusDot = document.getElementById('byokStatusDot');
+      const byokBtnLabel = document.getElementById('byokBtnLabel');
+
+      function updateByokStatus() {
+        const key = localStorage.getItem('spherex_gemini_api_key');
+        if (key && key.trim().length > 8) {
+          if (byokStatusText) byokStatusText.textContent = "AI Engine: Google Gemini (BYOK Active)";
+          if (byokStatusDot) byokStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+          if (byokBtnLabel) byokBtnLabel.textContent = "BYOK (Active)";
+          if (inputKey) inputKey.value = key;
+        } else {
+          if (byokStatusText) byokStatusText.textContent = "AI Engine: Free Deterministic Archive Synthesis";
+          if (byokStatusDot) byokStatusDot.className = "w-2 h-2 rounded-full bg-gray-500";
+          if (byokBtnLabel) byokBtnLabel.textContent = "BYOK Key";
+          if (inputKey) inputKey.value = '';
+        }
+      }
+
+      function openByokModal() {
+        updateByokStatus();
+        if (byokModal) byokModal.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function closeByokModal() {
+        if (byokModal) byokModal.classList.add('hidden');
+      }
+
+      if (btnOpenByok) btnOpenByok.addEventListener('click', openByokModal);
+      if (btnPillByok) btnPillByok.addEventListener('click', openByokModal);
+      if (btnCloseByok) btnCloseByok.addEventListener('click', closeByokModal);
+      if (btnCancelByok) btnCancelByok.addEventListener('click', closeByokModal);
+      if (byokModal) byokModal.addEventListener('click', (e) => { if (e.target === byokModal) closeByokModal(); });
+
+      if (btnToggleVis && inputKey) {
+        btnToggleVis.addEventListener('click', () => {
+          inputKey.type = inputKey.type === 'password' ? 'text' : 'password';
+        });
+      }
+
+      if (btnSaveKey && inputKey) {
+        btnSaveKey.addEventListener('click', () => {
+          const val = inputKey.value.trim();
+          if (val.length < 10) {
+            alert('Please enter a valid Google Gemini API key.');
+            return;
+          }
+          localStorage.setItem('spherex_gemini_api_key', val);
+          updateByokStatus();
+          closeByokModal();
+          showToast('Google Gemini BYOK key activated!', 'success');
+        });
+      }
+
+      if (btnClearKey) {
+        btnClearKey.addEventListener('click', () => {
+          localStorage.removeItem('spherex_gemini_api_key');
+          updateByokStatus();
+          closeByokModal();
+          showToast('Gemini BYOK key removed. Reverted to server physics synthesis.', 'info');
+        });
+      }
+
+      updateByokStatus();
+
+      // Header More Actions Dropdown (Issue #32)
+      const btnHeaderMore = document.getElementById('btnHeaderMoreActions');
+      const headerMoreDropdown = document.getElementById('headerMoreActionsDropdown');
+      if (btnHeaderMore && headerMoreDropdown) {
+        btnHeaderMore.addEventListener('click', (e) => {
+          e.stopPropagation();
+          headerMoreDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('#headerMoreActionsDropdown') && !e.target.closest('#btnHeaderMoreActions')) {
+            headerMoreDropdown.classList.add('hidden');
+          }
+        });
+      }
+
+      document.getElementById('dropdownOpenInvestigations')?.addEventListener('click', () => {
+        headerMoreDropdown?.classList.add('hidden');
+        document.getElementById('btnOpenInvestigations')?.click();
+      });
+      document.getElementById('dropdownSaveAnalysis')?.addEventListener('click', () => {
+        headerMoreDropdown?.classList.add('hidden');
+        document.getElementById('btnSaveAnalysis')?.click();
+      });
+      document.getElementById('dropdownShare')?.addEventListener('click', () => {
+        headerMoreDropdown?.classList.add('hidden');
+        document.getElementById('btnShareModal')?.click();
+      });
+      document.getElementById('dropdownOpenValidation')?.addEventListener('click', () => {
+        headerMoreDropdown?.classList.add('hidden');
+        document.getElementById('btnOpenValidation')?.click();
+      });
+      document.getElementById('dropdownOpenShortcuts')?.addEventListener('click', () => {
+        headerMoreDropdown?.classList.add('hidden');
+        document.getElementById('btnOpenShortcuts')?.click();
+      });
 
       if (btnHeader) btnHeader.addEventListener('click', () => openAiCopilotModal(true));
       if (btnTargetVerify) btnTargetVerify.addEventListener('click', () => openAiCopilotModal(true));

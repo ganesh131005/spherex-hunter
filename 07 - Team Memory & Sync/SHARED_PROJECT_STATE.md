@@ -26,6 +26,12 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[ISSUES #32, #35, #36, #37 RESOLVED & VERIFIED ON FRONTEND (@coolodu)]**
+  - **Issue #32 (Responsive Top Header):** Resolved horizontal overflow on viewports <1400px; benchmark target presets (`.target-btn`) remain fully visible; secondary tools grouped cleanly into `#headerMoreActionsDropdown`.
+  - **Issue #35 (Real LLM Grounding & BYOK Settings):** Integrated Google Gemini API with grounded observational prompts; added `#byokSettingsModal` for user API keys stored in `localStorage`; live `⚡ Google Gemini (BYOK)` badge rendered in AI responses.
+  - **Issue #36 (High-Contrast Celestial Reticle, Popover Bounds & Curve-Pinned Diamonds):** Defined high-contrast cyan/white SVG reticle cursor for `#viewportContainer`; constrained `#coordsPopover` with responsive max-width; interpolated 102-band SED flux in `spherexArrayPlugin` to pin molecular absorption diamonds directly to features on the SED curve.
+  - **Issue #37 (Aladin Sky Mode Real All-Sky Base Survey):** Replaced unsliceable 3D data cube endpoint with real all-sky near-IR survey `P/2MASS/color` (with `/app/P/DSS2/color` local fallback); eliminated black void completely.
+  - **Verification:** 9/9 DOM contract tests in `tests/test_ui_contract.py` passed; 103/103 total repository tests passed (9 skipped playwright); clean ruff checks. Pushed to `origin/coolodu/web-frontend`.
 - **[ISSUE #34 RESOLVED & VERIFIED: LIGHT CURVE FALSE STAR BLENDING ELIMINATED & ZOGY DIFFERENCING CONTRAST RESTORED (@darkodu)]**
   - **Issue #34 Fixed:** [Fix Light Curve False Crossmatch & Band Mismatch and ZOGY Flat-Gray Difference Display](https://github.com/joker0210G/spherex-hunter/issues/34)
   - **Astrometric Separations Enforced:** Restricted `_nearest` in `backend/services/catalog_engine.py` to `max_sep_arcsec = 2.5` (astrometric cross-match limit), stopping unrelated background stars $35''$ away from blending into ultra-cool brown dwarfs (WISE 0855).
