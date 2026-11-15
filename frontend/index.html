@@ -4966,7 +4966,8 @@
 
               let molY = bottom - 14;
               if (sedFlux !== null && sedFlux !== undefined && chart.scales && chart.scales.y) {
-                molY = chart.scales.y.getPixelForValue(sedFlux);
+                const calculatedY = chart.scales.y.getPixelForValue(sedFlux);
+                molY = Math.max(top + 12, Math.min(bottom - 12, calculatedY));
               }
 
               ctx.save();
@@ -4993,11 +4994,13 @@
               ctx.fill();
               ctx.stroke();
 
-              // Label badge pinned neatly above the diamond
+              // Label badge pinned neatly above the diamond (with horizontal overflow guard)
               ctx.fillStyle = mol.color;
               ctx.font = 'bold 8px "JetBrains Mono", monospace';
+              const textWidth = ctx.measureText(mol.label).width;
+              const textX = (molX + textWidth + 4 > right) ? (molX - textWidth - 4) : (molX + 3);
               const textY = Math.max(top + 10, molY - 6);
-              ctx.fillText(mol.label, molX + 3, textY);
+              ctx.fillText(mol.label, textX, textY);
               ctx.restore();
             }
           });
@@ -5014,6 +5017,31 @@
             ctx.lineTo(curX, bottom);
             ctx.stroke();
             ctx.restore();
+          }
+
+          // 4. Draw Permanent Clean Labels for Catalog Photometry Diamonds
+          if (chart.data.datasets && chart.data.datasets[1] && chart.scales && chart.scales.x && chart.scales.y) {
+            const catDataset = chart.data.datasets[1];
+            if (catDataset.data) {
+              catDataset.data.forEach((val, idx) => {
+                if (val !== null && val !== undefined && spectrumPointMeta[idx]) {
+                  const pt = spectrumPointMeta[idx];
+                  const ptX = chart.scales.x.getPixelForValue(idx);
+                  const ptY = chart.scales.y.getPixelForValue(val);
+                  if (ptX >= left && ptX <= right && ptY >= top - 20 && ptY <= bottom + 20) {
+                    ctx.save();
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.font = 'bold 9px "JetBrains Mono", monospace';
+                    const ptLabel = pt.band || 'Photometry';
+                    const labelW = ctx.measureText(ptLabel).width;
+                    const lx = (ptX + labelW + 6 > right) ? (ptX - labelW - 6) : (ptX + 6);
+                    const ly = (ptY + 12 > bottom) ? (ptY - 6) : (ptY + 12);
+                    ctx.fillText(ptLabel, lx, ly);
+                    ctx.restore();
+                  }
+                }
+              });
+            }
           }
         }
       };
@@ -5033,8 +5061,9 @@
               backgroundColor: 'rgba(245, 158, 11, 0.28)',
               fill: true,
               borderWidth: 2.5,
-              pointRadius: 0,
+              pointRadius: 2,
               pointHoverRadius: 6,
+              pointBackgroundColor: '#f59e0b',
               pointHoverBackgroundColor: '#ffffff',
               pointHoverBorderColor: '#f59e0b',
               pointHoverBorderWidth: 2,
@@ -5049,7 +5078,7 @@
               showLine: false,
               borderWidth: 2.0,
               pointRadius: 7,
-              pointHoverRadius: 9,
+              pointHoverRadius: 10,
               pointStyle: 'rectRot',
               spanGaps: false
             }
@@ -5059,6 +5088,11 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+            axis: 'x'
+          },
           onClick: (evt) => {
             const chartArea = specChart.chartArea;
             if (!chartArea) return;
@@ -5092,14 +5126,27 @@
           plugins: {
             legend: { display: false },
             tooltip: {
+              enabled: true,
+              mode: 'index',
+              intersect: false,
+              filter: (item) => item.raw !== null && item.raw !== undefined,
               callbacks: {
-                title: (items) => `λ = ${items[0].label} µm`,
+                title: (items) => {
+                  if (!items || !items.length) return '';
+                  const wl = items[0].label;
+                  const numWl = parseFloat(wl);
+                  const nearMol = MOLECULAR_ANNOTATIONS.find(m => Math.abs(m.wavelength - numWl) < 0.08);
+                  if (nearMol) {
+                    return `λ = ${wl} µm • ${nearMol.label}`;
+                  }
+                  return `λ = ${wl} µm`;
+                },
                 label: (item) => {
                   if (item.datasetIndex === 1) {
                     const meta = spectrumPointMeta[item.dataIndex];
-                    return meta ? `${meta.band}: ${meta.flux_ujy} µJy (${meta.mag} mag)` : `Catalog Flux: ${item.raw} µJy`;
+                    return meta ? `💎 ${meta.band} (${meta.survey}): ${Number(meta.flux_ujy).toFixed(1)} µJy (${meta.mag} mag)` : `Catalog Flux: ${item.raw} µJy`;
                   }
-                  return `SED Flux: ${item.raw} µJy`;
+                  return `📈 SPHEREx SED: ${Number(item.raw).toFixed(1)} µJy`;
                 }
               }
             }
