@@ -3,11 +3,25 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Completed and verified Step 6 (Testable Verification Suite, Deterministic Fixtures & Performance Benchmarks) of the Master Engineering Specification on `coolodu/web-frontend`. Authored comprehensive headless Playwright and FastAPI E2E test suite (`tests/test_viewport_overhaul.py`) asserting all 7 Core Requirements and latency benchmarks. Recorded 0.20 ms p95 cached zoom transition latency, 0.157 ms frame draw time (6,383 FPS theoretical capacity), zero vertical black seams, and zero uncached network fetches on repeat stepping. Also synchronized with SnapBlink 25% blend rate increments and timeline track ticks. All 63 tests across the repository pass 100% green with 0 ruff errors.
-- **Next Task:** Final deployment review, user handoff, and merge to `main`.
+- **Current Task:** Completed and verified repositioning of the 'Ices' quick-jump section (`#spec102MolecularBar`) in `#dockPanelSpectrum` on `coolodu/web-frontend`. Moved the 5 molecular ice and gas pills (`💧 H₂O`, `❄️ Ice`, `🪐 CH₄`, `🧊 CO₂`, `🔬 CO Monoxide`) from the crowded top toolbar to their natural scientific home directly below the 'Molecular Signatures' table inside the right sidebar, unburdening the top toolbar and providing direct 1-click spectral jumping with zero layout clipping. All 18 UI contract tests and full test suites passing 100% green.
+- **Next Task:** Final deployment review, user handoff, and monitoring GitHub Issues board.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[102-Band Spectrum Sideways Horizontal Zoom & Pan (Wavelength Expansion)]**:
+  - Implemented cursor-centered sideways horizontal zoom across the 102-band spectrum ($0.75\,\mu\text{m} - 5.00\,\mu\text{m}$) via mouse wheel scroll over the spectrum canvas (`specChart`).
+  - Scrolling up expands the wavelength axis sideways (zooms in up to 10.0x / 10 bands visible) allowing users to inspect minute absorption features and continuum variations across channels.
+  - Scrolling down contracts the wavelength axis sideways (zooms out to 1.0x / 102 bands full view).
+  - Added click-and-drag horizontal panning across zoomed wavelength regions.
+  - Added `#specHorizontalZoomBar` toolbar with `#specZoomLevelLabel`, `#btnSpecZoomIn`, `#btnSpecZoomOut`, and `#btnSpecZoomReset`.
+  - Refactored `spherexArrayPlugin` to dynamically map array backgrounds (A1-A6), array labels, survey passbands, and molecular markers ($H_2O$, $CH_4$, $CO_2$, $CO$) to the active zoomed X-coordinates.
+  - Removed vertical bottom dock height resizing on wheel scroll over the spectrum canvas, keeping dock height stable while expanding spectrum sideways.
+  - Added comprehensive contract test in `tests/test_ui_contract.py` (`test_spectrum_102_horizontal_sideways_zoom_contract`). All 19 tests passing.
+- [x] **[Reposition Ices Below Molecular Signatures in 102-Band Spectrum Panel]**:
+  - Moved `#spec102MolecularBar` from the top horizontal toolbar into the right-hand Molecular Reference Sidebar, positioned directly below the 5 signature rows with a clean divider.
+  - Sized and structured the ice jump chips into a clean 2-column grid (`💧 H₂O`, `❄️ Ice`, `🪐 CH₄`, `🧊 CO₂`, and spanning `🔬 CO Monoxide`) with accessible $\ge 12\text{px}$ typography and high-contrast color coding.
+  - Decluttered the top toolbar, giving full horizontal breathing room to Array tabs (A1-A6), 102-band selector, and 17-channel in-array slider.
+  - Added contract test `test_ice_jump_chips_positioned_below_molecular_signatures()` in `tests/test_ui_contract.py`.
 - [x] **[Bottom Dock 102-Band Spectrum Scroll Wheel Zoom (Expand / Shrink)]**:
   - Implemented bidirectional mouse wheel zoom on the bottom observatory dock when the cursor is positioned over the 102 tab (`#dockPanelSpectrum`, `#bottomDock`, or `#dockTabSpectrum`).
   - Scrolling up expands the bottom dock height up to `650px` for deep spectral inspection; scrolling down shrinks it to `80px` for maximizing optical viewport space.
