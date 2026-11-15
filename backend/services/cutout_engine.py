@@ -1119,7 +1119,7 @@ def _build_degraded_gaia_wcs_fallback(
         )
         if isinstance(gaia_res, dict):
             gaia_sources = list(gaia_res.get("sources") or [])
-    except Exception as gaia_err:
+    except Exception:
         pass
 
     cos_dec = max(0.05, math.cos(math.radians(float(dec))))

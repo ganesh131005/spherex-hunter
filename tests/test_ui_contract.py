@@ -572,6 +572,34 @@ def test_snapblink_25_percent_increment_and_blend_timeline_alignment_contract():
     assert "epochBlend / 0.25" in html, "Slider and loop mapping must use 25% increments"
 
 
+def test_bottom_dock_102_scroll_wheel_zoom_contract():
+    """Validates mouse wheel scroll up/down zooms in/out (expands/shrinks) the bottom bar on the 102 tab."""
+    html, soup = _get_html_and_soup()
+
+    # 1. Elements: 102 tab button, splitter, and zoom height indicator in 102 panel
+    dock_tab_spec = soup.find(id="dockTabSpectrum")
+    assert dock_tab_spec is not None, "Missing #dockTabSpectrum"
+    assert "zoom" in dock_tab_spec.get("title", "").lower() or "scroll" in dock_tab_spec.get("title", "").lower()
+
+    zoom_indicator = soup.find(id="specDockZoomIndicator")
+    assert zoom_indicator is not None, "Missing #specDockZoomIndicator in #dockPanelSpectrum toolbar"
+    height_label = soup.find(id="specDockHeightLabel")
+    assert height_label is not None, "Missing #specDockHeightLabel"
+
+    splitter = soup.find(id="bottomDockSplitter")
+    assert splitter is not None, "Missing #bottomDockSplitter"
+    assert "scroll wheel" in splitter.get("title", "").lower()
+
+    # 2. JavaScript logic
+    assert "initBottomDock102WheelZoom" in html, "Missing initBottomDock102WheelZoom function"
+    assert "updateDockHeightDisplay" in html, "Missing updateDockHeightDisplay function"
+    assert "bottomDock.addEventListener('wheel'" in html, "Missing wheel event listener on #bottomDock"
+    assert "isSpectrumActive" in html, "Wheel handler must verify 102 Spectrum tab active state"
+    assert "-e.deltaY" in html, "Wheel handler must calculate delta from -e.deltaY"
+    assert "specChart.resize()" in html, "Wheel handler must trigger specChart.resize()"
+
+
+
 
 
 

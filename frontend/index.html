@@ -1463,8 +1463,8 @@
             <!-- Bottom Dock Zoom / Height Indicator & Reset -->
             <div id="specDockZoomIndicator" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-space-950 border border-cyan-500/40 text-xs font-mono text-cyan-300 shadow-sm select-none cursor-pointer hover:bg-space-850 hover:border-cyan-400 transition" title="102-Band Bottom Bar Zoom: Scroll wheel up/down over bottom bar to expand or shrink (Double-click to reset height)">
               <i data-lucide="chevrons-up-down" class="w-3.5 h-3.5 text-cyan-400"></i>
-              <span id="specDockHeightLabel" class="font-bold">240px</span>
-              <span class="text-[10px] text-gray-400 hidden md:inline">⇅ Scroll Zoom</span>
+              <span id="specDockHeightLabel" class="font-bold text-xs">240px</span>
+              <span class="text-xs text-gray-400 hidden md:inline">⇅ Scroll Zoom</span>
             </div>
 
             <!-- 102-Band Science Explainer Trigger -->
@@ -7281,7 +7281,9 @@
         sidebarEl.style.width = `${clampedSide}px`;
       }
       if (dockContentBody && !isDockCollapsed) {
-        dockContentBody.style.height = `${getTargetOpenDockHeight()}px`;
+        const initialH = getTargetOpenDockHeight();
+        dockContentBody.style.height = `${initialH}px`;
+        updateDockHeightDisplay(initialH);
       }
 
       if (sideSplitter && sidebarEl) {
@@ -7330,7 +7332,7 @@
 
         window.addEventListener('mousemove', (e) => {
           if (!draggingBottom) return;
-          const newHeight = Math.max(56, Math.min(420, window.innerHeight - e.clientY - 36));
+          const newHeight = Math.max(56, Math.min(650, window.innerHeight - e.clientY - 36));
           if (isDockCollapsed) {
             isDockCollapsed = false;
             if (dockCollapseIcon) {
@@ -7338,9 +7340,10 @@
               if (window.lucide) lucide.createIcons();
             }
           }
-          savedDockBodyHeight = Math.max(156, newHeight);
+          savedDockBodyHeight = Math.max(80, newHeight);
           dockContentBody.style.height = `${newHeight}px`;
           localStorage.setItem('spherex_bottom_dock_height', String(savedDockBodyHeight));
+          updateDockHeightDisplay(newHeight);
           if (typeof resizeCanvas === 'function') resizeCanvas();
           if (typeof specChart !== 'undefined' && specChart) specChart.resize();
         });
@@ -7360,6 +7363,7 @@
           savedDockBodyHeight = (activeDockTabMode === 'spectrum') ? 240 : 168;
           dockContentBody.style.height = `${getTargetOpenDockHeight()}px`;
           localStorage.setItem('spherex_bottom_dock_height', String(savedDockBodyHeight));
+          updateDockHeightDisplay(savedDockBodyHeight);
           if (dockCollapseIcon) {
             dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
             if (window.lucide) lucide.createIcons();
@@ -7368,6 +7372,108 @@
           if (typeof specChart !== 'undefined' && specChart) specChart.resize();
         });
       }
+    })();
+
+    // =========================================================================
+    // BOTTOM DOCK 102-BAND SPECTRUM SCROLL WHEEL ZOOM (Expand / Shrink)
+    // =========================================================================
+    (function initBottomDock102WheelZoom() {
+      const bottomDock = document.getElementById('bottomDock');
+      const dockContentBody = document.getElementById('dockContentBody');
+      const dockPanelSpectrum = document.getElementById('dockPanelSpectrum');
+      const dockTabSpectrum = document.getElementById('dockTabSpectrum');
+      const specDockZoomIndicator = document.getElementById('specDockZoomIndicator');
+
+      if (!bottomDock || !dockContentBody) return;
+
+      // Double-click indicator resets bottom dock height to comfortable default (240px)
+      if (specDockZoomIndicator) {
+        specDockZoomIndicator.addEventListener('dblclick', (e) => {
+          e.stopPropagation();
+          isDockCollapsed = false;
+          savedDockBodyHeight = 240;
+          dockContentBody.style.height = `${savedDockBodyHeight}px`;
+          localStorage.setItem('spherex_bottom_dock_height', '240');
+          updateDockHeightDisplay(240);
+          if (dockCollapseIcon) {
+            dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
+            if (window.lucide) lucide.createIcons();
+          }
+          if (typeof resizeCanvas === 'function') resizeCanvas();
+          if (typeof specChart !== 'undefined' && specChart) specChart.resize();
+        });
+      }
+
+      let wheelRaf = null;
+
+      bottomDock.addEventListener('wheel', (e) => {
+        // 1. Check if 102-Band Spectrum tab is active or cursor is over the 102 tab / panel
+        const isSpectrumActive = (activeDockTabMode === 'spectrum') || (dockPanelSpectrum && !dockPanelSpectrum.classList.contains('hidden'));
+        const isCursorOver102Tab = dockTabSpectrum && dockTabSpectrum.contains(e.target);
+
+        // Only zoom if 102-Band Spectrum tab is active or cursor is over the 102 tab button
+        if (!isSpectrumActive && !isCursorOver102Tab) return;
+
+        // If cursor is on 102 tab button while another tab is active, scroll-up activates 102 tab
+        if (!isSpectrumActive && isCursorOver102Tab) {
+          if (e.deltaY < 0 && dockTabSpectrum) {
+            dockTabSpectrum.click();
+          }
+          return;
+        }
+
+        // Allow horizontal trackpad scrolling on toolbars
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+        // Prevent full-page scroll or optical viewport zoom while cursor is located on the bottom bar
+        e.preventDefault();
+
+        // 2. Direction: scroll up (deltaY < 0) expands/zooms in; scroll down (deltaY > 0) shrinks/zooms out
+        const rawDelta = -e.deltaY;
+        const delta = Math.sign(rawDelta) * Math.min(50, Math.max(16, Math.abs(rawDelta) * 0.45));
+
+        const minHeight = 80;
+        const maxHeight = Math.max(380, Math.min(window.innerHeight - 100, 650));
+
+        let currentH = dockContentBody.getBoundingClientRect().height;
+        if (isDockCollapsed) currentH = 0;
+
+        // Uncollapse if collapsed and user scrolls up (expands)
+        if (isDockCollapsed && delta > 0) {
+          isDockCollapsed = false;
+          currentH = minHeight;
+          if (dockCollapseIcon) {
+            dockCollapseIcon.setAttribute('data-lucide', 'chevron-down');
+            if (window.lucide) lucide.createIcons();
+          }
+        } else if (isDockCollapsed) {
+          return;
+        }
+
+        const newHeight = Math.round(Math.max(minHeight, Math.min(maxHeight, currentH + delta)));
+
+        // Remove CSS transition delay during continuous mouse wheeling for instant 60fps tracking
+        dockContentBody.classList.remove('transition-all', 'duration-200');
+        dockContentBody.style.height = `${newHeight}px`;
+        savedDockBodyHeight = newHeight;
+        localStorage.setItem('spherex_bottom_dock_height', String(savedDockBodyHeight));
+        updateDockHeightDisplay(newHeight);
+
+        // Throttle canvas and chart redraw to requestAnimationFrame
+        if (!wheelRaf) {
+          wheelRaf = requestAnimationFrame(() => {
+            wheelRaf = null;
+            if (typeof resizeCanvas === 'function') resizeCanvas();
+            if (typeof specChart !== 'undefined' && specChart) specChart.resize();
+          });
+        }
+
+        // Restore smooth CSS transitions when mouse wheel stops
+        clearTimeout(dockContentBody._wheelZoomTimer);
+        dockContentBody._wheelZoomTimer = setTimeout(() => {
+          dockContentBody.classList.add('transition-all', 'duration-200');
+        }, 160);
+      }, { passive: false });
     })();
 
     // COORDINATES POPOVER TOGGLE
