@@ -3,11 +3,16 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Streamlined the bottom dock header to enforce a minimalist layout per user feedback. Completed comprehensive error rectification across backend endpoints, browser probes, pytest warning filters, telemetry UI badges, and Time Step Controller default closure. Audited all 70 items of NASA SPHEREx App Challenge Final Judge Evaluation Checklist (100% green pass). Integrated four-survey spatial topology mapping (`backend/services/topology_mapper.py`, `backend/api_v1.py`) with discrete time steps [2MASS (1999) -> Gaia (2015) -> WISE (2010/2015) -> SPHEREx (2025)], RAF coalesced render scheduler, and unified header actions with More dropdown toolbar.
+- **Current Task:** Resolved runtime `ReferenceError: toggleTargetDropdown is not defined` in `frontend/index.html` preventing canvas and scene collection tree initialization. Replaced with `toggleTargetPresetsPopup(false)` and exposed global backwards-compatible window alias. Verified live in browser subagent with 0 console errors, active astronomical star field canvas, and populated Scene Collection tree.
 - **Next Task:** Maintain clean branch state and prepare final challenge submission demo materials.
 - **Blockers:** None.
 
 ## Assigned Tasks:
+- [x] **[Resolve toggleTargetDropdown Runtime ReferenceError & Restore Full Initialization]**:
+  - Fixed unhandled `ReferenceError: toggleTargetDropdown is not defined` at line 6147 in `frontend/index.html` caused by earlier target preset consolidation.
+  - Replaced call with `toggleTargetPresetsPopup(false)` and added `window.toggleTargetDropdown = toggleTargetPresetsPopup;` alias.
+  - Verified live in browser subagent: Astro canvas (`#astroCanvas`, 1154 × 745 px) renders star field and Gaia DR3 vectors cleanly; Scene Collection right sidebar populates with 7 layers and observation epochs tree; 0 console errors.
+  - Passed all 51 UI and API contract tests (100% green).
 - [x] **[Modernize Header Action Tools to Dropdown Toolbar Named 'More' & Target Selector Dropdown]**:
   - Replaced horizontal preset target strip with a clean, compact dropdown toolbar (`#btnTargetDropdownTrigger` & `#targetDropdownMenu`), preserving the single search icon button (`#btnOpenCommandPalette`, `Ctrl+K`) and all benchmark target buttons with full test compatibility.
   - Consolidated observatory action buttons (`#btnOpenInvestigations`, `#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenValidation`, `#btnOpenShortcuts`) into a single unified dropdown toolbar button named **"More"** (`#btnHeaderMoreActions` + `#headerMoreActionsDropdown`).

@@ -26,6 +26,10 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[⚡ RESOLVED TOGGLETARGETDROPDOWN RUNTIME EXCEPTION (@coolodu)]**
+  - **Issue:** An unhandled `ReferenceError: toggleTargetDropdown is not defined` halted script execution at line 6147 in `frontend/index.html`, leaving the canvas showing "Loading SPHEREx Calibrated Exposure..." and leaving the Scene Collection layers/epochs tree empty.
+  - **Resolution:** Replaced the legacy invocation with `toggleTargetPresetsPopup(false)` and registered `window.toggleTargetDropdown = toggleTargetPresetsPopup` as a global backwards-compatible alias.
+  - **Live Verification:** Reloaded in browser subagent: Astro canvas (`#astroCanvas`, 1154 × 745 px) rendered star field and Gaia DR3 vectors cleanly; Scene Collection right sidebar populated with 7 layers and observation epochs tree; 0 console errors. 51/51 automated contract tests passed.
 - **[🔭 102-BAND SPECTRUM TOOLBAR RESPONSIVE OVERHAUL & ALL-BRANCH SYNC (@jokerodu / Team RIP)]**
   - **Identified Resolution Issue:** The 102-Band Spectrum top toolbar in `#dockPanelSpectrum` previously forced ~2,000px of fixed `shrink-0` controls into a rigid `whitespace-nowrap overflow-y-hidden` row. On standard 1080p laptop displays (125%/150% scaling) or with the Scene Collection sidebar expanded, the right cluster (`specHorizontalZoomBar`, `btnOpenBandScience`, and zoom reset) was pushed off-screen or clipped.
   - **Responsive Architectural Fixes:**

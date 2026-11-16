@@ -6075,6 +6075,7 @@
     // Export helpers to window for tests & global access
     window.toggleTargetPresetsPopup = toggleTargetPresetsPopup;
     window.closeTargetPresetsPopup = closeTargetPresetsPopup;
+    window.toggleTargetDropdown = toggleTargetPresetsPopup;
     document.querySelectorAll('.target-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-target');
@@ -6144,7 +6145,7 @@
       document.querySelectorAll('.target-btn').forEach(b => b.classList.remove('blender-btn-active'));
       const activeBtn = document.querySelector(`[data-target="${key}"]`);
       if (activeBtn) activeBtn.classList.add('blender-btn-active');
-      toggleTargetDropdown(false);
+      toggleTargetPresetsPopup(false);
 
       playTargetLockChime();
       loadSceneState(key, t.raDeg, t.decDeg, targetFov);
