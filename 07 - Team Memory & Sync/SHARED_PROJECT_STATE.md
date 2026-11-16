@@ -26,6 +26,11 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🛰️ DISPATCHED ISSUE #44: R DRACONIS RENDERING & DYNAMIC RANGE CONTRAST (@iceodu)]**
+  - **Issue:** [#44 - [Rendering] R Draconis Dynamic Range Contrast & Multi-Epoch Mira Variable Rendering](https://github.com/joker0210G/spherex-hunter/issues/44)
+  - **Target Teammate:** `@iceodu` (`iceodu/image-math-ai`)
+  - **Resource Allocation:** Compute-Heavy (Local NumPy / SciPy / FITS matrix processing)
+  - **Scope:** Adaptive Asinh / ZScale stretch tuning for high-amplitude pulsating Mira variables, ZOGY Fourier difference map residual validation, and multi-epoch flux normalization across 1999 2MASS, 2010 unWISE, and 2025 SPHEREx baselines.
 - **[⚡ RESOLVED TOGGLETARGETDROPDOWN RUNTIME EXCEPTION (@coolodu)]**
   - **Issue:** An unhandled `ReferenceError: toggleTargetDropdown is not defined` halted script execution at line 6147 in `frontend/index.html`, leaving the canvas showing "Loading SPHEREx Calibrated Exposure..." and leaving the Scene Collection layers/epochs tree empty.
   - **Resolution:** Replaced the legacy invocation with `toggleTargetPresetsPopup(false)` and registered `window.toggleTargetDropdown = toggleTargetPresetsPopup` as a global backwards-compatible alias.
