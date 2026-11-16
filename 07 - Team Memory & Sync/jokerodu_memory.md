@@ -3,6 +3,11 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Live Vercel Cloud Observatory & Dedicated Deployment Repository Linked Across Docs]**:
+  - Connected and documented the live public Vercel deployment: `https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1`.
+  - Linked dedicated Vercel deployment repository: `https://github.com/joker0210G/spherex-hunter-vercel`.
+  - Formally established the 3-tier architecture across documentation: Live Vercel Cloud App (Tier 1), Static GitHub Pages Mirror without Python backend (Tier 2), and Local Full-Stack Observatory (Tier 3).
+  - Updated `README.md`, `docs/GITHUB_GUIDE.md`, `docs/UI_GUIDE.md`, `docs/HACKATHON_PITCH.md`, and NASA Space Apps official submission guide with exact live judge URLs.
 - [x] **[Backend Performance Optimization: High-Throughput Fetch & Non-Blocking Async Pipeline]**:
   - Parallelized 2MASS and DSS2 FITS file downloads in `cutout_engine.py` using `ThreadPoolExecutor` (reducing IRSA retrieval latency by ~50%).
   - Moved `auto_prune_disk_cache()` to a non-blocking background daemon thread after cache writes.

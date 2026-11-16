@@ -26,6 +26,14 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🚀 LIVE VERCEL CLOUD OBSERVATORY DEPLOYED & REPO LINKED (@jokerodu / Team Lead)]**
+  - **Live URL:** `https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1`
+  - **Vercel Repository:** `https://github.com/joker0210G/spherex-hunter-vercel`
+  - **Deployment Architecture Clarification:**
+    1. **Vercel (Primary Live Cloud App):** Full web application hosted on Vercel at `https://spherex-hunter-vercel-9zlm.vercel.app/` with direct target deep-links.
+    2. **GitHub Pages (Static Mirror):** `https://joker0210G.github.io/spherex-hunter/` serves as a static UI mirror (note: does not run the Python/FastAPI backend).
+    3. **Local Full-Stack:** Run `python -m uvicorn backend.main:app --reload` for local Astropy/ZOGY development.
+  - **Updated Deliverables:** Synced `README.md`, `docs/GITHUB_GUIDE.md`, `docs/UI_GUIDE.md`, `docs/HACKATHON_PITCH.md`, and NASA Space Apps submission field instructions with the verified live judge links.
 - **[⚡ BACKEND PERFORMANCE OPTIMIZATION & ASYNC PIPELINE OVERHAUL (@jokerodu / Team Lead)]**
   - **Objective:** Accelerate backend data fetching across IRSA FITS downloads, TAP catalog cone searches, and FastAPI routing throughput.
   - **Implemented Actions:**

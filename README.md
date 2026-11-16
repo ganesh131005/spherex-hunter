@@ -2,20 +2,32 @@
 > **NASA Space Apps Challenge 2026** | **Team RIP (Coimbatore, India)**  
 > **Challenge:** Planet X and SPHEREx (Astrophysics / Planetary Defense / Citizen Science)
 
+[![Vercel Live App](https://img.shields.io/badge/Vercel-Live%20Observatory-black?logo=vercel)](https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Static%20Mirror-orange.svg)](https://joker0210G.github.io/spherex-hunter/)
+[![Deploy with Vercel](https://img.shields.io/badge/Deploy%20with-Vercel-black?logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjoker0210G%2Fspherex-hunter-vercel)
 [![GitHub License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Observatory-orange.svg)](https://joker0210G.github.io/spherex-hunter/)
-[![Deploy with Vercel](https://img.shields.io/badge/Deploy%20with-Vercel-black?logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjoker0210G%2Fspherex-hunter)
-[![Python Tests](https://img.shields.io/badge/pytest-62%2F62%20passing-brightgreen.svg)](tests/)
+[![Python Tests](https://img.shields.io/badge/pytest-52%2F52%20passing-brightgreen.svg)](tests/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com)
 [![NASA SPHEREx](https://img.shields.io/badge/NASA-SPHEREx%20DR1-critical.svg)](https://spherex.caltech.edu)
 
 SPHEREx Hunter is an interactive astronomical observatory and multi-epoch blink comparator built for the **NASA Space Apps Challenge 2026**. It allows citizen scientists and professional astrophysicists to discover Solar System objects, extreme high-proper-motion brown dwarfs, and Planet X candidates by blinking temporal infrared surveys (**2MASS 1999**, **AllWISE 2010**, **unWISE 2014-2020**, and **SPHEREx 2025**).
 
-🌐 **Live Web Observatory (GitHub Pages):**  
-👉 **[https://joker0210G.github.io/spherex-hunter/](https://joker0210G.github.io/spherex-hunter/)**
+---
 
-⚡ **Deploy to Vercel (1-Click):**  
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjoker0210G%2Fspherex-hunter)
+### 🌐 Live Observatory & Deployment Options
+
+* ⚡ **Primary Live Web Observatory (Vercel):**  
+  👉 **[https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1](https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1)**  
+  *(Cloud-hosted web observatory running on Vercel infrastructure)*
+* 📦 **Vercel Deployment Repository:**  
+  👉 **[https://github.com/joker0210G/spherex-hunter-vercel](https://github.com/joker0210G/spherex-hunter-vercel)**
+* 🛰️ **Static Client Mirror (GitHub Pages):**  
+  👉 **[https://joker0210G.github.io/spherex-hunter/](https://joker0210G.github.io/spherex-hunter/)**  
+  *(High-availability static client mirror; does not execute dynamic Python/FastAPI backend)*
+* 🚀 **1-Click Deploy to Vercel:**  
+  [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjoker0210G%2Fspherex-hunter-vercel)
+
+---
 
 ---
 

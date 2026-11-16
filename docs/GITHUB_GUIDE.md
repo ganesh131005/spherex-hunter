@@ -57,6 +57,16 @@ flowchart LR
 
 You don't even need to open a terminal to explore SPHEREx Hunter!
 
+#### Option 0: Launch Live in Your Browser (Instant 1-Click)
+* ⚡ **Live Web Observatory on Vercel:**  
+  👉 **[https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1](https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1)**  
+  *(Open directly on WISE 0855 cold brown dwarf in Blink mode)*
+* 📦 **Vercel Deployment Repository:**  
+  👉 **[https://github.com/joker0210G/spherex-hunter-vercel](https://github.com/joker0210G/spherex-hunter-vercel)**
+* 🛰️ **Static Frontend Mirror (GitHub Pages):**  
+  👉 **[https://joker0210G.github.io/spherex-hunter/](https://joker0210G.github.io/spherex-hunter/)**  
+  *(Note: GitHub Pages is a static host and does not execute the dynamic Python backend)*
+
 #### Option A: Use the GitHub Web Interface
 1. Visit the repository: [https://github.com/joker0210G/spherex-hunter](https://github.com/joker0210G/spherex-hunter)
 2. Click on the **Code** tab to browse folders like `frontend/` (the user interface) or `backend/` (FastAPI astronomy server).

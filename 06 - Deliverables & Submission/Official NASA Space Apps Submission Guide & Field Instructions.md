@@ -76,8 +76,10 @@
 - **Field Label:** *Share a publicly accessible link to your final project.*
 - **Official Guidance:** Must be publicly viewable without authentication or sign-up.
 - **Recommended Links for Team RIP:**
-  - **Live Web App:** Hosted on Vercel / Render / Cloudflare Pages.
-  - **Open-Source Repository:** `https://github.com/joker0210G/spherex-hunter` (Public GitHub repository with comprehensive README, documentation, and installation steps).
+  - **Live Web Observatory (Vercel):** `https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1`
+  - **Vercel Deployment Repository:** `https://github.com/joker0210G/spherex-hunter-vercel`
+  - **Main Open-Source Monorepo:** `https://github.com/joker0210G/spherex-hunter`
+  - **Static Client Mirror (GitHub Pages):** `https://joker0210G.github.io/spherex-hunter/` *(Static frontend mirror without Python backend)*
 - **Web Filter Classification (FortiGuard Whitelist):**
   - If using a newly registered domain, submit the [FortiGuard Web Filter Classification Form](https://www.fortiguard.com/faq/wfratingsubmit) to prevent NASA judge security firewalls from blocking access.
   - Form Details:
