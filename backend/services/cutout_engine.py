@@ -10,6 +10,7 @@ Applies professional astronomical image reduction:
 """
 
 import base64
+import concurrent.futures
 import io
 import math
 import os
@@ -724,13 +725,28 @@ def fetch_live_irsa_fits(ra: float, dec: float, fov_arcmin: float = 3.0, lod: in
                             url_dss = u
 
                     if url_2mass and url_dss:
-                        raw1 = urllib.request.urlopen(urllib.request.Request(url_2mass, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=4.0).read()
-                        raw2 = urllib.request.urlopen(urllib.request.Request(url_dss, headers={'User-Agent': 'Mozilla/5.0'}), context=ctx, timeout=4.0).read()
+                        # OPT-1: Fetch 2MASS and DSS2 FITS files in parallel (was sequential)
+                        def _fetch(url):
+                            return urllib.request.urlopen(
+                                urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'}),
+                                context=ctx, timeout=4.0
+                            ).read()
+
+                        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as _dl_pool:
+                            fut_2mass = _dl_pool.submit(_fetch, url_2mass)
+                            fut_dss   = _dl_pool.submit(_fetch, url_dss)
+                            raw1 = fut_2mass.result()
+                            raw2 = fut_dss.result()
 
                         try:
                             with open(p1, "wb") as f: f.write(raw1)
                             with open(p2, "wb") as f: f.write(raw2)
-                            auto_prune_disk_cache(max_mb=DEFAULT_DISK_QUOTA_MB, target_mb=DEFAULT_PRUNE_TARGET_MB)
+                            # OPT-2: Prune disk cache in background — don't block the response
+                            threading.Thread(
+                                target=auto_prune_disk_cache,
+                                kwargs={"max_mb": DEFAULT_DISK_QUOTA_MB, "target_mb": DEFAULT_PRUNE_TARGET_MB},
+                                daemon=True
+                            ).start()
                         except OSError as disk_err:
                             print(f"Cache disk write warning (non-fatal): {disk_err}")
 
@@ -1521,7 +1537,7 @@ def fetch_real_cutout(
             evicted_key, _ = _L1_MEMORY_CACHE.popitem(last=False)
             _L1_TIMESTAMPS.pop(evicted_key, None)
         _L1_MEMORY_CACHE[cache_key] = response
-        _L1_TIMESTAMPS[cache_key] = cached_ts
+        _L1_TIMESTAMPS[cache_key] = time.time()
 
         for skey in (spatial_key, spatial_key_generic):
             if skey in _SPATIAL_HASH_CACHE:
@@ -1530,7 +1546,7 @@ def fetch_real_cutout(
                 evicted_skey, _ = _SPATIAL_HASH_CACHE.popitem(last=False)
                 _L1_TIMESTAMPS.pop(f"sp:{evicted_skey}", None)
             _SPATIAL_HASH_CACHE[skey] = response
-            _L1_TIMESTAMPS[f"sp:{skey}"] = cached_ts
+            _L1_TIMESTAMPS[f"sp:{skey}"] = time.time()
 
     return response
 
