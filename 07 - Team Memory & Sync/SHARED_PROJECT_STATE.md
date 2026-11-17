@@ -26,6 +26,15 @@
 ---
 
 ## 📝 Recent Team Log & Announcements
+- **[🌟 RESOLVED ISSUE #44: R DRACONIS DYNAMIC RANGE CONTRAST & MIRA VARIABLE RENDERING (@iceodu)]**
+  - **Issue:** [#44 - [Rendering] R Draconis Dynamic Range Contrast & Multi-Epoch Mira Variable Rendering](https://github.com/joker0210G/spherex-hunter/issues/44)
+  - **Commit:** `ff7e049`
+  - **Problem Solved:** High-amplitude pulsating Mira variable R Draconis experienced 164-pixel saturation clipping discs and difference residual artifacts when hard-clipped at $P_{99.5}$.
+  - **Implemented Actions:**
+    1. **Adaptive Dynamic Range Asinh Stretch:** Updated `apply_locked_asinh_stretch` in `backend/services/cutout_engine.py` and `image_engine/difference.py` with `adaptive_hdr=True` scaling the dynamic ceiling up to $P_{99.99} / \text{peak}$ when extreme variable peaks ($>1.3 \times P_{99.5}$) exist. Saturation clipping count dropped from 164 px to 0 px while keeping faint neighbor stars intact.
+    2. **Robust Multi-Epoch Flux Normalization:** Implemented 2-iteration MAD sigma-clipping on stationary stars ratio `i2_sub / i1_matched` in `compute_scientific_difference`, preventing the variable star flare from biasing cross-epoch baseline flux scaling factor $S$.
+    3. **Verified Monopole ZOGY Residuals:** Validated that difference map produces an authentic stationary monopole variable residual profile (`is_variable: True`, `transient_type: "VARIABLE_FLARE"`).
+    4. **Automated Regression Suite:** Added `test_rdraconis_mira_variable_dynamic_range_and_zogy_residual` in `tests/test_differencing.py`. Verified 27/27 tests pass 100% green across differencing and golden suites.
 - **[🚀 LIVE VERCEL CLOUD OBSERVATORY DEPLOYED & REPO LINKED (@jokerodu / Team Lead)]**
   - **Live URL:** `https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1`
   - **Vercel Repository:** `https://github.com/joker0210G/spherex-hunter-vercel`

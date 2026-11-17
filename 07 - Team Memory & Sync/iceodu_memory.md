@@ -3,11 +3,17 @@
 > **Branch:** `iceodu/image-math-ai`
 
 ## Personal Status:
-- **Current Task:** Completed deep deconstruction and vault synchronization for the official NASA Space Apps Project Submission Guide and Form Field Instructions (`https://www.spaceappschallenge.org/resources/project-submission-guide/#project-page-form-field-instructions`).
-- **Next Task:** Support final package verification and submission readiness.
-- **Blockers:** None currently.
+- **Current Task:** Resolved GitHub Issue #44: R Draconis Dynamic Range Contrast & Multi-Epoch Mira Variable Rendering. Implemented adaptive HDR asinh/ZScale stretch tuning in `backend/services/cutout_engine.py` and `image_engine/difference.py`, preventing pixel saturation discs (clipped count reduced from 164 px to 0 px) while preserving faint neighbor stars. Calibrated cross-epoch flux scaling $S$ with sigma-clipping, eliminating variable star bias. Verified ZOGY difference monopole residual profile and added comprehensive unit test `test_rdraconis_mira_variable_dynamic_range_and_zogy_residual` in `tests/test_differencing.py` (27/27 tests green).
+- **Next Task:** Final submission readiness audit and PR preparation.
+- **Blockers:** None.
 
 ## Assigned GitHub Tasks:
+- [x] **[#44] [Rendering] R Draconis Dynamic Range Contrast & Multi-Epoch Mira Variable Rendering** (https://github.com/joker0210G/spherex-hunter/issues/44) — **VERIFIED & CLOSED**
+  - **Commit:** `ff7e04928c2c1001531901d6db830c7ceefe3590`
+  - **Adaptive HDR Ceiling:** Dynamically scaled dynamic range ceiling in `apply_locked_asinh_stretch` from hard $P_{99.5}$ up to $P_{99.99} / \text{peak}$ for high-amplitude variables ($>1.3 \times P_{99.5}$), eliminating 164-pixel saturation disc clipping without altering standard starfield background scaling.
+  - **Flux Scale Factor $S$ with Sigma-Clipping:** Applied 2-iteration robust MAD sigma-clipping to stationary star ratio estimation, preventing high-amplitude variable flares from biasing cross-epoch baseline flux scaling.
+  - **Zero-Residual ZOGY Subtraction:** Validated ZOGY Fourier difference map monopole residuals consistent with Mira pulsation physics (`is_variable: True`, `transient_type: "VARIABLE_FLARE"`).
+  - **Verification:** 27/27 tests passed 100% green across `tests/test_differencing.py` and `tests/test_golden_suite.py`.
 - [x] **[#15] [ASTROMETRY] Fix Gaia DR3 Overlay Projection Mismatch & FOV Scale Discrepancy** (https://github.com/joker0210G/spherex-hunter/issues/15) — **CLOSED**
   - Anchored `getActivePixelsPerArcmin()` dynamically to active image/camera FOV (`getActiveFovArcmin()`).
   - Implemented standard WCS Gnomonic Tangent projection (`projectSkyToTangentialArcmin`) matching east-left / north-up canvas axes.
