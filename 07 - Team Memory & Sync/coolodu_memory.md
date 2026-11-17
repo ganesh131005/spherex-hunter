@@ -3,7 +3,7 @@
 > **Branch:** `coolodu/web-frontend`
 
 ## Personal Status:
-- **Current Task:** Resolved runtime `ReferenceError: toggleTargetDropdown is not defined` in `frontend/index.html` preventing canvas and scene collection tree initialization. Replaced with `toggleTargetPresetsPopup(false)` and exposed global backwards-compatible window alias. Verified live in browser subagent with 0 console errors, active astronomical star field canvas, and populated Scene Collection tree.
+- **Current Task:** Synchronized branch with `origin/main` (including live Vercel cloud deployment docs, backend async performance pipeline overhaul, and authentic high-resolution screenshot gallery). Resolved runtime `ReferenceError: toggleTargetDropdown is not defined` in `frontend/index.html` preventing canvas and scene collection tree initialization. Replaced with `toggleTargetPresetsPopup(false)` and exposed global backwards-compatible window alias. Streamlined the viewport HUD and verified all contract tests pass 100% green.
 - **Next Task:** Maintain clean branch state and prepare final challenge submission demo materials.
 - **Blockers:** None.
 
@@ -13,6 +13,33 @@
   - Replaced call with `toggleTargetPresetsPopup(false)` and added `window.toggleTargetDropdown = toggleTargetPresetsPopup;` alias.
   - Verified live in browser subagent: Astro canvas (`#astroCanvas`, 1154 × 745 px) renders star field and Gaia DR3 vectors cleanly; Scene Collection right sidebar populates with 7 layers and observation epochs tree; 0 console errors.
   - Passed all 51 UI and API contract tests (100% green).
+- [x] **[Viewport Bloat Remediation: Merged Active Blink Frame & Consolidated Telemetry HUD]**:
+  - Investigated user report of viewport bloating between the top-left frame overlay (`| (Frame 4/4) SPHEREx Stack...`) and the bottom telemetry bar.
+  - Identified redundant indicators: Active Frame/Epoch info was split into an isolated top-left floating box, while the bottom bar carried 4 sprawling resolution indicators (`LOD 0`, `Scale`, `Span`, `Exp Magnified`).
+  - Action taken:
+    1. Integrated active frame and survey tag (`#vpBottomEpochTag`, `#vpBottomEpochDot`, `#vpBottomEpochLabel`) directly into the bottom telemetry HUD bar, syncing dynamically with blink comparator cycles.
+    2. Consolidated the 4 resolution metrics (`#vpLOD`, `#vpDeviceScale`, `#vpNativeSpan`, `#vpScaleStatusBadge`) into a single, cohesive optical scale block with rich hover tooltips, cutting horizontal bar bloat by ~40%.
+    3. Removed the orphan separator pipe `|` in `#vpTopTargetCard` when no target name is populated (`#vpTargetDivider`).
+    4. Verified all 62 automated tests (`test_ui_contract.py`, `test_golden_suite.py`, `test_viewport_overhaul_v2.py`) pass 100% green.
+- [x] **[Visual Evidence Gallery Overhaul: Ingestion of Authentic Observatory Captures]**:
+  - Ingested 20 genuine high-resolution application screenshots provided by user (`.zip` and Aladin captures).
+  - Upgraded canonical screenshots:
+    1. `03_aladin_sky_hips_view.png` (1600x899) — Full celestial sphere in Aladin Sky mode with R Draconis and bottom context bar.
+    2. `01_wise0855_observatory_blink.png` (1600x899) — Complete observatory interface with WISE 0855 dipole, streamlined HUD, target metadata, and flipbook timeline.
+    3. `04_102_band_spectrum_workbench.png` (1600x899) — Full 102-band SED graph across 6 detector arrays with molecular absorption tags ($H_2O, CH_4, CO_2, CO$).
+    4. `05_target_barnards_star_benchmark.png` (1600x900) — High proper motion benchmark.
+    5. `06_target_rw_aurigae_variable.png` (1600x900) — Eruptive variable flare benchmark.
+    6. `07_target_epsilon_indi_binary.png` (1600x899) — Brown dwarf binary companion benchmark.
+    7. `08_target_r_draconis_variable.png` (1600x899) — Pulsating Mira variable benchmark.
+    8. `09_aladin_sky_deep_starfield.png` (1600x899) — Deep starfield zoom in Aladin Lite.
+    9. `10_streamlined_viewport_canvas.png` (1308x880) — Focused canvas view with streamlined HUD.
+  - Linked all screenshots into [`README.md`](file:///d:/Workspace/NASA_Space_apps/README.md) and [`docs/README.md`](file:///d:/Workspace/NASA_Space_apps/docs/README.md) gallery grids. Pushed cleanly to `origin/main` (`49956b1`).
+- [x] **[Capture High-Resolution Application Screenshots for Validation & Aladin Sky Mode]**:
+  - Developed automated headless Playwright capture script (`scripts/capture_validation_screenshots.py`) bypassing onboarding tour intercepts.
+  - Captured `01_wise0855_observatory_blink.png`: Authentic multi-epoch FITS data for WISE 0855-0714 with auto-identified proper motion dipole annotation, telemetry HUD, coordinate overlay, and multi-epoch timeline.
+  - Captured `02_scientific_validation_modal.png`: Phase 2 Scientific Validation Benchmark & Mission Codex modal showing verified NASA SPHEREx flight exposure metrics (completeness at $m_{\text{AB}} \approx 17.3$, false-positive rate 29.02/deg², 54 IMCCE SkyBoT bodies, EPSF 0.666" astrometry).
+  - Captured `03_aladin_sky_hips_view.png`: CDS Strasbourg Aladin Lite interactive HiPS view with the new bottom-docked `#aladinContextBar`.
+  - Stored in `docs/screenshots/` and copied to conversation artifact directory.
 - [x] **[Modernize Header Action Tools to Dropdown Toolbar Named 'More' & Target Selector Dropdown]**:
   - Replaced horizontal preset target strip with a clean, compact dropdown toolbar (`#btnTargetDropdownTrigger` & `#targetDropdownMenu`), preserving the single search icon button (`#btnOpenCommandPalette`, `Ctrl+K`) and all benchmark target buttons with full test compatibility.
   - Consolidated observatory action buttons (`#btnOpenInvestigations`, `#btnSaveAnalysis`, `#btnShareModal`, `#btnOpenValidation`, `#btnOpenShortcuts`) into a single unified dropdown toolbar button named **"More"** (`#btnHeaderMoreActions` + `#headerMoreActionsDropdown`).

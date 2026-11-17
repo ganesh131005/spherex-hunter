@@ -118,7 +118,7 @@ flowchart TD
 
 | Time | Action on Screen | Spoken Narration |
 | :---: | :--- | :--- |
-| **0:00 - 0:10** | Open `http://127.0.0.1:8000/app/index.html`. App opens directly on **WISE 0855-0714**. | *"Here is the live SPHEREx Hunter observatory. It opens instantly on WISE 0855, the coldest known brown dwarf at 250 Kelvin."* |
+| **0:00 - 0:10** | Open `https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1` (or local `http://127.0.0.1:8000/app/index.html`). App opens directly on **WISE 0855-0714**. | *"Here is the live SPHEREx Hunter observatory. It opens instantly on WISE 0855, the coldest known brown dwarf at 250 Kelvin."* |
 | **0:10 - 0:20** | Click **Blink** in the top view switcher. Observe the star jumping between Epoch 1 and Epoch 2. | *"In Blink mode, you immediately see the 7.08 arcsecond proper motion jump between epochs—a classic moving dipole."* |
 | **0:20 - 0:32** | Click **Difference** mode. Show the white peak and dark trough with ZOGY significance badge. | *"Switching to Difference mode reveals the Fourier ZOGY significance map: a massive 24.85-sigma peak cleanly separated from detector noise."* |
 | **0:32 - 0:44** | Expand the bottom **Spectrum** dock tab. Point to the $3.05\,\mu\text{m}$ (water ice) and $3.30\,\mu\text{m}$ (methane) absorption dips. | *"Opening the bottom dock exposes the live 102-band infrared spectrum. Look at these absorption dips: water ice at 3.05 microns and methane at 3.3 microns, confirming a sub-stellar atmosphere."* |

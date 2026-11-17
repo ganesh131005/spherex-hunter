@@ -108,7 +108,12 @@ The interface adheres to the core principle:
 ## 🔗 Permalinks & Shareable State
 
 Every target switch, mode change, or frame selection automatically updates the browser URL hash:
-```
-http://127.0.0.1:8000/app/index.html#target=wise0855&mode=blink&frame=1
-```
-Users can bookmark or share this link to immediately open the exact target, view mode, and frame.
+* **Live Vercel Cloud Observatory:**
+  ```text
+  https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1
+  ```
+* **Local Development Observatory:**
+  ```text
+  http://127.0.0.1:8000/app/index.html#target=wise0855&mode=blink&frame=1
+  ```
+Users can bookmark or share these links to immediately open the exact astronomical target, view mode, and frame.

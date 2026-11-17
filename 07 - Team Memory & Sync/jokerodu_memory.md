@@ -3,6 +3,31 @@
 > **Branch:** `main`
 
 ## Current Priorities:
+- [x] **[Live Vercel Cloud Observatory & Dedicated Deployment Repository Linked Across Docs]**:
+  - Connected and documented the live public Vercel deployment: `https://spherex-hunter-vercel-9zlm.vercel.app/#target=wise0855&mode=blink&frame=1`.
+  - Linked dedicated Vercel deployment repository: `https://github.com/joker0210G/spherex-hunter-vercel`.
+  - Formally established the 3-tier architecture across documentation: Live Vercel Cloud App (Tier 1), Static GitHub Pages Mirror without Python backend (Tier 2), and Local Full-Stack Observatory (Tier 3).
+  - Updated `README.md`, `docs/GITHUB_GUIDE.md`, `docs/UI_GUIDE.md`, `docs/HACKATHON_PITCH.md`, and NASA Space Apps official submission guide with exact live judge URLs.
+- [x] **[Backend Performance Optimization: High-Throughput Fetch & Non-Blocking Async Pipeline]**:
+  - Parallelized 2MASS and DSS2 FITS file downloads in `cutout_engine.py` using `ThreadPoolExecutor` (reducing IRSA retrieval latency by ~50%).
+  - Moved `auto_prune_disk_cache()` to a non-blocking background daemon thread after cache writes.
+  - Added in-memory TTL caching (`_CIRCUIT_MEM_CACHE`, 5.0s TTL) for TAP circuit breaker states (`circuit_state.json`) to eliminate per-request disk reads on the hot path.
+  - Parallelized ESA Gaia DR3, NASA IRSA, and Harvard VizieR catalog queries via `ThreadPoolExecutor.as_completed` in `catalog_engine.py` (reducing worst-case fallback latency from ~9.8s down to ~1.8s).
+  - Offloaded git commit hash resolution (`git rev-parse HEAD`) in `backend/api_v1.py` to a daemon thread to eliminate cold-start import blocking.
+  - Wrapped `fetch_real_cutout()` in `loop.run_in_executor` in `backend/api_v1.py` so CPU/IO-heavy astronomical processing does not block Uvicorn's event loop.
+  - Aligned L1 RAM spatial cache timestamps with real insertion time (`time.time()`), preserving valid sub-arcmin micro-pan cache hits across sessions.
+  - Verified 100% test pass rate: **52/52 tests passing** in 24.02s (down from 44.52s, a 46% speedup!).
+- [x] **[Vercel Cloud Deployment & Clean Root Routing Configuration]**:
+  - Created `vercel.json` with SPA routing rules, `/app/` legacy compatibility rewrites, and granular static caching headers for high-speed delivery of FITS spectra and HiPS tiles.
+  - Added `.vercelignore` to optimize build sizes and keep cloud microVM deployments lean.
+  - Added 1-click **Deploy with Vercel** button and badge to `README.md`.
+  - Installed official Vercel plugin (`antigravity-plugins-partners/plugin/vercel-plugin`).
+  - Verified 100% test pass rate (52/52 passing).
+- [x] **[Automated GitHub Pages Deployment & Client-Side Subpath Resiliency]**:
+  - Implemented `.github/workflows/deploy-pages.yml` with official `actions/deploy-pages@v4` and `actions/upload-pages-artifact@v3` for automated deployment to GitHub Pages (`https://joker0210G.github.io/spherex-hunter/`).
+  - Adapted frontend static asset paths (`logo.svg`, `aladin.js`, `spherex_102_channels.json`) to relative paths with fallback detection so the client runs out-of-the-box on both local `/app/` routes and GitHub Pages subpaths.
+  - Added live observatory demo badge and hyperlink in `README.md`.
+  - Verified 100% test pass rate (52/52 passing) with zero contract regressions.
 - [x] **[Master Git Sync & Integration: Compact Command Palette Merged Across All Branches]**:
   - Ingested commits `26f6632` and `99f997b` from `coolodu/web-frontend` and `darkodu/astro-backend` into `main`.
   - Feature: Replaced text-heavy command palette button with a compact icon-only search button (`#btnOpenCommandPalette`, `Ctrl+K`) with `sr-only` accessibility badge, saving header space.

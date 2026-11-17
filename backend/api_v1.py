@@ -10,12 +10,14 @@ Implements RESTful v1 endpoints adhering to:
 - Absolute scientific honesty (no fake scores or mock detections)
 """
 
+import asyncio
 import hashlib
 import io
 import json
 import math
 import os
 import subprocess
+import threading
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -79,13 +81,21 @@ MANIFEST_PATH = os.path.join(DEMO_CACHE_DIR, "manifest.json")
 DISCOVERIES_FILE = os.path.join(BASE_DIR, "07 - Team Memory & Sync", "candidate_discoveries.json")
 VALIDATION_DIR = os.path.join(BASE_DIR, "validation")
 
-# Git deployment hash, data release & pipeline version
-try:
-    GIT_HASH = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=BASE_DIR, stderr=subprocess.DEVNULL
-    ).decode().strip()
-except Exception:
-    GIT_HASH = "71a9daaaa9d8b27d415c2d79d1be389da460baff"
+# OPT-5: Git deployment hash resolved lazily at startup — does not block module import.
+# Falls back to a known-good hash if git is unavailable (e.g., Vercel serverless).
+GIT_HASH = "71a9daaaa9d8b27d415c2d79d1be389da460baff"
+
+def _resolve_git_hash_background():
+    """Runs in a daemon thread at startup so import is never blocked by subprocess."""
+    global GIT_HASH
+    try:
+        GIT_HASH = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=BASE_DIR, stderr=subprocess.DEVNULL
+        ).decode().strip()
+    except Exception:
+        pass
+
+threading.Thread(target=_resolve_git_hash_background, daemon=True).start()
 
 DATA_RELEASE = "DR1"
 PIPELINE_VERSION = "2.1.0"
@@ -857,7 +867,7 @@ def get_target_exposures(target_id: str, request: Request):
 # ==============================================================================
 
 @router.get("/cutout")
-def get_cutout_v1(
+async def get_cutout_v1(
     request: Request,
     ra: Optional[str] = Query(None, description="RA in decimal deg or sexagesimal"),
     dec: Optional[str] = Query(None, description="Dec in decimal deg or sexagesimal"),
@@ -900,8 +910,15 @@ def get_cutout_v1(
         )
 
     try:
-        data = fetch_real_cutout(
-            ra=ra_deg, dec=dec_deg, fov_arcmin=fov, target_key=t_clean, lod=lod, force_refresh=force_refresh
+        # OPT-6: Offload blocking FITS I/O to a thread-pool executor so the
+        # Uvicorn event loop stays free to serve other requests concurrently.
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(
+            None,
+            lambda: fetch_real_cutout(
+                ra=ra_deg, dec=dec_deg, fov_arcmin=fov,
+                target_key=t_clean, lod=lod, force_refresh=force_refresh
+            )
         )
         content_bytes = json.dumps(data).encode("utf-8")
         etag = compute_etag(content_bytes)

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SPHEREx Hunter - Deep Space Infrared Observatory</title>
-  <link rel="icon" type="image/svg+xml" href="/app/assets/logo.svg">
+  <link rel="icon" type="image/svg+xml" href="./assets/logo.svg">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
@@ -13,7 +13,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- CDS ALADIN LITE V3 (Vendored locally for 100% offline & zero cross-origin ORB blocks) -->
   <script type="module">
-    import A from '/app/vendor/aladin.js';
+    import A from './vendor/aladin.js';
     window.A = A;
   </script>
   <script>
@@ -301,7 +301,7 @@
       <!-- App Brand & Logo -->
       <div class="flex items-center gap-2.5 pr-3 border-r border-space-700 cursor-pointer group" id="btnHeaderBrand" title="SPHEREx Hunter: Hunt for Planet Nine, ultra-cool Brown Dwarfs, and Near-Earth Asteroids across 102 NASA SPHEREx infrared spectral bands with multi-epoch blink astrometry and difference imaging. Click to open Mission Guide.">
         <a id="brandLogoLink" href="#top" onclick="event.preventDefault()" class="w-8 h-8 rounded-lg bg-space-950 border border-space-700 flex items-center justify-center relative shadow-md shadow-orange-950/40 group-hover:border-blender-orange transition-all">
-          <img src="/app/assets/logo.svg" alt="SPHEREx Hunter Logo" class="w-6 h-6 object-contain drop-shadow-[0_0_6px_rgba(234,118,0,0.5)] transition-transform group-hover:scale-110" />
+          <img src="./assets/logo.svg" alt="SPHEREx Hunter Logo" class="w-6 h-6 object-contain drop-shadow-[0_0_6px_rgba(234,118,0,0.5)] transition-transform group-hover:scale-110" />
         </a>
         <div class="flex flex-col">
           <div class="flex items-baseline gap-1">
@@ -2531,7 +2531,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between border-b border-space-700/80 pb-3">
         <div class="flex items-center gap-3">
-          <img src="/app/assets/logo.svg" alt="SPHEREx Logo" class="w-8 h-8 drop-shadow-[0_0_8px_rgba(234,118,0,0.5)]">
+          <img src="./assets/logo.svg" alt="SPHEREx Logo" class="w-8 h-8 drop-shadow-[0_0_8px_rgba(234,118,0,0.5)]">
           <div>
             <h2 class="font-bold text-white text-base flex items-center gap-2 font-sans">
               <span>SPHEREx Hunter</span>
@@ -7435,7 +7435,8 @@
       });
 
       // Synchronize with authentic spherex_102_channels.json if reachable
-      fetch('/app/src/data/spherex_102_channels.json')
+      const channelsUrl = window.location.pathname.includes('/app') ? '/app/src/data/spherex_102_channels.json' : './src/data/spherex_102_channels.json';
+      fetch(channelsUrl)
         .then(res => res.json())
         .then(data => {
           if (data && Array.isArray(data.channels) && data.channels.length === 102) {
