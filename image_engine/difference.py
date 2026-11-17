@@ -13,20 +13,20 @@ Processes 100% authentic, real-world NASA telescope FITS data:
 - Real-world difference map generation showing authentic proper motion dipoles and variable flares.
 """
 
+import base64
 import io
 import os
-import sys
 import ssl
-import base64
+import sys
 import urllib.request
-import numpy as np
-from PIL import Image
-from scipy.ndimage import gaussian_filter
 
+import numpy as np
 from astropy.io import fits
+from astropy.visualization import AsinhStretch, ZScaleInterval
 from astropy.wcs import WCS
-from astropy.visualization import ZScaleInterval, AsinhStretch
+from PIL import Image
 from reproject import reproject_interp
+from scipy.ndimage import gaussian_filter
 
 if sys.platform == "win32":
     try:
@@ -160,7 +160,6 @@ def process_real_fits_difference(
         survey1 = h1[0].header.get('SURVEY', 'DSS2')
 
         d2_raw = np.nan_to_num(h2[0].data.astype(np.float64))
-        w2 = WCS(h2[0].header)
         hdr2 = h2[0].header
         date2 = h2[0].header.get('DATE-OBS', 'N/A') or h2[0].header.get('ORDATE', 'N/A')
         survey2 = h2[0].header.get('SURVEY', '2MASS')
@@ -170,14 +169,18 @@ def process_real_fits_difference(
     med1 = np.nanmedian(d1_aligned)
     d1_aligned = np.nan_to_num(d1_aligned, nan=med1)
 
-    # 2. Photometric ZScale & Asinh reduction
+    # 2. Photometric ZScale & Asinh reduction with Adaptive Dynamic Range scaling
     z1 = ZScaleInterval(contrast=0.25)
     vm1, vx1 = z1.get_limits(d1_aligned)
-    s1 = AsinhStretch(a=0.1)(np.clip((d1_aligned - vm1) / (vx1 - vm1 + 1e-6), 0.0, 1.0))
+    peak1 = float(np.nanmax(d1_aligned))
+    eff_vx1 = min(peak1, max(vx1, float(np.percentile(d1_aligned, 99.99)))) if peak1 > vx1 * 1.3 else vx1
+    s1 = AsinhStretch(a=0.1)(np.clip((d1_aligned - vm1) / (eff_vx1 - vm1 + 1e-6), 0.0, 1.0))
 
     z2 = ZScaleInterval(contrast=0.25)
     vm2, vx2 = z2.get_limits(d2_raw)
-    s2 = AsinhStretch(a=0.1)(np.clip((d2_raw - vm2) / (vx2 - vm2 + 1e-6), 0.0, 1.0))
+    peak2 = float(np.nanmax(d2_raw))
+    eff_vx2 = min(peak2, max(vx2, float(np.percentile(d2_raw, 99.99)))) if peak2 > vx2 * 1.3 else vx2
+    s2 = AsinhStretch(a=0.1)(np.clip((d2_raw - vm2) / (eff_vx2 - vm2 + 1e-6), 0.0, 1.0))
 
     # 3. Difference imaging
     diff_uint8, z_score, scale_S, res_rms = compute_difference_image(s1, s2, psf_match_sigma=psf_match_sigma)
@@ -302,7 +305,7 @@ def run_benchmark_suite(output_dir: str = "image_engine/outputs/real_world"):
 
     print("\n" + "=" * 75)
     print("🌟 [SUCCESS] Real Astronomical FITS Difference Processing Complete!")
-    print(f"   All images generated directly from authentic NASA telescope archives.")
+    print("   All images generated directly from authentic NASA telescope archives.")
     print("=" * 75)
 
 

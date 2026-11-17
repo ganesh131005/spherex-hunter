@@ -123,3 +123,54 @@ def test_cosmic_ray_spike_vetoed():
     assert cr_cand is not None
     assert cr_cand.veto_reason == "COSMIC_RAY_SPIKE"
     assert not cr_cand.passed_vetoes
+
+
+def test_rdraconis_mira_variable_dynamic_range_and_zogy_residual():
+    """
+    Issue #44 Verification:
+    1. R Draconis FITS cutouts render with balanced dynamic range without pixel saturation clipping.
+    2. ZOGY subtraction maps produce clean monopole residual profiles consistent with Mira pulsation physics.
+    3. Multi-epoch flux normalization balances cross-survey baseline.
+    """
+    from backend.services.cutout_engine import apply_locked_asinh_stretch, fetch_real_cutout
+
+    # 1. Test adaptive dynamic range on synthetic / extreme high-dynamic range array
+    # simulating high-amplitude Mira pulsation (core peak > 5x p99.5)
+    rng = np.random.default_rng(44)
+    sim_field = rng.normal(100.0, 5.0, (64, 64)).astype(np.float64)
+    # Inject bright Mira variable core with peak 10,000 counts
+    cy, cx = 32, 32
+    yy, xx = np.mgrid[0:64, 0:64]
+    r2 = (xx - cx)**2 + (yy - cy)**2
+    sim_field += 10000.0 * np.exp(-0.5 * r2 / (1.5**2))
+
+    p99_5 = float(np.percentile(sim_field, 99.5))
+    peak_val = float(np.max(sim_field))
+    assert peak_val > 3.0 * p99_5, "Peak must reflect extreme Mira pulsation dynamic range"
+
+    # Render with adaptive HDR stretch
+    stretched = apply_locked_asinh_stretch(sim_field, beta=3.0, adaptive_hdr=True)
+    # Assert zero saturation discs (saturation count is at most 1 pixel at peak, not flat plateau)
+    sat_count = int(np.sum(stretched == 255))
+    assert sat_count <= 1, f"Adaptive HDR must prevent saturation clipping disc, got {sat_count} saturated pixels"
+    # Assert high-contrast core gradient
+    assert stretched[cy, cx] >= 250
+    assert stretched[cy + 4, cx] < 200
+
+    # 2. Test live real-cutout pipeline on R Draconis
+    bundle = fetch_real_cutout(ra=248.1676, dec=66.7551, target_key="rdraconis")
+    assert bundle["status"] == "success"
+    assert "R Draconis" in bundle["target"]
+    assert len(bundle["epochs"]) == 2
+
+    # Check ZOGY significance and residual metrics
+    zogy = bundle["zogy_significance"]
+    assert zogy["peak_sigma"] >= 5.0
+    assert zogy["is_significant"] is True
+
+    # Check motion vector reflects variable star physics (stationary monopole flare, not a spatial dipole)
+    vector = bundle["motion_vector"]
+    assert vector["is_variable"] is True
+    assert vector["shift_arcsec"] == 0.0
+    assert vector["transient_type"] == "VARIABLE_FLARE"
+

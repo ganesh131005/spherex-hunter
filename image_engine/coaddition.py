@@ -14,15 +14,14 @@ Implements optimal inverse-variance weighted co-addition (image stacking):
 6. Also supports co-adding real multi-band NASA FITS files (2MASS J/H/K & WISE W1/W2/W3).
 """
 
-import io
 import os
 import sys
-import numpy as np
-from PIL import Image
 
+import numpy as np
 from astropy.io import fits
+from astropy.visualization import AsinhStretch, ZScaleInterval
 from astropy.wcs import WCS
-from astropy.visualization import ZScaleInterval, AsinhStretch
+from PIL import Image
 from reproject import reproject_interp
 
 if sys.platform == "win32":
@@ -154,7 +153,6 @@ def coadd_real_fits_multiband(
     # Reference header from first FITS
     with fits.open(fits_file_list[0]) as h_ref:
         ref_hdr = h_ref[0].header
-        ref_wcs = WCS(ref_hdr)
 
     aligned_layers = []
     band_names = []
@@ -303,7 +301,7 @@ def run_coaddition_benchmark_suite(output_dir: str = "image_engine/outputs/coadd
     coadd_results = build_spherex_6array_broadbands(cube_102)
 
     theo_boost = coadd_results["theoretical_array_boost"]
-    print(f"\n📊 Mathematical Sensitivity Analysis:")
+    print("\n📊 Mathematical Sensitivity Analysis:")
     print(f"  • Theoretical 17-Channel Array Boost: sqrt(17) = {theo_boost:.3f}x")
     print(f"  • Theoretical 102-Channel Full Boost:  sqrt(102) = {coadd_results['theoretical_full_boost']:.3f}x")
 

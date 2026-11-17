@@ -136,7 +136,13 @@ def clean_astronomical_image(data: np.ndarray, smooth_sigma: float = 1.0, noise_
     signal = np.maximum(0.0, smoothed - threshold)
 
     # 3. Asinh stretch for high dynamic range (enforcing noise floor to prevent noise over-amplification)
-    vmax = np.percentile(signal[signal > 0], 99.5) if np.any(signal > 0) else 1.0
+    if np.any(signal > 0):
+        pos_sig = signal[signal > 0]
+        p99 = float(np.percentile(pos_sig, 99.5))
+        peak = float(np.max(pos_sig))
+        vmax = min(peak, max(p99, float(np.percentile(pos_sig, 99.99)))) if peak > p99 * 1.3 else p99
+    else:
+        vmax = 1.0
     vmax = max(float(vmax), float(8.0 * bg_std), 1.0)
 
     norm = np.clip(signal / vmax, 0.0, 1.0)
@@ -162,10 +168,14 @@ def compute_scientific_difference(d1: np.ndarray, d2: np.ndarray) -> np.ndarray:
     # PSF matching convolution (equalize resolution difference between epochs)
     i1_matched = gaussian_filter(i1_sub, sigma=1.15)
 
-    # Calculate optimal flux scale factor S over stationary stars
+    # Calculate optimal flux scale factor S over stationary stars with sigma clipping
     stars_mask = (i1_matched > 1.2 * s1) & (i1_matched < 25.0 * s1)
     if np.sum(stars_mask) > 15:
-        S = float(np.median(i2_sub[stars_mask] / (i1_matched[stars_mask] + 1e-5)))
+        ratios = i2_sub[stars_mask] / (i1_matched[stars_mask] + 1e-5)
+        med_r = float(np.median(ratios))
+        mad_r = float(1.4826 * np.median(np.abs(ratios - med_r)))
+        clipped = ratios[np.abs(ratios - med_r) <= 2.5 * mad_r]
+        S = float(np.median(clipped)) if len(clipped) > 10 else float(med_r)
     else:
         S = float((s2 / (s1 + 1e-5)) * 0.8)
 
@@ -224,12 +234,17 @@ def apply_locked_asinh_stretch(
     sigma_sky: float | None = None,
     p99_5: float | None = None,
     beta: float = 3.0,
+    adaptive_hdr: bool = True,
 ) -> np.ndarray:
     """
-    Globally locked [0, P99.5]-clipped Asinh stretch:
+    Globally locked [0, P99.5]-clipped Asinh stretch with Adaptive HDR scaling:
     Locks background median (mu_sky), robust noise (sigma_sky = 1.4826 * MAD),
     and upper percentile (P99.5) across cutouts to eliminate photometric
     checkerboarding across neighbor tiles.
+
+    For high-amplitude pulsating Mira variables (e.g. R Draconis) and bright stars,
+    dynamically scales the dynamic range ceiling to avoid pixel saturation discs
+    in the stellar core while preserving faint neighbor sources.
     """
     valid_pixels = arr[~np.isnan(arr)]
     if len(valid_pixels) == 0:
@@ -247,12 +262,23 @@ def apply_locked_asinh_stretch(
     if p99_5 <= mu_sky:
         p99_5 = mu_sky + 10.0 * sigma_sky
 
-    # f_clipped = min(max(I(x, y) - mu_sky, 0), P99.5 - mu_sky)
     f_sub = arr - mu_sky
-    f_clipped = np.clip(f_sub, 0.0, p99_5 - mu_sky)
 
-    # I_norm = asinh(f_clipped / (beta * sigma_sky)) / asinh((P99.5 - mu_sky) / (beta * sigma_sky))
-    scale_denom = np.arcsinh((p99_5 - mu_sky) / (beta * sigma_sky))
+    # Adaptive Dynamic Range scaling for high-amplitude variable cores
+    if adaptive_hdr and len(valid_pixels) > 50:
+        peak_val = float(np.nanmax(valid_pixels))
+        if peak_val > p99_5 * 1.3:
+            p99_99 = float(np.percentile(valid_pixels, 99.99))
+            v_max = min(peak_val, max(p99_5, p99_99))
+        else:
+            v_max = p99_5
+    else:
+        v_max = p99_5
+
+    f_clipped = np.clip(f_sub, 0.0, v_max - mu_sky)
+
+    # I_norm = asinh(f_clipped / (beta * sigma_sky)) / asinh((v_max - mu_sky) / (beta * sigma_sky))
+    scale_denom = np.arcsinh((v_max - mu_sky) / (beta * sigma_sky))
     if scale_denom <= 1e-6:
         scale_denom = 1.0
 

@@ -1,5 +1,6 @@
 import os
 import time
+
 from playwright.sync_api import sync_playwright
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "..", "docs", "screenshots")

@@ -5,10 +5,9 @@ spanning Phase 0 (Data Foundation) through Phase 7 (Polish & Demo) and Pre-Submi
 """
 import csv
 import json
-import os
 import sys
-import urllib.request
 import urllib.error
+import urllib.request
 from pathlib import Path
 
 # Ensure project root is in path
@@ -66,10 +65,15 @@ def run_tracker():
 
     # Import astropy tools for math & coordinate validation
     from astropy.coordinates import SkyCoord
-    from backend.services.cutout_engine import fetch_real_cutout
-    from backend.services.gaia_service import query_gaia_dr3, propagate_gaia_sources_to_epoch, compute_astrometric_residuals
-    from backend.services.neossat_service import build_neossat_tracking_report
+
     from backend.main import get_resources_codex
+    from backend.services.cutout_engine import fetch_real_cutout
+    from backend.services.gaia_service import (
+        compute_astrometric_residuals,
+        propagate_gaia_sources_to_epoch,
+        query_gaia_dr3,
+    )
+    from backend.services.neossat_service import build_neossat_tracking_report
 
     results = []
     phase_stats = {}
@@ -244,7 +248,6 @@ def run_tracker():
                 passed = "toolBlinkFlip" in html_content and "viewportTimeStepHUD" in html_content
                 diagnostic = "Verified blink comparison tools ready without algorithmic wait"
             elif item_id == 42: # Strict WCS reprojection & sub-pixel alignment
-                from astropy.wcs import WCS
                 from astropy.wcs.utils import proj_plane_pixel_scales
                 passed = callable(proj_plane_pixel_scales)
                 diagnostic = "Astropy WCS celestial projection and pixel scaling verified"
@@ -370,6 +373,7 @@ def run_tracker():
         results.append({
             "id": item_id,
             "phase": phase,
+            "category": category,
             "req": req,
             "passed": passed,
             "diagnostic": diagnostic
