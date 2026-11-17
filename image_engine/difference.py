@@ -13,20 +13,20 @@ Processes 100% authentic, real-world NASA telescope FITS data:
 - Real-world difference map generation showing authentic proper motion dipoles and variable flares.
 """
 
+import base64
 import io
 import os
-import sys
 import ssl
-import base64
+import sys
 import urllib.request
-import numpy as np
-from PIL import Image
-from scipy.ndimage import gaussian_filter
 
+import numpy as np
 from astropy.io import fits
+from astropy.visualization import AsinhStretch, ZScaleInterval
 from astropy.wcs import WCS
-from astropy.visualization import ZScaleInterval, AsinhStretch
+from PIL import Image
 from reproject import reproject_interp
+from scipy.ndimage import gaussian_filter
 
 if sys.platform == "win32":
     try:
@@ -160,7 +160,6 @@ def process_real_fits_difference(
         survey1 = h1[0].header.get('SURVEY', 'DSS2')
 
         d2_raw = np.nan_to_num(h2[0].data.astype(np.float64))
-        w2 = WCS(h2[0].header)
         hdr2 = h2[0].header
         date2 = h2[0].header.get('DATE-OBS', 'N/A') or h2[0].header.get('ORDATE', 'N/A')
         survey2 = h2[0].header.get('SURVEY', '2MASS')
@@ -302,7 +301,7 @@ def run_benchmark_suite(output_dir: str = "image_engine/outputs/real_world"):
 
     print("\n" + "=" * 75)
     print("🌟 [SUCCESS] Real Astronomical FITS Difference Processing Complete!")
-    print(f"   All images generated directly from authentic NASA telescope archives.")
+    print("   All images generated directly from authentic NASA telescope archives.")
     print("=" * 75)
 
 
